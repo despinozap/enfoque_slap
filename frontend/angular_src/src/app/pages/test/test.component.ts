@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-test',
@@ -7,9 +8,53 @@ import { Component, OnInit } from '@angular/core';
 })
 export class TestComponent implements OnInit {
 
-  constructor() { }
+  constructor(private _authService: AuthService) { }
 
   ngOnInit(): void {
+    //this.login();
+    this.user();
+  }
+
+  public login() {
+    this._authService.doLogin('admin@mail.com', 'admin')
+    .subscribe(
+      //Success request
+      (response: any) => {
+
+        console.log('RESPONSE', response);
+
+        if (this._authService.setData(response.data.user, response.data.access_token)) 
+        {
+
+        }
+        else {
+
+        }
+
+      },
+      //Error request
+      (errorResponse: any) => {
+
+        console.log('ERROR', errorResponse);
+      }
+    );
+  }
+
+  public user() {
+    this._authService.getAuthenticatedUser()
+    .subscribe(
+      //Success request
+      (response: any) => {
+
+        console.log('RESPONSE', response);
+
+      },
+      //Error request
+      (errorResponse: any) => {
+
+        console.log('ERROR', errorResponse);
+      }
+    );
   }
 
 }
