@@ -3,57 +3,77 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\User;
 use Auth;
 
 class AuthController extends Controller
 {
-    public function login(Request $request)
-    {
-        $this->validate($request, [
-            'email' => 'required|string',
-            'password' => 'required|string',
-        ]);
+	public function login(Request $request)
+	{
+		$this->validate($request, [
+			'email' => 'required|string',
+			'password' => 'required|string',
+		]);
 
-        $login = [
-            'email' => $request->email,
-            'password' => $request->password
-        ];
+		if($user = User::where('email', $request->email)->first())
+		{
+			$login = [
+				'email' => $request->email,
+				'password' => $request->password
+			];
 
-        if(Auth::attempt($login))
-        {
-            $accessToken = Auth::user()->createToken('authToken')->accessToken;
+			if(Auth::attempt($login))
+			{
+				$accessToken = Auth::user()->createToken('authToken')->accessToken;
 
-            $data = [
-                'access_token' => $accessToken,
-                'user' => Auth::user()
-            ];
+				$data = [
+					'access_token' => $accessToken,
+					'user' => Auth::user()
+				];
 
-            $response = HelpController::buildResponse(
-                200,
-                null,
-                $data
-            );
-        }
-        else
-        {
-            $response = HelpController::buildResponse(
-                400,
-                'Invalid login credentials',
-                null
-            );
-        }        
+				$response = HelpController::buildResponse(
+					200,
+					null,
+					$data
+				);
+			}
+			else
+			{
+				$response = HelpController::buildResponse(
+					403,
+					[
+						'password' => [
+							'Invalid password'
+						]
+					],
+					null
+				);
+			}     
+		}
+		else
+		{
+			$response = HelpController::buildResponse(
+				403,
+				[
+					'email' => [
+						'User not found'
+					]
+				],
+				null
+			);
+		}
+			
+		return $response;
+	}
 
-        return $response;
-    }
+	public function getUser(Request $request)
+	{
+		$response = HelpController::buildResponse(
+			200,
+			null,
+			Auth::user()
+		);
 
-    public function getUser(Request $request)
-    {
-        $response = HelpController::buildResponse(
-            200,
-            null,
-            Auth::user()
-        );
-
-        return $response;
-    }
+		return $response;
+	}
 }
