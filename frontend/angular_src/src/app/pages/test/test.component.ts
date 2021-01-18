@@ -23,14 +23,6 @@ export class TestComponent implements OnInit {
 
         console.log('RESPONSE', response);
 
-        if (this._authService.setData(response.data.user, response.data.access_token)) 
-        {
-
-        }
-        else {
-
-        }
-
       },
       //Error request
       (errorResponse: any) => {

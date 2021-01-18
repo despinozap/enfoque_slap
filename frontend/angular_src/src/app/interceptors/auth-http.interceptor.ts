@@ -39,7 +39,6 @@ export class AuthHttpInterceptor implements HttpInterceptor {
 				tap(() => { }, //On success
 					(err: any) => { //On error
 						if (err instanceof HttpErrorResponse) {
-
 							if (err.status === 401) //Unauthorized
 							{
 								this._authService.wipeAccessToken();
@@ -50,6 +49,8 @@ export class AuthHttpInterceptor implements HttpInterceptor {
 							}
 
 						}
+
+						return true;
 					}
 				)
 			);
