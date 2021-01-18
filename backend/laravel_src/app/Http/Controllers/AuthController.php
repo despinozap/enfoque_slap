@@ -245,10 +245,14 @@ class AuthController extends Controller
 
 	public function getUser(Request $request)
 	{
+		$user = Auth::user();
+
+		$user->makeHidden(['created_at', 'updated_at']);
+
 		$response = HelpController::buildResponse(
 			200,
 			null,
-			Auth::user()
+			$user
 		);
 
 		return $response;
