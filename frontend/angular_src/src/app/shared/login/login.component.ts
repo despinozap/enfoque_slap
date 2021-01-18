@@ -19,6 +19,7 @@ export class LoginComponent implements OnInit {
 	/*
 	*		0: Login
 	*		1: Forgot password
+	*		2: Reset password email sent
 	*/
 	PAGE_STATUS: number;
 
@@ -119,9 +120,10 @@ export class LoginComponent implements OnInit {
 				//Success request
 				(response: any) => {
 
-					console.log('RESPONSE', response);
 					this.forgotPasswordForm.enable();
 					this.loading = false;
+
+					this.goTo_ResetPasswordEmailSent();
 				},
 				//Error request
 				(errorResponse: any) => {
@@ -158,6 +160,11 @@ export class LoginComponent implements OnInit {
 				}
 
 			);
+	}
+
+	public goTo_ResetPasswordEmailSent(): void
+	{
+		this.PAGE_STATUS = 2; // Reset password email sent
 	}
 
 	public goTo_ForgotPassword(): void
