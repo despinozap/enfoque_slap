@@ -19,6 +19,8 @@ use App\Http\Controllers\AuthController;
 Route::prefix('auth')->group(function ()
 {
     Route::post('login', [AuthController::class, 'login']);
+    Route::post('forgot', [AuthController::class, 'forgotPassword'])->name('password.email');
+    Route::post('reset', [AuthController::class, 'resetPassword'])->name('password.reset');
 });
 
 /*  Authenticated  */
