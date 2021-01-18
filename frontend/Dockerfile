@@ -5,6 +5,7 @@ COPY ./angular_src/package.json ./
 RUN npm install -g @angular/cli
 RUN npm install
 # BEGIN Libraries and dependences below
+RUN npm install @types/node
 # END Libraries and dependences
 EXPOSE 4200
 CMD ["ng", "serve", "--host", "0.0.0.0", "--poll"]
