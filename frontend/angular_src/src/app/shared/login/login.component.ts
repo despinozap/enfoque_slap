@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { connectableObservableDescriptor } from 'rxjs/internal/observable/ConnectableObservable';
 import { User } from 'src/app/interfaces/user';
 import { AuthService } from 'src/app/services/auth.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
@@ -15,9 +16,19 @@ export class LoginComponent implements OnInit {
 	loading: boolean;
 	responseErrors: any;
 
+	/*
+	*		0: Login
+	*		1: Forgot password
+	*/
+	PAGE_STATUS: number;
+
 	loginForm: FormGroup = new FormGroup({
 		email: new FormControl('', [Validators.required, Validators.email]),
 		password: new FormControl('', [Validators.required])
+	});
+
+	forgotPasswordForm: FormGroup = new FormGroup({
+		email: new FormControl('', [Validators.required, Validators.email])
 	});
 
 	constructor(
@@ -26,6 +37,7 @@ export class LoginComponent implements OnInit {
 	) {
 		this.loading = false;
 		this.responseErrors = [];
+		this.PAGE_STATUS = 0; //Login form
 	}
 
 	ngOnInit(): void {
@@ -94,6 +106,68 @@ export class LoginComponent implements OnInit {
 					this.loading = false;
 				}
 			);
+	}
+
+	public forgotPassword() {
+
+		this.forgotPasswordForm.disable();
+
+		this.responseErrors = [];
+		this.loading = true;
+		this._authService.forgotPassword(this.forgotPasswordForm.value.email)
+			.subscribe(
+				//Success request
+				(response: any) => {
+
+					console.log('RESPONSE', response);
+					this.forgotPasswordForm.enable();
+					this.loading = false;
+				},
+				//Error request
+				(errorResponse: any) => {
+					console.log('RESPONSE', errorResponse);
+
+					switch (errorResponse.status) {
+						case 400: //Invalid request parameters (forbidden)
+							{
+								this.responseErrors = errorResponse.error.message;
+
+								break;
+							}
+
+						case 403: //Invalid request parameters (forbidden)
+							{
+								this.responseErrors = errorResponse.error.message;
+
+								break;
+							}
+
+						default: //Unhandled error
+							{
+								NotificationsService.showAlert(
+									'Fail on requesting the password reset link',
+									NotificationsService.messageType.error
+								);
+
+								break;
+							}
+					}
+
+					this.forgotPasswordForm.enable();
+					this.loading = false;
+				}
+
+			);
+	}
+
+	public goTo_ForgotPassword(): void
+	{
+		this.PAGE_STATUS = 1; // Recover password form
+	}
+
+	public goTo_Login(): void
+	{
+		this.PAGE_STATUS = 0; // Login form
 	}
 
 }

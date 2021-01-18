@@ -17,6 +17,24 @@ export class AuthService {
 		this.loggedUser = null as any;
 	}
 
+	public forgotPassword(email: string): Observable<any> {
+		let endpoint: string = `${environment.ENDPOINT_BASE}/auth/forgot`;
+		let requestData: any = {
+			'email': email
+		};
+
+		let httpOptions = {
+			method: 'POST',
+			headers:
+			{
+				'Accept': 'application/json',
+				'Content-Type': 'application/json',
+			}
+		};
+
+		return this.httpClient.post(endpoint, requestData, httpOptions);
+	}
+
 	public doLogin(email: string, password: string): Observable<any> {
 		let endpoint: string = `${environment.ENDPOINT_BASE}/auth/login`;
 		let requestData: any = {
