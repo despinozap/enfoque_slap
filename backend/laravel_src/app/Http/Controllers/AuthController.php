@@ -84,7 +84,8 @@ class AuthController extends Controller
 		];
 
 		$validatorMessages = [
-			
+			// 'password.confirmed' => '',
+			// 'password.min' => ''
 		];
 
 		$validator = Validator::make(
@@ -120,11 +121,7 @@ class AuthController extends Controller
 			{
 				$response = HelpController::buildResponse(
 					403,
-					[
-						'email' => [
-							'User not found'
-						]
-					],
+					'User not found',
 					null
 				);
 			}
@@ -157,11 +154,7 @@ class AuthController extends Controller
 		{
 			$response = HelpController::buildResponse(
 				403,
-				[
-					'email' => [
-						'User not found'
-					]
-				],
+				'User not found',
 				null
 			);
 		}
