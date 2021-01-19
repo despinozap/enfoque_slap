@@ -121,6 +121,7 @@ export class LoginComponent implements OnInit {
 				(response: any) => {
 
 					this.forgotPasswordForm.enable();
+					this.forgotPasswordForm.reset();
 					this.loading = false;
 
 					this.goTo_ResetPasswordEmailSent();

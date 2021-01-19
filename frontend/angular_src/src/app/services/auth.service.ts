@@ -17,6 +17,27 @@ export class AuthService {
 		this.loggedUser = null as any;
 	}
 
+	public resetPassword(email: string, token: string, password: string, confirm: string): Observable<any> {
+		let endpoint: string = `${environment.ENDPOINT_BASE}/auth/reset`;
+		let requestData: any = {
+			'email': email,
+			'token': token,
+			'password': password,
+			'password_confirmation': confirm
+		};
+
+		let httpOptions = {
+			method: 'POST',
+			headers:
+			{
+				'Accept': 'application/json',
+				'Content-Type': 'application/json',
+			}
+		};
+
+		return this.httpClient.post(endpoint, requestData, httpOptions);
+	}
+
 	public forgotPassword(email: string): Observable<any> {
 		let endpoint: string = `${environment.ENDPOINT_BASE}/auth/forgot`;
 		let requestData: any = {

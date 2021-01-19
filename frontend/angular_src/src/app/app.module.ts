@@ -15,12 +15,14 @@ import { TestComponent } from './pages/test/test.component';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AuthHttpInterceptor } from './interceptors/auth-http.interceptor';
 import { LoginComponent } from './shared/login/login.component';
+import { ResetComponent } from './shared/reset/reset.component';
 import { AuthGuard } from './guards/auth.guard';
 
 
 /* Routes */
 const routes: Routes = [
   { path: 'login', component: LoginComponent }, //for the login page
+  { path: 'reset', component: ResetComponent }, //for the login page
   {
     path: 'home', component: HomeComponent,
     canActivate: [ AuthGuard ],
@@ -39,7 +41,8 @@ const routes: Routes = [
     FooterComponent,
     MenubarComponent,
     TopbarComponent,
-    LoginComponent
+    LoginComponent,
+    ResetComponent
   ],
   imports: [
     BrowserModule,

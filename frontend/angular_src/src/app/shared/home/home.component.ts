@@ -29,7 +29,7 @@ export class HomeComponent implements OnInit {
         .subscribe(
           //Success request
           (response: any) => {
-            this.loggedUser = <User>response.data;
+            this.loggedUser = <User> response.data;
             this._authService.setLoggedUser(this.loggedUser);
           },
           //Error request
