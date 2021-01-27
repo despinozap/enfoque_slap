@@ -3,6 +3,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\RolsController;
+use App\Http\Controllers\UsersController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,6 +24,18 @@ Route::prefix('auth')->group(function ()
     Route::post('forgot', [AuthController::class, 'forgotPassword'])->name('password.email');
     Route::post('reset', [AuthController::class, 'resetPassword'])->name('password.reset');
 });
+
+/* ATTENTION: Only put routes here for testing. Then move them into the auth middleware */
+// Rols
+Route::get('/rols/all', [RolsController::class, 'indexFull']);
+
+// Users
+Route::get('/users', [UsersController::class, 'index']);
+Route::post('/users', [UsersController::class, 'store']);
+Route::get('/users/{id}', [UsersController::class, 'show']);
+Route::put('/users/{id}', [UsersController::class, 'update']);
+Route::delete('/users/{id}', [UsersController::class, 'destroy']);
+
 
 /*  Authenticated  */
 Route::middleware('auth:api')->group(function()
