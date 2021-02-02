@@ -17,6 +17,9 @@ import { AuthHttpInterceptor } from './interceptors/auth-http.interceptor';
 import { LoginComponent } from './shared/login/login.component';
 import { ResetComponent } from './shared/reset/reset.component';
 import { AuthGuard } from './guards/auth.guard';
+import { UsuariosCreateComponent } from './pages/usuarios/create/create.component';
+import { UsuariosListComponent } from './pages/usuarios/list/list.component';
+import { UsuariosEditComponent } from './pages/usuarios/edit/edit.component';
 
 
 /* Routes */
@@ -24,11 +27,14 @@ const routes: Routes = [
   { path: 'login', component: LoginComponent }, //for the login page
   { path: 'reset', component: ResetComponent }, //for the login page
   {
-    path: 'home', component: HomeComponent,
+    path: 'panel', component: HomeComponent,
     canActivate: [ AuthGuard ],
     children: [
       /* Pages */
-      { path: '', component: TestComponent }
+      { path: '', component: TestComponent },
+      { path: 'usuarios', component: UsuariosListComponent },
+      { path: 'usuarios/create', component: UsuariosCreateComponent },
+      { path: 'usuarios/edit/:id', component: UsuariosEditComponent },
     ]
   },
   { path: '**', redirectTo: 'login', pathMatch: 'full' } //any other page, redirects to base path
@@ -42,7 +48,10 @@ const routes: Routes = [
     MenubarComponent,
     TopbarComponent,
     LoginComponent,
-    ResetComponent
+    ResetComponent,
+    UsuariosCreateComponent,
+    UsuariosListComponent,
+    UsuariosEditComponent
   ],
   imports: [
     BrowserModule,

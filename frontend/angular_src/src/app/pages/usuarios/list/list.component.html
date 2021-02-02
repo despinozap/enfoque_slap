@@ -1,0 +1,64 @@
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+
+                <h4 class="card-title">Usuarios</h4>
+                <p class="card-title-desc">Lista de usuarios del sistema</p>
+
+                <div class="table-rep-plugin">
+                    <div class="table-responsive mb-0">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Email</th>
+                                    <th>Telefono</th>
+                                    <th>Opciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngIf="(loading === true)">
+                                    <td colspan="5" style="text-align: center;">
+                                        <h5>Cargando..</h5>
+                                    </td>
+                                </tr>
+                                <tr *ngIf="(loading === false) && (users) && (users.length === 0)">
+                                    <td colspan="5" style="text-align: center;">
+                                        <h4>La lista de usuarios esta vacia</h4>
+                                    </td>
+                                </tr>
+                                <ng-container *ngIf="(loading === false)">
+                                    <tr *ngFor="let user of users">
+                                        <td>{{ user.id }}</td>
+                                        <td>
+                                            {{ user.name }}
+                                        </td>
+                                        <td>
+                                            {{ user.email }}
+                                        </td>
+                                        <td>
+                                            {{ user.phone }}
+                                        </td>
+                                        <td style="text-align: center;">
+                                            <div class="btn-group mt-4 mt-md-0" role="group">
+                                                <a [routerLink]="['edit', 1]" class="btn btn-secondary"
+                                                    title="Editar"><i class="bx bx-edit-alt"></i></a>
+                                                <a [routerLink]="" (click)="removeUser(user)" class="btn btn-secondary"
+                                                    title="Eliminar"><i class="bx bx-trash-alt"></i></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-container>
+
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div> <!-- end col -->
+</div> <!-- end row -->

@@ -1,1 +1,13 @@
 /* You can add global styles to this file, and also import other style files */
+
+/*  Tables */
+.table thead tr th,
+.table tbody tr td:first-child {
+  text-align: center;
+}
+.table tbody tr td {
+  vertical-align: middle;
+}
+.table tbody tr td:not(:last-child) {
+  border-right: 0.025rem solid #eff2f7;
+}

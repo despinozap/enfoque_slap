@@ -43,7 +43,7 @@ export class LoginComponent implements OnInit {
 
 	ngOnInit(): void {
 		if (this._authService.getAccessToken() !== null) {
-			this.router.navigate(['home']);
+			this.router.navigate(['panel']);
 		}
 		else {
 			this.cleanScripts();
@@ -79,7 +79,7 @@ export class LoginComponent implements OnInit {
 					this._authService.setLoggedUser(loggedUser);
 					this._authService.setAccessToken(response.data.access_token);
 
-					this.router.navigate(['home']);
+					this.router.navigate(['panel']);
 				},
 				//Error request
 				(errorResponse: any) => {
