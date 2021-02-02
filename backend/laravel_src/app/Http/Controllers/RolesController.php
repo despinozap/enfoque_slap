@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Rol;
+use App\Models\Role;
 
-class RolsController extends Controller
+class RolesController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -21,22 +21,22 @@ class RolsController extends Controller
     {
         $response = null;
 
-        if($rols = Rol::all())
+        if($roles = Role::all())
         {
-            $rols = $rols->filter(function($rol)
+            $roles = $roles->filter(function($role)
             {
-                $rol->makeHidden([
+                $role->makeHidden([
                     'created_at',
                     'updated_at'
                 ]);
 
-                return $rol;
+                return $role;
             });
 
             $response = HelpController::buildResponse(
                 200,
                 null,
-                $rols
+                $roles
             );
         }
         else

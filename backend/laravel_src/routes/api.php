@@ -27,7 +27,7 @@ Route::prefix('auth')->group(function ()
 
 /* ATTENTION: Only put routes here for testing. Then move them into the auth middleware */
 // Rols
-Route::get('/rols/all', [RolsController::class, 'indexFull']);
+Route::get('/roles/all', [RolesController::class, 'indexFull']);
 
 // Users
 Route::get('/users', [UsersController::class, 'index']);
