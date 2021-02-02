@@ -18,23 +18,20 @@ class UsersController extends Controller
     {
         $response = null;
 
-        //Quantity definition for pagination (if in request)
-        $quantity = (($request->quantity) && ($request->quantity > 0)) ? $request->quantity : 10;
-
-        if($users = User::paginate($quantity))
+        if($users = User::all())
         {
             $users = $users->filter(function($user)
             {
-                $user->rol;
+                $user->role;
 
                 $user->makeHidden([
                     'email_verified_at',
-                    'rol_id',
+                    'role_id',
                     'created_at', 
                     'updated_at'
                 ]);
 
-                $user->rol->makeHidden(['created_at', 'updated_at']);
+                $user->role->makeHidden(['created_at', 'updated_at']);
 
                 return $user;
             });
@@ -65,22 +62,22 @@ class UsersController extends Controller
      */
     public function store(Request $request)
     {
-        $validatorInput = $request->only('nombre', 'email', 'telefono', 'rol_id');
+        $validatorInput = $request->only('name', 'email', 'phone', 'rol_id');
 		
 		$validatorRules = [
-			'nombre' => 'required|min:4',
+			'name' => 'required|min:4',
             'email' => 'required|email|unique:users',
-            'telefono' => 'digits:10',
+            'phone' => 'digits:10',
 			'rol_id' => 'required|exists:rols,id'
 		];
 
 		$validatorMessages = [
-			'nombre.required' => 'Debes ingresar el nombre',
-			'nombre.min' => 'El nombre debe tener al menos 4 caracteres',
+			'name.required' => 'Debes ingresar el nombre',
+			'name.min' => 'El nombre debe tener al menos 4 caracteres',
             'email.required' => 'Debes ingresar el email',
             'email.email' => 'El email debe ser valido',
             'email.unique' => 'El email ya esta asociado a otro usuario',
-            'telefono.digits' => 'El telefono debe tener 10 digitos',
+            'phone.digits' => 'El telefono debe tener 10 digitos',
             'rol_id.required' => 'Debes seleccionar el rol',
             'rol_id.exists' => 'El rol ingresado no existe'
 		];
@@ -175,21 +172,21 @@ class UsersController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $validatorInput = $request->only('nombre', 'email', 'telefono', 'rol_id');
+        $validatorInput = $request->only('name', 'email', 'phone', 'rol_id');
 		
 		$validatorRules = [
-			'nombre' => 'required|min:4',
+			'name' => 'required|min:4',
             'email' => 'required|email',
-            'telefono' => 'digits:10',
+            'phone' => 'digits:10',
 			'rol_id' => 'required|exists:rols,id'
 		];
 
 		$validatorMessages = [
-			'nombre.required' => 'Debes ingresar el nombre',
-			'nombre.min' => 'El nombre debe tener al menos 4 caracteres',
+			'name.required' => 'Debes ingresar el nombre',
+			'name.min' => 'El nombre debe tener al menos 4 caracteres',
             'email.required' => 'Debes ingresar el email',
             'email.email' => 'El email debe ser valido',
-            'telefono.digits' => 'El telefono debe tener 10 digitos',
+            'phone.digits' => 'El telefono debe tener 10 digitos',
             'rol_id.required' => 'Debes seleccionar el rol',
             'rol_id.exists' => 'El rol ingresado no existe'
 		];

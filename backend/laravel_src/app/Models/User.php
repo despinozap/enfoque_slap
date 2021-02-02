@@ -18,7 +18,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'nombre', 'email', 'telefono', 'password', 'rol_id',
+        'name', 'email', 'phone', 'password', 'rol_id',
     ];
 
     /**
@@ -39,8 +39,8 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    public function rol()
+    public function role()
     {
-        return $this->belongsTo('App\Models\Rol')->withDefault();
+        return $this->belongsTo('App\Models\Role')->withDefault();
     }
 }

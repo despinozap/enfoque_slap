@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Rol;
+use App\Models\Role;
 use App\Models\User;
 
 class DatabaseSeeder extends Seeder
@@ -16,16 +16,16 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         // User::factory(10)->create();
-        $rol = new Rol();
-        $rol->nombre = 'Administrador';
-        $rol->save();
+        $role = new Role();
+        $role->name = 'Administrador';
+        $role->save();
 
         $user = new User();
-        $user->nombre = 'DevAdmin SLAP';
-        $user->email = 'admin@email.com';
-        $user->telefono = '+123456789';
+        $user->name = 'DevAdmin SLAP';
+        $user->email = 'admin@mail.com';
+        $user->phone = '9012345678';
         $user->password = bcrypt('admin');
-        $user->rol_id = $rol->id;
+        $user->role_id = $role->id;
         $user->save();
     }
 }
