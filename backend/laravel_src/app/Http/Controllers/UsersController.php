@@ -101,7 +101,7 @@ class UsersController extends Controller
             $user = new User();
             $user->fill($request->all());
             $user->password = bcrypt($request->email);
-
+            
             if($user->save())
             {
                 $response = HelpController::buildResponse(
