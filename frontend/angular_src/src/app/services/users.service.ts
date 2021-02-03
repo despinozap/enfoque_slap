@@ -25,6 +25,24 @@ export class UsersService {
     return this.httpClient.get(endpoint);
   }
 
+  public updateUser(user_id: number, user: User): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/users/${user_id}`;
+
+    let httpOptions = { 
+      method: 'PUT',
+      headers:
+      {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET,POST,OPTIONS,DELETE,PUT'
+      }
+    };
+    
+    return this.httpClient.put(endpoint, user, httpOptions);
+  }
+
   public storeUser(user: User): Observable<any>
   {
     let endpoint: string = `${environment.ENDPOINT_BASE}/users`;
