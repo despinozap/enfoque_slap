@@ -23,8 +23,6 @@ export class AuthHttpInterceptor implements HttpInterceptor {
 
 		//Intercepts for adding the auth token
 
-		const accessToken = 'MyAccessToken';
-
 		if (request.url.toUpperCase().endsWith('AUTH/LOGIN')) {
 			return next.handle(request);
 		}

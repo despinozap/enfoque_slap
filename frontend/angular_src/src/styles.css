@@ -11,3 +11,15 @@
 .table tbody tr td:not(:last-child) {
   border-right: 0.025rem solid #eff2f7;
 }
+
+.error-response {
+  color: #b1324b;
+}
+
+.form-buttons {
+  text-align: left;
+}
+
+.form-buttons button {
+  display: inline;
+}

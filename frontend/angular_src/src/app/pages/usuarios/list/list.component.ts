@@ -1,8 +1,7 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { last } from 'rxjs/operators';
 import { User } from 'src/app/interfaces/user';
-import { DatatablesService } from 'src/app/services/datatables.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { UsersService } from 'src/app/services/users.service';
 

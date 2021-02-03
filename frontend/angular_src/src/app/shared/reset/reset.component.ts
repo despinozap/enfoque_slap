@@ -79,8 +79,6 @@ export class ResetComponent implements OnInit {
         //Error request
         (errorResponse: any) => {
 
-          console.log(errorResponse);
-
           switch (errorResponse.status) {
 
             case 400: //Invalid request parameters (format)

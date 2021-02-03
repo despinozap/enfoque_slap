@@ -128,7 +128,6 @@ export class LoginComponent implements OnInit {
 				},
 				//Error request
 				(errorResponse: any) => {
-					console.log('RESPONSE', errorResponse);
 
 					switch (errorResponse.status) {
 						case 400: //Invalid request parameters (forbidden)
