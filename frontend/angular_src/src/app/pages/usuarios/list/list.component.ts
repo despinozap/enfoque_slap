@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { User } from 'src/app/interfaces/user';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { UsersService } from 'src/app/services/users.service';
+import { Subject } from 'rxjs';
+import { DataTableDirective, DataTablesModule } from 'angular-datatables';
 
 /* SweetAlert2 */
 const Swal = require('../../../../assets/vendors/sweetalert2/sweetalert2.all.min.js');
@@ -13,29 +15,75 @@ const Swal = require('../../../../assets/vendors/sweetalert2/sweetalert2.all.min
   templateUrl: './list.component.html',
   styleUrls: ['./list.component.css']
 })
-export class UsuariosListComponent implements OnInit {
+export class UsuariosListComponent implements OnInit, AfterViewInit, OnDestroy {
 
-  public users: Array<User>;
+  @ViewChild(DataTableDirective, {static: false})
+  public datatableElement: DataTableDirective;
+  dtOptions: DataTables.Settings = {};
+  dtTrigger: Subject<any> = new Subject<any>();
+
+  public users: any[];
   loading: boolean;
 
   constructor(private router: Router, private _usersService: UsersService) {
     this.loading = false;
-    this.users = null as any;
+    this.users = [];
+    this.datatableElement = null as any;
   }
 
   ngOnInit(): void {
-    this.loadUsersList();
+
+    this.dtOptions = {
+      pagingType: 'full_numbers',
+      pageLength: 10,
+      language: {
+        url: '//cdn.datatables.net/plug-ins/1.10.22/i18n/Spanish.json'
+      }
+    };
+  }
+
+  ngAfterViewInit(): void {
+    this.dtTrigger.next();
+
+    //Prevents throwing an error for var status changed while initialization
+    setTimeout(() => {
+      this.loadUsersList();
+    },
+    100);
+  }
+
+  ngOnDestroy(): void {
+    this.dtTrigger.unsubscribe();
+  }
+
+  clearDataTable(): void {
+    this.datatableElement.dtInstance.then((dtInstance: DataTables.Api) => {
+      // Clear the table first
+      dtInstance.clear();
+    });
+  }
+
+  renderDataTable(): void {
+    this.datatableElement.dtInstance.then((dtInstance: DataTables.Api) => {
+      // Destroy the table first
+      dtInstance.destroy();
+      // Call the dtTrigger to rerender again
+      this.dtTrigger.next();
+    });
   }
 
   public loadUsersList()
   {
     this.loading = true;
+
+    this.clearDataTable();
     this._usersService.getUsers()
     .subscribe(
       //Success request
       (response: any) => {
-        this.updateContent(response.data);
-        
+        this.users = response.data;
+        this.renderDataTable();
+
         this.loading = false;
       },
       //Error request
@@ -148,20 +196,5 @@ export class UsuariosListComponent implements OnInit {
       }
     });
 
-  }
-
-  private updateContent(content: any)
-  {
-    this.users = <Array<User>>(content);
-    // this.users = <Array<User>>(content.data);
-    // this.pagination = {
-    //   current_page: content.current_page,
-    //   from: content.from,
-    //   last_page: content.last_page,
-    //   per_page: content.per_page,
-    //   to: content.to,
-    //   total: content.total
-    // } as Pagination;
-  }
-  
+  }  
 }

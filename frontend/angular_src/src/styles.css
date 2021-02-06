@@ -1,15 +1,13 @@
 /* You can add global styles to this file, and also import other style files */
 
-/*  Tables */
-.table thead tr th,
-.table tbody tr td:first-child {
-  text-align: center;
+/*  DataTables */
+.dataTables_length .custom-select {
+  padding: 4px 28px 4px 8px !important;
 }
-.table tbody tr td {
-  vertical-align: middle;
-}
-.table tbody tr td:not(:last-child) {
-  border-right: 0.025rem solid #eff2f7;
+
+.dataTables_paginate .pagination .paginate_button {
+  padding: 0px !important;
+  margin: 0px !important;
 }
 
 .error-response {

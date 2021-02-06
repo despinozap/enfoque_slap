@@ -6,6 +6,9 @@ import { AppComponent } from './app.component';
 /* Routers */
 import { RouterModule, Routes } from '@angular/router';
 
+/* DataTables */
+import { DataTablesModule } from 'angular-datatables';
+
 /* Shared */
 import { HomeComponent } from './shared/home/home.component';
 import { FooterComponent } from './shared/footer/footer.component';
@@ -58,7 +61,8 @@ const routes: Routes = [
     RouterModule.forRoot(routes),
     HttpClientModule,
     ReactiveFormsModule,
-    FormsModule
+    FormsModule,
+    DataTablesModule
   ],
   providers: [
     {
