@@ -18,8 +18,8 @@ const Swal = require('../../../../assets/vendors/sweetalert2/sweetalert2.all.min
 export class UsuariosListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild(DataTableDirective, {static: false})
-  public datatableElement: DataTableDirective;
-  dtOptions: DataTables.Settings = {};
+  public datatableElement_users: DataTableDirective;
+  dtOptions: any = {};
   dtTrigger: Subject<any> = new Subject<any>();
 
   public users: any[];
@@ -28,7 +28,7 @@ export class UsuariosListComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(private router: Router, private _usersService: UsersService) {
     this.loading = false;
     this.users = [];
-    this.datatableElement = null as any;
+    this.datatableElement_users = null as any;
   }
 
   ngOnInit(): void {
@@ -38,7 +38,16 @@ export class UsuariosListComponent implements OnInit, AfterViewInit, OnDestroy {
       pageLength: 10,
       language: {
         url: '//cdn.datatables.net/plug-ins/1.10.22/i18n/Spanish.json'
-      }
+      },
+      // Declare the use of the extension in the dom parameter
+      dom: 'Bfrtip',
+      // Configure the buttons
+      buttons: [
+        'colvis',
+        'excel',
+        'pdf',
+        'print'
+      ]
     };
   }
 
@@ -56,15 +65,15 @@ export class UsuariosListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.dtTrigger.unsubscribe();
   }
 
-  clearDataTable(): void {
-    this.datatableElement.dtInstance.then((dtInstance: DataTables.Api) => {
+  clearDataTable(dataTableElement: DataTableDirective): void {
+    dataTableElement.dtInstance.then((dtInstance: DataTables.Api) => {
       // Clear the table first
       dtInstance.clear();
     });
   }
 
-  renderDataTable(): void {
-    this.datatableElement.dtInstance.then((dtInstance: DataTables.Api) => {
+  renderDataTable(dataTableElement: DataTableDirective): void {
+    dataTableElement.dtInstance.then((dtInstance: DataTables.Api) => {
       // Destroy the table first
       dtInstance.destroy();
       // Call the dtTrigger to rerender again
@@ -76,13 +85,13 @@ export class UsuariosListComponent implements OnInit, AfterViewInit, OnDestroy {
   {
     this.loading = true;
 
-    this.clearDataTable();
+    this.clearDataTable(this.datatableElement_users);
     this._usersService.getUsers()
     .subscribe(
       //Success request
       (response: any) => {
         this.users = response.data;
-        this.renderDataTable();
+        this.renderDataTable(this.datatableElement_users);
 
         this.loading = false;
       },
