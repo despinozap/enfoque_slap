@@ -21,3 +21,7 @@
 .form-buttons button {
   display: inline;
 }
+
+table tbody tr td .btn-table:not(:last-child) {
+  margin-right: 5px;
+}
