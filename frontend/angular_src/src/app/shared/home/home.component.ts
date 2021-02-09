@@ -24,7 +24,7 @@ export class HomeComponent implements OnInit {
     this.cleanScripts();
     this.loadScript('assets/js/app.js');
 
-    if (this._authService.getAccessToken() === null) {
+    if (this._authService.getLoggedUser() === null) {
       this._authService.getAuthenticatedUser()
         .subscribe(
           //Success request
@@ -35,14 +35,14 @@ export class HomeComponent implements OnInit {
           //Error request
           (errorResponse: any) => {
 
-            /*
+            
             if(errorResponse.status === 401)
             {
               //Unauthorized
             }
   
             this.doLogOut();
-            */
+            
           }
         );
     }
