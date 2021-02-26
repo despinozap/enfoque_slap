@@ -23,6 +23,8 @@ import { AuthGuard } from './guards/auth.guard';
 import { UsuariosCreateComponent } from './pages/usuarios/create/create.component';
 import { UsuariosListComponent } from './pages/usuarios/list/list.component';
 import { UsuariosEditComponent } from './pages/usuarios/edit/edit.component';
+import { ProfileDetailsComponent } from './pages/profile/details/details.component';
+import { AuthService } from './services/auth.service';
 
 
 /* Routes */
@@ -35,6 +37,7 @@ const routes: Routes = [
     children: [
       /* Pages */
       { path: '', component: TestComponent },
+      { path: 'profile/details', component: ProfileDetailsComponent },
       { path: 'usuarios', component: UsuariosListComponent },
       { path: 'usuarios/create', component: UsuariosCreateComponent },
       { path: 'usuarios/edit/:id', component: UsuariosEditComponent },
@@ -52,6 +55,7 @@ const routes: Routes = [
     TopbarComponent,
     LoginComponent,
     ResetComponent,
+    ProfileDetailsComponent,
     UsuariosCreateComponent,
     UsuariosListComponent,
     UsuariosEditComponent
@@ -69,7 +73,8 @@ const routes: Routes = [
       provide: HTTP_INTERCEPTORS,
       useClass: AuthHttpInterceptor,
       multi: true
-    }
+    },
+    AuthService
   ],
   bootstrap: [AppComponent]
 })

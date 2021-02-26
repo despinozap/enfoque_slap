@@ -25,11 +25,21 @@ export class HomeComponent implements OnInit {
     this.loadScript('assets/js/app.js');
 
     if (this._authService.getLoggedUser() === null) {
+      
       this._authService.getAuthenticatedUser()
         .subscribe(
           //Success request
           (response: any) => {
-            this.loggedUser = <User> response.data;
+
+            this.loggedUser = {
+              id: response.data.id,
+              name: response.data.name,
+              email: response.data.email,
+              phone: response.data.phone,
+              role_id: response.data.role.id,
+              role_name: response.data.role.name
+            } as User;
+            
             this._authService.setLoggedUser(this.loggedUser);
           },
           //Error request

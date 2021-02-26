@@ -3,5 +3,6 @@ export interface User {
     name: string,
     email: string,
     phone: string,
-    role_id: number
+    role_id: number,
+    role_name: string
 }

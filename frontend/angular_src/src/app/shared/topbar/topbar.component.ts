@@ -10,7 +10,7 @@ import { AuthService } from 'src/app/services/auth.service';
 })
 export class TopbarComponent implements OnInit {
 
-  @Input() loggedUser: User;
+  loggedUser: User;
 
   constructor(
     private router: Router,
@@ -20,6 +20,13 @@ export class TopbarComponent implements OnInit {
   }
 
   ngOnInit(): void {
+
+    //For loggedUser
+    {
+      this._authService.loggedUser$.subscribe((loggedUser) => {
+        this.loggedUser = loggedUser;
+      });
+    }
   }
 
   public goTo_login() {

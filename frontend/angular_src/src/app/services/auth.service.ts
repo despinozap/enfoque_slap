@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { User } from '../interfaces/user';
 
@@ -11,10 +11,12 @@ export class AuthService {
 
 	private ACCESS_TOKEN_ITEM_NAME: string = 'access_token';
 
-	private loggedUser: User;
+	private loggedUser: User = null as any;
+
+	private loggedUserSource = new Subject<User>();
+	public loggedUser$ = this.loggedUserSource.asObservable();
 
 	constructor(private httpClient: HttpClient) {
-		this.loggedUser = null as any;
 	}
 
 	public resetPassword(email: string, token: string, password: string, confirm: string): Observable<any> {
@@ -84,6 +86,9 @@ export class AuthService {
 	public setLoggedUser(user: User): void
 	{
 		this.loggedUser = user;
+
+		//The observable notifies all the subscribers about the new value for loggedUser
+		this.loggedUserSource.next(this.loggedUser);
 	}
 
 	public getLoggedUser(): User

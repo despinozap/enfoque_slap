@@ -1,0 +1,43 @@
+<div class="col-xl-12">
+	<div class="card">
+		<div class="card-body">
+			<div class="media">
+				<div class="mr-3">
+					<!-- <img src="assets/images/users/avatar-1.jpg" alt="" class="avatar-sm rounded-circle img-thumbnail"> -->
+				</div>
+				<div class="media-body" *ngIf="(loggedUser !== null)">
+					<div class="media">
+						<div class="media-body">
+							<div class="text-muted">
+								<h5 class="mb-1">{{ loggedUser.name }}</h5>
+								<p class="mb-0">{{ loggedUser.role_name }}</p>
+							</div>
+
+						</div>
+					</div>
+
+
+					<hr>
+
+					<div class="row">
+						<div class="col-4">
+							<div>
+								<p class="text-muted text-truncate mb-2">Email</p>
+								<h5 class="mb-0">{{ loggedUser.email }}</h5>
+							</div>
+						</div>
+						<div class="col-4">
+							<div>
+								<p class="text-muted text-truncate mb-2">Telefono</p>
+								<h5 class="mb-0">{{ loggedUser.phone }}</h5>
+							</div>
+						</div>
+					</div>
+				</div>
+
+
+			</div>
+
+		</div>
+	</div>
+</div>
