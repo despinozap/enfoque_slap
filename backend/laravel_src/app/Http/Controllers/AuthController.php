@@ -240,7 +240,16 @@ class AuthController extends Controller
 	{
 		$user = Auth::user();
 
-		$user->makeHidden(['created_at', 'updated_at']);
+		$user->role;
+
+		$user->makeHidden([
+				'email_verified_at',
+				'role_id',
+				'created_at', 
+				'updated_at'
+		]);
+
+		$user->role->makeHidden(['created_at', 'updated_at']);
 
 		$response = HelpController::buildResponse(
 			200,
