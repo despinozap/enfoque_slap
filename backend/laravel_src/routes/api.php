@@ -37,8 +37,12 @@ Route::put('/users/{id}', [UsersController::class, 'update']);
 Route::delete('/users/{id}', [UsersController::class, 'destroy']);
 
 
+
 /*  Authenticated  */
 Route::middleware('auth:api')->group(function()
 {
     Route::get('/auth/user', [AuthController::class, 'getUser']);
+
+    // Profile (user)
+    Route::post('/profile', [UsersController::class, 'updateProfile']);
 });

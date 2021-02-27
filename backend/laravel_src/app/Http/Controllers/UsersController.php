@@ -6,9 +6,90 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\User;
 use App\Models\Rol;
+use Auth;
 
 class UsersController extends Controller
 {
+    public function updateProfile(Request $request)
+    {
+        $validatorInput = $request->only('email', 'phone');
+		
+		$validatorRules = [
+            'email' => 'required|email',
+            'phone' => 'digits:10'
+		];
+
+		$validatorMessages = [
+            'email.required' => 'Debes ingresar el email',
+            'email.email' => 'El email debe ser valido',
+            'phone.digits' => 'El telefono debe tener 10 digitos',
+		];
+
+		$validator = Validator::make(
+			$validatorInput,
+			$validatorRules,
+			$validatorMessages
+		);
+
+		if ($validator->fails()) 
+		{
+			$response = HelpController::buildResponse(
+				400,
+				$validator->errors(),
+				null
+			);
+        }  
+        else     
+        {
+            if($user = Auth::user())
+            {
+                if(User::where('email', $request->email)->where('id', '<>', $user->id)->first())
+                {
+                    $response = HelpController::buildResponse(
+                        400,
+                        [
+                            'email' => [
+                                'El email ya esta asociado a otro usuario'
+                            ]
+                        ],
+                        null
+                    );
+                }
+                else
+                {
+                    $user->fill($request->all());
+
+                    if($user->save())
+                    {
+                        $response = HelpController::buildResponse(
+                            200,
+                            'Perfil de usuario actualizado',
+                            null
+                        );
+                    }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            500,
+                            'Error al actualizar el perfil de usuario',
+                            null
+                        );
+                    }
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    400,
+                    'El usuario no existe',
+                    null
+                );
+            }
+        }
+
+        return $response;
+    }
+
     /**
      * Display a listing of the resource.
      *
