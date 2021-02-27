@@ -163,7 +163,7 @@
                 <div class="dropdown-menu dropdown-menu-right">
                     <!-- item-->
                     <a class="dropdown-item" href="#" [routerLink]="['profile/details']"><i class="bx bx-user font-size-16 align-middle mr-1"></i> <span key="t-profile">Perfil</span></a>
-                    <a class="dropdown-item d-block" href="#"><i class="bx bx-wrench font-size-16 align-middle mr-1"></i> <span key="t-settings">Configuracion</span></a>
+                    <a class="dropdown-item d-block" href="#" [routerLink]="['profile/edit']"><i class="bx bx-wrench font-size-16 align-middle mr-1"></i> <span key="t-settings">Configuracion</span></a>
                     <a class="dropdown-item" href="#"><i class="bx bx-lock-open font-size-16 align-middle mr-1"></i> <span key="t-lock-screen">Bloquear</span></a>
                     <div class="dropdown-divider"></div>
                     <a class="dropdown-item text-danger" href="#" (click)="doLogOut()"><i class="bx bx-power-off font-size-16 align-middle mr-1 text-danger"></i> <span key="t-logout">Logout</span></a>

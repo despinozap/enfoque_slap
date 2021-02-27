@@ -10,6 +10,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { DataTablesModule } from 'angular-datatables';
 
 /* Shared */
+import { AuthService } from './services/auth.service';
 import { HomeComponent } from './shared/home/home.component';
 import { FooterComponent } from './shared/footer/footer.component';
 import { MenubarComponent } from './shared/menubar/menubar.component';
@@ -24,7 +25,7 @@ import { UsuariosCreateComponent } from './pages/usuarios/create/create.componen
 import { UsuariosListComponent } from './pages/usuarios/list/list.component';
 import { UsuariosEditComponent } from './pages/usuarios/edit/edit.component';
 import { ProfileDetailsComponent } from './pages/profile/details/details.component';
-import { AuthService } from './services/auth.service';
+import { ProfileEditComponent } from './pages/profile/edit/edit.component';
 
 
 /* Routes */
@@ -37,6 +38,7 @@ const routes: Routes = [
     children: [
       /* Pages */
       { path: '', component: TestComponent },
+      { path: 'profile/edit', component: ProfileEditComponent },
       { path: 'profile/details', component: ProfileDetailsComponent },
       { path: 'usuarios', component: UsuariosListComponent },
       { path: 'usuarios/create', component: UsuariosCreateComponent },
@@ -56,6 +58,7 @@ const routes: Routes = [
     LoginComponent,
     ResetComponent,
     ProfileDetailsComponent,
+    ProfileEditComponent,
     UsuariosCreateComponent,
     UsuariosListComponent,
     UsuariosEditComponent

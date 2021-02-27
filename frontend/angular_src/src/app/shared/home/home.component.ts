@@ -10,13 +10,12 @@ import { AuthService } from 'src/app/services/auth.service';
 })
 export class HomeComponent implements OnInit {
 
-  public loggedUser: User;
+  public loggedUser: User = null as any;
 
   constructor(
     private router: Router,
     private _authService: AuthService
   ) {
-    this.loggedUser = null as any;
   }
 
   ngOnInit(): void {

@@ -25,6 +25,22 @@ export class UsersService {
     return this.httpClient.get(endpoint);
   }
 
+  public updateProfile(profileData: any): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/profile`;
+
+    let httpOptions = { 
+      method: 'POST',
+      headers:
+      {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    };
+    
+    return this.httpClient.post(endpoint, profileData, httpOptions);
+  }
+
   public updateUser(user_id: number, user: User): Observable<any>
   {
     let endpoint: string = `${environment.ENDPOINT_BASE}/users/${user_id}`;
