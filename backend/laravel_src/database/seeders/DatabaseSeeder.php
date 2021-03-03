@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Cliente;
 use App\Models\Marca;
 use App\Models\Parte;
+use App\Models\Estadosolicitud;
 
 class DatabaseSeeder extends Seeder
 {
@@ -44,5 +45,9 @@ class DatabaseSeeder extends Seeder
         $parte->marca_id = 1;
         $parte->nparte = 'NParteTest';
         $parte->save();
+
+        $estadosolicitud = new Estadosolicitud();
+        $estadosolicitud->name = 'EstadosolicitudTest';
+        $estadosolicitud->save();
     }
 }
