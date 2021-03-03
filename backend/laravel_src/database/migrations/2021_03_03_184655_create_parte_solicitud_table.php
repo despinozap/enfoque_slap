@@ -24,7 +24,7 @@ class CreateParteSolicitudTable extends Migration
             $table->float('flete')->nullable();
             $table->float('margen')->nullable();
             $table->float('monto')->nullable();
-            $table->dateTime('plazoentrega')->nullable();
+            $table->integer('plazoentrega')->nullable();
             $table->timestamps();
 
             $table->foreign('parte_id')->references('id')->on('partes')->onDelete('cascade');
