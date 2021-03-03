@@ -12,4 +12,9 @@ class Parte extends Model
     protected $fillable = [
         'marca_id', 'nparte' 
     ];
+
+    public function marca()
+    {
+        return $this->belongsTo(Marca::class);
+    }
 }
