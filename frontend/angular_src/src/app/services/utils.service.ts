@@ -25,21 +25,21 @@ export class UtilsService {
         }
         else
         {
-          return 'Forbidden filetype';
+          return 'Tipo de archivo no permitido';
         }
       }
       else
       {
-        return 'Invalid filetype';
+        return 'Tipo de archivo invalido';
       }
     }
     else if(target.files.length < 1)
     {
-      return 'No file loaded';
+      return 'No se ha cargado correctamente el archivo';
     }
     else(target.files.length > 1)
     {
-      return 'Cannot use multiple files';
+      return 'No puedes cargar multiples archivos';
     }
   }
 }

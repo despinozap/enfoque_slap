@@ -1,1 +1,5 @@
 <input type="file" multiple="false" (change)="onPartesFileChange($event)">
+
+<ul>
+  <li *ngFor="let parte of partes">{{ parte.nparte }}</li>
+</ul>

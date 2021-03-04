@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ɵSWITCH_COMPILE_INJECTABLE__POST_R3__ } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Cliente } from 'src/app/interfaces/cliente';
@@ -19,7 +19,7 @@ import * as XLSX from 'xlsx';
 export class SolicitudesCreateComponent implements OnInit {
 
   public clientes: Array<Cliente> = null as any;
-  public sheetPartes: any[][] = null as any;
+  public partes: any[] = [];
   loading: boolean = false;
   responseErrors: any = [];
 
@@ -40,7 +40,6 @@ export class SolicitudesCreateComponent implements OnInit {
   ngOnInit(): void {
     this.solicitudForm.disable();
     this.loadClientes();
-    this.storeSolicitud();
   }
 
   private loadClientes()
@@ -122,9 +121,31 @@ export class SolicitudesCreateComponent implements OnInit {
         const ws: XLSX.WorkSheet = wb.Sheets[wsname];
 
         // Dumps the whole sheet into a JSON matrix
-        this.sheetPartes = (XLSX.utils.sheet_to_json(ws, {header: 1}));
+        let sheet: any[][] = (XLSX.utils.sheet_to_json(ws, {header: 1}));
 
-        console.log('SHEETPARTES', this.sheetPartes);
+        // Clean Partes list
+        this.partes = [];
+
+        if(sheet.length > 1)
+        {
+          for(let i = 1; i < sheet.length; i++)
+          {
+            this.partes.push(
+              {
+                "nparte": sheet[i][0],
+                "cantidad": sheet[i][1]
+              }
+            );
+          }
+        }
+        else
+        {
+          NotificationsService.showAlert(
+            'El archivo cargado no contiene informacion valida',
+            NotificationsService.messageType.error
+          );
+        }
+        
         
       };
 
@@ -132,7 +153,10 @@ export class SolicitudesCreateComponent implements OnInit {
     }
     else
     {
-      console.log('ERROR', validationMessage);
+      NotificationsService.showAlert(
+        validationMessage,
+        NotificationsService.messageType.warning
+      );
     }
     
   }
