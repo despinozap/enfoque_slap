@@ -6,6 +6,10 @@ import { Solicitud } from 'src/app/interfaces/solicitud';
 import { ClientesService } from 'src/app/services/clientes.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { SolicitudesService } from 'src/app/services/solicitudes.service';
+import { UtilsService } from 'src/app/services/utils.service';
+
+//XLSX lib
+import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-create',
@@ -15,7 +19,7 @@ import { SolicitudesService } from 'src/app/services/solicitudes.service';
 export class SolicitudesCreateComponent implements OnInit {
 
   public clientes: Array<Cliente> = null as any;
-  public partes: any[] = null as any;
+  public sheetPartes: any[][] = null as any;
   loading: boolean = false;
   responseErrors: any = [];
 
@@ -29,7 +33,8 @@ export class SolicitudesCreateComponent implements OnInit {
   constructor(
     private _clientesService: ClientesService,
     private _solicitudesService: SolicitudesService,
-    private router: Router
+    private router: Router,
+    private _utilsService: UtilsService
   ) { }
 
   ngOnInit(): void {
@@ -86,29 +91,62 @@ export class SolicitudesCreateComponent implements OnInit {
     );  
   }
 
+  public onPartesFileChange(evt: any): void 
+  {
+    //Catches the event
+    const target: DataTransfer = <DataTransfer>(evt.target);
+    // Allowed extensions. All in lowercase
+    let exts: string[] = [
+      "xls",
+      "xlsx"
+    ];
+
+    let validationMessage = this._utilsService.validateInputFile(target, exts);
+
+    // If valid filetype
+    if(validationMessage.length === 0)
+    {
+      //Prepare reader
+      const reader: FileReader = new FileReader();
+
+      //When loading file
+      reader.onload = (e: any) => {
+
+        const bstr: string = e.target.result;
+        
+        //Read the readed file as binary sheet
+        const wb: XLSX.WorkBook = XLSX.read(bstr, {type: 'binary'});
+        //Get the first sheet's name
+        const wsname: string = wb.SheetNames[0];
+        //Get the first sheet (by name)
+        const ws: XLSX.WorkSheet = wb.Sheets[wsname];
+
+        // Dumps the whole sheet into a JSON matrix
+        this.sheetPartes = (XLSX.utils.sheet_to_json(ws, {header: 1}));
+
+        console.log('SHEETPARTES', this.sheetPartes);
+        
+      };
+
+      reader.readAsBinaryString(target.files[0]);
+    }
+    else
+    {
+      console.log('ERROR', validationMessage);
+    }
+    
+  }
+
   public storeSolicitud():void {
     this.solicitudForm.disable();
     this.loading = true;
     this.responseErrors = [];
 
-    /*
-    * REMOVE THIS BLOCK
-    */
-    {
-      this.partes = [
-        {
-          "id": 1,
-          "cantidad": 1450
-        }
-      ];
-    }
-
     let solicitud: Solicitud = {
       cliente_id: 1,
       user_id: 1,
       estadosolicitud_id: 1,
-      comentario: 'sads',
-      partes: this.partes
+      comentario: 'sads'
     } as Solicitud;
 
     this._solicitudesService.storeSolicitud(solicitud)
