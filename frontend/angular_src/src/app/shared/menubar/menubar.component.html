@@ -21,11 +21,22 @@
                 <li>
                     <a href="javascript: void(0);" class="has-arrow">
                         <i class="bx bxs-user-detail"></i>
-                        <span key="t-contacts">Usuarios</span>
+                        <span key="t-users">Usuarios</span>
                     </a>
                     <ul class="sub-menu" aria-expanded="false">
                         <li><a [routerLink]="['usuarios/create']" key="t-user-grid">Nuevo usuario</a></li>
                         <li><a [routerLink]="['usuarios']" key="t-user-list">Lista de usuarios</a></li>
+                    </ul>
+                </li>
+
+                <li>
+                    <a href="javascript: void(0);" class="has-arrow">
+                        <i class="bx bx-list-ol"></i>
+                        <span key="t-solicitudes">Solicitudes</span>
+                    </a>
+                    <ul class="sub-menu" aria-expanded="false">
+                        <li><a [routerLink]="['solicitudes/create']" key="t-user-grid">Nueva solicitud</a></li>
+                        <li><a [routerLink]="['solicitudes']" key="t-user-list">Lista de solicitudes</a></li>
                     </ul>
                 </li>
 
