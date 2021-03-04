@@ -2,8 +2,9 @@ import { Component, OnInit, ɵSWITCH_COMPILE_INJECTABLE__POST_R3__ } from '@angu
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Cliente } from 'src/app/interfaces/cliente';
-import { Solicitud } from 'src/app/interfaces/solicitud';
+import { Marca } from 'src/app/interfaces/marca';
 import { ClientesService } from 'src/app/services/clientes.service';
+import { MarcasService } from 'src/app/services/marcas.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { SolicitudesService } from 'src/app/services/solicitudes.service';
 import { UtilsService } from 'src/app/services/utils.service';
@@ -18,28 +19,43 @@ import * as XLSX from 'xlsx';
 })
 export class SolicitudesCreateComponent implements OnInit {
 
-  public clientes: Array<Cliente> = null as any;
-  public partes: any[] = [];
+  clientes: Array<Cliente> = null as any;
+  marcas: Array<Marca> = null as any;
+  partes: any[] = [];
   loading: boolean = false;
   responseErrors: any = [];
 
+  /*
+  * Status:
+  *   0: Solicitud
+  *   1: Agregar parte manual
+  */
+  SOLICITUDFORM_STATUS: number = 0;
+
+
   solicitudForm: FormGroup = new FormGroup({
-    name: new FormControl('', [Validators.required, Validators.minLength(4)]),
-    email: new FormControl('', [Validators.required, Validators.email]),
-    phone: new FormControl('', [Validators.required, Validators.min(0)]),
-    role: new FormControl('', [Validators.required])
+    cliente: new FormControl('', [Validators.required]),
+    marca: new FormControl('', [Validators.required]),
+    comentario: new FormControl('')
+  });
+
+  parteForm: FormGroup = new FormGroup({
+    nparte: new FormControl('', [Validators.required]),
+    cantidad: new FormControl('', [Validators.required, Validators.min(1)])
   });
 
   constructor(
-    private _clientesService: ClientesService,
-    private _solicitudesService: SolicitudesService,
     private router: Router,
+    private _clientesService: ClientesService,
+    private _marcasService: MarcasService,
+    private _solicitudesService: SolicitudesService,
     private _utilsService: UtilsService
   ) { }
 
   ngOnInit(): void {
     this.solicitudForm.disable();
     this.loadClientes();
+    this.loadMarcas();
   }
 
   private loadClientes()
@@ -52,7 +68,6 @@ export class SolicitudesCreateComponent implements OnInit {
         this.loading = false;
 
         this.clientes = <Array<Cliente>>(response.data);
-        console.log(this.clientes);
         
         this.solicitudForm.enable();
       },
@@ -83,6 +98,53 @@ export class SolicitudesCreateComponent implements OnInit {
         }
         
         this.clientes = null as any;
+        this.loading = false;
+
+        this.goTo_solicitudesList();
+      }
+    );  
+  }
+
+  private loadMarcas()
+  {
+    this.loading = true;
+    this._marcasService.getMarcas()
+    .subscribe(
+      //Success request
+      (response: any) => {
+        this.loading = false;
+
+        this.marcas = <Array<Marca>>(response.data);
+        
+        this.solicitudForm.enable();
+      },
+      //Error request
+      (errorResponse: any) => {
+
+        switch(errorResponse.status)
+        {     
+          case 500: //Internal server
+          {
+            NotificationsService.showAlert(
+              errorResponse.message,
+              NotificationsService.messageType.error
+            );
+
+            break;
+          }
+        
+          default: //Unhandled error
+          {
+            NotificationsService.showAlert(
+              'Error al cargar la lista de marcas',
+              NotificationsService.messageType.error
+            )
+        
+            break;
+          }
+        }
+        
+        this.marcas = null as any;
         this.loading = false;
 
         this.goTo_solicitudesList();
@@ -145,8 +207,7 @@ export class SolicitudesCreateComponent implements OnInit {
             NotificationsService.messageType.error
           );
         }
-        
-        
+
       };
 
       reader.readAsBinaryString(target.files[0]);
@@ -166,12 +227,12 @@ export class SolicitudesCreateComponent implements OnInit {
     this.loading = true;
     this.responseErrors = [];
 
-    let solicitud: Solicitud = {
-      cliente_id: 1,
-      user_id: 1,
-      estadosolicitud_id: 1,
-      comentario: 'sads'
-    } as Solicitud;
+    let solicitud: any = {
+      cliente_id: this.solicitudForm.value.cliente,
+      marca_id: this.solicitudForm.value.marca,
+      comentario: this.solicitudForm.value.comentario,
+      partes: this.partes
+    };
 
     this._solicitudesService.storeSolicitud(solicitud)
     .subscribe(
@@ -199,7 +260,10 @@ export class SolicitudesCreateComponent implements OnInit {
 
           case 422: //Invalid request parameters
           {
-            this.responseErrors = errorResponse.error.message;
+            NotificationsService.showAlert(
+              errorResponse.error.message,
+              NotificationsService.messageType.error
+            );
 
             break;
           }
@@ -229,6 +293,39 @@ export class SolicitudesCreateComponent implements OnInit {
         this.loading = false;
       }
     );
+  }
+
+  public removeParte(nparte: string)
+  {
+    this.partes = this.partes.filter((parte) => {
+      if(parte["nparte"] !== nparte)
+      {
+        return parte;
+      }
+    });
+  }
+
+  public addParte(): void
+  {
+    let parte: any = {
+      "nparte": this.parteForm.value.nparte,
+      "cantidad": this.parteForm.value.cantidad
+    };
+
+    this.partes.push(parte);
+
+    this.parteForm.reset();
+    this.SOLICITUDFORM_STATUS = 0;
+  }
+
+  public goTo_addParte(): void {
+    this.SOLICITUDFORM_STATUS = 1;
+  }
+
+  public goTo_newSolicitud(): void
+  {
+    this.parteForm.reset();
+    this.SOLICITUDFORM_STATUS = 0;
   }
 
   public goTo_solicitudesList()

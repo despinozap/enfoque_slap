@@ -14,7 +14,7 @@ import { UsersService } from 'src/app/services/users.service';
 })
 export class UsuariosCreateComponent implements OnInit {
 
-  public roles: Array<Role> = null as any;
+  roles: Array<Role> = null as any;
   loading: boolean = false;
   responseErrors: any = [];
 

@@ -14,7 +14,7 @@ import { UsersService } from 'src/app/services/users.service';
 })
 export class UsuariosEditComponent implements OnInit {
 
-  public roles: Array<Role>;
+  roles: Array<Role>;
   loading: boolean;
   responseErrors: any;
   

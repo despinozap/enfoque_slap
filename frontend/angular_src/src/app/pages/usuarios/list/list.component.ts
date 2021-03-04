@@ -18,11 +18,11 @@ const Swal = require('../../../../assets/vendors/sweetalert2/sweetalert2.all.min
 export class UsuariosListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild(DataTableDirective, {static: false})
-  public datatableElement_users: DataTableDirective;
+  datatableElement_users: DataTableDirective;
   dtOptions: any = {};
   dtTrigger: Subject<any> = new Subject<any>();
 
-  public users: any[];
+  users: any[];
   loading: boolean;
 
   constructor(private router: Router, private _usersService: UsersService) {
