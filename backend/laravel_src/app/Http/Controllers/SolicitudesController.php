@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Auth;
+use Illuminate\Support\Facades\DB;
 
 use App\Models\Solicitud;
+use App\Models\Parte;
 
 class SolicitudesController extends Controller
 {
@@ -67,25 +69,29 @@ class SolicitudesController extends Controller
     public function store(Request $request)
     {
         $validatorInput = $request->only(
-            'cliente_id', 
+            'cliente_id',
+            'marca_id',
+            'comentario',
             'partes'
         );
 		
 		$validatorRules = [
 			'cliente_id' => 'required|exists:clientes,id',
+            'marca_id' => 'required|exists:marcas,id',
 			'partes' => 'required|array|min:1',
-            'partes.*.id'  => 'required|exists:partes,id',
+            'partes.*.nparte'  => 'required',
             'partes.*.cantidad'  => 'required|numeric|min:1',
         ];
 
 		$validatorMessages = [
 			'cliente_id.required' => 'Debes seleccionar un cliente',
             'cliente_id.exists' => 'El cliente no existe',
+            'marca_id.required' => 'Debes seleccionar una marca',
+            'marca_id.exists' => 'La marca no existe',
 			'partes.required' => 'Debes seleccionar las partes',
             'partes.array' => 'Lista de partes invalida',
             'partes.min' => 'La solicitud debe contener al menos 1 parte',
-            'partes.*.id.required' => 'La lista de partes es invalida',
-            'partes.*.id.exists' => 'La parte seleccionada no existe',
+            'partes.*.nparte.required' => 'La lista de partes es invalida',
             'partes.*.cantidad.required' => 'Debes ingresar la cantidad para la parte',
             'partes.*.cantidad.numeric' => 'La cantidad para la parte debe ser numerica',
             'partes.*.cantidad.min' => 'La cantidad para la parte debe ser mayor a 0',
@@ -107,6 +113,8 @@ class SolicitudesController extends Controller
         }
         else        
         {
+            
+
             $user = Auth::user();
 
             $solicitud = new Solicitud();
@@ -114,26 +122,56 @@ class SolicitudesController extends Controller
             $solicitud->user_id = $user->id;
             $solicitud->estadosolicitud_id = 1; //Initial Estadosolicitud
 
+            DB::beginTransaction();
+
             if($solicitud->save())
             {
-                //Attaching each Part to the Solicitud
+                $success = true;
+
+                //Attaching each Parte to the Solicitud
                 foreach($request->partes as $parte)
                 {
-                    $solicitud->partes()->attach([ 
-                        $parte['id'] => [
-                                            'cantidad' => $parte['cantidad']
-                                        ]
-                    ]);
+                    if($p = Parte::where('nparte', $parte['nparte'])->where('marca_id', $request->marca_id)->first())
+                    {
+                        $solicitud->partes()->attach([ 
+                            $p->id => [
+                                'cantidad' => $parte['cantidad']
+                            ]
+                        ]);
+                    }
+                    else
+                    {
+                        $success = false;
+
+                        $response = HelpController::buildResponse(
+                            409,
+                            'La parte N:' . $parte['nparte'] . ' no existe en la marca seleccionada',
+                            null
+                        );
+
+                        break;
+                    }
                 }
 
-                $response = HelpController::buildResponse(
-                    201,
-                    'Solicitud creada',
-                    null
-                );
+                if($success === true)
+                {
+                    DB::commit();
+
+                    $response = HelpController::buildResponse(
+                        201,
+                        'Solicitud creada',
+                        null
+                    );
+                }
+                else
+                {
+                    DB::rollback();
+                }
             }
             else
             {
+                DB::rollback();
+
                 $response = HelpController::buildResponse(
                     500,
                     'Error al crear la solicitud',
