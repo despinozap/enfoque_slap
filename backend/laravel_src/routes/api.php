@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RolesController;
 use App\Http\Controllers\UsersController;
+use App\Http\Controllers\ClientesController;
 use App\Http\Controllers\SolicitudesController;
 
 /*
@@ -42,7 +43,7 @@ Route::middleware('auth:api')->group(function()
     // Profile (user)
     Route::post('/profile', [UsersController::class, 'updateProfile']);
 
-    // Rols
+    // Roles
     Route::get('/roles/all', [RolesController::class, 'indexFull']);
 
     // Users
@@ -51,6 +52,9 @@ Route::middleware('auth:api')->group(function()
     Route::get('/users/{id}', [UsersController::class, 'show']);
     Route::put('/users/{id}', [UsersController::class, 'update']);
     Route::delete('/users/{id}', [UsersController::class, 'destroy']);
+
+    // Clientes
+    Route::get('/clientes/all', [ClientesController::class, 'indexFull']);
 
     // Solicitudes
     Route::get('/solicitudes', [SolicitudesController::class, 'index']);
