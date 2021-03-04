@@ -15,9 +15,9 @@ import { UsersService } from 'src/app/services/users.service';
 })
 export class UsuariosCreateComponent implements OnInit {
 
-  public roles: Array<Role>;
-  loading: boolean;
-  responseErrors: any;
+  public roles: Array<Role> = null as any;
+  loading: boolean = false;
+  responseErrors: any = [];
 
   userForm: FormGroup = new FormGroup({
     name: new FormControl('', [Validators.required, Validators.minLength(4)]),
@@ -31,9 +31,6 @@ export class UsuariosCreateComponent implements OnInit {
     private _usersService: UsersService,
     private router: Router
   ) {
-    this.roles = null as any;
-    this.loading = false;
-    this.responseErrors = [];
   }
 
   ngOnInit(): void {
@@ -162,17 +159,4 @@ export class UsuariosCreateComponent implements OnInit {
   {
     this.router.navigate(['/panel/usuarios']);
   }
-
-  private loadScript(src: string):void {
-    var script = document.createElement("script");
-    script.setAttribute("src", src);
-    document.body.appendChild(script);
-  }
-
-  private injectScript(code: string):void {
-    var script = document.createElement("script");
-    script.innerHTML = code;
-    document.body.appendChild(script);
-  }
-
 }
