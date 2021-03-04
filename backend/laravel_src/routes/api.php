@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RolesController;
 use App\Http\Controllers\UsersController;
 use App\Http\Controllers\ClientesController;
+use App\Http\Controllers\MarcasController;
 use App\Http\Controllers\SolicitudesController;
 
 /*
@@ -55,6 +56,9 @@ Route::middleware('auth:api')->group(function()
 
     // Clientes
     Route::get('/clientes/all', [ClientesController::class, 'indexFull']);
+    
+    // Marcas
+    Route::get('/marcas/all', [MarcasController::class, 'indexFull']);
 
     // Solicitudes
     Route::get('/solicitudes', [SolicitudesController::class, 'index']);

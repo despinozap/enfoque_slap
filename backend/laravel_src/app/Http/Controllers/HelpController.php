@@ -20,6 +20,7 @@ class HelpController extends Controller
             409 Conflict
             411 Length Required
             412 Precondition Failed
+            422 Invalid parameters
             429 Too Many Requests
             500 Internal Server Error
             503 Service Unavailable

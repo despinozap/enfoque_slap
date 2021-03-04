@@ -144,7 +144,7 @@ class SolicitudesController extends Controller
                         $success = false;
 
                         $response = HelpController::buildResponse(
-                            409,
+                            422,
                             'La parte N:' . $parte['nparte'] . ' no existe en la marca seleccionada',
                             null
                         );
