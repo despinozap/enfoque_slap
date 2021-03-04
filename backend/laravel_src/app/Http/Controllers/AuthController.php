@@ -113,7 +113,7 @@ class AuthController extends Controller
 			{
 				$response = HelpController::buildResponse(
 					200,
-					'Password reseted sucessfully',
+					'Password reseteado exitosamente',
 					null
 				);
 			}
@@ -129,7 +129,7 @@ class AuthController extends Controller
 			{
 				$response = HelpController::buildResponse(
 					403,
-					'The token given is invalid or expired',
+					'El token es invalido o ya expiro',
 					null
 				);
 			}
@@ -137,7 +137,7 @@ class AuthController extends Controller
 			{
 				$response = HelpController::buildResponse(
 					500,
-					'Fail on resetting the password',
+					'Error al resetear el password',
 					null
 				);
 			}
@@ -145,7 +145,7 @@ class AuthController extends Controller
 			{
 				$response = HelpController::buildResponse(
 					500,
-					'Fail on resetting the password',
+					'Error al resetear el password',
 					null
 				);
 			}
@@ -154,7 +154,7 @@ class AuthController extends Controller
 		{
 			$response = HelpController::buildResponse(
 				403,
-				'User not found',
+				'El usuario no existe',
 				null
 			);
 		}
@@ -213,7 +213,7 @@ class AuthController extends Controller
 					403,
 					[
 						'password' => [
-							'Invalid password'
+							'Password incorrecto'
 						]
 					],
 					null
@@ -226,7 +226,7 @@ class AuthController extends Controller
 				403,
 				[
 					'email' => [
-						'User not found'
+						'El usuario no existe'
 					]
 				],
 				null
