@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Auth;
 
 use App\Models\Solicitud;
 
@@ -67,13 +68,11 @@ class SolicitudesController extends Controller
     {
         $validatorInput = $request->only(
             'cliente_id', 
-            'user_id', 
             'partes'
         );
 		
 		$validatorRules = [
 			'cliente_id' => 'required|exists:clientes,id',
-            'user_id' => 'required|exists:users,id',
 			'partes' => 'required|array|min:1',
             'partes.*.id'  => 'required|exists:partes,id',
             'partes.*.cantidad'  => 'required|numeric|min:1',
@@ -82,8 +81,6 @@ class SolicitudesController extends Controller
 		$validatorMessages = [
 			'cliente_id.required' => 'Debes seleccionar un cliente',
             'cliente_id.exists' => 'El cliente no existe',
-            'user_id.required' => 'Debes ingresar el usuario',
-            'user_id.exists' => 'El usuario no existe',
 			'partes.required' => 'Debes seleccionar las partes',
             'partes.array' => 'Lista de partes invalida',
             'partes.min' => 'La solicitud debe contener al menos 1 parte',
@@ -110,8 +107,11 @@ class SolicitudesController extends Controller
         }
         else        
         {
+            $user = Auth::user();
+
             $solicitud = new Solicitud();
             $solicitud->fill($request->all());
+            $solicitud->user_id = $user->id;
             $solicitud->estadosolicitud_id = 1; //Initial Estadosolicitud
 
             if($solicitud->save())

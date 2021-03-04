@@ -27,9 +27,7 @@ Route::prefix('auth')->group(function ()
 });
 
 /* ATTENTION: Only put routes here for testing. Then move them into the auth middleware */
-// Solicitudes
-Route::get('/solicitudes', [SolicitudesController::class, 'index']);
-Route::post('/solicitudes', [SolicitudesController::class, 'store']);
+
 //Route::get('/solicitudes/{id}', [SolicitudesController::class, 'show']);
 //Route::put('/solicitudes/{id}', [SolicitudesController::class, 'update']);
 //Route::delete('/solicitudes/{id}', [SolicitudesController::class, 'destroy']);
@@ -53,4 +51,8 @@ Route::middleware('auth:api')->group(function()
     Route::get('/users/{id}', [UsersController::class, 'show']);
     Route::put('/users/{id}', [UsersController::class, 'update']);
     Route::delete('/users/{id}', [UsersController::class, 'destroy']);
+
+    // Solicitudes
+    Route::get('/solicitudes', [SolicitudesController::class, 'index']);
+    Route::post('/solicitudes', [SolicitudesController::class, 'store']);
 });
