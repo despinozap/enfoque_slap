@@ -304,19 +304,12 @@ class SolicitudesController extends Controller
                 {
                     $success = true;
 
-                    //Detaching all the Partes from the solicitud
-                    $solicitud->partes()->detach();
-
-                    //Attaching each Parte to the Solicitud
+                    $syncData = [];
                     foreach($request->partes as $parte)
                     {
                         if($p = Parte::where('nparte', $parte['nparte'])->where('marca_id', $request->marca_id)->first())
                         {
-                            $solicitud->partes()->attach([ 
-                                $p->id => [
-                                    'cantidad' => $parte['cantidad']
-                                ]
-                            ]);
+                            $syncData[$p->id] =  array('cantidad' => $parte['cantidad']);
                         }
                         else
                         {
@@ -331,6 +324,8 @@ class SolicitudesController extends Controller
                             break;
                         }
                     }
+
+                    $solicitud->partes()->sync($syncData);
 
                     if($success === true)
                     {
