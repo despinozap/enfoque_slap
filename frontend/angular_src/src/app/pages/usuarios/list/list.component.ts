@@ -136,7 +136,8 @@ export class UsuariosListComponent implements OnInit, AfterViewInit, OnDestroy {
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#555555',
-      confirmButtonText: 'Si, eliminar!',
+      confirmButtonText: 'Sí, continuar',
+      cancelButtonText: 'Cancelar',
       allowOutsideClick: false
     }).then((result: any) => {
       if(result.isConfirmed)

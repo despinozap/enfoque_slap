@@ -2,12 +2,12 @@
 <div class="row">
   <div class="col-12">
     <div class="page-title-box d-flex align-items-center justify-content-between">
-      <h4 class="mb-0 font-size-18">Nueva solicitud</h4>
+      <h4 class="mb-0 font-size-18">Editar solicitud</h4>
 
       <div class="page-title-right">
         <ol class="breadcrumb m-0">
           <li class="breadcrumb-item">Solicitudes</li>
-          <li class="breadcrumb-item active">Nueva solicitud</li>
+          <li class="breadcrumb-item active">Editar solicitud</li>
         </ol>
       </div>
 
@@ -23,7 +23,7 @@
       <div class="card-body">
 
         <h4 class="card-title">Solicitud</h4>
-        <p class="card-title-desc">Completa los siguientes campos para crear una nueva solicitud</p>
+        <p class="card-title-desc">Modifica los siguientes campos para editar la solicitud</p>
 
         <form [formGroup]="solicitudForm" action="#">
           <div class="row">
@@ -125,7 +125,7 @@
         <div class="row">
           <div class="col-12">
             <div class="form-buttons mt-2">
-              <button class="btn btn-primary mr-2" (click)="storeSolicitud()"
+              <button class="btn btn-primary mr-2" (click)="updateSolicitud()"
                   [disabled]="(solicitudForm.invalid) || (loading === true) || (partes.length < 1)">
                 <span *ngIf="loading === true"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
                 <span *ngIf="loading === false">Guardar</span>

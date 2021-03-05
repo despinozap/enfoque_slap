@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Cliente } from 'src/app/interfaces/cliente';
 import { Marca } from 'src/app/interfaces/marca';
 import { ClientesService } from 'src/app/services/clientes.service';
@@ -16,17 +16,20 @@ const Swal = require('../../../../assets/vendors/sweetalert2/sweetalert2.all.min
 import * as XLSX from 'xlsx';
 
 @Component({
-  selector: 'app-create',
-  templateUrl: './create.component.html',
-  styleUrls: ['./create.component.css']
+  selector: 'app-edit',
+  templateUrl: './edit.component.html',
+  styleUrls: ['./edit.component.css']
 })
-export class SolicitudesCreateComponent implements OnInit {
+export class SolicitudesEditComponent implements OnInit {
 
   clientes: Array<Cliente> = null as any;
   marcas: Array<Marca> = null as any;
   partes: any[] = [];
   loading: boolean = false;
   responseErrors: any = [];
+
+  private sub: any;
+  private id: number = -1;
 
   /*
   *   Displayed form:
@@ -40,8 +43,8 @@ export class SolicitudesCreateComponent implements OnInit {
   *   FORM Parte:
   *
   *     Status:
-  *       0: Agregar nueva parte
-  *       1: Editar parte
+  *       0: Add a new Parte
+  *       1: Update Parte
   */
   PARTEFORM_STATUS: number = 0;
   private parte_index: number = -1;
@@ -60,6 +63,7 @@ export class SolicitudesCreateComponent implements OnInit {
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private _clientesService: ClientesService,
     private _marcasService: MarcasService,
     private _solicitudesService: SolicitudesService,
@@ -67,9 +71,59 @@ export class SolicitudesCreateComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.solicitudForm.disable();
-    this.loadClientes();
-    this.loadMarcas();
+
+    this.sub = this.route.params.subscribe(params => {
+      
+      this.id = params['id'];
+      this.solicitudForm.disable();
+      this.loading = true;
+
+      this.loadClientes();
+      this.loadMarcas();
+
+      this._solicitudesService.getSolicitud(this.id)
+      .subscribe(
+        //Success request
+        (response: any) => {
+          this.solicitudForm.enable();
+          this.loading = false;
+
+          this.loadFormData(response.data);
+        },
+        //Error request
+        (errorResponse: any) => {
+
+          switch(errorResponse.status)
+          {
+          
+            case 412: //Object not found
+            {
+              NotificationsService.showToast(
+                errorResponse.error.message,
+                NotificationsService.messageType.warning
+              );
+
+              break;
+            }
+          
+            default: //Unhandled error
+            {
+              NotificationsService.showToast(
+                'Error al cargar los datos de la solicitud',
+                NotificationsService.messageType.error
+              );
+    
+              break;
+
+            }
+          }
+
+          this.loading = false;
+          this.goTo_solicitudesList();
+        }
+      );
+    });
+
   }
 
   private loadClientes() {
@@ -162,6 +216,36 @@ export class SolicitudesCreateComponent implements OnInit {
       );
   }
 
+  private loadFormData(solicitudData: any)
+  {
+    if(solicitudData['partes'].length > 0)
+    {
+      this.solicitudForm.controls.cliente.setValue(solicitudData.cliente.id);
+      this.solicitudForm.controls.marca.setValue(solicitudData['partes'][0].marca.id);
+      this.solicitudForm.controls.comentario.setValue(solicitudData.comentario);
+
+      this.partes = [];
+      solicitudData.partes.forEach((p: any) => {
+        this.partes.push(
+          {
+            'nparte': p.nparte,
+            'cantidad': p.pivot.cantidad
+          }
+        )
+      });
+    }
+    else
+    {
+      NotificationsService.showToast(
+        'Error al intentar cargar la lista de partes',
+        NotificationsService.messageType.error
+      );
+
+      this.loading = false;
+      this.goTo_solicitudesList();
+    }
+  }
+
   public onPartesFileChange(evt: any): void {
     //Catches the event
     const target: DataTransfer = <DataTransfer>(evt.target);
@@ -226,7 +310,8 @@ export class SolicitudesCreateComponent implements OnInit {
 
   }
 
-  public storeSolicitud(): void {
+  public updateSolicitud()
+  {
     this.solicitudForm.disable();
     this.loading = true;
     this.responseErrors = [];
@@ -237,8 +322,8 @@ export class SolicitudesCreateComponent implements OnInit {
       comentario: this.solicitudForm.value.comentario,
       partes: this.partes
     };
-
-    this._solicitudesService.storeSolicitud(solicitud)
+    
+    this._solicitudesService.updateSolicitud(this.id, solicitud)
       .subscribe(
         //Success request
         (response: any) => {
@@ -252,7 +337,7 @@ export class SolicitudesCreateComponent implements OnInit {
         },
         //Error request
         (errorResponse: any) => {
-
+          console.log(errorResponse);
           switch (errorResponse.status) {
             case 400: //Invalid request parameters
               {
