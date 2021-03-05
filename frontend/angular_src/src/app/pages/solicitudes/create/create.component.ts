@@ -1,3 +1,4 @@
+import { typeWithParameters } from '@angular/compiler/src/render3/util';
 import { Component, OnInit, ɵSWITCH_COMPILE_INJECTABLE__POST_R3__ } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -8,6 +9,7 @@ import { MarcasService } from 'src/app/services/marcas.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { SolicitudesService } from 'src/app/services/solicitudes.service';
 import { UtilsService } from 'src/app/services/utils.service';
+import { threadId } from 'worker_threads';
 
 //XLSX lib
 import * as XLSX from 'xlsx';
@@ -26,11 +28,22 @@ export class SolicitudesCreateComponent implements OnInit {
   responseErrors: any = [];
 
   /*
-  * Status:
-  *   0: Solicitud
-  *   1: Agregar parte manual
+  *   Displayed form:
+  * 
+  *       0: Solicitud
+  *       1: Parte
   */
-  SOLICITUDFORM_STATUS: number = 0;
+  DISPLAYING_FORM: number = 0;
+
+  /*
+  *   FORM Parte:
+  *
+  *     Status:
+  *       0: Agregar nueva parte
+  *       1: Editar parte
+  */
+  PARTEFORM_STATUS: number = 0;
+  private parte_index: number = -1;
 
 
   solicitudForm: FormGroup = new FormGroup({
@@ -58,102 +71,97 @@ export class SolicitudesCreateComponent implements OnInit {
     this.loadMarcas();
   }
 
-  private loadClientes()
-  {
+  private loadClientes() {
     this.loading = true;
     this._clientesService.getClientes()
-    .subscribe(
-      //Success request
-      (response: any) => {
-        this.loading = false;
+      .subscribe(
+        //Success request
+        (response: any) => {
+          this.loading = false;
 
-        this.clientes = <Array<Cliente>>(response.data);
-        
-        this.solicitudForm.enable();
-      },
-      //Error request
-      (errorResponse: any) => {
+          this.clientes = <Array<Cliente>>(response.data);
 
-        switch(errorResponse.status)
-        {     
-          case 500: //Internal server
-          {
-            NotificationsService.showAlert(
-              errorResponse.message,
-              NotificationsService.messageType.error
-            );
+          this.solicitudForm.enable();
+        },
+        //Error request
+        (errorResponse: any) => {
 
-            break;
+          switch (errorResponse.status) {
+            case 500: //Internal server
+              {
+                NotificationsService.showAlert(
+                  errorResponse.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+            default: //Unhandled error
+              {
+                NotificationsService.showAlert(
+                  'Error al cargar la lista de clientes',
+                  NotificationsService.messageType.error
+                )
+
+                break;
+              }
           }
-        
-          default: //Unhandled error
-          {
-            NotificationsService.showAlert(
-              'Error al cargar la lista de clientes',
-              NotificationsService.messageType.error
-            )
-        
-            break;
-          }
+
+          this.clientes = null as any;
+          this.loading = false;
+
+          this.goTo_solicitudesList();
         }
-        
-        this.clientes = null as any;
-        this.loading = false;
-
-        this.goTo_solicitudesList();
-      }
-    );  
+      );
   }
 
-  private loadMarcas()
-  {
+  private loadMarcas() {
     this.loading = true;
     this._marcasService.getMarcas()
-    .subscribe(
-      //Success request
-      (response: any) => {
-        this.loading = false;
+      .subscribe(
+        //Success request
+        (response: any) => {
+          this.loading = false;
 
-        this.marcas = <Array<Marca>>(response.data);
-        
-        this.solicitudForm.enable();
-      },
-      //Error request
-      (errorResponse: any) => {
+          this.marcas = <Array<Marca>>(response.data);
 
-        switch(errorResponse.status)
-        {     
-          case 500: //Internal server
-          {
-            NotificationsService.showAlert(
-              errorResponse.message,
-              NotificationsService.messageType.error
-            );
+          this.solicitudForm.enable();
+        },
+        //Error request
+        (errorResponse: any) => {
 
-            break;
+          switch (errorResponse.status) {
+            case 500: //Internal server
+              {
+                NotificationsService.showAlert(
+                  errorResponse.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+            default: //Unhandled error
+              {
+                NotificationsService.showAlert(
+                  'Error al cargar la lista de marcas',
+                  NotificationsService.messageType.error
+                )
+
+                break;
+              }
           }
-        
-          default: //Unhandled error
-          {
-            NotificationsService.showAlert(
-              'Error al cargar la lista de marcas',
-              NotificationsService.messageType.error
-            )
-        
-            break;
-          }
+
+          this.marcas = null as any;
+          this.loading = false;
+
+          this.goTo_solicitudesList();
         }
-        
-        this.marcas = null as any;
-        this.loading = false;
-
-        this.goTo_solicitudesList();
-      }
-    );  
+      );
   }
 
-  public onPartesFileChange(evt: any): void 
-  {
+  public onPartesFileChange(evt: any): void {
     //Catches the event
     const target: DataTransfer = <DataTransfer>(evt.target);
     // Allowed extensions. All in lowercase
@@ -165,8 +173,7 @@ export class SolicitudesCreateComponent implements OnInit {
     let validationMessage = this._utilsService.validateInputFile(target, exts);
 
     // If valid filetype
-    if(validationMessage.length === 0)
-    {
+    if (validationMessage.length === 0) {
       //Prepare reader
       const reader: FileReader = new FileReader();
 
@@ -174,24 +181,22 @@ export class SolicitudesCreateComponent implements OnInit {
       reader.onload = (e: any) => {
 
         const bstr: string = e.target.result;
-        
+
         //Read the readed file as binary sheet
-        const wb: XLSX.WorkBook = XLSX.read(bstr, {type: 'binary'});
+        const wb: XLSX.WorkBook = XLSX.read(bstr, { type: 'binary' });
         //Get the first sheet's name
         const wsname: string = wb.SheetNames[0];
         //Get the first sheet (by name)
         const ws: XLSX.WorkSheet = wb.Sheets[wsname];
 
         // Dumps the whole sheet into a JSON matrix
-        let sheet: any[][] = (XLSX.utils.sheet_to_json(ws, {header: 1}));
+        let sheet: any[][] = (XLSX.utils.sheet_to_json(ws, { header: 1 }));
 
         // Clean Partes list
         this.partes = [];
 
-        if(sheet.length > 1)
-        {
-          for(let i = 1; i < sheet.length; i++)
-          {
+        if (sheet.length > 1) {
+          for (let i = 1; i < sheet.length; i++) {
             this.partes.push(
               {
                 "nparte": sheet[i][0],
@@ -200,8 +205,7 @@ export class SolicitudesCreateComponent implements OnInit {
             );
           }
         }
-        else
-        {
+        else {
           NotificationsService.showAlert(
             'El archivo cargado no contiene informacion valida',
             NotificationsService.messageType.error
@@ -212,17 +216,16 @@ export class SolicitudesCreateComponent implements OnInit {
 
       reader.readAsBinaryString(target.files[0]);
     }
-    else
-    {
+    else {
       NotificationsService.showAlert(
         validationMessage,
         NotificationsService.messageType.warning
       );
     }
-    
+
   }
 
-  public storeSolicitud():void {
+  public storeSolicitud(): void {
     this.solicitudForm.disable();
     this.loading = true;
     this.responseErrors = [];
@@ -235,78 +238,138 @@ export class SolicitudesCreateComponent implements OnInit {
     };
 
     this._solicitudesService.storeSolicitud(solicitud)
-    .subscribe(
-      //Success request
-      (response: any) => {
+      .subscribe(
+        //Success request
+        (response: any) => {
 
-        NotificationsService.showToast(
-          response.message,
-          NotificationsService.messageType.success
-        );
+          NotificationsService.showToast(
+            response.message,
+            NotificationsService.messageType.success
+          );
 
-        this.goTo_solicitudesList();
-      },
-      //Error request
-      (errorResponse: any) => {
+          this.goTo_solicitudesList();
+        },
+        //Error request
+        (errorResponse: any) => {
 
-        switch(errorResponse.status)
-        {
-          case 400: //Invalid request parameters
-          {
-            this.responseErrors = errorResponse.error.message;
+          switch (errorResponse.status) {
+            case 400: //Invalid request parameters
+              {
+                this.responseErrors = errorResponse.error.message;
 
-            break;
+                break;
+              }
+
+            case 422: //Invalid request parameters
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+            case 500: //Internal server
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+            default: //Unhandled error
+              {
+                NotificationsService.showAlert(
+                  'Error al intentar guardar la solicitud',
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
           }
 
-          case 422: //Invalid request parameters
-          {
-            NotificationsService.showAlert(
-              errorResponse.error.message,
-              NotificationsService.messageType.error
-            );
-
-            break;
-          }
-
-          case 500: //Internal server
-          {
-            NotificationsService.showAlert(
-              errorResponse.error.message,
-              NotificationsService.messageType.error
-            );
-
-            break;
-          }
-
-          default: //Unhandled error
-          {
-            NotificationsService.showAlert(
-              'Error al intentar guardar la solicitud',
-              NotificationsService.messageType.error
-            );
-
-            break;
-          }
+          this.solicitudForm.enable();
+          this.loading = false;
         }
-
-        this.solicitudForm.enable();
-        this.loading = false;
-      }
-    );
+      );
   }
 
-  public removeParte(nparte: string)
-  {
-    this.partes = this.partes.filter((parte) => {
-      if(parte["nparte"] !== nparte)
+  public removeParte(index: number) {
+    this.partes.splice(index, 1);
+  }
+
+  public submitFormParte(): void {
+
+    let index = this.partes.findIndex((p) => {
+      if(p['nparte'] === this.parteForm.controls.nparte.value)
       {
-        return parte;
+        return true;
+      }
+      else
+      {
+        return false;
       }
     });
+
+    switch (this.PARTEFORM_STATUS) 
+    {
+      case 0: //Add a new Parte
+      {
+        // If doesn't exist in list
+        if(index < 0)
+        {
+          if (this.addParte())
+          {
+            this.parteForm.reset();
+            this.DISPLAYING_FORM = 0;
+          }
+        }
+        else
+        {
+          NotificationsService.showAlert(
+            'La lista ya contiene una parte con el numero de parte ingresado',
+            NotificationsService.messageType.warning
+          );
+        }
+        
+        break;
+      }
+
+      case 1: //Update an existing Parte 
+      {
+        // If doesn't exist in list or it's the same item
+        if((index < 0) || (index === this.parte_index))
+        {
+          if (this.updateParte()) 
+          {
+            this.parteForm.reset();
+            this.DISPLAYING_FORM = 0;
+          }
+        }
+        else
+        {
+          NotificationsService.showAlert(
+            'La lista ya contiene una parte con el numero de parte editado',
+            NotificationsService.messageType.warning
+          );
+        }
+
+        break;
+      }
+
+      default: 
+      {
+        
+        break;
+      }
+    }
+
   }
 
-  public addParte(): void
-  {
+  public addParte(): boolean {
     let parte: any = {
       "nparte": this.parteForm.value.nparte,
       "cantidad": this.parteForm.value.cantidad
@@ -314,22 +377,42 @@ export class SolicitudesCreateComponent implements OnInit {
 
     this.partes.push(parte);
 
-    this.parteForm.reset();
-    this.SOLICITUDFORM_STATUS = 0;
+    return true;
+  }
+
+  public updateParte(): boolean {
+    let parte: any = {
+      "nparte": this.parteForm.value.nparte,
+      "cantidad": this.parteForm.value.cantidad
+    };
+
+    this.partes[this.parte_index] = parte;
+
+    return true;
   }
 
   public goTo_addParte(): void {
-    this.SOLICITUDFORM_STATUS = 1;
+    this.PARTEFORM_STATUS = 0;
+    this.DISPLAYING_FORM = 1;
   }
 
-  public goTo_newSolicitud(): void
-  {
+  public goTo_updateParte(index: number): void {
+
+    this.parte_index = index;
+
+    this.parteForm.controls.nparte.setValue(this.partes[this.parte_index].nparte);
+    this.parteForm.controls.cantidad.setValue(this.partes[this.parte_index].cantidad);
+
+    this.PARTEFORM_STATUS = 1;
+    this.DISPLAYING_FORM = 1;
+  }
+
+  public goTo_newSolicitud(): void {
     this.parteForm.reset();
-    this.SOLICITUDFORM_STATUS = 0;
+    this.DISPLAYING_FORM = 0;
   }
 
-  public goTo_solicitudesList()
-  {
+  public goTo_solicitudesList() {
     this.router.navigate(['/panel/solicitudes']);
   }
 
