@@ -214,7 +214,127 @@ class SolicitudesController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $validatorInput = $request->only(
+            'cliente_id',
+            'marca_id',
+            'comentario',
+            'partes'
+        );
+		
+		$validatorRules = [
+			'cliente_id' => 'required|exists:clientes,id',
+            'marca_id' => 'required|exists:marcas,id',
+			'partes' => 'required|array|min:1',
+            'partes.*.nparte'  => 'required',
+            'partes.*.cantidad'  => 'required|numeric|min:1',
+        ];
+
+		$validatorMessages = [
+			'cliente_id.required' => 'Debes seleccionar un cliente',
+            'cliente_id.exists' => 'El cliente no existe',
+            'marca_id.required' => 'Debes seleccionar una marca',
+            'marca_id.exists' => 'La marca no existe',
+			'partes.required' => 'Debes seleccionar las partes',
+            'partes.array' => 'Lista de partes invalida',
+            'partes.min' => 'La solicitud debe contener al menos 1 parte',
+            'partes.*.nparte.required' => 'La lista de partes es invalida',
+            'partes.*.cantidad.required' => 'Debes ingresar la cantidad para la parte',
+            'partes.*.cantidad.numeric' => 'La cantidad para la parte debe ser numerica',
+            'partes.*.cantidad.min' => 'La cantidad para la parte debe ser mayor a 0',
+		];
+
+		$validator = Validator::make(
+			$validatorInput,
+			$validatorRules,
+			$validatorMessages
+		);
+
+        if ($validator->fails()) 
+		{
+			$response = HelpController::buildResponse(
+				400,
+				$validator->errors(),
+				null
+			);
+        }
+        else        
+        {
+            if($solicitud = Solicitud::find($id))
+            {
+                $solicitud->fill($request->all());
+
+                DB::beginTransaction();
+
+                if($solicitud->save())
+                {
+                    $success = true;
+
+                    //Detaching all the Partes from the solicitud
+                    $solicitud->partes()->detach();
+
+                    //Attaching each Parte to the Solicitud
+                    foreach($request->partes as $parte)
+                    {
+                        if($p = Parte::where('nparte', $parte['nparte'])->where('marca_id', $request->marca_id)->first())
+                        {
+                            $solicitud->partes()->attach([ 
+                                $p->id => [
+                                    'cantidad' => $parte['cantidad']
+                                ]
+                            ]);
+                        }
+                        else
+                        {
+                            $success = false;
+
+                            $response = HelpController::buildResponse(
+                                422,
+                                'La parte N:' . $parte['nparte'] . ' no existe en la marca seleccionada',
+                                null
+                            );
+
+                            break;
+                        }
+                    }
+
+                    if($success === true)
+                    {
+                        DB::commit();
+
+                        $response = HelpController::buildResponse(
+                            201,
+                            'Solicitud editada',
+                            null
+                        );
+                    }
+                    else
+                    {
+                        DB::rollback();
+                    }
+                }
+                else
+                {
+                    DB::rollback();
+
+                    $response = HelpController::buildResponse(
+                        500,
+                        'Error al editar la solicitud',
+                        null
+                    );
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    400,
+                    'La solicitud no existe',
+                    null
+                );
+            }
+            
+        }
+
+        return $response;
     }
 
     /**
