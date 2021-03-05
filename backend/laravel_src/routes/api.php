@@ -62,5 +62,6 @@ Route::middleware('auth:api')->group(function()
     // Solicitudes
     Route::get('/solicitudes', [SolicitudesController::class, 'index']);
     Route::post('/solicitudes', [SolicitudesController::class, 'store']);
+    Route::get('/solicitudes/{id}', [SolicitudesController::class, 'show']);
     Route::put('/solicitudes/{id}', [SolicitudesController::class, 'update']);
 });

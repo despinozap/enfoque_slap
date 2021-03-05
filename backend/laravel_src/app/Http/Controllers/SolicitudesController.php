@@ -191,7 +191,42 @@ class SolicitudesController extends Controller
      */
     public function show($id)
     {
-        //
+        if($solicitud = Solicitud::find($id))
+        {
+            $solicitud->makeHidden([
+                'cliente_id',
+                'created_at', 
+                'updated_at'
+            ]);
+
+            $solicitud->cliente;
+            $solicitud->cliente->makeHidden(['created_at', 'updated_at']);
+            
+            $solicitud->partes;
+            foreach($solicitud->partes as $parte)
+            {
+                $parte->makeHidden(['marca_id', 'created_at', 'updated_at']);
+                
+                $parte->marca;
+                $parte->marca->makeHidden(['created_at', 'updated_at']);
+            }
+			
+            $response = HelpController::buildResponse(
+                200,
+                null,
+                $solicitud
+            );
+        }   
+        else     
+        {
+            $response = HelpController::buildResponse(
+                400,
+                'La solicitud no existe',
+                null
+            );
+        }
+
+        return $response;
     }
 
     /**
