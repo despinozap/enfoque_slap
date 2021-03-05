@@ -9,7 +9,9 @@ import { MarcasService } from 'src/app/services/marcas.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { SolicitudesService } from 'src/app/services/solicitudes.service';
 import { UtilsService } from 'src/app/services/utils.service';
-import { threadId } from 'worker_threads';
+
+/* SweetAlert2 */
+const Swal = require('../../../../assets/vendors/sweetalert2/sweetalert2.all.min.js');
 
 //XLSX lib
 import * as XLSX from 'xlsx';
@@ -297,8 +299,25 @@ export class SolicitudesCreateComponent implements OnInit {
       );
   }
 
-  public removeParte(index: number) {
-    this.partes.splice(index, 1);
+  public removeParte(index: number): void
+  {
+    Swal.fire({
+      title: 'Eliminar Parte',
+      text: "¿Realmente deseas eliminar la parte?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#555555',
+      confirmButtonText: 'Sí, continuar',
+      cancelButtonText: 'Cancelar',
+      allowOutsideClick: false
+    }).then((result: any) => {
+      if(result.isConfirmed)
+      {
+        this.partes.splice(index, 1);
+      }
+    });
+
   }
 
   public submitFormParte(): void {
@@ -362,7 +381,7 @@ export class SolicitudesCreateComponent implements OnInit {
 
       default: 
       {
-        
+
         break;
       }
     }
@@ -412,7 +431,7 @@ export class SolicitudesCreateComponent implements OnInit {
     this.DISPLAYING_FORM = 0;
   }
 
-  public goTo_solicitudesList() {
+  public goTo_solicitudesList(): void {
     this.router.navigate(['/panel/solicitudes']);
   }
 
