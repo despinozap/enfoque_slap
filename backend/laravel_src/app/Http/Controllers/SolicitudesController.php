@@ -19,6 +19,8 @@ class SolicitudesController extends Controller
      */
     public function index()
     {
+        $response = null;
+
         if($solicitudes = Solicitud::all())
         {
             foreach($solicitudes as $solicitud)
@@ -39,15 +41,27 @@ class SolicitudesController extends Controller
                 $solicitud->cliente;
                 $solicitud->cliente->makeHidden(['created_at', 'updated_at']);
                 $solicitud->user;
-                $solicitud->user->makeHidden(['role_id', 'email_verified_at', 'created_at', 'updated_at']);
-                $solicitud->user->role;
-                $solicitud->user->role->makeHidden(['created_at', 'updated_at']);
+                $solicitud->user->makeHidden(['email', 'phone', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
                 $solicitud->estadosolicitud;
                 $solicitud->estadosolicitud->makeHidden(['created_at', 'updated_at']);
             }
 
-            return $solicitudes;
+            $response = HelpController::buildResponse(
+                200,
+                null,
+                $solicitudes
+            );
         }
+        else
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al obtener la lista de solicitudes',
+                null
+            );
+        }
+
+        return $response;
     }
 
     /**
