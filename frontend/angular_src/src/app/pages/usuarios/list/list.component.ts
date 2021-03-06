@@ -18,37 +18,36 @@ const Swal = require('../../../../assets/vendors/sweetalert2/sweetalert2.all.min
 export class UsuariosListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild(DataTableDirective, {static: false})
-  datatableElement_users: DataTableDirective;
-  dtOptions: any = {};
+  datatableElement_users: DataTableDirective = null as any;
+  dtOptions: any = {
+    pagingType: 'full_numbers',
+    pageLength: 10,
+    language: {
+      url: '//cdn.datatables.net/plug-ins/1.10.22/i18n/Spanish.json'
+    },
+    // Declare the use of the extension in the dom parameter
+    dom: 'Bfrtip',
+    // Configure the buttons
+    buttons: [
+      'colvis',
+      'excel',
+      'pdf',
+      'print'
+    ]
+  };
+
   dtTrigger: Subject<any> = new Subject<any>();
 
-  users: any[];
-  loading: boolean;
+  users: any[] = [];
+  loading: boolean = false;
 
-  constructor(private router: Router, private _usersService: UsersService) {
-    this.loading = false;
-    this.users = [];
-    this.datatableElement_users = null as any;
+  constructor(
+    private _usersService: UsersService
+  ) 
+  {
   }
 
   ngOnInit(): void {
-
-    this.dtOptions = {
-      pagingType: 'full_numbers',
-      pageLength: 10,
-      language: {
-        url: '//cdn.datatables.net/plug-ins/1.10.22/i18n/Spanish.json'
-      },
-      // Declare the use of the extension in the dom parameter
-      dom: 'Bfrtip',
-      // Configure the buttons
-      buttons: [
-        'colvis',
-        'excel',
-        'pdf',
-        'print'
-      ]
-    };
   }
 
   ngAfterViewInit(): void {

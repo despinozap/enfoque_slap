@@ -1,1 +1,87 @@
-<p>list works!</p>
+<!-- start page title -->
+<div class="row">
+  <div class="col-12">
+    <div class="page-title-box d-flex align-items-center justify-content-between">
+      <h4 class="mb-0 font-size-18">Lista de solicitudes</h4>
+
+      <div class="page-title-right">
+        <ol class="breadcrumb m-0">
+          <li class="breadcrumb-item">Solicitudes</li>
+          <li class="breadcrumb-item active">Lista de solicitudes</li>
+        </ol>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- end page title -->
+
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body">
+
+        <h4 class="card-title">Solicitudes</h4>
+        <p class="card-title-desc">Lista de solicitudes del sistema</p>
+
+        <table datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger"
+            class="table table-bordered dt-responsive nowrap row-border hover"
+            style="border-collapse: collapse; border-spacing: 0; width: 100%;">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Solicitud</th>
+              <th>Cliente</th>
+              <th>Marca</th>
+              <th>Ejecutivo</th>
+              <th>Partes</th>
+              <th>Estado</th>
+              <th>Opciones</th>
+            </tr>
+          </thead>
+          <tbody *ngIf="(loading === true)">
+            <tr>
+              <td colspan="8" style="text-align: center;"><i
+                    class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</td>
+            </tr>
+          </tbody>
+          <tbody *ngIf="(loading === false)">
+            <tr *ngFor="let solicitud of solicitudes">
+              <td align="center">
+                <div class="custom-control custom-checkbox custom-checkbox-outline custom-checkbox-primary mb-3">
+                  <input type="checkbox" class="custom-control-input" id="chkSolicitud-{{ solicitud.id }}">
+                  <label class="custom-control-label" for="chkSolicitud-{{ solicitud.id }}"></label>
+              </div>
+              </td>
+              <td align="center">{{ solicitud.id }}</td>
+              <td>{{ solicitud.cliente.name }}</td>
+              <td>{{ solicitud.partes[0].marca.name }}</td>
+              <td>{{ solicitud.user.name }}</td>
+              <td align="right">{{ solicitud.partes_total }}</td>
+              <td align="center">{{ solicitud.estadosolicitud.name }}</td>
+              <td align="center">
+                <a [routerLink]="['edit', solicitud.id]" class="btn-table btn btn-secondary" title="Editar"><i
+                      class="bx bx-edit-alt"></i></a>
+                <a [routerLink]="" (click)="removeSolicitud(solicitud)" class="btn-table btn btn-secondary"
+                    title="Eliminar"><i class="bx bx-trash-alt"></i></a>
+              </td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="8">
+                <button type="button" class="btn btn-outline-primary mr-2" (click)="goTo_newSolicitud()" [disabled]="(loading === true)">
+                  <i class="bx bx-notepad font-size-16 align-middle"></i> Nueva solicitud
+                </button>
+                <button type="button" class="btn btn-outline-primary" (click)="exportToExcelSolicitudes()" [disabled]="(loading === true)">
+                  <i class="bx bx-spreadsheet font-size-16 align-middle"></i> Exportar a Excel
+                </button>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+
+      </div>
+    </div>
+  </div> <!-- end col -->
+</div> <!-- end row -->

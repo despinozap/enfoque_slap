@@ -18,6 +18,13 @@ export class SolicitudesService {
     return this.httpClient.get(endpoint);
   }
 
+  public getSolicitudes(): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/solicitudes`;
+    
+    return this.httpClient.get(endpoint);
+  }
+
   public updateSolicitud(solicitud_id: number, solicitud: Solicitud): Observable<any>
   {
     let endpoint: string = `${environment.ENDPOINT_BASE}/solicitudes/${solicitud_id}`;
