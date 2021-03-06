@@ -10,10 +10,22 @@ class Solicitud extends Model
     use HasFactory;
 
     protected $table = 'solicitudes';
-
     protected $fillable = [
         'cliente_id', 'user_id', 'estadosolicitud_id', 'comentario', 
     ];
+    public $appends = ['partes_total'];
+
+    public function getPartesTotalAttribute()
+    {
+        $quantity = 0;
+
+        foreach($this->partes as $parte)
+        {
+            $quantity += $parte->pivot->cantidad;
+        }
+
+        return $quantity;
+    }
 
     public function cliente()
     {

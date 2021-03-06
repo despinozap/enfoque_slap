@@ -27,17 +27,20 @@ class SolicitudesController extends Controller
             {
                 $solicitud->makeHidden(['cliente_id', 'user_id', 'estadosolicitud_id']);
 
+                $totalPartes = 0;
                 foreach($solicitud->partes as $parte)
                 {   
                     $parte->makeHidden(['marca_id', 'created_at', 'updated_at']);
                     
                     $parte->pivot;
+                    $totalPartes += $parte->pivot->cantidad;
                     $parte->pivot->makeHidden(['solicitud_id', 'parte_id']);
 
                     $parte->marca;
                     $parte->marca->makeHidden(['created_at', 'updated_at']);
                 }
 
+                $solicitud->partes_total;
                 $solicitud->cliente;
                 $solicitud->cliente->makeHidden(['created_at', 'updated_at']);
                 $solicitud->user;
