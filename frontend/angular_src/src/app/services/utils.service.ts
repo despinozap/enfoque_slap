@@ -1,4 +1,8 @@
 import { Injectable } from '@angular/core';
+import { WorkBook, WorkSheet } from 'xlsx/types';
+
+/* XLSX lib */
+import * as XLSX from 'xlsx';
 
 @Injectable({
   providedIn: 'root'
@@ -6,6 +10,27 @@ import { Injectable } from '@angular/core';
 export class UtilsService {
 
   constructor() { }
+
+  private parseNumberToTwoDigits(n: number): string {
+    let strN = n.toString();
+    
+    return strN.length < 2 ? `0${strN}` : strN;
+  }
+
+  public exportTableToExcel(data: any[], title: string): void {
+    //Create a new book
+    const wb: WorkBook = XLSX.utils.book_new();
+    //Convert the table to a sheet
+    const ws: WorkSheet = XLSX.utils.aoa_to_sheet(data);
+    
+    //Add the sheet to the book
+    XLSX.utils.book_append_sheet(wb, ws, title);
+
+    let today = new Date();
+    let filename = `${today.getFullYear()}${this.parseNumberToTwoDigits(today.getMonth())}${this.parseNumberToTwoDigits(today.getDay())}-${this.parseNumberToTwoDigits(today.getHours())}${this.parseNumberToTwoDigits(today.getMinutes())}${this.parseNumberToTwoDigits(today.getSeconds())}_${title}.xlsx`; 
+    //Save file
+    XLSX.writeFile(wb, `${filename}.xlsx`);
+  }
 
   public validateInputFile(target: DataTransfer, exts: string[]): string
   {

@@ -12,7 +12,7 @@ import { UtilsService } from 'src/app/services/utils.service';
 /* SweetAlert2 */
 const Swal = require('../../../../assets/vendors/sweetalert2/sweetalert2.all.min.js');
 
-//XLSX lib
+/* XLSX lib */
 import * as XLSX from 'xlsx';
 
 @Component({

@@ -24,12 +24,17 @@
         <h4 class="card-title">Solicitudes</h4>
         <p class="card-title-desc">Lista de solicitudes del sistema</p>
 
-        <table datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger"
+        <table #dtSolicitudes datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger"
             class="table table-bordered dt-responsive nowrap row-border hover"
             style="border-collapse: collapse; border-spacing: 0; width: 100%;">
           <thead>
             <tr>
-              <th></th>
+              <th>
+                <div class="custom-header-checkbox custom-checkbox custom-checkbox-outline custom-checkbox-primary">
+                  <input type="checkbox" class="custom-control-input" id="chkSolicitud-header" (change)="checkSolicitudesList($event)">
+                  <label class="custom-control-label" for="chkSolicitud-header">Todos</label>
+                </div>
+              </th>
               <th>Solicitud</th>
               <th>Cliente</th>
               <th>Marca</th>
@@ -49,9 +54,9 @@
             <tr *ngFor="let solicitud of solicitudes">
               <td align="center">
                 <div class="custom-control custom-checkbox custom-checkbox-outline custom-checkbox-primary mb-3">
-                  <input type="checkbox" class="custom-control-input" id="chkSolicitud-{{ solicitud.id }}">
+                  <input type="checkbox" class="custom-control-input" id="chkSolicitud-{{ solicitud.id }}" [checked]="solicitud.checked" (change)="checkSolicitudItem(solicitud, $event)">
                   <label class="custom-control-label" for="chkSolicitud-{{ solicitud.id }}"></label>
-              </div>
+                </div>
               </td>
               <td align="center">{{ solicitud.id }}</td>
               <td>{{ solicitud.cliente.name }}</td>
@@ -73,7 +78,7 @@
                 <button type="button" class="btn btn-outline-primary mr-2" (click)="goTo_newSolicitud()" [disabled]="(loading === true)">
                   <i class="bx bx-notepad font-size-16 align-middle"></i> Nueva solicitud
                 </button>
-                <button type="button" class="btn btn-outline-primary" (click)="exportToExcelSolicitudes()" [disabled]="(loading === true)">
+                <button type="button" class="btn btn-outline-primary" (click)="exportSolicitudesToExcel()" [disabled]="(loading === true) || (isCheckedItem(solicitudes) === false)">
                   <i class="bx bx-spreadsheet font-size-16 align-middle"></i> Exportar a Excel
                 </button>
               </td>

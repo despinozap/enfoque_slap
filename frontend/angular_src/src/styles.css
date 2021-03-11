@@ -10,6 +10,14 @@
   margin: 0px !important;
 }
 
+.custom-header-checkbox {
+  padding-left: 1.5rem;
+}
+
+.custom-header-checkbox label {
+  font-weight: 600;
+}
+
 .error-response {
   color: #b1324b;
 }

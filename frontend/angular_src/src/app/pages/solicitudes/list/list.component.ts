@@ -3,10 +3,12 @@ import { Router } from '@angular/router';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { SolicitudesService } from 'src/app/services/solicitudes.service';
 import { Subject } from 'rxjs';
-import { DataTableDirective, DataTablesModule } from 'angular-datatables';
+import { DataTableDirective } from 'angular-datatables';
+import { UtilsService } from 'src/app/services/utils.service';
 
 /* SweetAlert2 */
 const Swal = require('../../../../assets/vendors/sweetalert2/sweetalert2.all.min.js');
+
 
 @Component({
   selector: 'app-list',
@@ -47,7 +49,8 @@ export class SolicitudesListComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private _solicitudesService: SolicitudesService
+    private _solicitudesService: SolicitudesService,
+    private _utilsService: UtilsService
   ) { }
 
   ngOnInit(): void {
@@ -92,7 +95,12 @@ export class SolicitudesListComponent implements OnInit {
     .subscribe(
       //Success request
       (response: any) => {
+        
         this.solicitudes = response.data;
+        this.solicitudes.forEach((solicitud: any) => {
+          solicitud['checked'] = false;
+        });
+
         this.renderDataTable(this.datatableElement_solicitudes);
 
         this.loading = false;
@@ -212,11 +220,53 @@ export class SolicitudesListComponent implements OnInit {
 
   }
 
-  public exportToExcelSolicitudes(): void {
-    NotificationsService.showAlert(
-      'Esta funcionalidad aun no se implementa',
-      NotificationsService.messageType.info
-    );
+  public exportSolicitudesToExcel(): void {
+
+    let data: any[] = [];
+    //Push header
+    data.push(['Solicitud', 'Cliente', 'Marca', 'Ejecutivo', 'Partes']);
+    //Add checked rows
+    this.solicitudes.forEach((s: any) => {
+      if(s.checked === true)
+      {
+        data.push([
+          s.id,
+          s.cliente.name,
+          s.partes[0].marca.name,
+          s.user.name,
+          s.partes_total,
+          s.estadosolicitud.name
+        ]);
+      }
+    });
+
+    this._utilsService.exportTableToExcel(data, 'Solicitudes');
+  }
+
+  public checkSolicitudesList(evt: any): void {
+    this.solicitudes.forEach((solicitud: any) => {
+      solicitud.checked = evt.target.checked;
+    });
+  }
+
+  public checkSolicitudItem(solicitud: any, evt: any): void {
+    solicitud.checked = evt.target.checked;
+  }
+
+  public isCheckedItem(dataSource: any[]): boolean
+  {
+    let index = dataSource.findIndex((e) => {
+      if(e.checked === true)
+      {
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+    });
+
+    return index >= 0 ? true : false;
   }
 
   public goTo_newSolicitud(): void {
