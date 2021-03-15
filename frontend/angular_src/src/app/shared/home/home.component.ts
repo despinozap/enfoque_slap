@@ -20,9 +20,6 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
 
-    this.cleanScripts();
-    this.loadScript('assets/js/app.js');
-
     if (this._authService.getLoggedUser() === null) {
       
       this._authService.getAuthenticatedUser()

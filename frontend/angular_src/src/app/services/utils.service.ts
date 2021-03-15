@@ -3,6 +3,7 @@ import { WorkBook, WorkSheet } from 'xlsx/types';
 
 /* XLSX lib */
 import * as XLSX from 'xlsx';
+import { Role } from '../interfaces/role';
 
 @Injectable({
   providedIn: 'root'
@@ -66,5 +67,80 @@ export class UtilsService {
     {
       return 'No puedes cargar multiples archivos';
     }
+  }
+
+  public generateMenu(role_name: string): any {
+
+    //Base menu
+    let menu = [
+      {
+        'title': 'Menu',
+        'groups': [
+          {
+            'title': 'Dashboard',
+            'icon': 'bx-home-circle',
+            'header': false,
+            'route': 'panel'
+          }
+        ]
+      }
+    ];
+
+    switch(role_name.toLowerCase())
+    {
+
+      case 'administrador': {
+
+        let roleMenu = {
+          'title': 'Modulos',
+          'groups': [
+            {
+              'title': 'Usuarios',
+              'icon': 'bxs-user-detail',
+              'header': true,
+              'route': '',
+              'items': [
+                {
+                  'title': 'Nuevo usuario',
+                  'route': 'usuarios/create'
+                },
+                {
+                  'title': 'Lista de usuarios',
+                  'route': 'usuarios'
+                }
+              ]
+            },
+            {
+              'title': 'Solicitudes',
+              'icon': 'bx-list-ol',
+              'header': true,
+              'route': '',
+              'items': [
+                {
+                  'title': 'Nueva solicitud',
+                  'route': 'solicitudes/create'
+                },
+                {
+                  'title': 'Lista de solicitudes',
+                  'route': 'solicitudes'
+                }
+              ]
+            }
+          ]
+        };
+
+        menu.push(roleMenu);
+
+        break;
+      }
+
+      default: {
+
+        break;
+      }
+
+    }
+
+    return menu;
   }
 }

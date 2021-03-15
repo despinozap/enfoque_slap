@@ -7,42 +7,29 @@
         <div id="sidebar-menu">
             <!-- Left Menu Start -->
             <ul class="metismenu list-unstyled" id="side-menu">
-                <li class="menu-title" key="t-menu">Menu</li>
 
-                <li>
-                    <a [routerLink]="['panel']">
-                        <i class="bx bx-home-circle"></i>
-                        <span key="t-dashboards">Dashboard</span>
-                    </a>
-                </li>
+                <span *ngFor="let section of menu">
+                    <li class="menu-title">{{ section.title }}</li>
 
-                <li class="menu-title" key="t-apps">Modulos</li>
-
-                <li>
-                    <a href="javascript: void(0);" class="has-arrow">
-                        <i class="bx bxs-user-detail"></i>
-                        <span key="t-users">Usuarios</span>
-                    </a>
-                    <ul class="sub-menu" aria-expanded="false">
-                        <li><a [routerLink]="['usuarios/create']" key="t-user-grid">Nuevo usuario</a></li>
-                        <li><a [routerLink]="['usuarios']" key="t-user-list">Lista de usuarios</a></li>
-                    </ul>
-                </li>
-
-                <li>
-                    <a href="javascript: void(0);" class="has-arrow">
-                        <i class="bx bx-list-ol"></i>
-                        <span key="t-solicitudes">Solicitudes</span>
-                    </a>
-                    <ul class="sub-menu" aria-expanded="false">
-                        <li><a [routerLink]="['solicitudes/create']" key="t-user-grid">Nueva solicitud</a></li>
-                        <li><a [routerLink]="['solicitudes']" key="t-user-list">Lista de solicitudes</a></li>
-                    </ul>
-                </li>
+                    <li *ngFor="let group of section.groups">
+                        <a *ngIf="(group.header === false)" [routerLink]="group.route">
+                            <i class="bx {{ group.icon }}"></i>
+                            <span>{{ group.title }}</span>
+                        </a>
+                        <a *ngIf="(group.header === true)" href="javascript: void(0);" class="has-arrow">
+                            <i class="bx {{ group.icon }}"></i>
+                            <span>{{ group.title }}</span>
+                        </a>
+                        <ul class="sub-menu" aria-expanded="false" *ngFor="let item of group.items">
+                            <li><a [routerLink]="item.route">{{ item.title }}</a></li>
+                        </ul>
+                    </li>
+                </span>
 
             </ul>
         </div>
         <!-- Sidebar -->
+
     </div>
 </div>
 <!-- Left Sidebar End -->
