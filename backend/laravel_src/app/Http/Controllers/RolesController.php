@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Role;
+use Auth;
 
 class RolesController extends Controller
 {
@@ -21,29 +22,41 @@ class RolesController extends Controller
     {
         $response = null;
 
-        if($roles = Role::all())
+        $user = Auth::user();
+        if($user->role->hasRoutepermission('roles indexfull'))
         {
-            $roles = $roles->filter(function($role)
+            if($roles = Role::all())
             {
-                $role->makeHidden([
-                    'created_at',
-                    'updated_at'
-                ]);
+                $roles = $roles->filter(function($role)
+                {
+                    $role->makeHidden([
+                        'created_at',
+                        'updated_at'
+                    ]);
 
-                return $role;
-            });
+                    return $role;
+                });
 
-            $response = HelpController::buildResponse(
-                200,
-                null,
-                $roles
-            );
+                $response = HelpController::buildResponse(
+                    200,
+                    null,
+                    $roles
+                );
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    500,
+                    'Error al obtener la lista de roles',
+                    null
+                );
+            }
         }
         else
         {
             $response = HelpController::buildResponse(
-                500,
-                'Error al obtener la lista de roles',
+                405,
+                'No tienes acceso a listar roles',
                 null
             );
         }

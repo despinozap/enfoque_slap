@@ -12,4 +12,21 @@ class Role extends Model
     protected $fillable = [
         'name',
     ];
+
+    public function routepermissions()
+    {
+        return $this->belongsToMany(Routepermission::class, 'role_routepermission');
+    }
+
+    public function hasRoutepermission($routeName)
+    {
+        if($this->belongsToMany(Routepermission::class, 'role_routepermission')->where('name', $routeName)->first())
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 }

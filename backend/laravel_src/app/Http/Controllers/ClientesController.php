@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Cliente;
+use Auth;
 
 class ClientesController extends Controller
 {
@@ -21,29 +22,41 @@ class ClientesController extends Controller
     {
         $response = null;
 
-        if($clientes = Cliente::all())
+        $user = Auth::user();
+        if($user->role->hasRoutepermission('clientes indexfull'))
         {
-            $clientes = $clientes->filter(function($cliente)
+            if($clientes = Cliente::all())
             {
-                $cliente->makeHidden([
-                    'created_at',
-                    'updated_at'
-                ]);
+                $clientes = $clientes->filter(function($cliente)
+                {
+                    $cliente->makeHidden([
+                        'created_at',
+                        'updated_at'
+                    ]);
 
-                return $cliente;
-            });
+                    return $cliente;
+                });
 
-            $response = HelpController::buildResponse(
-                200,
-                null,
-                $clientes
-            );
+                $response = HelpController::buildResponse(
+                    200,
+                    null,
+                    $clientes
+                );
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    500,
+                    'Error al obtener la lista de clientes',
+                    null
+                );
+            }
         }
         else
         {
             $response = HelpController::buildResponse(
-                500,
-                'Error al obtener la lista de clientes',
+                405,
+                'No tienes acceso a listar clientes',
                 null
             );
         }

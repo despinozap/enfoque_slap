@@ -99,35 +99,47 @@ class UsersController extends Controller
     {
         $response = null;
 
-        if($users = User::all())
+        $user = Auth::user();
+        if($user->role->hasRoutepermission('users index'))
         {
-            $users = $users->filter(function($user)
+            if($users = User::all())
             {
-                $user->role;
+                $users = $users->filter(function($user)
+                {
+                    $user->role;
 
-                $user->makeHidden([
-                    'email_verified_at',
-                    'role_id',
-                    'created_at', 
-                    'updated_at'
-                ]);
+                    $user->makeHidden([
+                        'email_verified_at',
+                        'role_id',
+                        'created_at', 
+                        'updated_at'
+                    ]);
 
-                $user->role->makeHidden(['created_at', 'updated_at']);
+                    $user->role->makeHidden(['created_at', 'updated_at']);
 
-                return $user;
-            });
-			
-            $response = HelpController::buildResponse(
-                200,
-                null,
-                $users
-            );
+                    return $user;
+                });
+                
+                $response = HelpController::buildResponse(
+                    200,
+                    null,
+                    $users
+                );
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    500,
+                    'Error al obtener la lista de usuarios',
+                    null
+                );
+            }
         }
         else
         {
             $response = HelpController::buildResponse(
-                500,
-                'Error al obtener la lista de usuarios',
+                405,
+                'No tienes acceso a listar usuarios',
                 null
             );
         }
@@ -143,62 +155,74 @@ class UsersController extends Controller
      */
     public function store(Request $request)
     {
-        $validatorInput = $request->only('name', 'email', 'phone', 'role_id');
-		
-		$validatorRules = [
-			'name' => 'required|min:4',
-            'email' => 'required|email|unique:users',
-            'phone' => 'digits:10',
-			'role_id' => 'required|exists:roles,id'
-		];
-
-		$validatorMessages = [
-			'name.required' => 'Debes ingresar el nombre',
-			'name.min' => 'El nombre debe tener al menos 4 caracteres',
-            'email.required' => 'Debes ingresar el email',
-            'email.email' => 'El email debe ser valido',
-            'email.unique' => 'El email ya esta asociado a otro usuario',
-            'phone.digits' => 'El telefono debe tener 10 digitos',
-            'role_id.required' => 'Debes seleccionar el rol',
-            'role_id.exists' => 'El rol ingresado no existe'
-		];
-
-		$validator = Validator::make(
-			$validatorInput,
-			$validatorRules,
-			$validatorMessages
-		);
-
-		if ($validator->fails()) 
-		{
-			$response = HelpController::buildResponse(
-				400,
-				$validator->errors(),
-				null
-			);
-        }
-        else        
+        $user = Auth::user();
+        if($user->role->hasRoutepermission('users store'))
         {
-            $user = new User();
-            $user->fill($request->all());
-            $user->password = bcrypt($request->email);
-            
-            if($user->save())
+            $validatorInput = $request->only('name', 'email', 'phone', 'role_id');
+		
+            $validatorRules = [
+                'name' => 'required|min:4',
+                'email' => 'required|email|unique:users',
+                'phone' => 'digits:10',
+                'role_id' => 'required|exists:roles,id'
+            ];
+
+            $validatorMessages = [
+                'name.required' => 'Debes ingresar el nombre',
+                'name.min' => 'El nombre debe tener al menos 4 caracteres',
+                'email.required' => 'Debes ingresar el email',
+                'email.email' => 'El email debe ser valido',
+                'email.unique' => 'El email ya esta asociado a otro usuario',
+                'phone.digits' => 'El telefono debe tener 10 digitos',
+                'role_id.required' => 'Debes seleccionar el rol',
+                'role_id.exists' => 'El rol ingresado no existe'
+            ];
+
+            $validator = Validator::make(
+                $validatorInput,
+                $validatorRules,
+                $validatorMessages
+            );
+
+            if ($validator->fails()) 
             {
                 $response = HelpController::buildResponse(
-                    201,
-                    'Usuario creado',
+                    400,
+                    $validator->errors(),
                     null
                 );
             }
-            else
+            else        
             {
-                $response = HelpController::buildResponse(
-                    500,
-                    'Error al crear el usuario',
-                    null
-                );
+                $user = new User();
+                $user->fill($request->all());
+                $user->password = bcrypt($request->email);
+                
+                if($user->save())
+                {
+                    $response = HelpController::buildResponse(
+                        201,
+                        'Usuario creado',
+                        null
+                    );
+                }
+                else
+                {
+                    $response = HelpController::buildResponse(
+                        500,
+                        'Error al crear el usuario',
+                        null
+                    );
+                }
             }
+        }
+        else
+        {
+            $response = HelpController::buildResponse(
+                405,
+                'No tienes acceso a agregar usuarios',
+                null
+            );
         }
 
         return $response;
@@ -212,31 +236,43 @@ class UsersController extends Controller
      */
     public function show($id)
     {
-        if($user = User::find($id))
+        $user = Auth::user();
+        if($user->role->hasRoutepermission('users show'))
         {
-            $user->role;
+            if($user = User::find($id))
+            {
+                $user->role;
 
-            $user->makeHidden([
-                'email_verified_at',
-                'role_id',
-                'created_at', 
-                'updated_at'
-            ]);
+                $user->makeHidden([
+                    'email_verified_at',
+                    'role_id',
+                    'created_at', 
+                    'updated_at'
+                ]);
 
-            $user->role->makeHidden(['created_at', 'updated_at']);
+                $user->role->makeHidden(['created_at', 'updated_at']);
 
-			
-            $response = HelpController::buildResponse(
-                200,
-                null,
-                $user
-            );
-        }   
-        else     
+                
+                $response = HelpController::buildResponse(
+                    200,
+                    null,
+                    $user
+                );
+            }   
+            else     
+            {
+                $response = HelpController::buildResponse(
+                    400,
+                    'El usuario no existe',
+                    null
+                );
+            }
+        }
+        else
         {
             $response = HelpController::buildResponse(
-                400,
-                'El usuario no existe',
+                405,
+                'No tienes acceso a visualizar usuarios',
                 null
             );
         }
@@ -253,82 +289,94 @@ class UsersController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $validatorInput = $request->only('name', 'email', 'phone', 'role_id');
+        $user = Auth::user();
+        if($user->role->hasRoutepermission('users update'))
+        {
+            $validatorInput = $request->only('name', 'email', 'phone', 'role_id');
 		
-		$validatorRules = [
-			'name' => 'required|min:4',
-            'email' => 'required|email',
-            'phone' => 'digits:10',
-			'role_id' => 'required|exists:roles,id'
-		];
+            $validatorRules = [
+                'name' => 'required|min:4',
+                'email' => 'required|email',
+                'phone' => 'digits:10',
+                'role_id' => 'required|exists:roles,id'
+            ];
 
-		$validatorMessages = [
-			'name.required' => 'Debes ingresar el nombre',
-			'name.min' => 'El nombre debe tener al menos 4 caracteres',
-            'email.required' => 'Debes ingresar el email',
-            'email.email' => 'El email debe ser valido',
-            'phone.digits' => 'El telefono debe tener 10 digitos',
-            'role_id.required' => 'Debes seleccionar el rol',
-            'role_id.exists' => 'El rol ingresado no existe'
-		];
+            $validatorMessages = [
+                'name.required' => 'Debes ingresar el nombre',
+                'name.min' => 'El nombre debe tener al menos 4 caracteres',
+                'email.required' => 'Debes ingresar el email',
+                'email.email' => 'El email debe ser valido',
+                'phone.digits' => 'El telefono debe tener 10 digitos',
+                'role_id.required' => 'Debes seleccionar el rol',
+                'role_id.exists' => 'El rol ingresado no existe'
+            ];
 
-		$validator = Validator::make(
-			$validatorInput,
-			$validatorRules,
-			$validatorMessages
-		);
+            $validator = Validator::make(
+                $validatorInput,
+                $validatorRules,
+                $validatorMessages
+            );
 
-		if ($validator->fails()) 
-		{
-			$response = HelpController::buildResponse(
-				400,
-				$validator->errors(),
-				null
-			);
-        }
-        else if(User::where('email', $request->email)->where('id', '<>', $id)->first())
-        {
-            $response = HelpController::buildResponse(
-				400,
-				[
-					'email' => [
-						'El email ya esta asociado a otro usuario'
-					]
-				],
-				null
-			);
-        }   
-        else     
-        {
-            if($user = User::find($id))
+            if ($validator->fails()) 
             {
-                $user->fill($request->all());
-
-                if($user->save())
+                $response = HelpController::buildResponse(
+                    400,
+                    $validator->errors(),
+                    null
+                );
+            }
+            else if(User::where('email', $request->email)->where('id', '<>', $id)->first())
+            {
+                $response = HelpController::buildResponse(
+                    400,
+                    [
+                        'email' => [
+                            'El email ya esta asociado a otro usuario'
+                        ]
+                    ],
+                    null
+                );
+            }   
+            else     
+            {
+                if($user = User::find($id))
                 {
-                    $response = HelpController::buildResponse(
-                        200,
-                        'Usuario actualizado',
-                        null
-                    );
+                    $user->fill($request->all());
+
+                    if($user->save())
+                    {
+                        $response = HelpController::buildResponse(
+                            200,
+                            'Usuario actualizado',
+                            null
+                        );
+                    }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            500,
+                            'Error al actualizar el usuario',
+                            null
+                        );
+                    }
                 }
                 else
                 {
                     $response = HelpController::buildResponse(
-                        500,
-                        'Error al actualizar el usuario',
+                        400,
+                        'El usuario no existe',
                         null
                     );
                 }
             }
-            else
-            {
-                $response = HelpController::buildResponse(
-                    400,
-                    'El usuario no existe',
-                    null
-                );
-            }
+        }
+        else
+        {
+            $response = HelpController::buildResponse(
+                405,
+                'No tienes acceso a actualizar usuarios',
+                null
+            );
         }
 
         return $response;
@@ -342,30 +390,42 @@ class UsersController extends Controller
      */
     public function destroy($id)
     {
-		if($user = User::find($id))
+        $user = Auth::user();
+        if($user->role->hasRoutepermission('users destroy'))
         {
-            if($user->delete())
+            if($user = User::find($id))
+            {
+                if($user->delete())
+                {
+                    $response = HelpController::buildResponse(
+                        200,
+                        'Usuario eliminado',
+                        null
+                    );
+                }
+                else
+                {
+                    $response = HelpController::buildResponse(
+                        500,
+                        'Error al eliminar el usuario',
+                        null
+                    );
+                }
+            }   
+            else     
             {
                 $response = HelpController::buildResponse(
-                    200,
-                    'Usuario eliminado',
+                    400,
+                    'El usuario no existe',
                     null
                 );
             }
-            else
-            {
-                $response = HelpController::buildResponse(
-                    500,
-                    'Error al eliminar el usuario',
-                    null
-                );
-            }
-        }   
-        else     
+        }
+        else
         {
             $response = HelpController::buildResponse(
-                400,
-                'El usuario no existe',
+                405,
+                'No tienes acceso a eliminar usuarios',
                 null
             );
         }

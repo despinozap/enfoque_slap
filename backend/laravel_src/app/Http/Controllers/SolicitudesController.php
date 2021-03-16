@@ -21,45 +21,57 @@ class SolicitudesController extends Controller
     {
         $response = null;
 
-        if($solicitudes = Solicitud::all())
+        $user = Auth::user();
+        if($user->role->hasRoutepermission('solicitudes index'))
         {
-            foreach($solicitudes as $solicitud)
+            if($solicitudes = Solicitud::all())
             {
-                $solicitud->makeHidden(['cliente_id', 'user_id', 'estadosolicitud_id']);
+                foreach($solicitudes as $solicitud)
+                {
+                    $solicitud->makeHidden(['cliente_id', 'user_id', 'estadosolicitud_id']);
 
-                $totalPartes = 0;
-                foreach($solicitud->partes as $parte)
-                {   
-                    $parte->makeHidden(['marca_id', 'created_at', 'updated_at']);
-                    
-                    $parte->pivot;
-                    $totalPartes += $parte->pivot->cantidad;
-                    $parte->pivot->makeHidden(['solicitud_id', 'parte_id']);
+                    $totalPartes = 0;
+                    foreach($solicitud->partes as $parte)
+                    {   
+                        $parte->makeHidden(['marca_id', 'created_at', 'updated_at']);
+                        
+                        $parte->pivot;
+                        $totalPartes += $parte->pivot->cantidad;
+                        $parte->pivot->makeHidden(['solicitud_id', 'parte_id']);
 
-                    $parte->marca;
-                    $parte->marca->makeHidden(['created_at', 'updated_at']);
+                        $parte->marca;
+                        $parte->marca->makeHidden(['created_at', 'updated_at']);
+                    }
+
+                    $solicitud->partes_total;
+                    $solicitud->cliente;
+                    $solicitud->cliente->makeHidden(['created_at', 'updated_at']);
+                    $solicitud->user;
+                    $solicitud->user->makeHidden(['email', 'phone', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
+                    $solicitud->estadosolicitud;
+                    $solicitud->estadosolicitud->makeHidden(['created_at', 'updated_at']);
                 }
 
-                $solicitud->partes_total;
-                $solicitud->cliente;
-                $solicitud->cliente->makeHidden(['created_at', 'updated_at']);
-                $solicitud->user;
-                $solicitud->user->makeHidden(['email', 'phone', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
-                $solicitud->estadosolicitud;
-                $solicitud->estadosolicitud->makeHidden(['created_at', 'updated_at']);
+                $response = HelpController::buildResponse(
+                    200,
+                    null,
+                    $solicitudes
+                );
             }
-
-            $response = HelpController::buildResponse(
-                200,
-                null,
-                $solicitudes
-            );
+            else
+            {
+                $response = HelpController::buildResponse(
+                    500,
+                    'Error al obtener la lista de solicitudes',
+                    null
+                );
+            }
         }
         else
         {
             $response = HelpController::buildResponse(
-                500,
-                'Error al obtener la lista de solicitudes',
+                405,
+                'No tienes acceso a listar solicitudes',
                 null
             );
         }
@@ -85,116 +97,126 @@ class SolicitudesController extends Controller
      */
     public function store(Request $request)
     {
-        $validatorInput = $request->only(
-            'cliente_id',
-            'marca_id',
-            'comentario',
-            'partes'
-        );
-		
-		$validatorRules = [
-			'cliente_id' => 'required|exists:clientes,id',
-            'marca_id' => 'required|exists:marcas,id',
-			'partes' => 'required|array|min:1',
-            'partes.*.nparte'  => 'required',
-            'partes.*.cantidad'  => 'required|numeric|min:1',
-        ];
+        $response = null;
 
-		$validatorMessages = [
-			'cliente_id.required' => 'Debes seleccionar un cliente',
-            'cliente_id.exists' => 'El cliente no existe',
-            'marca_id.required' => 'Debes seleccionar una marca',
-            'marca_id.exists' => 'La marca no existe',
-			'partes.required' => 'Debes seleccionar las partes',
-            'partes.array' => 'Lista de partes invalida',
-            'partes.min' => 'La solicitud debe contener al menos 1 parte',
-            'partes.*.nparte.required' => 'La lista de partes es invalida',
-            'partes.*.cantidad.required' => 'Debes ingresar la cantidad para la parte',
-            'partes.*.cantidad.numeric' => 'La cantidad para la parte debe ser numerica',
-            'partes.*.cantidad.min' => 'La cantidad para la parte debe ser mayor a 0',
-		];
-
-		$validator = Validator::make(
-			$validatorInput,
-			$validatorRules,
-			$validatorMessages
-		);
-
-        if ($validator->fails()) 
-		{
-			$response = HelpController::buildResponse(
-				400,
-				$validator->errors(),
-				null
-			);
-        }
-        else        
+        $user = Auth::user();
+        if($user->role->hasRoutepermission('solicitudes store'))
         {
+            $validatorInput = $request->only(
+                'cliente_id',
+                'marca_id',
+                'comentario',
+                'partes'
+            );
             
-
-            $user = Auth::user();
-
-            $solicitud = new Solicitud();
-            $solicitud->fill($request->all());
-            $solicitud->user_id = $user->id;
-            $solicitud->estadosolicitud_id = 1; //Initial Estadosolicitud
-
-            DB::beginTransaction();
-
-            if($solicitud->save())
+            $validatorRules = [
+                'cliente_id' => 'required|exists:clientes,id',
+                'marca_id' => 'required|exists:marcas,id',
+                'partes' => 'required|array|min:1',
+                'partes.*.nparte'  => 'required',
+                'partes.*.cantidad'  => 'required|numeric|min:1',
+            ];
+    
+            $validatorMessages = [
+                'cliente_id.required' => 'Debes seleccionar un cliente',
+                'cliente_id.exists' => 'El cliente no existe',
+                'marca_id.required' => 'Debes seleccionar una marca',
+                'marca_id.exists' => 'La marca no existe',
+                'partes.required' => 'Debes seleccionar las partes',
+                'partes.array' => 'Lista de partes invalida',
+                'partes.min' => 'La solicitud debe contener al menos 1 parte',
+                'partes.*.nparte.required' => 'La lista de partes es invalida',
+                'partes.*.cantidad.required' => 'Debes ingresar la cantidad para la parte',
+                'partes.*.cantidad.numeric' => 'La cantidad para la parte debe ser numerica',
+                'partes.*.cantidad.min' => 'La cantidad para la parte debe ser mayor a 0',
+            ];
+    
+            $validator = Validator::make(
+                $validatorInput,
+                $validatorRules,
+                $validatorMessages
+            );
+    
+            if ($validator->fails()) 
             {
-                $success = true;
-
-                //Attaching each Parte to the Solicitud
-                foreach($request->partes as $parte)
+                $response = HelpController::buildResponse(
+                    400,
+                    $validator->errors(),
+                    null
+                );
+            }
+            else        
+            {
+                $solicitud = new Solicitud();
+                $solicitud->fill($request->all());
+                $solicitud->user_id = $user->id;
+                $solicitud->estadosolicitud_id = 1; //Initial Estadosolicitud
+    
+                DB::beginTransaction();
+    
+                if($solicitud->save())
                 {
-                    if($p = Parte::where('nparte', $parte['nparte'])->where('marca_id', $request->marca_id)->first())
+                    $success = true;
+    
+                    //Attaching each Parte to the Solicitud
+                    foreach($request->partes as $parte)
                     {
-                        $solicitud->partes()->attach([ 
-                            $p->id => [
-                                'cantidad' => $parte['cantidad']
-                            ]
-                        ]);
+                        if($p = Parte::where('nparte', $parte['nparte'])->where('marca_id', $request->marca_id)->first())
+                        {
+                            $solicitud->partes()->attach([ 
+                                $p->id => [
+                                    'cantidad' => $parte['cantidad']
+                                ]
+                            ]);
+                        }
+                        else
+                        {
+                            $success = false;
+    
+                            $response = HelpController::buildResponse(
+                                422,
+                                'La parte N:' . $parte['nparte'] . ' no existe en la marca seleccionada',
+                                null
+                            );
+    
+                            break;
+                        }
+                    }
+    
+                    if($success === true)
+                    {
+                        DB::commit();
+    
+                        $response = HelpController::buildResponse(
+                            201,
+                            'Solicitud creada',
+                            null
+                        );
                     }
                     else
                     {
-                        $success = false;
-
-                        $response = HelpController::buildResponse(
-                            422,
-                            'La parte N:' . $parte['nparte'] . ' no existe en la marca seleccionada',
-                            null
-                        );
-
-                        break;
+                        DB::rollback();
                     }
-                }
-
-                if($success === true)
-                {
-                    DB::commit();
-
-                    $response = HelpController::buildResponse(
-                        201,
-                        'Solicitud creada',
-                        null
-                    );
                 }
                 else
                 {
                     DB::rollback();
+    
+                    $response = HelpController::buildResponse(
+                        500,
+                        'Error al crear la solicitud',
+                        null
+                    );
                 }
             }
-            else
-            {
-                DB::rollback();
-
-                $response = HelpController::buildResponse(
-                    500,
-                    'Error al crear la solicitud',
-                    null
-                );
-            }
+        }
+        else
+        {
+            $response = HelpController::buildResponse(
+                405,
+                'No tienes acceso a registrar solicitudes',
+                null
+            );
         }
 
         return $response;
@@ -208,37 +230,51 @@ class SolicitudesController extends Controller
      */
     public function show($id)
     {
-        if($solicitud = Solicitud::find($id))
-        {
-            $solicitud->makeHidden([
-                'cliente_id',
-                'created_at', 
-                'updated_at'
-            ]);
+        $response = null;
 
-            $solicitud->cliente;
-            $solicitud->cliente->makeHidden(['created_at', 'updated_at']);
-            
-            $solicitud->partes;
-            foreach($solicitud->partes as $parte)
+        $user = Auth::user();
+        if($user->role->hasRoutepermission('solicitudes show'))
+        {
+            if($solicitud = Solicitud::find($id))
             {
-                $parte->makeHidden(['marca_id', 'created_at', 'updated_at']);
+                $solicitud->makeHidden([
+                    'cliente_id',
+                    'created_at', 
+                    'updated_at'
+                ]);
+
+                $solicitud->cliente;
+                $solicitud->cliente->makeHidden(['created_at', 'updated_at']);
                 
-                $parte->marca;
-                $parte->marca->makeHidden(['created_at', 'updated_at']);
+                $solicitud->partes;
+                foreach($solicitud->partes as $parte)
+                {
+                    $parte->makeHidden(['marca_id', 'created_at', 'updated_at']);
+                    
+                    $parte->marca;
+                    $parte->marca->makeHidden(['created_at', 'updated_at']);
+                }
+                
+                $response = HelpController::buildResponse(
+                    200,
+                    null,
+                    $solicitud
+                );
+            }   
+            else     
+            {
+                $response = HelpController::buildResponse(
+                    400,
+                    'La solicitud no existe',
+                    null
+                );
             }
-			
-            $response = HelpController::buildResponse(
-                200,
-                null,
-                $solicitud
-            );
-        }   
-        else     
+        }
+        else
         {
             $response = HelpController::buildResponse(
-                400,
-                'La solicitud no existe',
+                405,
+                'No tienes acceso a visualizar solicitudes',
                 null
             );
         }
@@ -266,121 +302,134 @@ class SolicitudesController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $validatorInput = $request->only(
-            'cliente_id',
-            'marca_id',
-            'comentario',
-            'partes'
-        );
-		
-		$validatorRules = [
-			'cliente_id' => 'required|exists:clientes,id',
-            'marca_id' => 'required|exists:marcas,id',
-			'partes' => 'required|array|min:1',
-            'partes.*.nparte'  => 'required',
-            'partes.*.cantidad'  => 'required|numeric|min:1',
-        ];
+        $response = null;
 
-		$validatorMessages = [
-			'cliente_id.required' => 'Debes seleccionar un cliente',
-            'cliente_id.exists' => 'El cliente no existe',
-            'marca_id.required' => 'Debes seleccionar una marca',
-            'marca_id.exists' => 'La marca no existe',
-			'partes.required' => 'Debes seleccionar las partes',
-            'partes.array' => 'Lista de partes invalida',
-            'partes.min' => 'La solicitud debe contener al menos 1 parte',
-            'partes.*.nparte.required' => 'La lista de partes es invalida',
-            'partes.*.cantidad.required' => 'Debes ingresar la cantidad para la parte',
-            'partes.*.cantidad.numeric' => 'La cantidad para la parte debe ser numerica',
-            'partes.*.cantidad.min' => 'La cantidad para la parte debe ser mayor a 0',
-		];
-
-		$validator = Validator::make(
-			$validatorInput,
-			$validatorRules,
-			$validatorMessages
-		);
-
-        if ($validator->fails()) 
-		{
-			$response = HelpController::buildResponse(
-				400,
-				$validator->errors(),
-				null
-			);
-        }
-        else        
+        $user = Auth::user();
+        if($user->role->hasRoutepermission('solicitudes update'))
         {
-            if($solicitud = Solicitud::find($id))
+            $validatorInput = $request->only(
+                'cliente_id',
+                'marca_id',
+                'comentario',
+                'partes'
+            );
+            
+            $validatorRules = [
+                'cliente_id' => 'required|exists:clientes,id',
+                'marca_id' => 'required|exists:marcas,id',
+                'partes' => 'required|array|min:1',
+                'partes.*.nparte'  => 'required',
+                'partes.*.cantidad'  => 'required|numeric|min:1',
+            ];
+    
+            $validatorMessages = [
+                'cliente_id.required' => 'Debes seleccionar un cliente',
+                'cliente_id.exists' => 'El cliente no existe',
+                'marca_id.required' => 'Debes seleccionar una marca',
+                'marca_id.exists' => 'La marca no existe',
+                'partes.required' => 'Debes seleccionar las partes',
+                'partes.array' => 'Lista de partes invalida',
+                'partes.min' => 'La solicitud debe contener al menos 1 parte',
+                'partes.*.nparte.required' => 'La lista de partes es invalida',
+                'partes.*.cantidad.required' => 'Debes ingresar la cantidad para la parte',
+                'partes.*.cantidad.numeric' => 'La cantidad para la parte debe ser numerica',
+                'partes.*.cantidad.min' => 'La cantidad para la parte debe ser mayor a 0',
+            ];
+    
+            $validator = Validator::make(
+                $validatorInput,
+                $validatorRules,
+                $validatorMessages
+            );
+    
+            if ($validator->fails()) 
             {
-                $solicitud->fill($request->all());
-
-                DB::beginTransaction();
-
-                if($solicitud->save())
+                $response = HelpController::buildResponse(
+                    400,
+                    $validator->errors(),
+                    null
+                );
+            }
+            else        
+            {
+                if($solicitud = Solicitud::find($id))
                 {
-                    $success = true;
-
-                    $syncData = [];
-                    foreach($request->partes as $parte)
+                    $solicitud->fill($request->all());
+    
+                    DB::beginTransaction();
+    
+                    if($solicitud->save())
                     {
-                        if($p = Parte::where('nparte', $parte['nparte'])->where('marca_id', $request->marca_id)->first())
+                        $success = true;
+    
+                        $syncData = [];
+                        foreach($request->partes as $parte)
                         {
-                            $syncData[$p->id] =  array('cantidad' => $parte['cantidad']);
+                            if($p = Parte::where('nparte', $parte['nparte'])->where('marca_id', $request->marca_id)->first())
+                            {
+                                $syncData[$p->id] =  array('cantidad' => $parte['cantidad']);
+                            }
+                            else
+                            {
+                                $success = false;
+    
+                                $response = HelpController::buildResponse(
+                                    422,
+                                    'La parte N:' . $parte['nparte'] . ' no existe en la marca seleccionada',
+                                    null
+                                );
+    
+                                break;
+                            }
+                        }
+    
+                        $solicitud->partes()->sync($syncData);
+    
+                        if($success === true)
+                        {
+                            DB::commit();
+    
+                            $response = HelpController::buildResponse(
+                                201,
+                                'Solicitud editada',
+                                null
+                            );
                         }
                         else
                         {
-                            $success = false;
-
-                            $response = HelpController::buildResponse(
-                                422,
-                                'La parte N:' . $parte['nparte'] . ' no existe en la marca seleccionada',
-                                null
-                            );
-
-                            break;
+                            DB::rollback();
                         }
-                    }
-
-                    $solicitud->partes()->sync($syncData);
-
-                    if($success === true)
-                    {
-                        DB::commit();
-
-                        $response = HelpController::buildResponse(
-                            201,
-                            'Solicitud editada',
-                            null
-                        );
                     }
                     else
                     {
                         DB::rollback();
+    
+                        $response = HelpController::buildResponse(
+                            500,
+                            'Error al editar la solicitud',
+                            null
+                        );
                     }
                 }
                 else
                 {
-                    DB::rollback();
-
                     $response = HelpController::buildResponse(
-                        500,
-                        'Error al editar la solicitud',
+                        400,
+                        'La solicitud no existe',
                         null
                     );
                 }
             }
-            else
-            {
-                $response = HelpController::buildResponse(
-                    400,
-                    'La solicitud no existe',
-                    null
-                );
-            }
-            
         }
-
+        else
+        {
+            $response = HelpController::buildResponse(
+                405,
+                'No tienes acceso a actualizar solicitudes',
+                null
+            );
+        }
+        
         return $response;
     }
 

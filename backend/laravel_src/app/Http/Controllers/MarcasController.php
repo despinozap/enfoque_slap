@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Models\Marca;
+use Auth;
 
 class MarcasController extends Controller
 {
@@ -22,29 +23,42 @@ class MarcasController extends Controller
     {
         $response = null;
 
-        if($marcas = Marca::all())
+        $user = Auth::user();
+        if($user->role->hasRoutepermission('marcas indexfull'))
         {
-            $marcas = $marcas->filter(function($marca)
+            if($marcas = Marca::all())
             {
-                $marca->makeHidden([
-                    'created_at',
-                    'updated_at'
-                ]);
+                $marcas = $marcas->filter(function($marca)
+                {
+                    $marca->makeHidden([
+                        'created_at',
+                        'updated_at'
+                    ]);
 
-                return $marca;
-            });
+                    return $marca;
+                });
 
-            $response = HelpController::buildResponse(
-                200,
-                null,
-                $marcas
-            );
+                $response = HelpController::buildResponse(
+                    200,
+                    null,
+                    $marcas
+                );
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    500,
+                    'Error al obtener la lista de marcas',
+                    null
+                );
+            }
+
         }
         else
         {
             $response = HelpController::buildResponse(
-                500,
-                'Error al obtener la lista de marcas',
+                405,
+                'No tienes acceso a listar marcas',
                 null
             );
         }
