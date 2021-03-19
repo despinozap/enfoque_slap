@@ -20,11 +20,12 @@ class CreateParteSolicitudTable extends Migration
             $table->integer('cantidad');
             $table->longText('descripcion')->nullable();
             $table->float('costo')->nullable();
+            $table->integer('tiempoentrega')->nullable();
+            $table->float('margen')->nullable();
             $table->float('peso')->nullable();
             $table->float('flete')->nullable();
-            $table->float('margen')->nullable();
             $table->float('monto')->nullable();
-            $table->integer('plazoentrega')->nullable();
+            $table->boolean('backorder')->default(false);
             $table->timestamps();
 
             $table->foreign('parte_id')->references('id')->on('partes')->onDelete('cascade');

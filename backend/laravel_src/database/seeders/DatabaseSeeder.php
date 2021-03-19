@@ -10,6 +10,7 @@ use App\Models\Cliente;
 use App\Models\Marca;
 use App\Models\Parte;
 use App\Models\Estadosolicitud;
+use App\Models\Solicitud;
 
 class DatabaseSeeder extends Seeder
 {
@@ -40,7 +41,8 @@ class DatabaseSeeder extends Seeder
             'solicitudes index',
             'solicitudes store',
             'solicitudes show',
-            'solicitudes update'
+            'solicitudes update',
+            'solicitudes complete'
         ];
 
         //Add route permissions
@@ -79,7 +81,8 @@ class DatabaseSeeder extends Seeder
                 'solicitudes index',
                 'solicitudes store',
                 'solicitudes show',
-                'solicitudes update'
+                'solicitudes update',
+                'solicitudes complete'
             ];
 
             $routePermissionIds = [];
@@ -126,14 +129,40 @@ class DatabaseSeeder extends Seeder
         */
         $parte = new Parte();
         $parte->marca_id = 1;
-        $parte->nparte = 'NParteTest';
+        $parte->nparte = 'NParteTest01';
+        $parte->save();
+        $parte = new Parte();
+        $parte->marca_id = 1;
+        $parte->nparte = 'NParteTest02';
         $parte->save();
 
         /*
         *   Estado solicitudes
         */
         $estadosolicitud = new Estadosolicitud();
-        $estadosolicitud->name = 'EstadosolicitudTest';
+        $estadosolicitud->name = '01 Pendiente';
         $estadosolicitud->save();
+        $estadosolicitud = new Estadosolicitud();
+        $estadosolicitud->name = '02 Completada';
+        $estadosolicitud->save();
+
+        /*
+        *   Solicitudes
+        */
+        $solicitud = new Solicitud();
+        $solicitud->cliente_id = 1;
+        $solicitud->user_id = 1;
+        $solicitud->estadosolicitud_id = 1;
+        $solicitud->comentario = 'Testing comment';
+        $solicitud->save();
+
+        $solicitud->partes()->attach([ 
+            1 => [
+                'cantidad' => 100
+            ],
+            2 => [
+                'cantidad' => 850
+            ]
+        ]);
     }
 }
