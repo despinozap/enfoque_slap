@@ -25,6 +25,24 @@ export class SolicitudesService {
     return this.httpClient.get(endpoint);
   }
 
+  public closeSolicitud(solicitud_id: number): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/solicitudes/close/${solicitud_id}`;
+
+    let httpOptions = { 
+      method: 'POST',
+      headers:
+      {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET,POST,OPTIONS,DELETE,PUT'
+      }
+    };
+    
+    return this.httpClient.post(endpoint, httpOptions);
+  }
+
   public completeSolicitud(solicitud_id: number, solicitud: Solicitud): Observable<any>
   {
     let endpoint: string = `${environment.ENDPOINT_BASE}/solicitudes/complete/${solicitud_id}`;

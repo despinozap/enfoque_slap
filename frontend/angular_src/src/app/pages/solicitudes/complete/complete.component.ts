@@ -121,33 +121,46 @@ export class SolicitudesCompleteComponent implements OnInit {
   {
     if(solicitudData['partes'].length > 0)
     {
-      this.solicitud.id = solicitudData.id;
-      this.solicitud.cliente_name = solicitudData.cliente.name;
-      this.solicitud.marca_name = solicitudData.partes[0].marca.name;
-      this.solicitud.estadosolicitud_id = solicitudData.estadosolicitud.id,
-      this.solicitud.estadosolicitud_name = solicitudData.estadosolicitud.name;
-      this.solicitud.comentario = solicitudData.comentario;
-
-      this.partes = [];
-      solicitudData.partes.forEach((p: any) => {
-        this.partes.push(
-          {
-            'nparte': p.nparte,
-            'cantidad': p.pivot.cantidad,
-            'costo': p.pivot.costo,
-            'margen': p.pivot.margen,
-            'tiempoentrega': p.pivot.tiempoentrega,
-            'peso': p.pivot.peso,
-            'flete': p.pivot.flete,
-            'monto': p.pivot.monto,
-            'backorder': p.pivot.backorder
-          }
-        )
-      });
-
-      for(let i = 0; i < this.partes.length; i++)
+      if((solicitudData.estadosolicitud.id === 1) || (solicitudData.estadosolicitud.id === 2)) // If is 'Pendiente' or 'Completada'
       {
-        this.partes[i].complete = this.isParteCompleted(i);
+        this.solicitud.id = solicitudData.id;
+        this.solicitud.cliente_name = solicitudData.cliente.name;
+        this.solicitud.marca_name = solicitudData.partes[0].marca.name;
+        this.solicitud.estadosolicitud_id = solicitudData.estadosolicitud.id,
+        this.solicitud.estadosolicitud_name = solicitudData.estadosolicitud.name;
+        this.solicitud.comentario = solicitudData.comentario;
+
+        this.partes = [];
+        solicitudData.partes.forEach((p: any) => {
+          this.partes.push(
+            {
+              'nparte': p.nparte,
+              'cantidad': p.pivot.cantidad,
+              'costo': p.pivot.costo,
+              'margen': p.pivot.margen,
+              'tiempoentrega': p.pivot.tiempoentrega,
+              'peso': p.pivot.peso,
+              'flete': p.pivot.flete,
+              'monto': p.pivot.monto,
+              'backorder': p.pivot.backorder
+            }
+          )
+        });
+
+        for(let i = 0; i < this.partes.length; i++)
+        {
+          this.partes[i].complete = this.isParteCompleted(i);
+        }
+      } 
+      else
+      {
+        NotificationsService.showToast(
+          `No puedes completar una solicitud con estado ${ solicitudData.estadosolicitud.name }`,
+          NotificationsService.messageType.error
+        );
+  
+        this.loading = false;
+        this.goTo_solicitudesList();
       }
     }
     else
@@ -339,6 +352,86 @@ export class SolicitudesCompleteComponent implements OnInit {
           this.loading = false;
         }
       );
+  }
+
+  public closeSolicitud(): void
+  {
+    Swal.fire({
+      title: 'Cerrar solicitud',
+      text: `¿Realmente quieres cerrar la solicitud #${ this.solicitud.id }?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#555555',
+      confirmButtonText: 'Sí, continuar',
+      cancelButtonText: 'Cancelar',
+      allowOutsideClick: false
+    }).then((result: any) => {
+      if(result.isConfirmed)
+      {
+        Swal.queue([{
+          title: 'Cerrando..',
+          icon: 'warning',
+          showConfirmButton: false,
+          showCancelButton: false,
+          allowOutsideClick: false,
+          showLoaderOnConfirm: true,
+          preConfirm: () => {
+
+          }    
+        }]);
+
+        this._solicitudesService.closeSolicitud(this.solicitud.id)
+        .subscribe(
+          //Success request
+          (response: any) => {
+
+            NotificationsService.showToast(
+              response.message,
+              NotificationsService.messageType.success
+            );
+
+            this.goTo_solicitudesList();
+          },
+          //Error request
+          (errorResponse: any) => {
+
+            switch(errorResponse.status)
+            {
+              case 400: //Object not found
+              {
+                NotificationsService.showAlert(
+                  errorResponse.message,
+                  NotificationsService.messageType.warning
+                );
+
+                break;
+              }
+
+              case 500: //Internal server
+              {
+                NotificationsService.showAlert(
+                  errorResponse.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+              default: //Unhandled error
+              {
+                NotificationsService.showAlert(
+                  'Error al intentar cerrar la solicitud',
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+            }
+          }
+        );
+      }
+    });
   }
 
   public submitFormParte(): void {

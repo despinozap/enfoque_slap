@@ -65,7 +65,7 @@
               <td align="right">{{ solicitud.partes_total }}</td>
               <td align="center">{{ solicitud.estadosolicitud.name }}</td>
               <td align="center">
-                <a [routerLink]="['complete', solicitud.id]" class="btn-table btn btn-secondary" title="Completar"><i
+                <a [routerLink]="['complete', solicitud.id]" class="btn-table btn btn-secondary" title="Completar" *ngIf="(solicitud.estadosolicitud.id === 1) || (solicitud.estadosolicitud.id === 2)"><i
                   class="bx bx-copy-alt"></i></a>
                 <a [routerLink]="['edit', solicitud.id]" class="btn-table btn btn-secondary" title="Editar"><i
                       class="bx bx-edit-alt"></i></a>

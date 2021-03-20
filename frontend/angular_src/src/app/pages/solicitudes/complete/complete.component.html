@@ -21,9 +21,14 @@
   <div class="col-12" *ngIf="(DISPLAYING_FORM === 0)">
     <div class="card">
       <div class="card-body">
-
+        <div class="alert alert-success alert-dismissible fade show" role="alert" *ngIf="(solicitud.estadosolicitud_id === 2)">
+          La lista de partes para esta solicitud esta <strong>completa</strong>
+          <button type="button" class="ml-2 btn btn-light" aria-label="Cerrar solicitud" (click)="closeSolicitud()"><i class="mdi mdi-thumb-up"></i> Cerrar solicitud</button>
+        </div>
         <h4 class="card-title">Solicitud {{ solicitud.id !== null ? "#" + solicitud.id : '' }}</h4>
-        <span class="badge" [class.badge-warning]="(solicitud.estadosolicitud_id === 1)" [class.badge-success]="(solicitud.estadosolicitud_id === 2)"  *ngIf="(solicitud.estadosolicitud_name !== null)">{{ solicitud.estadosolicitud_name }}</span>
+        <span class="badge" [class.badge-warning]="(solicitud.estadosolicitud_id === 1)"
+            [class.badge-success]="(solicitud.estadosolicitud_id === 2)"
+            *ngIf="(solicitud.estadosolicitud_name !== null)">{{ solicitud.estadosolicitud_name }}</span>
         <p class="card-title-desc">Completa la lista de partes para actualizar la solicitud</p>
         <div class="row">
           <div class="col-6">
@@ -81,21 +86,26 @@
                 <td align="right">{{ parte.margen !== null ? parte.margen + "%" : parte.margen }}</td>
                 <td align="right">{{ parte.peso !== null ? parte.peso + " kg" : parte.peso }}</td>
                 <td align="right">{{ parte.flete !== null ? "$" + moneyStringFormat(parte.flete) : parte.flete }}</td>
-                <td align="right">{{ parte.tiempoentrega !== null ? parte.tiempoentrega + " dias" : parte.tiempoentrega  }}</td>
+                <td align="right">{{ parte.tiempoentrega !== null ? parte.tiempoentrega + " dias" : parte.tiempoentrega
+                  }}</td>
                 <td align="right">{{ parte.monto !== null ? "$" + moneyStringFormat(parte.monto) : parte.monto }}</td>
                 <td align="right">{{ parte.descripcion }}</td>
                 <td align="center">
-                  <button (click)="goTo_updateParte(i)" class="btn-table btn btn-secondary" title="Editar" [disabled]="(loading === true)"><i class="bx bx-edit-alt"></i></button>
+                  <button (click)="goTo_updateParte(i)" class="btn-table btn btn-secondary" title="Editar"
+                      [disabled]="(loading === true)"><i class="bx bx-edit-alt"></i></button>
                 </td>
               </tr>
             </tbody>
             <tfoot>
               <td colspan="10" align="right">
-                <input #inputFilePartes style="display: none;" type="file" multiple="false" (change)="onPartesFileChange($event); inputFilePartes.value=''">
-                <button type="button" class="btn btn-outline-primary mr-2" (click)="inputFilePartes.click()" [disabled]="(loading === true)">
+                <input #inputFilePartes style="display: none;" type="file" multiple="false"
+                    (change)="onPartesFileChange($event); inputFilePartes.value=''">
+                <button type="button" class="btn btn-outline-primary mr-2" (click)="inputFilePartes.click()"
+                    [disabled]="(loading === true)">
                   <i class="bx bx-import font-size-16 align-middle"></i> Importar Excel
                 </button>
-                <button type="button" class="btn btn-outline-primary" (click)="exportPartesToExcel()" [disabled]="(loading === true)">
+                <button type="button" class="btn btn-outline-primary" (click)="exportPartesToExcel()"
+                    [disabled]="(loading === true)">
                   <i class="bx bx-spreadsheet font-size-16 align-middle"></i> Exportar a Excel
                 </button>
               </td>
@@ -108,7 +118,8 @@
             <div class="form-buttons mt-2">
               <button class="btn btn-primary mr-2" (click)="completeSolicitud(false)"
                   [disabled]="(loading === true) || (dataUpdated === false)">
-                <span *ngIf="loading === true"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
+                <span *ngIf="loading === true"><i
+                      class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
                 <span *ngIf="(loading === false)">Guardar</span>
               </button>
               <button [disabled]="(loading === true)" class="btn btn-light" (click)="goTo_solicitudesList()">
@@ -134,16 +145,19 @@
 
         <form [formGroup]="parteForm" (ngSubmit)="submitFormParte()" action="#">
           <div class="row">
-            
+
             <div class="col-4">
               <div class="form-group">
                 <label for="cantidad">Cantidad</label>
-                <input type="number" class="form-control valid-control" name="cantidad" id="cantidad" formControlName="cantidad">
+                <input type="number" class="form-control valid-control" name="cantidad" id="cantidad"
+                    formControlName="cantidad">
                 <!-- Frontend errors -->
                 <div
-                  *ngIf="(parteForm.controls.cantidad.errors) && (parteForm.controls.cantidad.touched) && (parteForm.controls.cantidad.dirty)">
-                  <div class="error-response" *ngIf="parteForm.controls.cantidad.errors.required === true">Debes ingresar la cantidad</div>
-                  <div class="error-response" *ngIf="parteForm.controls.cantidad.errors.min !== null">La cantidad debe ser mayor a 0</div>
+                    *ngIf="(parteForm.controls.cantidad.errors) && (parteForm.controls.cantidad.touched) && (parteForm.controls.cantidad.dirty)">
+                  <div class="error-response" *ngIf="parteForm.controls.cantidad.errors.required === true">Debes
+                    ingresar la cantidad</div>
+                  <div class="error-response" *ngIf="parteForm.controls.cantidad.errors.min !== null">La cantidad debe
+                    ser mayor a 0</div>
                 </div>
               </div>
             </div>
@@ -154,8 +168,9 @@
                 <input type="number" class="form-control valid-control" name="costo" id="costo" formControlName="costo">
                 <!-- Frontend errors -->
                 <div
-                  *ngIf="(parteForm.controls.costo.errors) && (parteForm.controls.costo.touched) && (parteForm.controls.costo.dirty)">
-                  <div class="error-response" *ngIf="parteForm.controls.costo.errors.min !== null">El costo debe ser mayor o igual a 0</div>
+                    *ngIf="(parteForm.controls.costo.errors) && (parteForm.controls.costo.touched) && (parteForm.controls.costo.dirty)">
+                  <div class="error-response" *ngIf="parteForm.controls.costo.errors.min !== null">El costo debe ser
+                    mayor o igual a 0</div>
                 </div>
               </div>
             </div>
@@ -163,11 +178,13 @@
             <div class="col-4">
               <div class="form-group">
                 <label for="margen">Margen (%)</label>
-                <input type="number" class="form-control valid-control" name="margen" id="margen" formControlName="margen">
+                <input type="number" class="form-control valid-control" name="margen" id="margen"
+                    formControlName="margen">
                 <!-- Frontend errors -->
                 <div
-                  *ngIf="(parteForm.controls.margen.errors) && (parteForm.controls.margen.touched) && (parteForm.controls.margen.dirty)">
-                  <div class="error-response" *ngIf="parteForm.controls.margen.errors.min !== null">El margen debe ser mayor o igual a 0</div>
+                    *ngIf="(parteForm.controls.margen.errors) && (parteForm.controls.margen.touched) && (parteForm.controls.margen.dirty)">
+                  <div class="error-response" *ngIf="parteForm.controls.margen.errors.min !== null">El margen debe ser
+                    mayor o igual a 0</div>
                 </div>
               </div>
             </div>
@@ -175,11 +192,13 @@
             <div class="col-4">
               <div class="form-group">
                 <label for="tiempoentrega">Tiempo de entrega (en dias)</label>
-                <input type="number" class="form-control valid-control" name="tiempoentrega" id="tiempoentrega" formControlName="tiempoentrega">
+                <input type="number" class="form-control valid-control" name="tiempoentrega" id="tiempoentrega"
+                    formControlName="tiempoentrega">
                 <!-- Frontend errors -->
                 <div
-                  *ngIf="(parteForm.controls.tiempoentrega.errors) && (parteForm.controls.tiempoentrega.touched) && (parteForm.controls.tiempoentrega.dirty)">
-                  <div class="error-response" *ngIf="parteForm.controls.tiempoentrega.errors.min !== null">El tiempo de entrega debe ser igual o mayor a 0</div>
+                    *ngIf="(parteForm.controls.tiempoentrega.errors) && (parteForm.controls.tiempoentrega.touched) && (parteForm.controls.tiempoentrega.dirty)">
+                  <div class="error-response" *ngIf="parteForm.controls.tiempoentrega.errors.min !== null">El tiempo de
+                    entrega debe ser igual o mayor a 0</div>
                 </div>
               </div>
             </div>
@@ -190,8 +209,9 @@
                 <input type="number" class="form-control valid-control" name="peso" id="peso" formControlName="peso">
                 <!-- Frontend errors -->
                 <div
-                  *ngIf="(parteForm.controls.peso.errors) && (parteForm.controls.peso.touched) && (parteForm.controls.peso.dirty)">
-                  <div class="error-response" *ngIf="parteForm.controls.peso.errors.min !== null">El peso debe ser mayor a 0</div>
+                    *ngIf="(parteForm.controls.peso.errors) && (parteForm.controls.peso.touched) && (parteForm.controls.peso.dirty)">
+                  <div class="error-response" *ngIf="parteForm.controls.peso.errors.min !== null">El peso debe ser mayor
+                    a 0</div>
                 </div>
               </div>
             </div>
@@ -202,8 +222,9 @@
                 <input type="number" class="form-control valid-control" name="flete" id="flete" formControlName="flete">
                 <!-- Frontend errors -->
                 <div
-                  *ngIf="(parteForm.controls.flete.errors) && (parteForm.controls.flete.touched) && (parteForm.controls.flete.dirty)">
-                  <div class="error-response" *ngIf="parteForm.controls.flete.errors.min !== null">EL valor de flete debe ser igual o mayor a 0</div>
+                    *ngIf="(parteForm.controls.flete.errors) && (parteForm.controls.flete.touched) && (parteForm.controls.flete.dirty)">
+                  <div class="error-response" *ngIf="parteForm.controls.flete.errors.min !== null">EL valor de flete
+                    debe ser igual o mayor a 0</div>
                 </div>
               </div>
             </div>
@@ -227,8 +248,10 @@
 
             <div class="col-12">
               <div class="form-group">
-                <button type="submit" [disabled]="(parteForm.invalid) || (loading === true)" class="btn btn-primary mr-2">
-                  <span *ngIf="loading === true"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
+                <button type="submit" [disabled]="(parteForm.invalid) || (loading === true)"
+                    class="btn btn-primary mr-2">
+                  <span *ngIf="loading === true"><i
+                        class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
                   <span *ngIf="loading === false">Guardar</span>
                 </button>
                 <button type="button" class="btn btn-outline-primary" (click)="goTo_completeSolicitud();">
