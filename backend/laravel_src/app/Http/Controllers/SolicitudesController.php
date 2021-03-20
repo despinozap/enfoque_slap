@@ -393,7 +393,7 @@ class SolicitudesController extends Controller
                             DB::commit();
     
                             $response = HelpController::buildResponse(
-                                201,
+                                200,
                                 'Solicitud editada',
                                 null
                             );
@@ -444,7 +444,6 @@ class SolicitudesController extends Controller
         if($user->role->hasRoutepermission('solicitudes complete'))
         {
             $validatorInput = $request->only(
-                'solicitud_id',
                 'partes'
             );
             
@@ -579,7 +578,7 @@ class SolicitudesController extends Controller
                         DB::commit();
 
                         $response = HelpController::buildResponse(
-                            201,
+                            200,
                             ($completed === true) ? 'Solicitud completada' : 'Solicitud actualizada',
                             null
                         );
@@ -604,6 +603,66 @@ class SolicitudesController extends Controller
             $response = HelpController::buildResponse(
                 405,
                 'No tienes acceso a actualizar solicitudes',
+                null
+            );
+        }
+
+        return $response;
+    }
+
+    public function close($id)
+    {
+        $response = null;
+
+        $user = Auth::user();
+        if($user->role->hasRoutepermission('solicitudes close'))
+        {
+            if($solicitud = Solicitud::find($id))
+            {    
+                if($solicitud->estadosolicitud_id === 2) // If Estadosolicitud = 'Completada'
+                {
+                    $solicitud->estadosolicitud_id = 3; // Cerrada
+                    
+                    if($solicitud->save())
+                    {
+                        $response = HelpController::buildResponse(
+                            200,
+                            'Solicitud cerrada',
+                            null
+                        );
+                    }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            500,
+                            'Error al cerrar la solicitud',
+                            null
+                        );
+                    }
+                }
+                else
+                {
+                    $response = HelpController::buildResponse(
+                        422,
+                        'La solicitud no esta completa',
+                        null
+                    );
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    400,
+                    'La solicitud no existe',
+                    null
+                );
+            }
+        }
+        else
+        {
+            $response = HelpController::buildResponse(
+                405,
+                'No tienes acceso a cerrar solicitudes',
                 null
             );
         }

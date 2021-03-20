@@ -65,4 +65,5 @@ Route::middleware('auth:api')->group(function()
     Route::get('/solicitudes/{id}', [SolicitudesController::class, 'show']);
     Route::put('/solicitudes/{id}', [SolicitudesController::class, 'update']);
     Route::post('/solicitudes/complete/{id}', [SolicitudesController::class, 'complete']);
+    Route::post('/solicitudes/close/{id}', [SolicitudesController::class, 'close']);
 });
