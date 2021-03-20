@@ -44,6 +44,6 @@ class Solicitud extends Model
 
     public function partes()
     {
-        return $this->belongsToMany(Parte::class, 'parte_solicitud')->withPivot('cantidad', 'costo', 'margen', 'tiempoentrega', 'peso', 'flete', 'monto', 'backorder');
+        return $this->belongsToMany(Parte::class, 'parte_solicitud')->withPivot('cantidad', 'descripcion', 'costo', 'margen', 'tiempoentrega', 'peso', 'flete', 'monto', 'backorder');
     }
 }

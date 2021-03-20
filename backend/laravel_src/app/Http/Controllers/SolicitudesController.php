@@ -222,143 +222,6 @@ class SolicitudesController extends Controller
         return $response;
     }
 
-    public function complete(Request $request, $id)
-    {
-        $response = null;
-
-        $user = Auth::user();
-        if($user->role->hasRoutepermission('solicitudes complete'))
-        {
-            $validatorInput = $request->only(
-                'solicitud_id',
-                'partes'
-            );
-            
-            $validatorRules = [
-                'partes' => 'required|array|min:1',
-                'partes.*.nparte'  => 'required',
-                'partes.*.costo'  => 'required|numeric|min:1',
-                'partes.*.margen'  => 'required|numeric|min:1',
-                'partes.*.tiempoentrega'  => 'required|numeric|min:1',
-                'partes.*.peso'  => 'required|numeric|min:1',
-                'partes.*.flete'  => 'required|numeric|min:1',
-                'partes.*.backorder'  => 'required|boolean',
-            ];
-    
-            $validatorMessages = [
-                'partes.required' => 'Debes seleccionar las partes',
-                'partes.array' => 'Lista de partes invalida',
-                'partes.min' => 'La solicitud debe contener al menos 1 parte',
-                'partes.*.nparte.required' => 'La lista de partes es invalida',
-                'partes.*.costo.required' => 'Debes ingresar el costo para la parte',
-                'partes.*.costo.numeric' => 'El costo para la parte debe ser numerico',
-                'partes.*.costo.min' => 'El costo para la parte debe ser mayor a 0',
-                'partes.*.margen.required' => 'Debes ingresar el margen para la parte',
-                'partes.*.margen.numeric' => 'El margen para la parte debe ser numerico',
-                'partes.*.margen.min' => 'El margen para la parte debe ser mayor a 0',
-                'partes.*.tiempoentrega.required' => 'Debes ingresar el tiempo de entrega para la parte',
-                'partes.*.tiempoentrega.numeric' => 'El tiempo de entrega para la parte debe ser numerico',
-                'partes.*.tiempoentrega.min' => 'El tiempo de entrega para la parte debe ser mayor a 0',
-                'partes.*.peso.required' => 'Debes ingresar el peso para la parte',
-                'partes.*.peso.numeric' => 'El peso para la parte debe ser numerico',
-                'partes.*.peso.min' => 'El peso para la parte debe ser mayor a 0',
-                'partes.*.flete.required' => 'Debes ingresar el flete para la parte',
-                'partes.*.flete.numeric' => 'El flete para la parte debe ser numerico',
-                'partes.*.flete.min' => 'El flete para la parte debe ser mayor a 0',
-                'partes.*.backorder.required' => 'Debes seleccionar si la parte es backorder',
-                'partes.*.backorder.boolean' => 'La seleccion de backorder para la parte es invalida',
-            ];
-    
-            $validator = Validator::make(
-                $validatorInput,
-                $validatorRules,
-                $validatorMessages
-            );
-    
-            if ($validator->fails()) 
-            {
-                $response = HelpController::buildResponse(
-                    400,
-                    $validator->errors(),
-                    null
-                );
-            }
-            else        
-            {
-                if($solicitud = Solicitud::find($id))
-                {    
-                    $success = true;
-    
-                    DB::beginTransaction();
-
-                    $syncData = [];
-                    foreach($request->partes as $parte)
-                    {
-                        if($p = $solicitud->partes->where('nparte', $parte['nparte'])->first())
-                        {
-                            $syncData[$p->id] =  array(
-                                'costo' => $parte['costo'],
-                                'margen' => $parte['margen'],
-                                'tiempoentrega' => $parte['tiempoentrega'],
-                                'peso' => $parte['peso'],
-                                'flete' => $parte['flete'],
-                                'backorder' => $parte['backorder'],
-                                'monto' => $parte['costo'] + ($parte['costo']*$parte['margen']/100) + $parte['flete']
-                            );
-                        }
-                        else
-                        {
-                            $success = false;
-
-                            $response = HelpController::buildResponse(
-                                422,
-                                'La parte N:' . $parte['nparte'] . ' no existe en la solicitud seleccionada',
-                                null
-                            );
-
-                            break;
-                        }
-                    }
-
-                    $solicitud->partes()->sync($syncData);
-
-                    if($success === true)
-                    {
-                        DB::commit();
-
-                        $response = HelpController::buildResponse(
-                            201,
-                            'Solicitud actualizada',
-                            null
-                        );
-                    }
-                    else
-                    {
-                        DB::rollback();
-                    }
-                }
-                else
-                {
-                    $response = HelpController::buildResponse(
-                        400,
-                        'La solicitud no existe',
-                        null
-                    );
-                }
-            }
-        }
-        else
-        {
-            $response = HelpController::buildResponse(
-                405,
-                'No tienes acceso a actualizar solicitudes',
-                null
-            );
-        }
-
-        return $response;
-    }
-
     /**
      * Display the specified resource.
      *
@@ -567,6 +430,147 @@ class SolicitudesController extends Controller
             );
         }
         
+        return $response;
+    }
+
+    public function complete(Request $request, $id)
+    {
+        $response = null;
+
+        $user = Auth::user();
+        if($user->role->hasRoutepermission('solicitudes complete'))
+        {
+            $validatorInput = $request->only(
+                'solicitud_id',
+                'partes'
+            );
+            
+            $validatorRules = [
+                'partes' => 'required|array|min:1',
+                'partes.*.nparte'  => 'required',
+                'partes.*.cantidad'  => 'required|numeric|min:1',
+                'partes.*.costo'  => 'nullable|numeric|min:1',
+                'partes.*.margen'  => 'nullable|numeric|min:1',
+                'partes.*.tiempoentrega'  => 'nullable|numeric|min:1',
+                'partes.*.peso'  => 'nullable|numeric|min:1',
+                'partes.*.flete'  => 'nullable|numeric|min:1',
+                'partes.*.backorder'  => 'required|boolean',
+            ];
+    
+            $validatorMessages = [
+                'partes.required' => 'Debes seleccionar las partes',
+                'partes.array' => 'Lista de partes invalida',
+                'partes.min' => 'La solicitud debe contener al menos 1 parte',
+                'partes.*.nparte.required' => 'La lista de partes es invalida',
+                'partes.*.cantidad.required' => 'Debes ingresar la cantidad para la parte',
+                'partes.*.cantidad.numeric' => 'La cantidad para la parte debe ser numerica',
+                'partes.*.cantidad.min' => 'La cantidad para la parte debe ser mayor a 0',
+                //'partes.*.costo.required' => 'Debes ingresar el costo para la parte',
+                'partes.*.costo.numeric' => 'El costo para la parte debe ser numerico',
+                'partes.*.costo.min' => 'El costo para la parte debe ser mayor a 0',
+                //'partes.*.margen.required' => 'Debes ingresar el margen para la parte',
+                'partes.*.margen.numeric' => 'El margen para la parte debe ser numerico',
+                'partes.*.margen.min' => 'El margen para la parte debe ser mayor a 0',
+                //'partes.*.tiempoentrega.required' => 'Debes ingresar el tiempo de entrega para la parte',
+                'partes.*.tiempoentrega.numeric' => 'El tiempo de entrega para la parte debe ser numerico',
+                'partes.*.tiempoentrega.min' => 'El tiempo de entrega para la parte debe ser mayor a 0',
+                //'partes.*.peso.required' => 'Debes ingresar el peso para la parte',
+                'partes.*.peso.numeric' => 'El peso para la parte debe ser numerico',
+                'partes.*.peso.min' => 'El peso para la parte debe ser mayor a 0',
+                //'partes.*.flete.required' => 'Debes ingresar el flete para la parte',
+                'partes.*.flete.numeric' => 'El flete para la parte debe ser numerico',
+                'partes.*.flete.min' => 'El flete para la parte debe ser mayor a 0',
+                'partes.*.backorder.required' => 'Debes seleccionar si la parte es backorder',
+                'partes.*.backorder.boolean' => 'La seleccion de backorder para la parte es invalida',
+            ];
+    
+            $validator = Validator::make(
+                $validatorInput,
+                $validatorRules,
+                $validatorMessages
+            );
+    
+            if ($validator->fails()) 
+            {
+                $response = HelpController::buildResponse(
+                    400,
+                    $validator->errors(),
+                    null
+                );
+            }
+            else        
+            {
+                if($solicitud = Solicitud::find($id))
+                {    
+                    $success = true;
+    
+                    DB::beginTransaction();
+
+                    $syncData = [];
+                    foreach($request->partes as $parte)
+                    {
+                        if($p = $solicitud->partes->where('nparte', $parte['nparte'])->first())
+                        {
+                            $syncData[$p->id] =  array(
+                                'costo' => $parte['costo'],
+                                'margen' => $parte['margen'],
+                                'tiempoentrega' => $parte['tiempoentrega'],
+                                'peso' => $parte['peso'],
+                                'flete' => $parte['flete'],
+                                'backorder' => $parte['backorder'],
+                                'monto' => $parte['costo'] + ($parte['costo']*$parte['margen']/100) + $parte['flete']
+                            );
+                        }
+                        else
+                        {
+                            $success = false;
+
+                            $response = HelpController::buildResponse(
+                                422,
+                                'La parte N:' . $parte['nparte'] . ' no existe en la solicitud seleccionada',
+                                null
+                            );
+
+                            break;
+                        }
+                    }
+
+                    $solicitud->partes()->sync($syncData);
+
+                    if($success === true)
+                    {
+                        DB::commit();
+
+                        $response = HelpController::buildResponse(
+                            201,
+                            'Solicitud actualizada',
+                            null
+                        );
+                    }
+                    else
+                    {
+                        DB::rollback();
+                    }
+                }
+                else
+                {
+                    $response = HelpController::buildResponse(
+                        400,
+                        'La solicitud no existe',
+                        null
+                    );
+                }
+            }
+        }
+        else
+        {
+            $response = HelpController::buildResponse(
+                405,
+                'No tienes acceso a actualizar solicitudes',
+                null
+            );
+        }
+
         return $response;
     }
 
