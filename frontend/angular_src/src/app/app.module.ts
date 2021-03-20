@@ -29,6 +29,7 @@ import { ProfileEditComponent } from './pages/profile/edit/edit.component';
 import { SolicitudesCreateComponent } from './pages/solicitudes/create/create.component';
 import { SolicitudesListComponent } from './pages/solicitudes/list/list.component';
 import { SolicitudesEditComponent } from './pages/solicitudes/edit/edit.component';
+import { SolicitudesCompleteComponent } from './pages/solicitudes/complete/complete.component';
 
 
 /* Routes */
@@ -49,6 +50,7 @@ const routes: Routes = [
       { path: 'solicitudes/create', component: SolicitudesCreateComponent },
       { path: 'solicitudes', component: SolicitudesListComponent },
       { path: 'solicitudes/edit/:id', component: SolicitudesEditComponent },
+      { path: 'solicitudes/complete/:id', component: SolicitudesCompleteComponent },
     ]
   },
   { path: '**', redirectTo: 'login', pathMatch: 'full' } //any other page, redirects to base path
@@ -70,7 +72,8 @@ const routes: Routes = [
     UsuariosEditComponent,
     SolicitudesCreateComponent,
     SolicitudesListComponent,
-    SolicitudesEditComponent
+    SolicitudesEditComponent,
+    SolicitudesCompleteComponent
   ],
   imports: [
     BrowserModule,

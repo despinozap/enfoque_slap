@@ -12,6 +12,28 @@ export class UtilsService {
 
   constructor() { }
 
+  public moneyStringFormat(value: number): string {
+    let sValue = value.toString();
+    let dotIndex = sValue.indexOf('.');
+
+    let index = (dotIndex >= 0) ? dotIndex : sValue.length; 
+
+    let response = '';
+    let counter = 0;
+    while(index > 0)
+    {
+      response = sValue[--index] + response;
+
+      if((++counter === 3) && (index > 0))
+      {
+        response = ',' + response;
+        counter = 0;
+      }
+    }
+
+    return (dotIndex > 0) ? response + sValue.substring(dotIndex, sValue.length) : response;
+  }
+
   private parseNumberToTwoDigits(n: number): string {
     let strN = n.toString();
     

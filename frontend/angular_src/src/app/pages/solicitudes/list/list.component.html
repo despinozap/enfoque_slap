@@ -65,6 +65,8 @@
               <td align="right">{{ solicitud.partes_total }}</td>
               <td align="center">{{ solicitud.estadosolicitud.name }}</td>
               <td align="center">
+                <a [routerLink]="['complete', solicitud.id]" class="btn-table btn btn-secondary" title="Completar"><i
+                  class="bx bx-copy-alt"></i></a>
                 <a [routerLink]="['edit', solicitud.id]" class="btn-table btn btn-secondary" title="Editar"><i
                       class="bx bx-edit-alt"></i></a>
                 <a [routerLink]="" (click)="removeSolicitud(solicitud)" class="btn-table btn btn-secondary"

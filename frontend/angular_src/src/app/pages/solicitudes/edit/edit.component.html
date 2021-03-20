@@ -22,7 +22,7 @@
     <div class="card">
       <div class="card-body">
 
-        <h4 class="card-title">Solicitud</h4>
+        <h4 class="card-title">Solicitud {{ id >= 0 ? "#" + id : '' }}</h4>
         <p class="card-title-desc">Modifica los siguientes campos para editar la solicitud</p>
 
         <form [formGroup]="solicitudForm" action="#">
@@ -103,8 +103,8 @@
                 <td align="left">{{ parte.nparte }}</td>
                 <td align="right">{{ parte.cantidad }}</td>
                 <td align="center">
-                  <button (click)="goTo_updateParte(i)" class="btn-table btn btn-secondary"title="Eliminar" [disabled]="(loading === true)"><i class="bx bx-edit-alt"></i></button>
-                  <button (click)="removeParte(i)" class="btn-table btn btn-secondary"title="Eliminar" [disabled]="(loading === true)"><i class="bx bx-trash-alt"></i></button>
+                  <button (click)="goTo_updateParte(i)" class="btn-table btn btn-secondary" title="Editar" [disabled]="(loading === true)"><i class="bx bx-edit-alt"></i></button>
+                  <button (click)="removeParte(i)" class="btn-table btn btn-secondary" title="Eliminar" [disabled]="(loading === true)"><i class="bx bx-trash-alt"></i></button>
                 </td>
               </tr>
             </tbody>
@@ -162,10 +162,6 @@
             <div class="col-6">
               <div class="form-group">
                 <label for="nparte">N° Parte</label>
-                <!-- Backend errors -->
-                <div class="alert alert-danger" *ngIf="(responseErrors.nparte)">
-                  <div *ngFor="let errorMessage of responseErrors.nparte">{{ errorMessage }}</div>
-                </div>
                 <input type="text" class="form-control valid-control" name="nparte" id="nparte" formControlName="nparte">
                 <!-- Frontend errors -->
                 <div
@@ -178,10 +174,6 @@
             <div class="col-6">
               <div class="form-group">
                 <label for="cantidad">Cantidad</label>
-                <!-- Backend errors -->
-                <div class="alert alert-danger" *ngIf="(responseErrors.cantidad)">
-                  <div *ngFor="let errorMessage of responseErrors.cantidad">{{ errorMessage }}</div>
-                </div>
                 <input type="number" class="form-control valid-control" name="cantidad" id="cantidad" formControlName="cantidad">
                 <!-- Frontend errors -->
                 <div

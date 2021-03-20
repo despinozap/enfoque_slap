@@ -29,7 +29,8 @@ export class SolicitudesEditComponent implements OnInit {
   responseErrors: any = [];
 
   private sub: any;
-  private id: number = -1;
+  id: number = -1;
+  private parte_index: number = -1;
 
   /*
   *   Displayed form:
@@ -47,7 +48,6 @@ export class SolicitudesEditComponent implements OnInit {
   *       1: Update Parte
   */
   PARTEFORM_STATUS: number = 0;
-  private parte_index: number = -1;
 
 
   solicitudForm: FormGroup = new FormGroup({
@@ -124,6 +124,10 @@ export class SolicitudesEditComponent implements OnInit {
       );
     });
 
+  }
+
+  ngOnDestroy() {
+    this.sub.unsubscribe();
   }
 
   private loadClientes() {
@@ -463,12 +467,8 @@ export class SolicitudesEditComponent implements OnInit {
   }
 
   public updateParte(): boolean {
-    let parte: any = {
-      "nparte": this.parteForm.value.nparte,
-      "cantidad": this.parteForm.value.cantidad
-    };
-
-    this.partes[this.parte_index] = parte;
+    this.partes[this.parte_index].nparte = this.parteForm.value.nparte;
+    this.partes[this.parte_index].cantidad = this.parteForm.value.cantidad;
 
     return true;
   }

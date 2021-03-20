@@ -162,10 +162,6 @@
             <div class="col-6">
               <div class="form-group">
                 <label for="nparte">N° Parte</label>
-                <!-- Backend errors -->
-                <div class="alert alert-danger" *ngIf="(responseErrors.nparte)">
-                  <div *ngFor="let errorMessage of responseErrors.nparte">{{ errorMessage }}</div>
-                </div>
                 <input type="text" class="form-control valid-control" name="nparte" id="nparte" formControlName="nparte">
                 <!-- Frontend errors -->
                 <div
@@ -178,10 +174,6 @@
             <div class="col-6">
               <div class="form-group">
                 <label for="cantidad">Cantidad</label>
-                <!-- Backend errors -->
-                <div class="alert alert-danger" *ngIf="(responseErrors.cantidad)">
-                  <div *ngFor="let errorMessage of responseErrors.cantidad">{{ errorMessage }}</div>
-                </div>
                 <input type="number" class="form-control valid-control" name="cantidad" id="cantidad" formControlName="cantidad">
                 <!-- Frontend errors -->
                 <div

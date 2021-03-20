@@ -54,19 +54,6 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  private cleanScripts(): void {
-    document.querySelectorAll('script')
-      .forEach((script) => {
-        script.remove();
-      });
-  }
-
-  private loadScript(src: string) {
-    var script = document.createElement("script");
-    script.setAttribute("src", src);
-    document.body.appendChild(script);
-  }
-
   public goTo_login() {
     this.router.navigate(['login']);
   }
