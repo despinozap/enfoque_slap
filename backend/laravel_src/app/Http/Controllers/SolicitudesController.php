@@ -239,6 +239,7 @@ class SolicitudesController extends Controller
             {
                 $solicitud->makeHidden([
                     'cliente_id',
+                    'estadosolicitud_id',
                     'created_at', 
                     'updated_at'
                 ]);
@@ -451,11 +452,11 @@ class SolicitudesController extends Controller
                 'partes' => 'required|array|min:1',
                 'partes.*.nparte'  => 'required',
                 'partes.*.cantidad'  => 'required|numeric|min:1',
-                'partes.*.costo'  => 'nullable|numeric|min:1',
-                'partes.*.margen'  => 'nullable|numeric|min:1',
-                'partes.*.tiempoentrega'  => 'nullable|numeric|min:1',
+                'partes.*.costo'  => 'nullable|numeric|min:0',
+                'partes.*.margen'  => 'nullable|numeric|min:0',
+                'partes.*.tiempoentrega'  => 'nullable|numeric|min:0',
                 'partes.*.peso'  => 'nullable|numeric|min:1',
-                'partes.*.flete'  => 'nullable|numeric|min:1',
+                'partes.*.flete'  => 'nullable|numeric|min:0',
                 'partes.*.backorder'  => 'required|boolean',
             ];
     
@@ -468,15 +469,15 @@ class SolicitudesController extends Controller
                 'partes.*.cantidad.numeric' => 'La cantidad para la parte debe ser numerica',
                 'partes.*.cantidad.min' => 'La cantidad para la parte debe ser mayor a 0',
                 'partes.*.costo.numeric' => 'El costo para la parte debe ser numerico',
-                'partes.*.costo.min' => 'El costo para la parte debe ser mayor a 0',
+                'partes.*.costo.min' => 'El costo para la parte debe ser mayor o igual a 0',
                 'partes.*.margen.numeric' => 'El margen para la parte debe ser numerico',
-                'partes.*.margen.min' => 'El margen para la parte debe ser mayor a 0',
+                'partes.*.margen.min' => 'El margen para la parte debe ser mayor o igual a 0',
                 'partes.*.tiempoentrega.numeric' => 'El tiempo de entrega para la parte debe ser numerico',
-                'partes.*.tiempoentrega.min' => 'El tiempo de entrega para la parte debe ser mayor a 0',
+                'partes.*.tiempoentrega.min' => 'El tiempo de entrega para la parte debe ser mayor o igual a 0',
                 'partes.*.peso.numeric' => 'El peso para la parte debe ser numerico',
                 'partes.*.peso.min' => 'El peso para la parte debe ser mayor a 0',
                 'partes.*.flete.numeric' => 'El flete para la parte debe ser numerico',
-                'partes.*.flete.min' => 'El flete para la parte debe ser mayor a 0',
+                'partes.*.flete.min' => 'El flete para la parte debe ser mayor o igual a 0',
                 'partes.*.backorder.required' => 'Debes seleccionar si la parte es backorder',
                 'partes.*.backorder.boolean' => 'La seleccion de backorder para la parte es invalida',
             ];
@@ -571,16 +572,40 @@ class SolicitudesController extends Controller
                     {
                         $solicitud->estadosolicitud_id = 1; // Pendiente
                     }
+
                     $solicitud->save();
 
                     if($success === true)
                     {
                         DB::commit();
+                        $solicitud = Solicitud::find($id);
+
+                        $solicitud->makeHidden([
+                            'cliente_id',
+                            'estadosolicitud_id',
+                            'created_at', 
+                            'updated_at'
+                        ]);
+        
+                        $solicitud->cliente;
+                        $solicitud->cliente->makeHidden(['created_at', 'updated_at']);
+                        
+                        $solicitud->estadosolicitud;
+                        $solicitud->estadosolicitud->makeHidden(['created_at', 'updated_at']);
+        
+                        $solicitud->partes;
+                        foreach($solicitud->partes as $parte)
+                        {
+                            $parte->makeHidden(['marca_id', 'created_at', 'updated_at']);
+                            
+                            $parte->marca;
+                            $parte->marca->makeHidden(['created_at', 'updated_at']);
+                        }
 
                         $response = HelpController::buildResponse(
                             200,
                             ($completed === true) ? 'Solicitud completada' : 'Solicitud actualizada',
-                            null
+                            $solicitud
                         );
                     }
                     else
@@ -643,7 +668,7 @@ class SolicitudesController extends Controller
                 else
                 {
                     $response = HelpController::buildResponse(
-                        422,
+                        409,
                         'La solicitud no esta completa',
                         null
                     );
