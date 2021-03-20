@@ -31,7 +31,7 @@
             <tr>
               <th>
                 <div class="custom-header-checkbox custom-checkbox custom-checkbox-outline custom-checkbox-primary">
-                  <input type="checkbox" class="custom-control-input" id="chkSolicitud-header" (change)="checkSolicitudesList($event)">
+                  <input type="checkbox" class="custom-control-input" id="chkSolicitud-header" (change)="checkSolicitudesList($event)" [disabled]="(loading === true)">
                   <label class="custom-control-label" for="chkSolicitud-header">Todos</label>
                 </div>
               </th>

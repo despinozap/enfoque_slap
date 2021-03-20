@@ -6,6 +6,9 @@ import { SolicitudesService } from 'src/app/services/solicitudes.service';
 import { UtilsService } from 'src/app/services/utils.service';
 import { threadId } from 'worker_threads';
 
+/* SweetAlert2 */
+const Swal = require('../../../../assets/vendors/sweetalert2/sweetalert2.all.min.js');
+
 //XLSX lib
 import * as XLSX from 'xlsx';
 
@@ -28,6 +31,7 @@ export class SolicitudesCompleteComponent implements OnInit {
   partes: any[] = [];
   loading: boolean = false;
   responseErrors: any = [];
+  dataUpdated: boolean = false;
 
   private sub: any;
   private id: number = -1;
@@ -226,6 +230,8 @@ export class SolicitudesCompleteComponent implements OnInit {
               }
 
               parte.complete = this.isParteCompleted(index);
+              this.dataUpdated= true;
+
             }
             else if(response.code === 0)
             {
@@ -256,7 +262,7 @@ export class SolicitudesCompleteComponent implements OnInit {
 
   }
 
-  public completeSolicitud()
+  public completeSolicitud(exportAfter: boolean)
   {
     this.loading = true;
     this.responseErrors = [];
@@ -270,12 +276,23 @@ export class SolicitudesCompleteComponent implements OnInit {
         //Success request
         (response: any) => {
 
-          NotificationsService.showToast(
-            response.message,
-            NotificationsService.messageType.success
-          );
-
-          this.goTo_solicitudesList();
+          if(exportAfter === true)
+          {
+            this.loading = false;
+            this.dataUpdated = false;
+            this.exportPartesToExcel();
+          }
+          else
+          {
+            // If going back to the list
+            NotificationsService.showToast(
+              response.message,
+              NotificationsService.messageType.success
+            );
+  
+            this.goTo_solicitudesList();
+          }
+          
         },
         //Error request
         (errorResponse: any) => {
@@ -469,6 +486,8 @@ export class SolicitudesCompleteComponent implements OnInit {
     this.partes[this.parte_index].backorder = this.parteForm.value.backorder;
     this.partes[this.parte_index].descripcion = this.parteForm.value.descripcion;
     this.partes[this.parte_index].complete = this.isParteCompleted(this.parte_index);
+
+    this.dataUpdated = true;
   }
 
   private isParteCompleted(index: number): boolean
@@ -494,6 +513,64 @@ export class SolicitudesCompleteComponent implements OnInit {
       {
         return false;
       }
+    }
+  }
+
+  public exportPartesToExcel(): void {
+
+    if(this.dataUpdated === true)
+    {
+      Swal.fire({
+        title: 'Actualizar partes',
+        text: "La lista de partes ha sido modificada y necesita guardar los cambios antes de exportar. ¿Desea continuar?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#555555',
+        confirmButtonText: 'Sí, continuar',
+        cancelButtonText: 'Cancelar',
+        allowOutsideClick: false
+      }).then((result: any) => {
+        if(result.isConfirmed)
+        {
+          this.completeSolicitud(true);
+        }
+      });
+    }
+    else
+    {
+      let data: any[] = [];
+      //Push header
+      data.push(
+        [
+          'N parte',
+          'Cantidad',
+          'Costo (USD)',
+          'Margen (%)',
+          'Tiempo entrega (dias)',
+          'Peso (kg)',
+          'Valor flete (USD)',
+          'Descripcion',
+          'Backorder (SI = 1, NO = 0)'
+        ]
+      );
+
+      //Add rows
+      this.partes.forEach((p: any) => {
+        data.push([
+          p.nparte,
+          p.cantidad,
+          p.costo,
+          p.margen,
+          p.tiempoentrega,
+          p.peso,
+          p.flete,
+          p.descripcion,
+          (p.backorder === true) ? '1' : '0',
+        ]);
+      });
+
+      this._utilsService.exportTableToExcel(data, `Solicitud_${ this.solicitud.id }-Partes`);
     }
   }
 
