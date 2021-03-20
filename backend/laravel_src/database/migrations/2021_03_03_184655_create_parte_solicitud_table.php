@@ -24,7 +24,7 @@ class CreateParteSolicitudTable extends Migration
             $table->float('margen')->nullable();
             $table->float('peso')->nullable();
             $table->float('flete')->nullable();
-            $table->float('monto')->nullable();
+            $table->double('monto', 10, 2)->nullable();
             $table->boolean('backorder')->default(false);
             $table->timestamps();
 

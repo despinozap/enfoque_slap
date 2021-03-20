@@ -140,10 +140,10 @@ class DatabaseSeeder extends Seeder
         *   Estado solicitudes
         */
         $estadosolicitud = new Estadosolicitud();
-        $estadosolicitud->name = '01 Pendiente';
+        $estadosolicitud->name = 'Pendiente';
         $estadosolicitud->save();
         $estadosolicitud = new Estadosolicitud();
-        $estadosolicitud->name = '02 Completada';
+        $estadosolicitud->name = 'Completada';
         $estadosolicitud->save();
 
         /*

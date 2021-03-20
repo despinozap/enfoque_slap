@@ -246,6 +246,9 @@ class SolicitudesController extends Controller
                 $solicitud->cliente;
                 $solicitud->cliente->makeHidden(['created_at', 'updated_at']);
                 
+                $solicitud->estadosolicitud;
+                $solicitud->estadosolicitud->makeHidden(['created_at', 'updated_at']);
+
                 $solicitud->partes;
                 foreach($solicitud->partes as $parte)
                 {
@@ -465,19 +468,14 @@ class SolicitudesController extends Controller
                 'partes.*.cantidad.required' => 'Debes ingresar la cantidad para la parte',
                 'partes.*.cantidad.numeric' => 'La cantidad para la parte debe ser numerica',
                 'partes.*.cantidad.min' => 'La cantidad para la parte debe ser mayor a 0',
-                //'partes.*.costo.required' => 'Debes ingresar el costo para la parte',
                 'partes.*.costo.numeric' => 'El costo para la parte debe ser numerico',
                 'partes.*.costo.min' => 'El costo para la parte debe ser mayor a 0',
-                //'partes.*.margen.required' => 'Debes ingresar el margen para la parte',
                 'partes.*.margen.numeric' => 'El margen para la parte debe ser numerico',
                 'partes.*.margen.min' => 'El margen para la parte debe ser mayor a 0',
-                //'partes.*.tiempoentrega.required' => 'Debes ingresar el tiempo de entrega para la parte',
                 'partes.*.tiempoentrega.numeric' => 'El tiempo de entrega para la parte debe ser numerico',
                 'partes.*.tiempoentrega.min' => 'El tiempo de entrega para la parte debe ser mayor a 0',
-                //'partes.*.peso.required' => 'Debes ingresar el peso para la parte',
                 'partes.*.peso.numeric' => 'El peso para la parte debe ser numerico',
                 'partes.*.peso.min' => 'El peso para la parte debe ser mayor a 0',
-                //'partes.*.flete.required' => 'Debes ingresar el flete para la parte',
                 'partes.*.flete.numeric' => 'El flete para la parte debe ser numerico',
                 'partes.*.flete.min' => 'El flete para la parte debe ser mayor a 0',
                 'partes.*.backorder.required' => 'Debes seleccionar si la parte es backorder',
@@ -507,18 +505,29 @@ class SolicitudesController extends Controller
                     DB::beginTransaction();
 
                     $syncData = [];
+                    $monto = null;
                     foreach($request->partes as $parte)
                     {
                         if($p = $solicitud->partes->where('nparte', $parte['nparte'])->first())
                         {
+                            if(($parte['costo'] !== null) && ($parte['margen'] !== null) && ($parte['flete'] !== null))
+                            {
+                                $monto = ($parte['costo'] * $parte['cantidad']) + (($parte['costo'] * $parte['cantidad']) * $parte['margen'] / 100) + $parte['flete'];
+                            }
+                            else
+                            {
+                                $monto = null;
+                            }
+
                             $syncData[$p->id] =  array(
+                                'cantidad' => $parte['cantidad'],
                                 'costo' => $parte['costo'],
                                 'margen' => $parte['margen'],
                                 'tiempoentrega' => $parte['tiempoentrega'],
                                 'peso' => $parte['peso'],
                                 'flete' => $parte['flete'],
                                 'backorder' => $parte['backorder'],
-                                'monto' => $parte['costo'] + ($parte['costo']*$parte['margen']/100) + $parte['flete']
+                                'monto' => $monto
                             );
                         }
                         else
@@ -537,13 +546,41 @@ class SolicitudesController extends Controller
 
                     $solicitud->partes()->sync($syncData);
 
+                    $completed = true;
+                    foreach($syncData as $parte)
+                    {
+                        if(
+                            ($parte['costo'] === null) || 
+                            ($parte['margen'] === null) || 
+                            ($parte['tiempoentrega'] === null) || 
+                            ($parte['peso'] === null) || 
+                            ($parte['flete'] === null) || 
+                            ($parte['monto'] === null)
+                        )
+                        {
+                            $completed = false;
+                            
+                            break;
+                        }
+                    }
+
+                    if($completed === true)
+                    {
+                        $solicitud->estadosolicitud_id = 2; // Completada
+                    }
+                    else
+                    {
+                        $solicitud->estadosolicitud_id = 1; // Pendiente
+                    }
+                    $solicitud->save();
+
                     if($success === true)
                     {
                         DB::commit();
 
                         $response = HelpController::buildResponse(
                             201,
-                            'Solicitud actualizada',
+                            ($completed === true) ? 'Solicitud completada' : 'Solicitud actualizada',
                             null
                         );
                     }
