@@ -34,7 +34,6 @@ export class SolicitudesCompleteComponent implements OnInit {
   dataUpdated: boolean = false;
 
   private sub: any;
-  private id: number = -1;
   private parte_index: number = -1;
 
   /*
@@ -44,6 +43,15 @@ export class SolicitudesCompleteComponent implements OnInit {
   *       1: Parte
   */
   DISPLAYING_FORM: number = 0;  
+
+
+  /*
+  *   After complete() action:
+  * 
+  *       0: Go backt o Solicitudes list
+  *       1: Parte
+  */
+  AFTER_COMPLETE_ACTION: number = 0; 
 
   parteForm: FormGroup = new FormGroup({
     nparte: new FormControl(''),
@@ -66,50 +74,8 @@ export class SolicitudesCompleteComponent implements OnInit {
 
   ngOnInit(): void {
     this.sub = this.route.params.subscribe(params => {
-      
-      this.id = params['id'];
-      this.loading = true;
-
-      this._solicitudesService.getSolicitud(this.id)
-      .subscribe(
-        //Success request
-        (response: any) => {
-          this.loading = false;
-
-          this.loadFormData(response.data);
-        },
-        //Error request
-        (errorResponse: any) => {
-
-          switch(errorResponse.status)
-          {
-          
-            case 412: //Object not found
-            {
-              NotificationsService.showToast(
-                errorResponse.error.message,
-                NotificationsService.messageType.warning
-              );
-
-              break;
-            }
-          
-            default: //Unhandled error
-            {
-              NotificationsService.showToast(
-                'Error al cargar los datos de la solicitud',
-                NotificationsService.messageType.error
-              );
-    
-              break;
-
-            }
-          }
-
-          this.loading = false;
-          this.goTo_solicitudesList();
-        }
-      );
+      this.solicitud.id = params['id'];
+      this.loadSolicitud(0);
     });
   }
 
@@ -275,7 +241,80 @@ export class SolicitudesCompleteComponent implements OnInit {
 
   }
 
-  public completeSolicitud(exportAfter: boolean)
+  public loadSolicitud(afterExecutedAction: number): void {
+    
+    this.loading = true;
+
+    this._solicitudesService.getSolicitud(this.solicitud.id)
+    .subscribe(
+      //Success request
+      (response: any) => {
+        
+        switch(afterExecutedAction){
+          
+          case 0: { // Nothing
+
+            this.loading = false;
+            this.loadFormData(response.data);
+            
+            break;
+          }
+
+          case 1: { // Export partes list to Excel
+
+            this.loading = false;
+            this.loadFormData(response.data);
+
+            this.dataUpdated = false;
+
+            this.exportPartesToExcel();
+
+            break;
+          }
+
+          default: {
+
+            break;
+          }
+
+        }
+        
+      },
+      //Error request
+      (errorResponse: any) => {
+
+        switch(errorResponse.status)
+        {
+        
+          case 412: //Object not found
+          {
+            NotificationsService.showToast(
+              errorResponse.error.message,
+              NotificationsService.messageType.warning
+            );
+
+            break;
+          }
+        
+          default: //Unhandled error
+          {
+            NotificationsService.showToast(
+              'Error al cargar los datos de la solicitud',
+              NotificationsService.messageType.error
+            );
+  
+            break;
+
+          }
+        }
+
+        this.loading = false;
+        this.goTo_solicitudesList();
+      }
+    );
+  }
+
+  public completeSolicitud(afterExecutedAction: number)
   {
     this.loading = true;
     this.responseErrors = [];
@@ -284,26 +323,148 @@ export class SolicitudesCompleteComponent implements OnInit {
       partes: this.partes
     };
     
-    this._solicitudesService.completeSolicitud(this.id, solicitud)
+    this._solicitudesService.completeSolicitud(this.solicitud.id, solicitud)
       .subscribe(
         //Success request
         (response: any) => {
 
-          if(exportAfter === true)
+          switch(afterExecutedAction)
           {
-            this.loading = false;
-            this.dataUpdated = false;
-            this.exportPartesToExcel();
-          }
-          else
-          {
-            // If going back to the list
-            NotificationsService.showToast(
-              response.message,
-              NotificationsService.messageType.success
-            );
+          
+            case 0: { // Go back to the list
+
+              NotificationsService.showToast(
+                response.message,
+                NotificationsService.messageType.success
+              );
+
+              this.loadFormData(response.data);
+
+              if(this.solicitud.estadosolicitud_id === 2)
+              {
+                this.loading = false;
+
+                Swal.fire({
+                  title: 'Solicitud completada',
+                  text: `La solicitud #${ this.solicitud.id } se ha completado. ¿Deseas cerrarla?`,
+                  icon: 'question',
+                  showCancelButton: true,
+                  confirmButtonColor: '#3085d6',
+                  cancelButtonColor: '#555555',
+                  confirmButtonText: 'Sí, continuar',
+                  cancelButtonText: 'Cancelar',
+                  allowOutsideClick: false
+                }).then((result: any) => {
+                  if(result.isConfirmed)
+                  {
+                    Swal.queue([{
+                      title: 'Cerrando solicitud..',
+                      icon: 'warning',
+                      showConfirmButton: false,
+                      showCancelButton: false,
+                      allowOutsideClick: false,
+                      showLoaderOnConfirm: true,
+                      preConfirm: () => {
+            
+                      }    
+                    }]);
+
+                    this._solicitudesService.closeSolicitud(this.solicitud.id)
+                    .subscribe(
+                      //Success request
+                      (response: any) => {
+
+                        NotificationsService.showToast(
+                          response.message,
+                          NotificationsService.messageType.success
+                        );
+
+                        this.goTo_solicitudesList();
+                      },
+                      //Error request
+                      (errorResponse: any) => {
+
+                        switch(errorResponse.status)
+                        {
+                          case 400: //Object not found
+                          {
+                            NotificationsService.showAlert(
+                              errorResponse.error.message,
+                              NotificationsService.messageType.warning
+                            );
+
+                            break;
+                          }
+
+                          case 405: //Permission denied
+                          {
+                            NotificationsService.showAlert(
+                              errorResponse.error.message,
+                              NotificationsService.messageType.warning
+                            );
+
+                            break;
+                          }
+
+                          case 409: //Conflict
+                          {
+                            NotificationsService.showAlert(
+                              errorResponse.error.message,
+                              NotificationsService.messageType.error
+                            );
+
+                            break;
+                          }
+
+                          case 500: //Internal server
+                          {
+                            NotificationsService.showAlert(
+                              errorResponse.error.message,
+                              NotificationsService.messageType.error
+                            );
+
+                            break;
+                          }
+
+                          default: //Unhandled error
+                          {
+                            NotificationsService.showAlert(
+                              'Error al intentar cerrar la solicitud',
+                              NotificationsService.messageType.error
+                            );
+
+                            break;
+                          }
+                        }
+                      }
+                    );
+                  }
+                  else
+                  {
+                    this.goTo_solicitudesList();
+                  }
+                });
+              }
+              else
+              {
+                this.goTo_solicitudesList();
+              }
+              
+              break;
+            }
   
-            this.goTo_solicitudesList();
+            case 1: { // Export partes list to Excel
+  
+              this.loading = false;
+              this.loadSolicitud(1);
+  
+              break;
+            }
+  
+            default: {
+  
+              break;
+            }
           }
           
         },
@@ -401,8 +562,28 @@ export class SolicitudesCompleteComponent implements OnInit {
               case 400: //Object not found
               {
                 NotificationsService.showAlert(
-                  errorResponse.message,
+                  errorResponse.error.message,
                   NotificationsService.messageType.warning
+                );
+
+                break;
+              }
+
+              case 405: //Permission denied
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.warning
+                );
+
+                break;
+              }
+
+              case 409: //Conflict
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
                 );
 
                 break;
@@ -411,7 +592,7 @@ export class SolicitudesCompleteComponent implements OnInit {
               case 500: //Internal server
               {
                 NotificationsService.showAlert(
-                  errorResponse.message,
+                  errorResponse.error.message,
                   NotificationsService.messageType.error
                 );
 
@@ -626,7 +807,7 @@ export class SolicitudesCompleteComponent implements OnInit {
       }).then((result: any) => {
         if(result.isConfirmed)
         {
-          this.completeSolicitud(true);
+          this.completeSolicitud(1);
         }
       });
     }
