@@ -145,6 +145,9 @@ class DatabaseSeeder extends Seeder
         $estadosolicitud = new Estadosolicitud();
         $estadosolicitud->name = 'Completada';
         $estadosolicitud->save();
+        $estadosolicitud = new Estadosolicitud();
+        $estadosolicitud->name = 'Cerrada';
+        $estadosolicitud->save();
 
         /*
         *   Solicitudes
