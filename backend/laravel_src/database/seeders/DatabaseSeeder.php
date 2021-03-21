@@ -26,7 +26,7 @@ class DatabaseSeeder extends Seeder
         */
         $routePermissionNames = [
             //Roles
-            'roles indexfull',
+            'roles index_full',
             //Users
             'users index',
             'users store',
@@ -34,13 +34,14 @@ class DatabaseSeeder extends Seeder
             'users update',
             'users destroy',
             //Clientes
-            'clientes indexfull',
+            'clientes index_full',
             //Marcas
-            'marcas indexfull',
+            'marcas index_full',
             //Solicitudes
             'solicitudes index',
             'solicitudes store',
             'solicitudes show',
+            'solicitudes show_seller',
             'solicitudes update',
             'solicitudes complete',
             'solicitudes close',
@@ -67,7 +68,7 @@ class DatabaseSeeder extends Seeder
             //Route permissions to for Role: Administrador
             $routePermissionNames = [
                 //Roles
-                'roles indexfull',
+                'roles index_full',
                 //Users
                 'users index',
                 'users store',
@@ -75,9 +76,9 @@ class DatabaseSeeder extends Seeder
                 'users update',
                 'users destroy',
                 //Clientes
-                'clientes indexfull',
+                'clientes index_full',
                 //Marcas
-                'marcas indexfull',
+                'marcas index_full',
                 //Solicitudes
                 'solicitudes index',
                 'solicitudes store',
@@ -100,6 +101,37 @@ class DatabaseSeeder extends Seeder
             $role->routepermissions()->sync($routePermissionIds);
         }
         
+        //Vendedor
+        {
+            $role = new Role();
+            $role->name = 'Vendedor';
+            $role->save();
+
+            //Route permissions to for Role: Vendedor
+            $routePermissionNames = [
+                //Clientes
+                'clientes index_full',
+                //Marcas
+                'marcas index_full',
+                //Solicitudes
+                'solicitudes index',
+                'solicitudes store',
+                'solicitudes show_seller',
+                'solicitudes update',
+            ];
+
+            $routePermissionIds = [];
+
+            //Get all the Routepermissions IDs
+            foreach($routePermissionNames as $routePermissionName)
+            {
+                $routePermission = Routepermission::where('name', $routePermissionName)->first();
+                $routePermissionIds[] = $routePermission->id;
+            }
+
+            //Sync permissions to the role
+            $role->routepermissions()->sync($routePermissionIds);
+        }
 
         /*
         *   Users
@@ -109,7 +141,7 @@ class DatabaseSeeder extends Seeder
         $user->email = 'admin@mail.com';
         $user->phone = '9012345678';
         $user->password = bcrypt('admin');
-        $user->role_id = $role->id;
+        $user->role_id = 1; // Administrador
         $user->save();
 
         /*

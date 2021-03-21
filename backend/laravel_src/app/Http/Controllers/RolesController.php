@@ -23,7 +23,7 @@ class RolesController extends Controller
         $response = null;
 
         $user = Auth::user();
-        if($user->role->hasRoutepermission('roles indexfull'))
+        if($user->role->hasRoutepermission('roles index_full'))
         {
             if($roles = Role::all())
             {

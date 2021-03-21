@@ -24,7 +24,7 @@ class MarcasController extends Controller
         $response = null;
 
         $user = Auth::user();
-        if($user->role->hasRoutepermission('marcas indexfull'))
+        if($user->role->hasRoutepermission('marcas index_full'))
         {
             if($marcas = Marca::all())
             {

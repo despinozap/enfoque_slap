@@ -228,6 +228,64 @@ class SolicitudesController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
+    public function showSeller($id)
+    {
+        $response = null;
+
+        $user = Auth::user();
+        if($user->role->hasRoutepermission('solicitudes show_seller'))
+        {
+            if($solicitud = Solicitud::find($id))
+            {
+                $solicitud->makeHidden([
+                    'cliente_id',
+                    'estadosolicitud_id',
+                    'created_at', 
+                    'updated_at'
+                ]);
+
+                $solicitud->cliente;
+                $solicitud->cliente->makeHidden(['created_at', 'updated_at']);
+                
+                $solicitud->estadosolicitud;
+                $solicitud->estadosolicitud->makeHidden(['created_at', 'updated_at']);
+
+                $solicitud->partes;
+                foreach($solicitud->partes as $parte)
+                {
+                    $parte->makeHidden(['marca_id', 'created_at', 'updated_at']);
+                    
+                    $parte->marca;
+                    $parte->marca->makeHidden(['created_at', 'updated_at']);
+                }
+                
+                $response = HelpController::buildResponse(
+                    200,
+                    null,
+                    $solicitud
+                );
+            }   
+            else     
+            {
+                $response = HelpController::buildResponse(
+                    400,
+                    'La solicitud no existe',
+                    null
+                );
+            }
+        }
+        else
+        {
+            $response = HelpController::buildResponse(
+                405,
+                'No tienes acceso a visualizar solicitudes',
+                null
+            );
+        }
+
+        return $response;
+    }
+
     public function show($id)
     {
         $response = null;
@@ -458,6 +516,7 @@ class SolicitudesController extends Controller
                 'partes.*.peso'  => 'nullable|numeric|min:1',
                 'partes.*.flete'  => 'nullable|numeric|min:0',
                 'partes.*.backorder'  => 'required|boolean',
+                'partes.*.description'  => 'nullable',
             ];
     
             $validatorMessages = [
@@ -521,6 +580,7 @@ class SolicitudesController extends Controller
 
                             $syncData[$p->id] =  array(
                                 'cantidad' => $parte['cantidad'],
+                                'descripcion' => $parte['descripcion'],
                                 'costo' => $parte['costo'],
                                 'margen' => $parte['margen'],
                                 'tiempoentrega' => $parte['tiempoentrega'],

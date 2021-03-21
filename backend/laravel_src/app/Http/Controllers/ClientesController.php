@@ -23,7 +23,7 @@ class ClientesController extends Controller
         $response = null;
 
         $user = Auth::user();
-        if($user->role->hasRoutepermission('clientes indexfull'))
+        if($user->role->hasRoutepermission('clientes index_full'))
         {
             if($clientes = Cliente::all())
             {

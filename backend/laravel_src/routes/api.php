@@ -63,6 +63,7 @@ Route::middleware('auth:api')->group(function()
     Route::get('/solicitudes', [SolicitudesController::class, 'index']);
     Route::post('/solicitudes', [SolicitudesController::class, 'store']);
     Route::get('/solicitudes/{id}', [SolicitudesController::class, 'show']);
+    Route::get('/solicitudes/seller/{id}', [SolicitudesController::class, 'showSeller']);
     Route::put('/solicitudes/{id}', [SolicitudesController::class, 'update']);
     Route::post('/solicitudes/complete/{id}', [SolicitudesController::class, 'complete']);
     Route::post('/solicitudes/close/{id}', [SolicitudesController::class, 'close']);
