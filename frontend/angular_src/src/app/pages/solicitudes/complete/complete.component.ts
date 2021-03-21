@@ -470,8 +470,9 @@ export class SolicitudesCompleteComponent implements OnInit {
         },
         //Error request
         (errorResponse: any) => {
-          console.log(errorResponse);
-          switch (errorResponse.status) {
+
+          switch (errorResponse.status) 
+          {
             case 400: //Invalid request parameters
               {
                 this.responseErrors = errorResponse.error.message;
@@ -515,8 +516,7 @@ export class SolicitudesCompleteComponent implements OnInit {
       );
   }
 
-  public closeSolicitud(): void
-  {
+  public closeSolicitud(): void{
     Swal.fire({
       title: 'Cerrar solicitud',
       text: `¿Realmente quieres cerrar la solicitud #${ this.solicitud.id }?`,

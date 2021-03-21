@@ -113,7 +113,7 @@ export class SolicitudesListComponent implements OnInit {
           case 500: //Internal server
           {
             NotificationsService.showAlert(
-              errorResponse.message,
+              errorResponse.error.message,
               NotificationsService.messageType.error
             );
 
@@ -185,7 +185,7 @@ export class SolicitudesListComponent implements OnInit {
               case 400: //Object not found
               {
                 NotificationsService.showAlert(
-                  errorResponse.message,
+                  errorResponse.error.message,
                   NotificationsService.messageType.warning
                 );
 
@@ -195,7 +195,7 @@ export class SolicitudesListComponent implements OnInit {
               case 500: //Internal server
               {
                 NotificationsService.showAlert(
-                  errorResponse.message,
+                  errorResponse.error.message,
                   NotificationsService.messageType.error
                 );
 

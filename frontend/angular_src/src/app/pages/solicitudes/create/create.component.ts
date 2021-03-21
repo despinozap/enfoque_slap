@@ -87,11 +87,12 @@ export class SolicitudesCreateComponent implements OnInit {
         //Error request
         (errorResponse: any) => {
 
-          switch (errorResponse.status) {
+          switch (errorResponse.status) 
+          {
             case 500: //Internal server
               {
                 NotificationsService.showAlert(
-                  errorResponse.message,
+                  errorResponse.error.message,
                   NotificationsService.messageType.error
                 );
 
@@ -103,7 +104,7 @@ export class SolicitudesCreateComponent implements OnInit {
                 NotificationsService.showAlert(
                   'Error al cargar la lista de clientes',
                   NotificationsService.messageType.error
-                )
+                );
 
                 break;
               }
@@ -136,7 +137,7 @@ export class SolicitudesCreateComponent implements OnInit {
             case 500: //Internal server
               {
                 NotificationsService.showAlert(
-                  errorResponse.message,
+                  errorResponse.error.message,
                   NotificationsService.messageType.error
                 );
 

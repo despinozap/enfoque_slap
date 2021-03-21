@@ -149,7 +149,7 @@ export class SolicitudesEditComponent implements OnInit {
             case 500: //Internal server
               {
                 NotificationsService.showAlert(
-                  errorResponse.message,
+                  errorResponse.error.message,
                   NotificationsService.messageType.error
                 );
 
@@ -194,7 +194,7 @@ export class SolicitudesEditComponent implements OnInit {
             case 500: //Internal server
               {
                 NotificationsService.showAlert(
-                  errorResponse.message,
+                  errorResponse.error.message,
                   NotificationsService.messageType.error
                 );
 
