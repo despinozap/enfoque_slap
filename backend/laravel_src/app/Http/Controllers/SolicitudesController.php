@@ -228,64 +228,6 @@ class SolicitudesController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function showSeller($id)
-    {
-        $response = null;
-
-        $user = Auth::user();
-        if($user->role->hasRoutepermission('solicitudes show_seller'))
-        {
-            if($solicitud = Solicitud::find($id))
-            {
-                $solicitud->makeHidden([
-                    'cliente_id',
-                    'estadosolicitud_id',
-                    'created_at', 
-                    'updated_at'
-                ]);
-
-                $solicitud->cliente;
-                $solicitud->cliente->makeHidden(['created_at', 'updated_at']);
-                
-                $solicitud->estadosolicitud;
-                $solicitud->estadosolicitud->makeHidden(['created_at', 'updated_at']);
-
-                $solicitud->partes;
-                foreach($solicitud->partes as $parte)
-                {
-                    $parte->makeHidden(['marca_id', 'created_at', 'updated_at']);
-                    
-                    $parte->marca;
-                    $parte->marca->makeHidden(['created_at', 'updated_at']);
-                }
-                
-                $response = HelpController::buildResponse(
-                    200,
-                    null,
-                    $solicitud
-                );
-            }   
-            else     
-            {
-                $response = HelpController::buildResponse(
-                    400,
-                    'La solicitud no existe',
-                    null
-                );
-            }
-        }
-        else
-        {
-            $response = HelpController::buildResponse(
-                405,
-                'No tienes acceso a visualizar solicitudes',
-                null
-            );
-        }
-
-        return $response;
-    }
-
     public function show($id)
     {
         $response = null;
@@ -311,10 +253,51 @@ class SolicitudesController extends Controller
                 $solicitud->partes;
                 foreach($solicitud->partes as $parte)
                 {
-                    $parte->makeHidden(['marca_id', 'created_at', 'updated_at']);
-                    
+                    $parte->makeHidden([
+                        'marca_id', 
+                        'created_at', 
+                        'updated_at'
+                    ]);
+
                     $parte->marca;
                     $parte->marca->makeHidden(['created_at', 'updated_at']);
+
+                    switch($user->role_id)
+                    {
+                        case 1: { // Administrador
+
+                            $parte->pivot->makeHidden([
+                                'marca_id', 
+                                'created_at', 
+                                'updated_at'
+                            ]);
+
+                            break;
+                        }
+
+                        case 2: { // Vendedor
+
+                            $parte->pivot->makeHidden([
+                                'costo',
+                                'tiempoentrega',
+                                'margen',
+                                'peso',
+                                'flete',
+                                'monto',
+                                'backorder',
+                                'marca_id', 
+                                'created_at', 
+                                'updated_at'
+                            ]);
+
+                            break;
+                        }
+
+                        default: {
+
+                            break;
+                        }
+                    }
                 }
                 
                 $response = HelpController::buildResponse(

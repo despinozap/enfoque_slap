@@ -41,7 +41,6 @@ class DatabaseSeeder extends Seeder
             'solicitudes index',
             'solicitudes store',
             'solicitudes show',
-            'solicitudes show_seller',
             'solicitudes update',
             'solicitudes complete',
             'solicitudes close',
@@ -116,7 +115,7 @@ class DatabaseSeeder extends Seeder
                 //Solicitudes
                 'solicitudes index',
                 'solicitudes store',
-                'solicitudes show_seller',
+                'solicitudes show',
                 'solicitudes update',
             ];
 
