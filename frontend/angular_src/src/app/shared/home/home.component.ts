@@ -41,7 +41,6 @@ export class HomeComponent implements OnInit {
           //Error request
           (errorResponse: any) => {
 
-            
             if(errorResponse.status === 401)
             {
               //Unauthorized

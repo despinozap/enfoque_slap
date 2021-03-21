@@ -89,9 +89,19 @@ export class SolicitudesCreateComponent implements OnInit {
 
           switch (errorResponse.status) 
           {
+            case 405: //Permission denied
+              {
+                NotificationsService.showToast(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
             case 500: //Internal server
               {
-                NotificationsService.showAlert(
+                NotificationsService.showToast(
                   errorResponse.error.message,
                   NotificationsService.messageType.error
                 );
@@ -101,7 +111,7 @@ export class SolicitudesCreateComponent implements OnInit {
 
             default: //Unhandled error
               {
-                NotificationsService.showAlert(
+                NotificationsService.showToast(
                   'Error al cargar la lista de clientes',
                   NotificationsService.messageType.error
                 );
@@ -133,10 +143,21 @@ export class SolicitudesCreateComponent implements OnInit {
         //Error request
         (errorResponse: any) => {
 
-          switch (errorResponse.status) {
+          switch (errorResponse.status) 
+          {
+            case 405: //Permission denied
+              {
+                NotificationsService.showToast(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
             case 500: //Internal server
               {
-                NotificationsService.showAlert(
+                NotificationsService.showToast(
                   errorResponse.error.message,
                   NotificationsService.messageType.error
                 );
@@ -146,7 +167,7 @@ export class SolicitudesCreateComponent implements OnInit {
 
             default: //Unhandled error
               {
-                NotificationsService.showAlert(
+                NotificationsService.showToast(
                   'Error al cargar la lista de marcas',
                   NotificationsService.messageType.error
                 )
@@ -254,11 +275,22 @@ export class SolicitudesCreateComponent implements OnInit {
         //Error request
         (errorResponse: any) => {
 
-          switch (errorResponse.status) {
+          switch (errorResponse.status) 
+          {
             case 400: //Invalid request parameters
               {
                 this.responseErrors = errorResponse.error.message;
 
+                break;
+              }
+
+            case 405: //Permission denied
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+    
                 break;
               }
 

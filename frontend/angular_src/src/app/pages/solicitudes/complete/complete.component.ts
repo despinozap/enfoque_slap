@@ -286,6 +286,16 @@ export class SolicitudesCompleteComponent implements OnInit {
         switch(errorResponse.status)
         {
         
+          case 405: //Permission denied
+          {
+            NotificationsService.showToast(
+              errorResponse.error.message,
+              NotificationsService.messageType.error
+            );
+
+            break;
+          }
+
           case 412: //Object not found
           {
             NotificationsService.showToast(
@@ -400,7 +410,7 @@ export class SolicitudesCompleteComponent implements OnInit {
                           {
                             NotificationsService.showAlert(
                               errorResponse.error.message,
-                              NotificationsService.messageType.warning
+                              NotificationsService.messageType.error
                             );
 
                             break;
@@ -476,6 +486,16 @@ export class SolicitudesCompleteComponent implements OnInit {
             case 400: //Invalid request parameters
               {
                 this.responseErrors = errorResponse.error.message;
+
+                break;
+              }
+
+            case 405: //Permission denied
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
 
                 break;
               }
@@ -573,7 +593,7 @@ export class SolicitudesCompleteComponent implements OnInit {
               {
                 NotificationsService.showAlert(
                   errorResponse.error.message,
-                  NotificationsService.messageType.warning
+                  NotificationsService.messageType.error
                 );
 
                 break;

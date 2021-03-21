@@ -112,6 +112,16 @@ export class ProfileEditComponent implements OnInit {
         switch(errorResponse.status)
         {
        
+          case 405: //Permission denied
+          {
+            NotificationsService.showAlert(
+              errorResponse.error.message,
+              NotificationsService.messageType.error
+            );
+
+            break;
+          }
+
           case 412: //Object not found
           {
             NotificationsService.showToast(

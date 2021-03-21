@@ -99,6 +99,16 @@ export class UsuariosListComponent implements OnInit, AfterViewInit, OnDestroy {
 
         switch(errorResponse.status)
         {     
+          case 405: //Permission denied
+          {
+            NotificationsService.showAlert(
+              errorResponse.error.message,
+              NotificationsService.messageType.error
+            );
+
+            break;
+          }
+
           case 500: //Internal server
           {
             NotificationsService.showAlert(
@@ -175,6 +185,16 @@ export class UsuariosListComponent implements OnInit, AfterViewInit, OnDestroy {
                 NotificationsService.showAlert(
                   errorResponse.error.message,
                   NotificationsService.messageType.warning
+                );
+
+                break;
+              }
+
+              case 405: //Permission denied
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
                 );
 
                 break;
