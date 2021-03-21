@@ -196,9 +196,22 @@ class AuthController extends Controller
 			{
 				$accessToken = Auth::user()->createToken('authToken')->accessToken;
 
+				$user = Auth::user();
+
+				$user->role;
+
+				$user->makeHidden([
+						'email_verified_at',
+						'role_id',
+						'created_at', 
+						'updated_at'
+				]);
+
+				$user->role->makeHidden(['created_at', 'updated_at']);
+
 				$data = [
 					'access_token' => $accessToken,
-					'user' => Auth::user()
+					'user' => $user
 				];
 
 				$response = HelpController::buildResponse(
