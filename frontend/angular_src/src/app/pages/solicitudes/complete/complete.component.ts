@@ -1,3 +1,4 @@
+import { createOfflineCompileUrlResolver } from '@angular/compiler';
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -98,7 +99,7 @@ export class SolicitudesCompleteComponent implements OnInit {
               'peso': p.pivot.peso,
               'flete': p.pivot.flete,
               'monto': p.pivot.monto,
-              'backorder': p.pivot.backorder,
+              'backorder': p.pivot.backorder === 1 ? true : false,
               'descripcion': p.pivot.descripcion
             }
           )
@@ -753,7 +754,7 @@ export class SolicitudesCompleteComponent implements OnInit {
   }
 
   public updateParte(): void {
-
+    
     this.partes[this.parte_index].cantidad = this.parteForm.value.cantidad;
     this.partes[this.parte_index].costo = this.parteForm.value.costo;
     this.partes[this.parte_index].margen = this.parteForm.value.margen;
@@ -864,7 +865,6 @@ export class SolicitudesCompleteComponent implements OnInit {
   }
 
   public goTo_updateParte(index: number): void {
-
     this.parte_index = index;
 
     this.parteForm.controls.cantidad.setValue(this.partes[this.parte_index].cantidad);

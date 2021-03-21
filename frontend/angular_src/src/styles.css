@@ -18,6 +18,13 @@
   font-weight: 600;
 }
 
+.icon-table {
+  font-size: 24px;
+  margin-right: 3px;
+  vertical-align: middle;
+  font-weight: 400;
+}
+
 .error-response {
   color: #b1324b;
 }

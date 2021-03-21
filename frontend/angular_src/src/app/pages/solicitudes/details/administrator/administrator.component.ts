@@ -101,7 +101,7 @@ export class SolicitudesDetailsAdministratorComponent implements OnInit {
             'peso': p.pivot.peso,
             'flete': p.pivot.flete,
             'monto': p.pivot.monto,
-            'backorder': p.pivot.backorder,
+            'backorder': p.pivot.backorder === 1 ? true : false,
             'descripcion': p.pivot.descripcion
           }
         )

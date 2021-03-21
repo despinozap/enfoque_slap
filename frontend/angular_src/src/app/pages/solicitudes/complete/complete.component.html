@@ -80,7 +80,7 @@
                 <td colspan="10" align="center">La lista de partes esta vacia</td>
               </tr>
               <tr *ngFor="let parte of partes; index as i" [class.table-danger]="(parte.complete === false)">
-                <td align="left">{{ parte.nparte }}</td>
+                <td align="left"><i class="bx bx-timer icon-table" *ngIf="(parte.backorder === true)"></i>{{ parte.nparte }}</td>
                 <td align="right">{{ parte.cantidad }}</td>
                 <td align="right">{{ parte.costo !== null ? "$" + moneyStringFormat(parte.costo) : parte.costo }}</td>
                 <td align="right">{{ parte.margen !== null ? parte.margen + "%" : parte.margen }}</td>
@@ -240,7 +240,7 @@
               <div class="form-group">
                 <label for="flete">Backorder</label>
                 <div class="custom-control custom-checkbox mb-3">
-                  <input type="checkbox" class="custom-control-input" id="backorder" name="backorder">
+                  <input type="checkbox" class="custom-control-input" id="backorder" name="backorder" formControlName="backorder">
                   <label class="custom-control-label" for="backorder">Esta parte esta en Backorder</label>
                 </div>
               </div>

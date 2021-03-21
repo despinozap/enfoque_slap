@@ -24,6 +24,7 @@
         <h4 class="card-title">Solicitud {{ solicitud.id !== null ? "#" + solicitud.id : '' }}</h4>
         <span class="badge" [class.badge-warning]="(solicitud.estadosolicitud_id === 1)"
             [class.badge-success]="(solicitud.estadosolicitud_id === 2)"
+            [class.badge-primary]="(solicitud.estadosolicitud_id === 3)"
             *ngIf="(solicitud.estadosolicitud_name !== null)">{{ solicitud.estadosolicitud_name }}</span>
         <p class="card-title-desc">Detalle de la solicitud</p>
         <div class="row">
@@ -72,7 +73,7 @@
             </thead>
             <tbody>
               <tr *ngFor="let parte of partes; index as i">
-                <td align="left">{{ parte.nparte !== null ? parte.nparte : "" }}</td>
+                <td align="left"><i class="bx bx-timer icon-table" *ngIf="(parte.backorder === true)"></i>{{ parte.nparte !== null ? parte.nparte : "" }}</td>
                 <td align="right">{{ parte.cantidad !== null ? parte.cantidad : "" }}</td>
                 <td align="right">{{ parte.costo !== null ? "$" + moneyStringFormat(parte.costo) : "" }}</td>
                 <td align="right">{{ parte.margen !== null ? parte.margen + "%" : "" }}</td>
