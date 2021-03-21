@@ -1,5 +1,4 @@
-import { Component, OnInit } from '@angular/core';
-import { Role } from 'src/app/interfaces/role';
+import { Component, Input, OnInit } from '@angular/core';
 import { User } from 'src/app/interfaces/user';
 import { AuthService } from 'src/app/services/auth.service';
 import { UtilsService } from 'src/app/services/utils.service';
@@ -13,6 +12,8 @@ export class MenubarComponent implements OnInit {
 
   menu: any;
 
+  @Input('loggedUser') loggedUser: User = null as any;
+  
   constructor(
     private _authService: AuthService,
     private _utilsService: UtilsService
@@ -29,6 +30,8 @@ export class MenubarComponent implements OnInit {
         this.loadScript('assets/js/app.js');
       });
     }
+
+    this._authService.notifyLoggedUser();
   }
 
   private cleanScripts(): void {

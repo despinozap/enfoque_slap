@@ -10,8 +10,6 @@ import { AuthService } from 'src/app/services/auth.service';
 })
 export class HomeComponent implements OnInit {
 
-  public loggedUser: User = null as any;
-
   constructor(
     private router: Router,
     private _authService: AuthService
@@ -20,14 +18,18 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
 
-    if (this._authService.getLoggedUser() === null) {
-      
+    if (this._authService.getLoggedUser() !== null) 
+    {
+      this._authService.notifyLoggedUser();
+    }
+    else
+    { 
       this._authService.getAuthenticatedUser()
         .subscribe(
           //Success request
           (response: any) => {
 
-            this.loggedUser = {
+            let loggedUser = {
               id: response.data.id,
               name: response.data.name,
               email: response.data.email,
@@ -36,7 +38,7 @@ export class HomeComponent implements OnInit {
               role_name: response.data.role.name
             } as User;
             
-            this._authService.setLoggedUser(this.loggedUser);
+            this._authService.setLoggedUser(loggedUser);
           },
           //Error request
           (errorResponse: any) => {

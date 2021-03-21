@@ -91,6 +91,20 @@ export class AuthService {
 		this.loggedUserSource.next(this.loggedUser);
 	}
 
+	public notifyLoggedUser(): boolean {
+		if(this.loggedUser !== null)
+		{
+			//The observable notifies all the subscribers about the new value for loggedUser
+			this.loggedUserSource.next(this.loggedUser);
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
 	public getLoggedUser(): User
 	{
 		return this.loggedUser;

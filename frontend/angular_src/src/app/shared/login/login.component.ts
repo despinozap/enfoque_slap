@@ -74,8 +74,16 @@ export class LoginComponent implements OnInit {
 			.subscribe(
 				//Success request
 				(response: any) => {
+					
+					let loggedUser: User = {
+						'id': response.data.user.id,
+						'name': response.data.user.name,
+						'email': response.data.user.email,
+						'phone': response.data.user.phone,
+						'role_id': response.data.user.role.id,
+						'role_name': response.data.user.role.name,
+					} as User;
 
-					let loggedUser = <User>response.data.user;
 					this._authService.setLoggedUser(loggedUser);
 					this._authService.setAccessToken(response.data.access_token);
 
