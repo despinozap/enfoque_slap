@@ -24,7 +24,7 @@
         <h4 class="card-title">Solicitudes</h4>
         <p class="card-title-desc">Lista de solicitudes del sistema</p>
 
-        <table #dtSolicitudes datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger"
+        <table datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger"
             class="table table-bordered dt-responsive nowrap row-border hover"
             style="border-collapse: collapse; border-spacing: 0; width: 100%;">
           <thead>
@@ -65,7 +65,13 @@
               <td align="right">{{ solicitud.partes_total }}</td>
               <td align="center">{{ solicitud.estadosolicitud.name }}</td>
               <td align="center">
-                <a [routerLink]="['complete', solicitud.id]" class="btn-table btn btn-secondary" title="Completar" *ngIf="(solicitud.estadosolicitud.id === 1) || (solicitud.estadosolicitud.id === 2)"><i
+                <!-- For Administrator -->
+                <a [routerLink]="['details/administrator', solicitud.id]" class="btn-table btn btn-secondary" title="Detalle" *ngIf="(this.loggedUser.role_id === 1) && ((solicitud.estadosolicitud.id === 1) || (solicitud.estadosolicitud.id === 2))"><i
+                  class="bx bx-zoom-in"></i></a>
+                <!-- For Seller -->
+                <a [routerLink]="['details/seller', solicitud.id]" class="btn-table btn btn-secondary" title="Detalle" *ngIf="(this.loggedUser.role_id === 2) && ((solicitud.estadosolicitud.id === 1) || (solicitud.estadosolicitud.id === 2))"><i
+                  class="bx bx-zoom-in"></i></a>
+                <a [routerLink]="['complete', solicitud.id]" class="btn-table btn btn-secondary" title="Completar" *ngIf="(this.loggedUser.role_id === 1) && ((solicitud.estadosolicitud.id === 1) || (solicitud.estadosolicitud.id === 2))"><i
                   class="bx bx-copy-alt"></i></a>
                 <a [routerLink]="['edit', solicitud.id]" class="btn-table btn btn-secondary" title="Editar"><i
                       class="bx bx-edit-alt"></i></a>

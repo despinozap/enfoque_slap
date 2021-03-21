@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { DataTableDirective } from 'angular-datatables';
+import { Subject } from 'rxjs';
 import { Cliente } from 'src/app/interfaces/cliente';
 import { Marca } from 'src/app/interfaces/marca';
 import { ClientesService } from 'src/app/services/clientes.service';
@@ -22,6 +24,34 @@ import * as XLSX from 'xlsx';
 })
 export class SolicitudesCreateComponent implements OnInit {
 
+  @ViewChild(DataTableDirective, {static: false})
+  datatableElement_partes: DataTableDirective = null as any;
+  dtOptions: any = {
+    pagingType: 'full_numbers',
+    pageLength: 10,
+    language: {
+      url: '//cdn.datatables.net/plug-ins/1.10.22/i18n/Spanish.json'
+    },
+    columnDefs: [
+      { orderable: false, targets: 0 }
+    ],
+    order: [[1, 'desc']],
+    /*
+    // Declare the use of the extension in the dom parameter
+    dom: 'Bfrtip',
+    // Configure the buttons
+    buttons: [
+      'colvis',
+      'excel',
+      'pdf',
+      'print'
+    ]
+    */
+  };
+
+  
+  dtTrigger: Subject<any> = new Subject<any>();
+  
   clientes: Array<Cliente> = null as any;
   marcas: Array<Marca> = null as any;
   partes: any[] = [];
@@ -70,6 +100,23 @@ export class SolicitudesCreateComponent implements OnInit {
     this.solicitudForm.disable();
     this.loadClientes();
     this.loadMarcas();
+  }
+
+  ngAfterViewInit(): void {
+    this.dtTrigger.next();
+  }
+
+  ngOnDestroy(): void {
+    this.dtTrigger.unsubscribe();
+  }
+
+  private renderDataTable(dataTableElement: DataTableDirective): void {
+    dataTableElement.dtInstance.then((dtInstance: DataTables.Api) => {
+      // Destroy the table first
+      dtInstance.destroy();
+      // Call the dtTrigger to rerender again
+      this.dtTrigger.next();
+    });
   }
 
   private loadClientes() {
@@ -351,11 +398,9 @@ export class SolicitudesCreateComponent implements OnInit {
         // If doesn't exist in list
         if(index < 0)
         {
-          if (this.addParte())
-          {
-            this.parteForm.reset();
-            this.DISPLAYING_FORM = 0;
-          }
+          this.addParte();
+          this.parteForm.reset();
+          this.DISPLAYING_FORM = 0;
         }
         else
         {
@@ -373,11 +418,9 @@ export class SolicitudesCreateComponent implements OnInit {
         // If doesn't exist in list or it's the same item
         if((index < 0) || (index === this.parte_index))
         {
-          if (this.updateParte()) 
-          {
-            this.parteForm.reset();
-            this.DISPLAYING_FORM = 0;
-          }
+          this.updateParte();
+          this.parteForm.reset();
+          this.DISPLAYING_FORM = 0;
         }
         else
         {
@@ -399,26 +442,24 @@ export class SolicitudesCreateComponent implements OnInit {
 
   }
 
-  public addParte(): boolean {
+  public addParte(): void {
     let parte: any = {
       "nparte": this.parteForm.value.nparte,
       "cantidad": this.parteForm.value.cantidad
     };
 
     this.partes.push(parte);
-
-    return true;
+    this.renderDataTable(this.datatableElement_partes);
   }
 
-  public updateParte(): boolean {
+  public updateParte(): void {
     let parte: any = {
       "nparte": this.parteForm.value.nparte,
       "cantidad": this.parteForm.value.cantidad
     };
 
     this.partes[this.parte_index] = parte;
-
-    return true;
+    this.renderDataTable(this.datatableElement_partes);
   }
 
   public removeParte(index: number): void
@@ -437,6 +478,7 @@ export class SolicitudesCreateComponent implements OnInit {
       if(result.isConfirmed)
       {
         this.partes.splice(index, 1);
+        this.renderDataTable(this.datatableElement_partes);
       }
     });
 

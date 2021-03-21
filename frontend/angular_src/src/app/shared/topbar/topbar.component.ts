@@ -25,9 +25,9 @@ export class TopbarComponent implements OnInit {
       this._authService.loggedUser$.subscribe((loggedUser) => {
         this.loggedUser = loggedUser;
       });
-    }
 
-    this._authService.notifyLoggedUser();
+      this._authService.notifyLoggedUser();
+    }
   }
 
   public goTo_login() {

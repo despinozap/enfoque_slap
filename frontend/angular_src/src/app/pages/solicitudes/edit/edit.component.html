@@ -18,7 +18,7 @@
 
 <div class="row">
 
-  <div class="col-12" *ngIf="(DISPLAYING_FORM === 0)">
+  <div class="col-12" [hidden]="(DISPLAYING_FORM !== 0)">
     <div class="card">
       <div class="card-body">
 
@@ -86,7 +86,7 @@
         <p class="card-title-desc">Ingresa las partes a la solicitud</p>
 
         <div class="table-responsive">
-          <table class="table table-hover table-bordered mb-2">
+          <table datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger" class="table table-hover table-bordered mb-2">
 
             <thead>
               <tr>
@@ -96,9 +96,6 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngIf="(partes.length < 1)">
-                <td colspan="3" align="center">La lista de partes esta vacia</td>
-              </tr>
               <tr *ngFor="let parte of partes; index as i">
                 <td align="left">{{ parte.nparte }}</td>
                 <td align="right">{{ parte.cantidad }}</td>
@@ -109,16 +106,19 @@
               </tr>
             </tbody>
             <tfoot>
-              <td colspan="3" align="right">
-                <input #inputFilePartes style="display: none;" type="file" multiple="false" (change)="onPartesFileChange($event); inputFilePartes.value=''">
-                <button type="button" class="btn btn-outline-primary mr-2" (click)="inputFilePartes.click()" [disabled]="(loading === true)">
-                  <i class="bx bx-import font-size-16 align-middle"></i> Importar Excel
-                </button>
-                <button type="button" class="btn btn-outline-primary" (click)="goTo_addParte()" [disabled]="(loading === true)">
-                  <i class="bx bx-pen font-size-16 align-middle"></i> Agregar manual
-                </button>
-              </td>
+              <tr>
+                <td colspan="3" align="right">
+                  <input #inputFilePartes style="display: none;" type="file" multiple="false" (change)="onPartesFileChange($event); inputFilePartes.value=''">
+                  <button type="button" class="btn btn-outline-primary mr-2" (click)="inputFilePartes.click()" [disabled]="(loading === true)">
+                    <i class="bx bx-import font-size-16 align-middle"></i> Importar Excel
+                  </button>
+                  <button type="button" class="btn btn-outline-primary" (click)="goTo_addParte()" [disabled]="(loading === true)">
+                    <i class="bx bx-pen font-size-16 align-middle"></i> Agregar manual
+                  </button>
+                </td>
+              </tr>
             </tfoot>
+            
           </table>
         </div>
 
@@ -143,7 +143,7 @@
 
   </div>
 
-  <div class="col-12" *ngIf="(DISPLAYING_FORM === 1)">
+  <div class="col-12" [hidden]="(DISPLAYING_FORM !== 1)">
     <div class="card">
       <div class="card-body">
 

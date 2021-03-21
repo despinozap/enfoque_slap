@@ -91,7 +91,7 @@ export class UtilsService {
     }
   }
 
-  public generateMenu(role_name: string): any {
+  public generateMenu(role_id: number): any {
 
     //Base menu
     let menu = [
@@ -108,10 +108,10 @@ export class UtilsService {
       }
     ];
 
-    switch(role_name.toLowerCase())
+    switch(role_id)
     {
 
-      case 'administrador': {
+      case 1: { // Administrador
 
         let roleMenu = {
           'title': 'Modulos',
@@ -132,6 +132,35 @@ export class UtilsService {
                 }
               ]
             },
+            {
+              'title': 'Solicitudes',
+              'icon': 'bx-list-ol',
+              'header': true,
+              'route': '',
+              'items': [
+                {
+                  'title': 'Nueva solicitud',
+                  'route': 'solicitudes/create'
+                },
+                {
+                  'title': 'Lista de solicitudes',
+                  'route': 'solicitudes'
+                }
+              ]
+            }
+          ]
+        };
+
+        menu.push(roleMenu);
+
+        break;
+      }
+
+      case 2: { // Vendedor
+
+        let roleMenu = {
+          'title': 'Modulos',
+          'groups': [
             {
               'title': 'Solicitudes',
               'icon': 'bx-list-ol',

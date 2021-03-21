@@ -5,6 +5,8 @@ import { SolicitudesService } from 'src/app/services/solicitudes.service';
 import { Subject } from 'rxjs';
 import { DataTableDirective } from 'angular-datatables';
 import { UtilsService } from 'src/app/services/utils.service';
+import { User } from 'src/app/interfaces/user';
+import { AuthService } from 'src/app/services/auth.service';
 
 /* SweetAlert2 */
 const Swal = require('../../../../assets/vendors/sweetalert2/sweetalert2.all.min.js');
@@ -42,18 +44,31 @@ export class SolicitudesListComponent implements OnInit {
     */
   };
 
+  
   dtTrigger: Subject<any> = new Subject<any>();
 
   solicitudes: any[] = [];
   loading: boolean = false;
+  loggedUser: User = {
+    role_id: -1,
+  } as User;
 
   constructor(
     private router: Router,
+    private _authService: AuthService,
     private _solicitudesService: SolicitudesService,
     private _utilsService: UtilsService
   ) { }
 
   ngOnInit(): void {
+    //For loggedUser
+    {
+      this._authService.loggedUser$.subscribe((loggedUser) => {
+        this.loggedUser = loggedUser;
+      });
+      
+      this._authService.notifyLoggedUser();
+    }
   }
 
   ngAfterViewInit(): void {
@@ -70,14 +85,14 @@ export class SolicitudesListComponent implements OnInit {
     this.dtTrigger.unsubscribe();
   }
 
-  clearDataTable(dataTableElement: DataTableDirective): void {
+  private clearDataTable(dataTableElement: DataTableDirective): void {
     dataTableElement.dtInstance.then((dtInstance: DataTables.Api) => {
       // Clear the table first
       dtInstance.clear();
     });
   }
 
-  renderDataTable(dataTableElement: DataTableDirective): void {
+  private renderDataTable(dataTableElement: DataTableDirective): void {
     dataTableElement.dtInstance.then((dtInstance: DataTables.Api) => {
       // Destroy the table first
       dtInstance.destroy();

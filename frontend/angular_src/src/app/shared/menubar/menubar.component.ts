@@ -12,8 +12,6 @@ export class MenubarComponent implements OnInit {
 
   menu: any;
 
-  @Input('loggedUser') loggedUser: User = null as any;
-  
   constructor(
     private _authService: AuthService,
     private _utilsService: UtilsService
@@ -24,14 +22,14 @@ export class MenubarComponent implements OnInit {
     //For loggedUser
     {
       this._authService.loggedUser$.subscribe((loggedUser) => {
-        this.menu = this._utilsService.generateMenu(loggedUser.role_name);
+        this.menu = this._utilsService.generateMenu(loggedUser.role_id);
 
         this.cleanScripts();
         this.loadScript('assets/js/app.js');
       });
-    }
 
-    this._authService.notifyLoggedUser();
+      this._authService.notifyLoggedUser();
+    }    
   }
 
   private cleanScripts(): void {

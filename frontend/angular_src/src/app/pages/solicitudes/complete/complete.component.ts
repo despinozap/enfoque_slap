@@ -4,7 +4,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { SolicitudesService } from 'src/app/services/solicitudes.service';
 import { UtilsService } from 'src/app/services/utils.service';
-import { threadId } from 'worker_threads';
 
 /* SweetAlert2 */
 const Swal = require('../../../../assets/vendors/sweetalert2/sweetalert2.all.min.js');
@@ -43,15 +42,6 @@ export class SolicitudesCompleteComponent implements OnInit {
   *       1: Parte
   */
   DISPLAYING_FORM: number = 0;  
-
-
-  /*
-  *   After complete() action:
-  * 
-  *       0: Go backt o Solicitudes list
-  *       1: Parte
-  */
-  AFTER_COMPLETE_ACTION: number = 0; 
 
   parteForm: FormGroup = new FormGroup({
     nparte: new FormControl(''),
@@ -108,7 +98,8 @@ export class SolicitudesCompleteComponent implements OnInit {
               'peso': p.pivot.peso,
               'flete': p.pivot.flete,
               'monto': p.pivot.monto,
-              'backorder': p.pivot.backorder
+              'backorder': p.pivot.backorder,
+              'descripcion': p.pivot.descripcion
             }
           )
         });

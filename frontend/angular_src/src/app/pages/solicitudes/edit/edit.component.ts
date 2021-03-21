@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { DataTableDirective } from 'angular-datatables';
+import { Subject } from 'rxjs';
 import { Cliente } from 'src/app/interfaces/cliente';
 import { Marca } from 'src/app/interfaces/marca';
 import { ClientesService } from 'src/app/services/clientes.service';
@@ -22,6 +24,34 @@ import * as XLSX from 'xlsx';
 })
 export class SolicitudesEditComponent implements OnInit {
 
+  @ViewChild(DataTableDirective, {static: false})
+  datatableElement_partes: DataTableDirective = null as any;
+  dtOptions: any = {
+    pagingType: 'full_numbers',
+    pageLength: 10,
+    language: {
+      url: '//cdn.datatables.net/plug-ins/1.10.22/i18n/Spanish.json'
+    },
+    columnDefs: [
+      { orderable: false, targets: 0 }
+    ],
+    order: [[1, 'desc']],
+    /*
+    // Declare the use of the extension in the dom parameter
+    dom: 'Bfrtip',
+    // Configure the buttons
+    buttons: [
+      'colvis',
+      'excel',
+      'pdf',
+      'print'
+    ]
+    */
+  };
+
+  
+  dtTrigger: Subject<any> = new Subject<any>();
+  
   clientes: Array<Cliente> = null as any;
   marcas: Array<Marca> = null as any;
   partes: any[] = [];
@@ -73,70 +103,102 @@ export class SolicitudesEditComponent implements OnInit {
   ngOnInit(): void {
 
     this.sub = this.route.params.subscribe(params => {
-      
       this.id = params['id'];
-      this.solicitudForm.disable();
-      this.loading = true;
-
-      this.loadClientes();
-      this.loadMarcas();
-
-      this._solicitudesService.getSolicitud(this.id)
-      .subscribe(
-        //Success request
-        (response: any) => {
-          this.solicitudForm.enable();
-          this.loading = false;
-
-          this.loadFormData(response.data);
-        },
-        //Error request
-        (errorResponse: any) => {
-
-          switch(errorResponse.status)
-          {
-            case 405: //Permission denied
-            {
-              NotificationsService.showToast(
-                errorResponse.error.message,
-                NotificationsService.messageType.error
-              );
-
-              break;
-            }
-
-            case 412: //Object not found
-            {
-              NotificationsService.showToast(
-                errorResponse.error.message,
-                NotificationsService.messageType.warning
-              );
-
-              break;
-            }
-          
-            default: //Unhandled error
-            {
-              NotificationsService.showToast(
-                'Error al cargar los datos de la solicitud',
-                NotificationsService.messageType.error
-              );
-    
-              break;
-
-            }
-          }
-
-          this.loading = false;
-          this.goTo_solicitudesList();
-        }
-      );
     });
 
   }
 
-  ngOnDestroy() {
-    this.sub.unsubscribe();
+  ngAfterViewInit(): void {
+    this.dtTrigger.next();
+
+    //Prevents throwing an error for var status changed while initialization
+    setTimeout(() => {
+      this.loadSolicitud();
+    },
+    100);
+  }
+
+  ngOnDestroy(): void {
+    //this.dtTrigger.unsubscribe();
+  }
+
+  private clearDataTable(dataTableElement: DataTableDirective): void {
+    dataTableElement.dtInstance.then((dtInstance: DataTables.Api) => {
+      // Clear the table first
+      dtInstance.clear();
+    });
+  }
+
+  private renderDataTable(dataTableElement: DataTableDirective): void {
+    dataTableElement.dtInstance.then((dtInstance: DataTables.Api) => {
+      // Destroy the table first
+      dtInstance.destroy();
+      // Call the dtTrigger to rerender again
+      this.dtTrigger.next();
+    });
+  }
+
+  private loadSolicitud(): void {
+
+    this.solicitudForm.disable();
+    this.loading = true;
+
+    this.loadClientes();
+    this.loadMarcas();
+
+    this.clearDataTable(this.datatableElement_partes);
+    this._solicitudesService.getSolicitud(this.id)
+    .subscribe(
+      //Success request
+      (response: any) => {
+      
+        this.loadFormData(response.data);
+        this.renderDataTable(this.datatableElement_partes);
+
+        this.solicitudForm.enable();
+        this.loading = false;
+      },
+      //Error request
+      (errorResponse: any) => {
+
+        switch(errorResponse.status)
+        {
+          case 405: //Permission denied
+          {
+            NotificationsService.showToast(
+              errorResponse.error.message,
+              NotificationsService.messageType.error
+            );
+
+            break;
+          }
+
+          case 412: //Object not found
+          {
+            NotificationsService.showToast(
+              errorResponse.error.message,
+              NotificationsService.messageType.warning
+            );
+
+            break;
+          }
+        
+          default: //Unhandled error
+          {
+            NotificationsService.showToast(
+              'Error al cargar los datos de la solicitud',
+              NotificationsService.messageType.error
+            );
+  
+            break;
+
+          }
+        }
+
+        this.loading = false;
+        this.goTo_solicitudesList();
+      }
+    );
   }
 
   private loadClientes() {
@@ -280,7 +342,7 @@ export class SolicitudesEditComponent implements OnInit {
       this.goTo_solicitudesList();
     }
   }
-
+  
   public onPartesFileChange(evt: any): void {
     //Catches the event
     const target: DataTransfer = <DataTransfer>(evt.target);
@@ -449,11 +511,9 @@ export class SolicitudesEditComponent implements OnInit {
         // If doesn't exist in list
         if(index < 0)
         {
-          if (this.addParte())
-          {
-            this.parteForm.reset();
-            this.DISPLAYING_FORM = 0;
-          }
+          this.addParte()
+          this.parteForm.reset();
+          this.DISPLAYING_FORM = 0;
         }
         else
         {
@@ -471,11 +531,9 @@ export class SolicitudesEditComponent implements OnInit {
         // If doesn't exist in list or it's the same item
         if((index < 0) || (index === this.parte_index))
         {
-          if (this.updateParte()) 
-          {
-            this.parteForm.reset();
-            this.DISPLAYING_FORM = 0;
-          }
+          this.updateParte()
+          this.parteForm.reset();
+          this.DISPLAYING_FORM = 0;
         }
         else
         {
@@ -497,22 +555,21 @@ export class SolicitudesEditComponent implements OnInit {
 
   }
 
-  public addParte(): boolean {
+  public addParte(): void {
+
     let parte: any = {
       "nparte": this.parteForm.value.nparte,
       "cantidad": this.parteForm.value.cantidad
     };
 
     this.partes.push(parte);
-
-    return true;
+    this.renderDataTable(this.datatableElement_partes);
   }
 
-  public updateParte(): boolean {
+  public updateParte(): void {
     this.partes[this.parte_index].nparte = this.parteForm.value.nparte;
     this.partes[this.parte_index].cantidad = this.parteForm.value.cantidad;
-
-    return true;
+    this.renderDataTable(this.datatableElement_partes);
   }
 
   public removeParte(index: number): void
@@ -531,6 +588,7 @@ export class SolicitudesEditComponent implements OnInit {
       if(result.isConfirmed)
       {
         this.partes.splice(index, 1);
+        this.renderDataTable(this.datatableElement_partes);
       }
     });
 
