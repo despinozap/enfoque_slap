@@ -21,6 +21,7 @@
   <div class="col-12">
     <div class="card">
       <div class="card-body">
+        <button class="btn btn-info btn-right" (click)="goTo_duplicateSolicitud()" [disabled]="(loading === true)">Duplicar solicitud</button>
         <h4 class="card-title">Solicitud {{ solicitud.id !== null ? "#" + solicitud.id : '' }}</h4>
         <span class="badge" [class.badge-warning]="(solicitud.estadosolicitud_id === 1)"
             [class.badge-success]="(solicitud.estadosolicitud_id === 2)"

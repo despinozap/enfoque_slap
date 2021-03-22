@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
 import { Cliente } from 'src/app/interfaces/cliente';
@@ -51,12 +51,15 @@ export class SolicitudesCreateComponent implements OnInit {
 
   
   dtTrigger: Subject<any> = new Subject<any>();
-  
+
   clientes: Array<Cliente> = null as any;
   marcas: Array<Marca> = null as any;
   partes: any[] = [];
   loading: boolean = false;
   responseErrors: any = [];
+
+  private sub: any;
+  id: number = -1;
 
   /*
   *   Displayed form:
@@ -90,6 +93,7 @@ export class SolicitudesCreateComponent implements OnInit {
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private _clientesService: ClientesService,
     private _marcasService: MarcasService,
     private _solicitudesService: SolicitudesService,
@@ -97,16 +101,39 @@ export class SolicitudesCreateComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.solicitudForm.disable();
-    this.loadClientes();
-    this.loadMarcas();
+    this.sub = this.route.params.subscribe(params => {
+      if(params['id'] !== undefined)
+      {
+        // Duplicate solicitud
+        this.id = params['id'];
+      }
+      else
+      {
+        // New solicitud
+        this.solicitudForm.disable();
+        this.loadClientes();
+        this.loadMarcas();
+      }
+    });
   }
 
   ngAfterViewInit(): void {
     this.dtTrigger.next();
+
+    // If duplicating
+    if(this.id >= 0)
+    {
+      //Prevents throwing an error for var status changed while initialization
+      setTimeout(() => {
+        this.loadSolicitud();
+      },
+      100);
+    }
+    
   }
 
   ngOnDestroy(): void {
+    this.sub.unsubscribe();
     this.dtTrigger.unsubscribe();
   }
 
@@ -117,6 +144,68 @@ export class SolicitudesCreateComponent implements OnInit {
       // Call the dtTrigger to rerender again
       this.dtTrigger.next();
     });
+  }
+
+  private loadSolicitud(): void {
+
+    this.solicitudForm.disable();
+    this.loading = true;
+
+    this.loadClientes();
+    this.loadMarcas();
+
+    this._solicitudesService.getSolicitud(this.id)
+    .subscribe(
+      //Success request
+      (response: any) => {
+      
+        this.loadFormData(response.data);
+        this.renderDataTable(this.datatableElement_partes);
+
+        this.solicitudForm.enable();
+        this.loading = false;
+      },
+      //Error request
+      (errorResponse: any) => {
+
+        switch(errorResponse.status)
+        {
+          case 405: //Permission denied
+          {
+            NotificationsService.showToast(
+              errorResponse.error.message,
+              NotificationsService.messageType.error
+            );
+
+            break;
+          }
+
+          case 412: //Object not found
+          {
+            NotificationsService.showToast(
+              errorResponse.error.message,
+              NotificationsService.messageType.warning
+            );
+
+            break;
+          }
+        
+          default: //Unhandled error
+          {
+            NotificationsService.showToast(
+              'Error al cargar los datos de la solicitud',
+              NotificationsService.messageType.error
+            );
+  
+            break;
+
+          }
+        }
+
+        this.loading = false;
+        this.goTo_solicitudesList();
+      }
+    );
   }
 
   private loadClientes() {
@@ -229,6 +318,36 @@ export class SolicitudesCreateComponent implements OnInit {
           this.goTo_solicitudesList();
         }
       );
+  }
+
+  private loadFormData(solicitudData: any)
+  {
+    if(solicitudData['partes'].length > 0)
+    {
+      this.solicitudForm.controls.cliente.setValue(solicitudData.cliente.id);
+      this.solicitudForm.controls.marca.setValue(solicitudData['partes'][0].marca.id);
+      this.solicitudForm.controls.comentario.setValue(solicitudData.comentario);
+
+      this.partes = [];
+      solicitudData.partes.forEach((p: any) => {
+        this.partes.push(
+          {
+            'nparte': p.nparte,
+            'cantidad': p.pivot.cantidad
+          }
+        )
+      });
+    }
+    else
+    {
+      NotificationsService.showToast(
+        'Error al intentar cargar la lista de partes',
+        NotificationsService.messageType.error
+      );
+
+      this.loading = false;
+      this.goTo_solicitudesList();
+    }
   }
 
   public onPartesFileChange(evt: any): void {

@@ -50,7 +50,7 @@ export class SolicitudesListComponent implements OnInit {
   solicitudes: any[] = [];
   loading: boolean = false;
   loggedUser: User = {
-    role_id: -1,
+    'role_id': -1,
   } as User;
 
   constructor(

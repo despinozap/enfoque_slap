@@ -50,6 +50,7 @@ const routes: Routes = [
       { path: 'usuarios', component: UsuariosListComponent },
       { path: 'usuarios/edit/:id', component: UsuariosEditComponent },
       { path: 'solicitudes/create', component: SolicitudesCreateComponent },
+      { path: 'solicitudes/create/:id', component: SolicitudesCreateComponent },
       { path: 'solicitudes', component: SolicitudesListComponent },
       { path: 'solicitudes/edit/:id', component: SolicitudesEditComponent },
       { path: 'solicitudes/complete/:id', component: SolicitudesCompleteComponent },

@@ -27,7 +27,7 @@ export class SolicitudesDetailsSellerComponent implements OnInit {
   dtTrigger: Subject<any> = new Subject<any>();
   
   solicitud: any = {
-    id: null,
+    id: -1,
     cliente_name: null,
     marca_name: null,
     estadosolicitud_id: -1,
@@ -196,6 +196,10 @@ export class SolicitudesDetailsSellerComponent implements OnInit {
 
   public moneyStringFormat(value: number): string {
     return this._utilsService.moneyStringFormat(value);
+  }
+
+  public goTo_duplicateSolicitud(): void {
+    this.router.navigate(['/panel/solicitudes/create', this.solicitud.id]);
   }
 
   public goTo_solicitudesList(): void {

@@ -27,7 +27,7 @@ export class SolicitudesDetailsAdministratorComponent implements OnInit {
   dtTrigger: Subject<any> = new Subject<any>();
   
   solicitud: any = {
-    id: null,
+    id: -1,
     cliente_name: null,
     marca_name: null,
     estadosolicitud_id: -1,

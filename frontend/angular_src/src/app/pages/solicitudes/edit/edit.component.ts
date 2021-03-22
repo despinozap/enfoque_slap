@@ -119,7 +119,7 @@ export class SolicitudesEditComponent implements OnInit {
   }
 
   ngOnDestroy(): void {
-    //this.dtTrigger.unsubscribe();
+    this.dtTrigger.unsubscribe();
   }
 
   private clearDataTable(dataTableElement: DataTableDirective): void {
