@@ -84,7 +84,6 @@ class DatabaseSeeder extends Seeder
                 'solicitudes show',
                 'solicitudes update',
                 'solicitudes complete',
-                'solicitudes close',
             ];
 
             $routePermissionIds = [];
@@ -117,6 +116,7 @@ class DatabaseSeeder extends Seeder
                 'solicitudes store',
                 'solicitudes show',
                 'solicitudes update',
+                'solicitudes close',
             ];
 
             $routePermissionIds = [];
@@ -136,11 +136,19 @@ class DatabaseSeeder extends Seeder
         *   Users
         */
         $user = new User();
-        $user->name = 'DevAdmin SLAP';
+        $user->name = 'Administrador AP';
         $user->email = 'admin@mail.com';
         $user->phone = '9012345678';
         $user->password = bcrypt('admin');
         $user->role_id = 1; // Administrador
+        $user->save();
+
+        $user = new User();
+        $user->name = 'Vendedor AP';
+        $user->email = 'seller@mail.com';
+        $user->phone = '9012345678';
+        $user->password = bcrypt('seller');
+        $user->role_id = 2; // Vendedor
         $user->save();
 
         /*
