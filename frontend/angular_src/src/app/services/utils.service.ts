@@ -52,7 +52,7 @@ export class UtilsService {
     let today = new Date();
     let filename = `${today.getFullYear()}${this.parseNumberToTwoDigits(today.getMonth())}${this.parseNumberToTwoDigits(today.getDay())}-${this.parseNumberToTwoDigits(today.getHours())}${this.parseNumberToTwoDigits(today.getMinutes())}${this.parseNumberToTwoDigits(today.getSeconds())}_${title}.xlsx`; 
     //Save file
-    XLSX.writeFile(wb, `${filename}.xlsx`);
+    XLSX.writeFile(wb, filename);
   }
 
   public validateInputFile(target: DataTransfer, exts: string[]): string

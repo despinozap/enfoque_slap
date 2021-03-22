@@ -163,8 +163,7 @@ export class SolicitudesCompleteComponent implements OnInit {
 
         // Dumps the whole sheet into a JSON matrix
         let sheet: any[][] = (XLSX.utils.sheet_to_json(ws, { header: 1 }));
-        
-        console.log(sheet);
+
         if (sheet.length > 1) 
         {
           let parte;
@@ -216,15 +215,15 @@ export class SolicitudesCompleteComponent implements OnInit {
                 });
   
                 parte = this.partes[index];
-                parte.cantidad = sheet[i][1] !== undefined ? sheet[i][1] : null;
-                parte.costo = sheet[i][2] !== undefined ? sheet[i][2] : null;
-                parte.margen = sheet[i][3] !== undefined ? sheet[i][3] : null;
-                parte.tiempoentrega = sheet[i][4] !== undefined ? sheet[i][4] : null;
-                parte.peso = sheet[i][5] !== undefined ? sheet[i][5] : null;
-                parte.flete = sheet[i][6] !== undefined ? sheet[i][6] : null;
+                parte.descripcion = sheet[i][1] !== undefined ? sheet[i][1] : null;
+                parte.cantidad = sheet[i][2] !== undefined ? sheet[i][2] : null;
+                parte.costo = sheet[i][3] !== undefined ? sheet[i][3] : null;
+                parte.margen = sheet[i][4] !== undefined ? sheet[i][4] : null;
+                parte.tiempoentrega = sheet[i][5] !== undefined ? sheet[i][5] : null;
+                parte.peso = sheet[i][6] !== undefined ? sheet[i][6] : null;
+                parte.flete = sheet[i][7] !== undefined ? sheet[i][7] : null;
                 parte.monto = null;
-                parte.descripcion = sheet[i][7] !== undefined ? sheet[i][7] : null;
-                parte.backorder = (sheet[i][8] !== undefined) && (sheet[i][8] === '1') ? true : false;
+                parte.backorder = (sheet[i][8] !== undefined) && (sheet[i][8] === 1) ? true : false;
   
                 if((parte.costo !== null) && (parte.margen !== null) && (parte.flete !== null))
                 {
@@ -312,7 +311,7 @@ export class SolicitudesCompleteComponent implements OnInit {
                 'Solicitud completada',
                 NotificationsService.messageType.success
               );
-              
+
               this.goTo_solicitudesList();
             }
             else
@@ -512,13 +511,13 @@ export class SolicitudesCompleteComponent implements OnInit {
       {
         let parte = {
           'nparte': row[0] !== undefined ? row[0] : null,
-          'cantidad': row[1] !== undefined ? row[1] : null,
-          'costo': row[2] !== undefined ? row[2] : null,
-          'margen': row[3] !== undefined ? row[3] : null,
-          'tiempoentrega': row[4] !== undefined ? row[4] : null,
-          'peso': row[5] !== undefined ? row[5] : null,
-          'flete': row[6] !== undefined ? row[6] : null,
-          'descripcion': row[7] !== undefined ? row[7] : null,
+          'descripcion': row[1] !== undefined ? row[1] : null,
+          'cantidad': row[2] !== undefined ? row[2] : null,
+          'costo': row[3] !== undefined ? row[3] : null,
+          'margen': row[4] !== undefined ? row[4] : null,
+          'tiempoentrega': row[5] !== undefined ? row[5] : null,
+          'peso': row[6] !== undefined ? row[6] : null,
+          'flete': row[7] !== undefined ? row[7] : null,
           'backorder': row[8] !== undefined ? row[8] : null,
         };
 
@@ -700,13 +699,13 @@ export class SolicitudesCompleteComponent implements OnInit {
       data.push(
         [
           'N parte',
+          'Descripcion',
           'Cantidad',
           'Costo (USD)',
           'Margen (%)',
           'Tiempo entrega (dias)',
           'Peso (kg)',
           'Valor flete (USD)',
-          'Descripcion',
           'Backorder (SI = 1, NO = 0)'
         ]
       );
@@ -715,13 +714,13 @@ export class SolicitudesCompleteComponent implements OnInit {
       this.partes.forEach((p: any) => {
         data.push([
           p.nparte,
+          p.descripcion,
           p.cantidad,
           p.costo,
           p.margen,
           p.tiempoentrega,
           p.peso,
           p.flete,
-          p.descripcion,
           (p.backorder === true) ? '1' : '0',
         ]);
       });
@@ -743,6 +742,7 @@ export class SolicitudesCompleteComponent implements OnInit {
     this.parteForm.controls.tiempoentrega.setValue(this.partes[this.parte_index].tiempoentrega);
     this.parteForm.controls.peso.setValue(this.partes[this.parte_index].peso);
     this.parteForm.controls.flete.setValue(this.partes[this.parte_index].flete);
+    this.parteForm.controls.descripcion.setValue(this.partes[this.parte_index].descripcion);
     this.parteForm.controls.backorder.setValue(this.partes[this.parte_index].backorder);
 
     this.DISPLAYING_FORM = 1;

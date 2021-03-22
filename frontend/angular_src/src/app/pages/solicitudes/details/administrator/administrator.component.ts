@@ -184,13 +184,13 @@ export class SolicitudesDetailsAdministratorComponent implements OnInit {
     data.push(
       [
         'N parte',
+        'Descripcion',
         'Cantidad',
         'Costo (USD)',
         'Margen (%)',
         'Tiempo entrega (dias)',
         'Peso (kg)',
         'Valor flete (USD)',
-        'Descripcion',
         'Backorder (SI = 1, NO = 0)'
       ]
     );
@@ -199,13 +199,13 @@ export class SolicitudesDetailsAdministratorComponent implements OnInit {
     this.partes.forEach((p: any) => {
       data.push([
         p.nparte,
+        p.descripcion,
         p.cantidad,
         p.costo,
         p.margen,
         p.tiempoentrega,
         p.peso,
         p.flete,
-        p.descripcion,
         (p.backorder === true) ? '1' : '0',
       ]);
     });

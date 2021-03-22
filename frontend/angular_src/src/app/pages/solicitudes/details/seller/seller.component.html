@@ -66,15 +66,15 @@
             <thead>
               <tr>
                 <th>N° Parte</th>
-                <th>Cantidad</th>
                 <th>Descripcion</th>
+                <th>Cantidad</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let parte of partes; index as i">
                 <td align="left">{{ parte.nparte !== null ? parte.nparte : "" }}</td>
-                <td align="right">{{ parte.cantidad !== null ? parte.cantidad : "" }}</td>
                 <td align="right">{{ parte.descripcion !== null ? parte.descripcion : "" }}</td>
+                <td align="right">{{ parte.cantidad !== null ? parte.cantidad : "" }}</td>
               </tr>
             </tbody>
             <tfoot>

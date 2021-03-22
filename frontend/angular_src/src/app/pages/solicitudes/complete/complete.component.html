@@ -60,6 +60,7 @@
             <thead>
               <tr>
                 <th>N° Parte</th>
+                <th>Descripcion</th>
                 <th>Cantidad</th>
                 <th>Costo</th>
                 <th>Margen</th>
@@ -67,7 +68,6 @@
                 <th>Flete</th>
                 <th>Tiempo de entrega</th>
                 <th>Monto</th>
-                <th>Descripcion</th>
                 <th>Opciones</th>
               </tr>
             </thead>
@@ -77,6 +77,7 @@
               </tr>
               <tr *ngFor="let parte of partes; index as i" [class.table-danger]="(parte.complete === false)">
                 <td align="left"><i class="bx bx-timer icon-table" *ngIf="(parte.backorder === true)"></i>{{ parte.nparte }}</td>
+                <td align="right">{{ parte.descripcion }}</td>
                 <td align="right">{{ parte.cantidad }}</td>
                 <td align="right">{{ parte.costo !== null ? "$" + moneyStringFormat(parte.costo) : parte.costo }}</td>
                 <td align="right">{{ parte.margen !== null ? parte.margen + "%" : parte.margen }}</td>
@@ -85,7 +86,6 @@
                 <td align="right">{{ parte.tiempoentrega !== null ? parte.tiempoentrega + " dias" : parte.tiempoentrega
                   }}</td>
                 <td align="right">{{ parte.monto !== null ? "$" + moneyStringFormat(parte.monto) : parte.monto }}</td>
-                <td align="right">{{ parte.descripcion }}</td>
                 <td align="center">
                   <button (click)="goTo_updateParte(i)" class="btn-table btn btn-secondary" title="Editar"
                       [disabled]="(loading === true)"><i class="bx bx-edit-alt"></i></button>
@@ -142,6 +142,13 @@
         <form [formGroup]="parteForm" (ngSubmit)="submitFormParte()" action="#">
           <div class="row">
 
+            <div class="col-8">
+              <div class="form-group">
+                <label for="peso">Descripcion</label>
+                <input type="text" class="form-control" name="descripcion" id="peso" formControlName="descripcion">
+              </div>
+            </div>
+            
             <div class="col-4">
               <div class="form-group">
                 <label for="cantidad">Cantidad</label>
@@ -222,13 +229,6 @@
                   <div class="error-response" *ngIf="parteForm.controls.flete.errors.min !== null">EL valor de flete
                     debe ser igual o mayor a 0</div>
                 </div>
-              </div>
-            </div>
-
-            <div class="col-8">
-              <div class="form-group">
-                <label for="peso">Descripcion</label>
-                <input type="text" class="form-control" name="descripcion" id="peso" formControlName="descripcion">
               </div>
             </div>
 

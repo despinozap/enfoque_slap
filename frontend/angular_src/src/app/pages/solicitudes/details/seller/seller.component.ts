@@ -97,8 +97,8 @@ export class SolicitudesDetailsSellerComponent implements OnInit {
         this.partes.push(
           {
             'nparte': p.nparte,
+            'descripcion': p.pivot.descripcion,
             'cantidad': p.pivot.cantidad,
-            'descripcion': p.pivot.descripcion
           }
         )
       });
@@ -279,8 +279,8 @@ export class SolicitudesDetailsSellerComponent implements OnInit {
     data.push(
       [
         'N parte',
-        'Cantidad',
         'Descripcion',
+        'Cantidad',
       ]
     );
 
@@ -288,8 +288,8 @@ export class SolicitudesDetailsSellerComponent implements OnInit {
     this.partes.forEach((p: any) => {
       data.push([
         p.nparte,
-        p.cantidad,
         p.descripcion,
+        p.cantidad,
       ]);
     });
 
