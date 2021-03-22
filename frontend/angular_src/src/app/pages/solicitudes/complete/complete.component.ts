@@ -163,7 +163,8 @@ export class SolicitudesCompleteComponent implements OnInit {
 
         // Dumps the whole sheet into a JSON matrix
         let sheet: any[][] = (XLSX.utils.sheet_to_json(ws, { header: 1 }));
-
+        
+        console.log(sheet);
         if (sheet.length > 1) 
         {
           let parte;
@@ -171,46 +172,77 @@ export class SolicitudesCompleteComponent implements OnInit {
           for (let i = 1; i < sheet.length; i++) 
           {
             let response = this.validateExcelRowAsParte(sheet[i]);
-            if(response.code === 1)
+
+            switch(response.code)
             {
-              index = this.partes.findIndex((p) => {
-                if(p.nparte.toUpperCase() === sheet[i][0].toUpperCase())
-                {
-                  return true;
-                }
-                else
-                {
-                  return false;
-                }
-              });
+              case -2: {
 
-              parte = this.partes[index];
-              parte.cantidad = sheet[i][1] !== undefined ? sheet[i][1] : null;
-              parte.costo = sheet[i][2] !== undefined ? sheet[i][2] : null;
-              parte.margen = sheet[i][3] !== undefined ? sheet[i][3] : null;
-              parte.tiempoentrega = sheet[i][4] !== undefined ? sheet[i][4] : null;
-              parte.peso = sheet[i][5] !== undefined ? sheet[i][5] : null;
-              parte.flete = sheet[i][6] !== undefined ? sheet[i][6] : null;
-              parte.monto = null;
-              parte.descripcion = sheet[i][7] !== undefined ? sheet[i][7] : null;
-              parte.backorder = (sheet[i][8] !== undefined) && (sheet[i][8] === '1') ? true : false;
+                console.log(response.message);
 
-              if((parte.costo !== null) && (parte.margen !== null) && (parte.flete !== null))
-              {
-                parte.monto = (parte.costo * parte.cantidad) + ((parte.costo * parte.cantidad) * parte.margen / 100) + parte.flete;
+                break;
               }
 
-              parte.complete = this.isParteCompleted(index);
-              this.dataUpdated= true;
+              case -1: {
 
+                NotificationsService.showAlert(
+                  response.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+              case 0: {
+
+                NotificationsService.showAlert(
+                  response.message,
+                  NotificationsService.messageType.warning
+                );
+
+                break;
+              }
+
+              case 1: {
+
+                index = this.partes.findIndex((p) => {
+                  if(p.nparte.toUpperCase() === sheet[i][0].toUpperCase())
+                  {
+                    return true;
+                  }
+                  else
+                  {
+                    return false;
+                  }
+                });
+  
+                parte = this.partes[index];
+                parte.cantidad = sheet[i][1] !== undefined ? sheet[i][1] : null;
+                parte.costo = sheet[i][2] !== undefined ? sheet[i][2] : null;
+                parte.margen = sheet[i][3] !== undefined ? sheet[i][3] : null;
+                parte.tiempoentrega = sheet[i][4] !== undefined ? sheet[i][4] : null;
+                parte.peso = sheet[i][5] !== undefined ? sheet[i][5] : null;
+                parte.flete = sheet[i][6] !== undefined ? sheet[i][6] : null;
+                parte.monto = null;
+                parte.descripcion = sheet[i][7] !== undefined ? sheet[i][7] : null;
+                parte.backorder = (sheet[i][8] !== undefined) && (sheet[i][8] === '1') ? true : false;
+  
+                if((parte.costo !== null) && (parte.margen !== null) && (parte.flete !== null))
+                {
+                  parte.monto = (parte.costo * parte.cantidad) + ((parte.costo * parte.cantidad) * parte.margen / 100) + parte.flete;
+                }
+  
+                parte.complete = this.isParteCompleted(index);
+                this.dataUpdated= true;
+
+                break;
+              }
+
+              default: {
+
+                break;
+              }
             }
-            else if(response.code === 0)
-            {
-              NotificationsService.showToast(
-                response.message,
-                NotificationsService.messageType.error
-              );
-            }
+
           }
         }
         else {
@@ -241,25 +273,57 @@ export class SolicitudesCompleteComponent implements OnInit {
     .subscribe(
       //Success request
       (response: any) => {
-        
+
         switch(afterExecutedAction){
           
           case 0: { // Nothing
 
-            this.loading = false;
-            this.loadFormData(response.data);
+            if(response.data.estadosolicitud.id === 3) // Cerrada
+            {
+              NotificationsService.showToast(
+                'No se puede completar una solicitud cerrada',
+                NotificationsService.messageType.warning
+              );
+
+              this.loading = false;
+              this.goTo_solicitudesList();
+            }
+            else
+            {
+              this.loading = false;
+              this.loadFormData(response.data);
+            }
             
             break;
           }
 
           case 1: { // Export partes list to Excel
 
-            this.loading = false;
-            this.loadFormData(response.data);
+            if(response.data.estadosolicitud.id === 2) // Completada on saving before Export to Excel
+            {
+              this.loading = false;
+              this.loadFormData(response.data);
 
-            this.dataUpdated = false;
+              this.dataUpdated = false;
 
-            this.exportPartesToExcel();
+              this.exportPartesToExcel();
+              
+              NotificationsService.showToast(
+                'Solicitud completada',
+                NotificationsService.messageType.success
+              );
+              
+              this.goTo_solicitudesList();
+            }
+            else
+            {
+              this.loading = false;
+              this.loadFormData(response.data);
+
+              this.dataUpdated = false;
+
+              this.exportPartesToExcel();
+            }
 
             break;
           }
@@ -335,122 +399,14 @@ export class SolicitudesCompleteComponent implements OnInit {
           
             case 0: { // Go back to the list
 
+              this.loading = false;
+
               NotificationsService.showToast(
                 response.message,
                 NotificationsService.messageType.success
               );
 
-              this.loadFormData(response.data);
-
-              if(this.solicitud.estadosolicitud_id === 2)
-              {
-                this.loading = false;
-
-                Swal.fire({
-                  title: 'Solicitud completada',
-                  text: `La solicitud #${ this.solicitud.id } se ha completado. ¿Deseas cerrarla?`,
-                  icon: 'question',
-                  showCancelButton: true,
-                  confirmButtonColor: '#3085d6',
-                  cancelButtonColor: '#555555',
-                  confirmButtonText: 'Sí, continuar',
-                  cancelButtonText: 'Cancelar',
-                  allowOutsideClick: false
-                }).then((result: any) => {
-                  if(result.isConfirmed)
-                  {
-                    Swal.queue([{
-                      title: 'Cerrando solicitud..',
-                      icon: 'warning',
-                      showConfirmButton: false,
-                      showCancelButton: false,
-                      allowOutsideClick: false,
-                      showLoaderOnConfirm: true,
-                      preConfirm: () => {
-            
-                      }    
-                    }]);
-
-                    this._solicitudesService.closeSolicitud(this.solicitud.id)
-                    .subscribe(
-                      //Success request
-                      (response: any) => {
-
-                        NotificationsService.showToast(
-                          response.message,
-                          NotificationsService.messageType.success
-                        );
-
-                        this.goTo_solicitudesList();
-                      },
-                      //Error request
-                      (errorResponse: any) => {
-
-                        switch(errorResponse.status)
-                        {
-                          case 400: //Object not found
-                          {
-                            NotificationsService.showAlert(
-                              errorResponse.error.message,
-                              NotificationsService.messageType.warning
-                            );
-
-                            break;
-                          }
-
-                          case 405: //Permission denied
-                          {
-                            NotificationsService.showAlert(
-                              errorResponse.error.message,
-                              NotificationsService.messageType.error
-                            );
-
-                            break;
-                          }
-
-                          case 409: //Conflict
-                          {
-                            NotificationsService.showAlert(
-                              errorResponse.error.message,
-                              NotificationsService.messageType.error
-                            );
-
-                            break;
-                          }
-
-                          case 500: //Internal server
-                          {
-                            NotificationsService.showAlert(
-                              errorResponse.error.message,
-                              NotificationsService.messageType.error
-                            );
-
-                            break;
-                          }
-
-                          default: //Unhandled error
-                          {
-                            NotificationsService.showAlert(
-                              'Error al intentar cerrar la solicitud',
-                              NotificationsService.messageType.error
-                            );
-
-                            break;
-                          }
-                        }
-                      }
-                    );
-                  }
-                  else
-                  {
-                    this.goTo_solicitudesList();
-                  }
-                });
-              }
-              else
-              {
-                this.goTo_solicitudesList();
-              }
+              this.goTo_solicitudesList();
               
               break;
             }
@@ -528,105 +484,6 @@ export class SolicitudesCompleteComponent implements OnInit {
       );
   }
 
-  public closeSolicitud(): void{
-    Swal.fire({
-      title: 'Cerrar solicitud',
-      text: `¿Realmente quieres cerrar la solicitud #${ this.solicitud.id }?`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#555555',
-      confirmButtonText: 'Sí, continuar',
-      cancelButtonText: 'Cancelar',
-      allowOutsideClick: false
-    }).then((result: any) => {
-      if(result.isConfirmed)
-      {
-        Swal.queue([{
-          title: 'Cerrando..',
-          icon: 'warning',
-          showConfirmButton: false,
-          showCancelButton: false,
-          allowOutsideClick: false,
-          showLoaderOnConfirm: true,
-          preConfirm: () => {
-
-          }    
-        }]);
-
-        this._solicitudesService.closeSolicitud(this.solicitud.id)
-        .subscribe(
-          //Success request
-          (response: any) => {
-
-            NotificationsService.showToast(
-              response.message,
-              NotificationsService.messageType.success
-            );
-
-            this.goTo_solicitudesList();
-          },
-          //Error request
-          (errorResponse: any) => {
-
-            switch(errorResponse.status)
-            {
-              case 400: //Object not found
-              {
-                NotificationsService.showAlert(
-                  errorResponse.error.message,
-                  NotificationsService.messageType.warning
-                );
-
-                break;
-              }
-
-              case 405: //Permission denied
-              {
-                NotificationsService.showAlert(
-                  errorResponse.error.message,
-                  NotificationsService.messageType.error
-                );
-
-                break;
-              }
-
-              case 409: //Conflict
-              {
-                NotificationsService.showAlert(
-                  errorResponse.error.message,
-                  NotificationsService.messageType.error
-                );
-
-                break;
-              }
-
-              case 500: //Internal server
-              {
-                NotificationsService.showAlert(
-                  errorResponse.error.message,
-                  NotificationsService.messageType.error
-                );
-
-                break;
-              }
-
-              default: //Unhandled error
-              {
-                NotificationsService.showAlert(
-                  'Error al intentar cerrar la solicitud',
-                  NotificationsService.messageType.error
-                );
-
-                break;
-              }
-            }
-          }
-        );
-      }
-    });
-  }
-
   public submitFormParte(): void {
 
     this.updateParte();
@@ -636,121 +493,134 @@ export class SolicitudesCompleteComponent implements OnInit {
 
   private validateExcelRowAsParte(row: any): any {
     
+    /*
+    * RESPONSE CODES
+    *
+    *   -2: Skip error
+    *   -1: Error
+    *    0: Warning
+    *    1: Success
+    */
     let response = {
       code: 1,
       message: ''
     };
 
-    try
+    if(row.length > 0)
     {
-      let parte = {
-        'nparte': row[0]  !== undefined ? row[0] : null,
-        'cantidad': row[1] !== undefined ? row[1] : null,
-        'costo': row[2] !== undefined ? row[2] : null,
-        'margen': row[3] !== undefined ? row[3] : null,
-        'tiempoentrega': row[4] !== undefined ? row[4] : null,
-        'peso': row[5] !== undefined ? row[5] : null,
-        'flete': row[6] !== undefined ? row[6] : null,
-        'descripcion': row[7] !== undefined ? row[7] : null,
-        'backorder': row[8] !== undefined ? row[8] : null,
-      };
-
-      if(parte.nparte !== null)
+      try
       {
-        let index = this.partes.findIndex((p) => {
-          if(p.nparte.toUpperCase() === parte.nparte.toUpperCase())
-          {
-            return true;
-          }
-          else
-          {
-            return false;
-          }
-        });
+        let parte = {
+          'nparte': row[0] !== undefined ? row[0] : null,
+          'cantidad': row[1] !== undefined ? row[1] : null,
+          'costo': row[2] !== undefined ? row[2] : null,
+          'margen': row[3] !== undefined ? row[3] : null,
+          'tiempoentrega': row[4] !== undefined ? row[4] : null,
+          'peso': row[5] !== undefined ? row[5] : null,
+          'flete': row[6] !== undefined ? row[6] : null,
+          'descripcion': row[7] !== undefined ? row[7] : null,
+          'backorder': row[8] !== undefined ? row[8] : null,
+        };
 
-        if((index < 0))
+        if(parte.nparte !== null)
         {
-          response.code = -1;
-          response.message = 'Uno de los N° de parte en la lista no existe en la solicitud';
-        }
-        
-        if((parte.cantidad === null) || (isNaN(parte.cantidad)) || (parte.cantidad <= 0))
-        {
-          response.code = 0;
-          response.message = 'La parte N°: ' + parte.nparte + ' tiene cantidad invalida';
-        }
-        
-        if(parte.costo !== null)
-        {
-          if((isNaN(parte.costo)) || (parte.costo < 0))
+          let index = this.partes.findIndex((p) => {
+            if(p.nparte.toUpperCase() === parte.nparte.toUpperCase())
+            {
+              return true;
+            }
+            else
+            {
+              return false;
+            }
+          });
+  
+          if((index < 0))
+          {
+            response.code = -2;
+            response.message = `La parte N°:${ parte.nparte } no existe en la solicitud`;
+          }
+          
+          if((parte.cantidad === null) || (isNaN(parte.cantidad)) || (parte.cantidad <= 0))
           {
             response.code = 0;
-            response.message = 'La parte N°: ' + parte.nparte + ' tiene costo invalido';
+            response.message = `La parte N°:${ parte.nparte } tiene cantidad invalida`;
           }
+          
+          if(parte.costo !== null)
+          {
+            if((isNaN(parte.costo)) || (parte.costo < 0))
+            {
+              response.code = 0;
+              response.message = `La parte N°:${ parte.nparte } tiene costo invalido`;
+            }
+          }
+          
+          if(parte.margen !== null)
+          {
+            if(parte.margen < 0)
+            {
+              response.code = 0;
+              response.message = `La parte N°:${ parte.nparte } tiene margen invalido`;
+            }
+          }
+          
+          if(parte.tiempoentrega !== null)
+          {
+            if((isNaN(parte.tiempoentrega)) || (parte.tiempoentrega < 0))
+            {
+              response.code = 0;
+              response.message = `La parte N°:${ parte.nparte } tiene tiempo de entrega invalido`;
+            }
+          }
+          
+          if(parte.peso !== null)
+          {
+            if((isNaN(parte.peso)) || (parte.peso < 0))
+            {
+              response.code = 0;
+              response.message = `La parte N°:${ parte.nparte } tiene peso invalido`;
+            }
+          }
+          
+          if(parte.flete !== null)
+          {
+            if((isNaN(parte.flete)) || (parte.flete < 0))
+            {
+              response.code = 0;
+              response.message = `La parte N°:${ parte.nparte } tiene valor de flete invalido`;
+            }
+          }
+          
+          if(parte.backorder !== null)
+          {
+            if((isNaN(parte.backorder)) || (parte.backorder < 0) || (parte.backorder > 1))
+            {
+              response.code = 0;
+              response.message = `La parte N°:${ parte.nparte } tiene backorder invalido`;
+            }
+          }
+        }
+        else
+        {
+          response.code = -2;
+          response.message = 'El archivo contiene partes sin N° de parte';
         }
         
-        if(parte.margen !== null)
-        {
-          if(parte.margen < 0)
-          {
-            response.code = 0;
-            response.message = 'La parte N°: ' + parte.nparte + ' tiene margen invalido';
-          }
-        }
-        
-        if(parte.tiempoentrega !== null)
-        {
-          if((isNaN(parte.tiempoentrega)) || (parte.tiempoentrega < 0))
-          {
-            response.code = 0;
-            response.message = 'La parte N°: ' + parte.nparte + ' tiene tiempo de entrega invalido';
-          }
-        }
-        
-        if(parte.peso !== null)
-        {
-          if((isNaN(parte.peso)) || (parte.peso < 0))
-          {
-            response.code = 0;
-            response.message = 'La parte N°: ' + parte.nparte + ' tiene peso invalido';
-          }
-        }
-        
-        if(parte.flete !== null)
-        {
-          if((isNaN(parte.flete)) || (parte.flete < 0))
-          {
-            response.code = 0;
-            response.message = 'La parte N°: ' + parte.nparte + ' tiene valor de flete invalido';
-          }
-        }
-        
-        if(parte.backorder !== null)
-        {
-          if((isNaN(parte.backorder)) || (parte.backorder < 0) || (parte.backorder > 1))
-          {
-            response.code = 0;
-            response.message = 'La parte N°: ' + parte.nparte + ' tiene backorder invalido';
-          }
-        }
-
       }
-      else
+      catch(error)
       {
         response.code = -1;
-        response.message = 'Todas las partes de la lista debe contener el N° de parte';
+        response.message = 'El archivo es invalido';
       }
-
-      return response;
     }
-    catch(error)
+    else
     {
-      console.log(error);
-      response.code = -1;
-      response.message = 'EL archivo es invalido';
-
-      return response;
+      response.code = -2;
+      response.message = 'El archivo tiene una fila vacia';
     }
+
+    return response;
   }
 
   public updateParte(): void {

@@ -49,16 +49,22 @@ export class SolicitudesListComponent implements OnInit {
 
   solicitudes: any[] = [];
   loading: boolean = false;
-  loggedUser: User = {
-    'role_id': -1,
-  } as User;
+  loggedUser: any = {
+    role_id: -1,
+  };
 
   constructor(
     private router: Router,
     private _authService: AuthService,
     private _solicitudesService: SolicitudesService,
     private _utilsService: UtilsService
-  ) { }
+  ) { 
+
+    this.loggedUser = {
+      role_id: -1,
+    };
+
+  }
 
   ngOnInit(): void {
     //For loggedUser

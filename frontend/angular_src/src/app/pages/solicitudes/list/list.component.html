@@ -66,17 +66,17 @@
               <td align="center">{{ solicitud.estadosolicitud.name }}</td>
               <td align="center">
                 <!-- For Administrator -->
-                <a [routerLink]="['details/administrator', solicitud.id]" class="btn-table btn btn-secondary" title="Detalle" *ngIf="(this.loggedUser.role_id === 1) && ((solicitud.estadosolicitud.id === 1) || (solicitud.estadosolicitud.id === 2))"><i
+                <a [routerLink]="['details/administrator', solicitud.id]" class="btn-table btn btn-secondary" title="Detalle" *ngIf="(this.loggedUser.role_id === 1)"><i
                   class="bx bx-zoom-in"></i></a>
                 <!-- For Seller -->
-                <a [routerLink]="['details/seller', solicitud.id]" class="btn-table btn btn-secondary" title="Detalle" *ngIf="(this.loggedUser.role_id === 2) && ((solicitud.estadosolicitud.id === 1) || (solicitud.estadosolicitud.id === 2))"><i
+                <a [routerLink]="['details/seller', solicitud.id]" class="btn-table btn btn-secondary" title="Detalle" *ngIf="(this.loggedUser.role_id === 2)"><i
                   class="bx bx-zoom-in"></i></a>
                 <a [routerLink]="['complete', solicitud.id]" class="btn-table btn btn-secondary" title="Completar" *ngIf="(this.loggedUser.role_id === 1) && ((solicitud.estadosolicitud.id === 1) || (solicitud.estadosolicitud.id === 2))"><i
                   class="bx bx-copy-alt"></i></a>
-                <a [routerLink]="['edit', solicitud.id]" class="btn-table btn btn-secondary" title="Editar"><i
+                <a [routerLink]="['edit', solicitud.id]" class="btn-table btn btn-secondary" title="Editar" *ngIf="(solicitud.estadosolicitud.id === 1) || (solicitud.estadosolicitud.id === 2)"><i
                       class="bx bx-edit-alt"></i></a>
                 <a [routerLink]="" (click)="removeSolicitud(solicitud)" class="btn-table btn btn-secondary"
-                    title="Eliminar"><i class="bx bx-trash-alt"></i></a>
+                    title="Eliminar" *ngIf="(solicitud.estadosolicitud.id === 1) || (solicitud.estadosolicitud.id === 2)"><i class="bx bx-trash-alt"></i></a>
               </td>
             </tr>
           </tbody>

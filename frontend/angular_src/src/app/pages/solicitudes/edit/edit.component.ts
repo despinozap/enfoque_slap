@@ -379,13 +379,19 @@ export class SolicitudesEditComponent implements OnInit {
 
         if (sheet.length > 1) {
           for (let i = 1; i < sheet.length; i++) {
-            this.partes.push(
-              {
-                "nparte": sheet[i][0],
-                "cantidad": sheet[i][1]
-              }
-            );
+            
+            if((sheet[i].length > 0) && (sheet[i][0] !== undefined))
+            {
+              this.partes.push(
+                {
+                  "nparte": sheet[i][0],
+                  "cantidad": sheet[i][1]
+                }
+              );
+            }
           }
+
+          this.renderDataTable(this.datatableElement_partes);
         }
         else {
           NotificationsService.showAlert(

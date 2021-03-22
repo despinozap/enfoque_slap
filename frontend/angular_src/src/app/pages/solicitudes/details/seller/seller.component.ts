@@ -6,6 +6,9 @@ import { NotificationsService } from 'src/app/services/notifications.service';
 import { SolicitudesService } from 'src/app/services/solicitudes.service';
 import { UtilsService } from 'src/app/services/utils.service';
 
+/* SweetAlert2 */
+const Swal = require('../../../../../assets/vendors/sweetalert2/sweetalert2.all.min.js');
+
 @Component({
   selector: 'app-seller',
   templateUrl: './seller.component.html',
@@ -168,6 +171,105 @@ export class SolicitudesDetailsSellerComponent implements OnInit {
         this.goTo_solicitudesList();
       }
     );
+  }
+
+  public closeSolicitud(): void{
+    Swal.fire({
+      title: 'Cerrar solicitud',
+      text: `¿Realmente quieres cerrar la solicitud #${ this.solicitud.id }?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#555555',
+      confirmButtonText: 'Sí, continuar',
+      cancelButtonText: 'Cancelar',
+      allowOutsideClick: false
+    }).then((result: any) => {
+      if(result.isConfirmed)
+      {
+        Swal.queue([{
+          title: 'Cerrando..',
+          icon: 'warning',
+          showConfirmButton: false,
+          showCancelButton: false,
+          allowOutsideClick: false,
+          showLoaderOnConfirm: true,
+          preConfirm: () => {
+
+          }    
+        }]);
+
+        this._solicitudesService.closeSolicitud(this.solicitud.id)
+        .subscribe(
+          //Success request
+          (response: any) => {
+
+            NotificationsService.showToast(
+              response.message,
+              NotificationsService.messageType.success
+            );
+
+            this.goTo_solicitudesList();
+          },
+          //Error request
+          (errorResponse: any) => {
+
+            switch(errorResponse.status)
+            {
+              case 400: //Object not found
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.warning
+                );
+
+                break;
+              }
+
+              case 405: //Permission denied
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+              case 409: //Conflict
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+              case 500: //Internal server
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+              default: //Unhandled error
+              {
+                NotificationsService.showAlert(
+                  'Error al intentar cerrar la solicitud',
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+            }
+          }
+        );
+      }
+    });
   }
 
   public exportPartesToExcel(): void {
