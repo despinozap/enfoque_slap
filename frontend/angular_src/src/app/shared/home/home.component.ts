@@ -20,7 +20,7 @@ export class HomeComponent implements OnInit {
 
     if (this._authService.getLoggedUser() !== null) 
     {
-      this._authService.notifyLoggedUser();
+      this._authService.notifyLoggedUser(this._authService.NOTIFICATION_RECEIVER_HOME);
     }
     else
     { 

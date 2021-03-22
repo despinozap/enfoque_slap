@@ -22,11 +22,11 @@ export class TopbarComponent implements OnInit {
 
     //For loggedUser
     {
-      this._authService.loggedUser$.subscribe((loggedUser) => {
-        this.loggedUser = loggedUser;
+      this._authService.loggedUser$.subscribe((data) => {
+        this.loggedUser = data.user;
       });
 
-      this._authService.notifyLoggedUser();
+      this._authService.notifyLoggedUser(this._authService.NOTIFICATION_RECEIVER_HOME);
     }
   }
 

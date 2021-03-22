@@ -11,9 +11,13 @@ export class AuthService {
 
 	private ACCESS_TOKEN_ITEM_NAME: string = 'access_token';
 
+	//Notification receivers
+	NOTIFICATION_RECEIVER_HOME = 0;
+	NOTIFICATION_RECEIVER_CONTENTPAGE = 1;
+
 	private loggedUser: User = null as any;
 
-	private loggedUserSource = new Subject<User>();
+	private loggedUserSource = new Subject<any>();
 	public loggedUser$ = this.loggedUserSource.asObservable();
 
 	constructor(private httpClient: HttpClient) {
@@ -87,15 +91,19 @@ export class AuthService {
 	{
 		this.loggedUser = user;
 
-		//The observable notifies all the subscribers about the new value for loggedUser
-		this.loggedUserSource.next(this.loggedUser);
+		this.notifyLoggedUser(this.NOTIFICATION_RECEIVER_HOME);
 	}
 
-	public notifyLoggedUser(): boolean {
+	public notifyLoggedUser(notificationReceiver: number): boolean {
 		if(this.loggedUser !== null)
 		{
+			let data: any = {
+				'user' : this.loggedUser,
+				'receiver' : notificationReceiver
+			};
+
 			//The observable notifies all the subscribers about the new value for loggedUser
-			this.loggedUserSource.next(this.loggedUser);
+			this.loggedUserSource.next(data);
 
 			return true;
 		}
@@ -103,6 +111,7 @@ export class AuthService {
 		{
 			return false;
 		}
+	
 	}
 
 	public getLoggedUser(): User

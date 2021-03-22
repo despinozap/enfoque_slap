@@ -63,11 +63,11 @@ export class SolicitudesListComponent implements OnInit {
   ngOnInit(): void {
     //For loggedUser
     {
-      this._authService.loggedUser$.subscribe((loggedUser) => {
-        this.loggedUser = loggedUser;
+      this._authService.loggedUser$.subscribe((data) => {
+        this.loggedUser = data.user;
       });
       
-      this._authService.notifyLoggedUser();
+      this._authService.notifyLoggedUser(this._authService.NOTIFICATION_RECEIVER_CONTENTPAGE);
     }
   }
 
@@ -118,6 +118,7 @@ export class SolicitudesListComponent implements OnInit {
 
         this.renderDataTable(this.datatableElement_solicitudes);
 
+        this.loggedUser = this._authService.getLoggedUser();
         this.loading = false;
       },
       //Error request

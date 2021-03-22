@@ -21,14 +21,17 @@ export class MenubarComponent implements OnInit {
     
     //For loggedUser
     {
-      this._authService.loggedUser$.subscribe((loggedUser) => {
-        this.menu = this._utilsService.generateMenu(loggedUser.role_id);
+      this._authService.loggedUser$.subscribe((data) => {
+        if(data.receiver === this._authService.NOTIFICATION_RECEIVER_HOME)
+        {
+          this.menu = this._utilsService.generateMenu(data.user.role_id);
 
-        this.cleanScripts();
-        this.loadScript('assets/js/app.js');
+          this.cleanScripts();
+          this.loadScript('assets/js/app.js');
+        }
       });
 
-      this._authService.notifyLoggedUser();
+      this._authService.notifyLoggedUser(this._authService.NOTIFICATION_RECEIVER_HOME);
     }    
   }
 
