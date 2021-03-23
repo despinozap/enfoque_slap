@@ -12,4 +12,9 @@ class Marca extends Model
     protected $fillable = [
         'name',
     ];
+
+    public function partes()
+    {
+        return $this->hasMany(Parte::class);
+    }
 }

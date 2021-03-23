@@ -328,7 +328,7 @@ class UsersController extends Controller
             else if(User::where('email', $request->email)->where('id', '<>', $id)->first())
             {
                 $response = HelpController::buildResponse(
-                    400,
+                    409,
                     [
                         'email' => [
                             'El email ya esta asociado a otro usuario'
@@ -393,33 +393,45 @@ class UsersController extends Controller
         $user = Auth::user();
         if($user->role->hasRoutepermission('users destroy'))
         {
-            if($user = User::find($id))
+            if($user->id !== $id)
             {
-                if($user->delete())
+                if($user = User::find($id))
+                {
+                    if($user->delete())
+                    {
+                        $response = HelpController::buildResponse(
+                            200,
+                            'Usuario eliminado',
+                            null
+                        );
+                    }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            500,
+                            'Error al eliminar el usuario',
+                            null
+                        );
+                    }
+                }   
+                else     
                 {
                     $response = HelpController::buildResponse(
-                        200,
-                        'Usuario eliminado',
+                        400,
+                        'El usuario no existe',
                         null
                     );
                 }
-                else
-                {
-                    $response = HelpController::buildResponse(
-                        500,
-                        'Error al eliminar el usuario',
-                        null
-                    );
-                }
-            }   
-            else     
+            }
+            else
             {
                 $response = HelpController::buildResponse(
-                    400,
-                    'El usuario no existe',
+                    409,
+                    'No puedes eliminar tu propio usuario',
                     null
                 );
             }
+            
         }
         else
         {

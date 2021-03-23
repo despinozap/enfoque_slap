@@ -17,4 +17,9 @@ class Parte extends Model
     {
         return $this->belongsTo(Marca::class);
     }
+
+    public function solicitudes()
+    {
+        return $this->belongsToMany(Solicitud::class, 'parte_solicitud');
+    }
 }

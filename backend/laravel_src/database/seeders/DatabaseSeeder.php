@@ -37,6 +37,11 @@ class DatabaseSeeder extends Seeder
             'clientes index_full',
             //Marcas
             'marcas index_full',
+            //Partes
+            'partes index',
+            'partes show',
+            'partes update',
+            'partes destroy',
             //Solicitudes
             'solicitudes index',
             'solicitudes store',
@@ -74,6 +79,11 @@ class DatabaseSeeder extends Seeder
                 'users show',
                 'users update',
                 'users destroy',
+                //Partes
+                'partes index',
+                'partes show',
+                'partes update',
+                'partes destroy',
                 //Clientes
                 'clientes index_full',
                 //Marcas
@@ -155,14 +165,20 @@ class DatabaseSeeder extends Seeder
         *   Clientes
         */
         $cliente = new Cliente();
-        $cliente->name = 'ClienteTest';
+        $cliente->name = 'ClienteTest01';
+        $cliente->save();
+        $cliente = new Cliente();
+        $cliente->name = 'ClienteTest02';
         $cliente->save();
 
         /*
         *   Marcas
         */
         $marca = new Marca();
-        $marca->name = 'MarcaTest';
+        $marca->name = 'MarcaTest01';
+        $marca->save();
+        $marca = new Marca();
+        $marca->name = 'MarcaTest02';
         $marca->save();
 
         /*
@@ -197,7 +213,7 @@ class DatabaseSeeder extends Seeder
         $solicitud->cliente_id = 1;
         $solicitud->user_id = 1;
         $solicitud->estadosolicitud_id = 1;
-        $solicitud->comentario = 'Testing comment';
+        $solicitud->comentario = 'Testing comment for SolicitudTest01';
         $solicitud->save();
 
         $solicitud->partes()->attach([ 

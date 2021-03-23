@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RolesController;
 use App\Http\Controllers\UsersController;
+use App\Http\Controllers\PartesController;
 use App\Http\Controllers\ClientesController;
 use App\Http\Controllers\MarcasController;
 use App\Http\Controllers\SolicitudesController;
@@ -52,6 +53,12 @@ Route::middleware('auth:api')->group(function()
     Route::get('/users/{id}', [UsersController::class, 'show']);
     Route::put('/users/{id}', [UsersController::class, 'update']);
     Route::delete('/users/{id}', [UsersController::class, 'destroy']);
+
+    // Partes
+    Route::get('/partes', [PartesController::class, 'index']);
+    Route::get('/partes/{id}', [PartesController::class, 'show']);
+    Route::put('/partes/{id}', [PartesController::class, 'update']);
+    Route::delete('/partes/{id}', [PartesController::class, 'destroy']);
 
     // Clientes
     Route::get('/clientes/all', [ClientesController::class, 'indexFull']);
