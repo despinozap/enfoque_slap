@@ -99,6 +99,9 @@ export class SolicitudesDetailsSellerComponent implements OnInit {
             'nparte': p.nparte,
             'descripcion': p.pivot.descripcion,
             'cantidad': p.pivot.cantidad,
+            'tiempoentrega': p.pivot.tiempoentrega,
+            'monto': p.pivot.monto,
+            'backorder': p.pivot.backorder === 1 ? true : false,
           }
         )
       });
@@ -281,6 +284,8 @@ export class SolicitudesDetailsSellerComponent implements OnInit {
         'N parte',
         'Descripcion',
         'Cantidad',
+        'Tiempo entrega (dias)',
+        'Backorder (SI = 1, NO = 0)'
       ]
     );
 
@@ -290,6 +295,8 @@ export class SolicitudesDetailsSellerComponent implements OnInit {
         p.nparte,
         p.descripcion,
         p.cantidad,
+        p.tiempoentrega,
+        (p.backorder === true) ? '1' : '0',
       ]);
     });
 

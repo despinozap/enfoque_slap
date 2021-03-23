@@ -94,6 +94,7 @@ export class SolicitudesDetailsAdministratorComponent implements OnInit {
         this.partes.push(
           {
             'nparte': p.nparte,
+            'descripcion': p.pivot.descripcion,
             'cantidad': p.pivot.cantidad,
             'costo': p.pivot.costo,
             'margen': p.pivot.margen,
@@ -102,7 +103,6 @@ export class SolicitudesDetailsAdministratorComponent implements OnInit {
             'flete': p.pivot.flete,
             'monto': p.pivot.monto,
             'backorder': p.pivot.backorder === 1 ? true : false,
-            'descripcion': p.pivot.descripcion
           }
         )
       });

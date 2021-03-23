@@ -68,18 +68,23 @@
                 <th>N° Parte</th>
                 <th>Descripcion</th>
                 <th>Cantidad</th>
+                <th>Tiempo de entrega</th>
+                <th>Monto</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let parte of partes; index as i">
-                <td align="left">{{ parte.nparte !== null ? parte.nparte : "" }}</td>
+                <td align="left"><i class="bx bx-timer icon-table" *ngIf="(parte.backorder === true)"></i>{{ parte.nparte !== null ? parte.nparte : "" }}</td>
                 <td align="right">{{ parte.descripcion !== null ? parte.descripcion : "" }}</td>
                 <td align="right">{{ parte.cantidad !== null ? parte.cantidad : "" }}</td>
+                <td align="right">{{ parte.tiempoentrega !== null ? parte.tiempoentrega + " dias" : ""
+                  }}</td>
+                <td align="right">{{ parte.monto !== null ? "$" + moneyStringFormat(parte.monto) : "" }}</td>
               </tr>
             </tbody>
             <tfoot>
               <tr>
-                <td colspan="3" align="right">
+                <td colspan="5" align="right">
                   <button type="button" class="btn btn-outline-primary" (click)="exportPartesToExcel()"
                       [disabled]="(loading === true)">
                     <i class="bx bx-spreadsheet font-size-16 align-middle"></i> Exportar a Excel
