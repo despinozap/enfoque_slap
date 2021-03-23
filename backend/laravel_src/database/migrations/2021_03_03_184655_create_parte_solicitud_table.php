@@ -17,8 +17,8 @@ class CreateParteSolicitudTable extends Migration
             $table->id();
             $table->bigInteger('parte_id')->unsigned();
             $table->bigInteger('solicitud_id')->unsigned();
-            $table->integer('cantidad');
             $table->longText('descripcion')->nullable();
+            $table->integer('cantidad');
             $table->float('costo')->nullable();
             $table->integer('tiempoentrega')->nullable();
             $table->float('margen')->nullable();

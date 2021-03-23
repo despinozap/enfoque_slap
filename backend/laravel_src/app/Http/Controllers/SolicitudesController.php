@@ -279,12 +279,9 @@ class SolicitudesController extends Controller
 
                             $parte->pivot->makeHidden([
                                 'costo',
-                                'tiempoentrega',
                                 'margen',
                                 'peso',
                                 'flete',
-                                'monto',
-                                'backorder',
                                 'marca_id', 
                                 'created_at', 
                                 'updated_at'
@@ -492,6 +489,7 @@ class SolicitudesController extends Controller
             $validatorRules = [
                 'partes' => 'required|array|min:1',
                 'partes.*.nparte'  => 'required',
+                'partes.*.description'  => 'nullable',
                 'partes.*.cantidad'  => 'required|numeric|min:1',
                 'partes.*.costo'  => 'nullable|numeric|min:0',
                 'partes.*.margen'  => 'nullable|numeric|min:0',
@@ -499,7 +497,6 @@ class SolicitudesController extends Controller
                 'partes.*.peso'  => 'nullable|numeric|min:1',
                 'partes.*.flete'  => 'nullable|numeric|min:0',
                 'partes.*.backorder'  => 'required|boolean',
-                'partes.*.description'  => 'nullable',
             ];
     
             $validatorMessages = [
@@ -562,8 +559,8 @@ class SolicitudesController extends Controller
                             }
 
                             $syncData[$p->id] =  array(
-                                'cantidad' => $parte['cantidad'],
                                 'descripcion' => $parte['descripcion'],
+                                'cantidad' => $parte['cantidad'],
                                 'costo' => $parte['costo'],
                                 'margen' => $parte['margen'],
                                 'tiempoentrega' => $parte['tiempoentrega'],
