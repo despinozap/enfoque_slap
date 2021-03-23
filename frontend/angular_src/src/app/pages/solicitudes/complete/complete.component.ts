@@ -1,7 +1,9 @@
 import { createOfflineCompileUrlResolver } from '@angular/compiler';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { DataTableDirective } from 'angular-datatables';
+import { Subject } from 'rxjs';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { SolicitudesService } from 'src/app/services/solicitudes.service';
 import { UtilsService } from 'src/app/services/utils.service';
@@ -19,6 +21,19 @@ import * as XLSX from 'xlsx';
 })
 export class SolicitudesCompleteComponent implements OnInit {
 
+  @ViewChild(DataTableDirective, {static: false})
+  datatableElement_partes: DataTableDirective = null as any;
+  dtOptions: any = {
+    pagingType: 'full_numbers',
+    pageLength: 10,
+    language: {
+      url: '//cdn.datatables.net/plug-ins/1.10.22/i18n/Spanish.json'
+    }
+  };
+
+  
+  dtTrigger: Subject<any> = new Subject<any>();
+  
   solicitud: any = {
     id: null,
     cliente_name: null,
@@ -66,12 +81,31 @@ export class SolicitudesCompleteComponent implements OnInit {
   ngOnInit(): void {
     this.sub = this.route.params.subscribe(params => {
       this.solicitud.id = params['id'];
-      this.loadSolicitud(0);
     });
+  }
+
+  ngAfterViewInit(): void {
+    this.dtTrigger.next();
+
+    //Prevents throwing an error for var status changed while initialization
+    setTimeout(() => {
+      this.loadSolicitud(0);
+    },
+    100);
   }
 
   ngOnDestroy() {
     this.sub.unsubscribe();
+    this.dtTrigger.unsubscribe();
+  }
+
+  private renderDataTable(dataTableElement: DataTableDirective): void {
+    dataTableElement.dtInstance.then((dtInstance: DataTables.Api) => {
+      // Destroy the table first
+      dtInstance.destroy();
+      // Call the dtTrigger to rerender again
+      this.dtTrigger.next();
+    });
   }
 
   private loadFormData(solicitudData: any)
@@ -291,6 +325,8 @@ export class SolicitudesCompleteComponent implements OnInit {
             {
               this.loading = false;
               this.loadFormData(response.data);
+
+              this.renderDataTable(this.datatableElement_partes);
             }
             
             break;
@@ -302,6 +338,8 @@ export class SolicitudesCompleteComponent implements OnInit {
             {
               this.loading = false;
               this.loadFormData(response.data);
+
+              this.renderDataTable(this.datatableElement_partes);
 
               this.dataUpdated = false;
 
@@ -318,6 +356,8 @@ export class SolicitudesCompleteComponent implements OnInit {
             {
               this.loading = false;
               this.loadFormData(response.data);
+
+              this.renderDataTable(this.datatableElement_partes);
 
               this.dataUpdated = false;
 

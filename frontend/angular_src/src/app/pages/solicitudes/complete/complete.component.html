@@ -55,8 +55,7 @@
         <p class="card-title-desc">Lista de partes en la solicitud</p>
 
         <div class="table-responsive">
-          <table class="table table-hover table-bordered mb-2">
-
+          <table datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger" class="table table-hover table-bordered mb-2">
             <thead>
               <tr>
                 <th>N° Parte</th>
@@ -72,9 +71,6 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngIf="(partes.length < 1)">
-                <td colspan="10" align="center">La lista de partes esta vacia</td>
-              </tr>
               <tr *ngFor="let parte of partes; index as i" [class.table-danger]="(parte.complete === false)">
                 <td align="left"><i class="bx bx-timer icon-table" *ngIf="(parte.backorder === true)"></i>{{ parte.nparte }}</td>
                 <td align="right">{{ parte.descripcion }}</td>
@@ -93,18 +89,20 @@
               </tr>
             </tbody>
             <tfoot>
-              <td colspan="10" align="right">
-                <input #inputFilePartes style="display: none;" type="file" multiple="false"
-                    (change)="onPartesFileChange($event); inputFilePartes.value=''">
-                <button type="button" class="btn btn-outline-primary mr-2" (click)="inputFilePartes.click()"
-                    [disabled]="(loading === true)">
-                  <i class="bx bx-import font-size-16 align-middle"></i> Importar Excel
-                </button>
-                <button type="button" class="btn btn-outline-primary" (click)="exportPartesToExcel()"
-                    [disabled]="(loading === true)">
-                  <i class="bx bx-spreadsheet font-size-16 align-middle"></i> Exportar a Excel
-                </button>
-              </td>
+              <tr>
+                <td colspan="10" align="right">
+                  <input #inputFilePartes style="display: none;" type="file" multiple="false"
+                      (change)="onPartesFileChange($event); inputFilePartes.value=''">
+                  <button type="button" class="btn btn-outline-primary mr-2" (click)="inputFilePartes.click()"
+                      [disabled]="(loading === true)">
+                    <i class="bx bx-import font-size-16 align-middle"></i> Importar Excel
+                  </button>
+                  <button type="button" class="btn btn-outline-primary" (click)="exportPartesToExcel()"
+                      [disabled]="(loading === true)">
+                    <i class="bx bx-spreadsheet font-size-16 align-middle"></i> Exportar a Excel
+                  </button>
+                </td>
+              </tr>
             </tfoot>
           </table>
         </div>

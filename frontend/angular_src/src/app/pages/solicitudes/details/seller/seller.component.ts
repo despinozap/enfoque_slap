@@ -44,6 +44,8 @@ export class SolicitudesDetailsSellerComponent implements OnInit {
 
   private sub: any;
 
+  DOLLAR_VALUE: number = 740;
+
   constructor(
     private router: Router,
     private route: ActivatedRoute,
@@ -304,7 +306,7 @@ export class SolicitudesDetailsSellerComponent implements OnInit {
   }
 
   public moneyStringFormat(value: number): string {
-    return this._utilsService.moneyStringFormat(value);
+    return this._utilsService.moneyStringFormat(value * this.DOLLAR_VALUE);
   }
 
   public goTo_duplicateSolicitud(): void {
