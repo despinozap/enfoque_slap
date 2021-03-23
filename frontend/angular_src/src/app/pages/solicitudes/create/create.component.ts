@@ -392,7 +392,7 @@ export class SolicitudesCreateComponent implements OnInit {
               );
             }
           }
-
+          
           this.renderDataTable(this.datatableElement_partes);
         }
         else {
