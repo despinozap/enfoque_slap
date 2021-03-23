@@ -26,8 +26,7 @@ export class MenubarComponent implements OnInit {
         {
           this.menu = this._utilsService.generateMenu(data.user.role_id);
 
-          this.cleanScripts();
-          this.loadScript('assets/libs/metismenu/metisMenu.min.js');
+          //this.cleanScripts();
           this.loadScript('assets/js/app.js');
         }
       });

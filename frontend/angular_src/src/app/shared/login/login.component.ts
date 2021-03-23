@@ -46,7 +46,7 @@ export class LoginComponent implements OnInit {
 			this.router.navigate(['panel']);
 		}
 		else {
-			this.cleanScripts();
+			//this.cleanScripts();
 			this.loadScript('assets/js/app.js');
 		}
 	}
