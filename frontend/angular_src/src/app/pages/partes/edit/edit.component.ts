@@ -1,38 +1,36 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Role } from 'src/app/interfaces/role';
-import { User } from 'src/app/interfaces/user';
+import { Marca } from 'src/app/interfaces/marca';
+import { Parte } from 'src/app/interfaces/parte';
+import { MarcasService } from 'src/app/services/marcas.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
-import { RolesService } from 'src/app/services/roles.service';
-import { UsersService } from 'src/app/services/users.service';
+import { PartesService } from 'src/app/services/partes.service';
 
 @Component({
   selector: 'app-edit',
   templateUrl: './edit.component.html',
   styleUrls: ['./edit.component.css']
 })
-export class UsuariosEditComponent implements OnInit {
+export class PartesEditComponent implements OnInit {
 
-  roles: Array<Role> = null as any;
+  marcas: Array<Marca> = null as any;
   loading: boolean = false;
   responseErrors: any = [];
   
   private sub: any;
   private id: number = -1;
 
-  userForm: FormGroup = new FormGroup({
-    name: new FormControl('', [Validators.required, Validators.minLength(4)]),
-    email: new FormControl('', [Validators.required, Validators.email]),
-    phone: new FormControl('', [Validators.required, Validators.min(0)]),
-    role: new FormControl('', [Validators.required])
+  parteForm: FormGroup = new FormGroup({
+    nparte: new FormControl('', [Validators.required]),
+    marca: new FormControl('', [Validators.required])
   });
   
 
   constructor(
     private route: ActivatedRoute, 
-    private _rolesService: RolesService,
-    private _usersService: UsersService,
+    private _marcasService: MarcasService,
+    private _partesService: PartesService,
     private router: Router
   ) 
   {
@@ -42,16 +40,16 @@ export class UsuariosEditComponent implements OnInit {
     this.sub = this.route.params.subscribe(params => {
       
       this.id = params['id'];
-      this.userForm.disable();
+      this.parteForm.disable();
       this.loading = true;
 
-      this.loadRoles();
+      this.loadMarcas();
 
-      this._usersService.getUser(this.id)
+      this._partesService.getParte(this.id)
       .subscribe(
         //Success request
         (response: any) => {
-          this.userForm.enable();
+          this.parteForm.enable();
           this.loading = false;
           
           this.loadFormData(response.data);
@@ -85,7 +83,7 @@ export class UsuariosEditComponent implements OnInit {
             default: //Unhandled error
             {
               NotificationsService.showToast(
-                'Error al cargar los datos del usuario',
+                'Error al cargar los datos de la parte',
                 NotificationsService.messageType.error
               );
     
@@ -95,7 +93,7 @@ export class UsuariosEditComponent implements OnInit {
           }
 
           this.loading = false;
-          this.goTo_usersList();
+          this.goTo_partesList();
         }
       );
     });
@@ -105,18 +103,18 @@ export class UsuariosEditComponent implements OnInit {
     this.sub.unsubscribe();
   }
 
-  private loadRoles()
+  private loadMarcas()
   {
     this.loading = true;
-    this._rolesService.getRoles()
+    this._marcasService.getMarcas()
     .subscribe(
       //Success request
       (response: any) => {
         this.loading = false;
 
-        this.roles = <Array<Role>>(response.data);
+        this.marcas = <Array<Marca>>(response.data);
         
-        this.userForm.enable();
+        this.parteForm.enable();
       },
       //Error request
       (errorResponse: any) => {
@@ -146,7 +144,7 @@ export class UsuariosEditComponent implements OnInit {
           default: //Unhandled error
           {
             NotificationsService.showToast(
-              'Error al cargar la lista de roles',
+              'Error al cargar la lista de marcas',
               NotificationsService.messageType.error
             )
         
@@ -154,36 +152,33 @@ export class UsuariosEditComponent implements OnInit {
           }
         }
         
-        this.roles = null as any;
+        this.marcas = null as any;
         this.loading = false;
 
-        this.goTo_usersList();
+        this.goTo_partesList();
       }
     );  
   }
 
-  private loadFormData(userData: any)
+  private loadFormData(parteData: any)
   {
-    this.userForm.controls.name.setValue(userData.name);
-    this.userForm.controls.email.setValue(userData.email);
-    this.userForm.controls.role.setValue(userData.role.id);
-    this.userForm.controls.phone.setValue(userData.phone);
+    this.parteForm.controls.nparte.setValue(parteData.nparte);
+    this.parteForm.controls.marca.setValue(parteData.marca.id);
   }
 
-  public updateUser()
+  public updateParte()
   {
-    this.userForm.disable();
+    this.parteForm.disable();
     this.loading = true;
     this.responseErrors = [];
 
-    let user: User = {
-      name: this.userForm.value.name,
-      email: this.userForm.value.email,
-      phone: this.userForm.value.phone,
-      role_id: this.userForm.value.role
-    } as User;
+    let parte: Parte = {
+      nparte: this.parteForm.value.nparte,
+      marca_id: this.parteForm.value.marca
+    } as Parte;
+    console.log(parte);
     
-    this._usersService.updateUser(this.id, user)
+    this._partesService.updateParte(this.id, parte)
     .subscribe(
       //Success request
       (response: any) => {
@@ -192,11 +187,11 @@ export class UsuariosEditComponent implements OnInit {
           NotificationsService.messageType.success
         );
 
-        this.goTo_usersList();
+        this.goTo_partesList();
       },
       //Error request
       (errorResponse: any) => {
-
+        console.log(errorResponse);
         switch(errorResponse.status)
         {
           case 400: //Bad request
@@ -236,7 +231,7 @@ export class UsuariosEditComponent implements OnInit {
               NotificationsService.messageType.warning
             );
 
-            this.goTo_usersList();
+            this.goTo_partesList();
 
             break;
           }
@@ -261,7 +256,7 @@ export class UsuariosEditComponent implements OnInit {
           default: //Unhandled error
           {
             NotificationsService.showAlert(
-              'Error al actualizar el usuario',
+              'Error al actualizar la parte',
               NotificationsService.messageType.error
             );
 
@@ -270,15 +265,14 @@ export class UsuariosEditComponent implements OnInit {
 
         }
 
-        this.userForm.enable();
+        this.parteForm.enable();
         this.loading = false;
       }
     );
   }
 
-  public goTo_usersList()
+  public goTo_partesList()
   {
-    this.router.navigate(['/panel/usuarios']);
+    this.router.navigate(['/panel/partes']);
   }
-
 }

@@ -95,13 +95,18 @@
                 <th>Opciones</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody *ngIf="((loading === true) && (id >= 0))">
+              <tr>
+                <td colspan="3" style="text-align: center;"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</td>
+              </tr>
+            </tbody>
+            <tbody *ngIf="((loading === false) && (id >= 0))">
               <tr *ngFor="let parte of partes; index as i">
                 <td align="left">{{ parte.nparte }}</td>
                 <td align="right">{{ parte.cantidad }}</td>
                 <td align="center">
-                  <button (click)="goTo_updateParte(i)" class="btn-table btn btn-secondary"title="Eliminar" [disabled]="(loading === true)"><i class="bx bx-edit-alt"></i></button>
-                  <button (click)="removeParte(i)" class="btn-table btn btn-secondary"title="Eliminar" [disabled]="(loading === true)"><i class="bx bx-trash-alt"></i></button>
+                  <button (click)="goTo_updateParte(i)" class="btn-table btn btn-secondary" title="Editar"><i class="bx bx-edit-alt"></i></button>
+                  <button (click)="removeParte(i)" class="btn-table btn btn-secondary" title="Eliminar"><i class="bx bx-trash-alt"></i></button>
                 </td>
               </tr>
             </tbody>

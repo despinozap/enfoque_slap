@@ -32,10 +32,6 @@ export class SolicitudesCreateComponent implements OnInit {
     language: {
       url: '//cdn.datatables.net/plug-ins/1.10.22/i18n/Spanish.json'
     },
-    columnDefs: [
-      { orderable: false, targets: 0 }
-    ],
-    order: [[1, 'desc']],
     /*
     // Declare the use of the extension in the dom parameter
     dom: 'Bfrtip',

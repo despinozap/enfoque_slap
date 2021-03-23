@@ -1,11 +1,9 @@
-import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { User } from 'src/app/interfaces/user';
-import { NotificationsService } from 'src/app/services/notifications.service';
-import { UsersService } from 'src/app/services/users.service';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
-import { DataTableDirective, DataTablesModule } from 'angular-datatables';
+import { Parte } from 'src/app/interfaces/parte';
+import { NotificationsService } from 'src/app/services/notifications.service';
+import { PartesService } from 'src/app/services/partes.service';
 
 /* SweetAlert2 */
 const Swal = require('../../../../assets/vendors/sweetalert2/sweetalert2.all.min.js');
@@ -15,10 +13,10 @@ const Swal = require('../../../../assets/vendors/sweetalert2/sweetalert2.all.min
   templateUrl: './list.component.html',
   styleUrls: ['./list.component.css']
 })
-export class UsuariosListComponent implements OnInit, AfterViewInit, OnDestroy {
+export class PartesListComponent implements OnInit {
 
   @ViewChild(DataTableDirective, {static: false})
-  datatableElement_users: DataTableDirective = null as any;
+  datatableElement_partes: DataTableDirective = null as any;
   dtOptions: any = {
     pagingType: 'full_numbers',
     pageLength: 10,
@@ -38,14 +36,10 @@ export class UsuariosListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   dtTrigger: Subject<any> = new Subject<any>();
 
-  users: any[] = [];
+  partes: any[] = [];
   loading: boolean = false;
-
-  constructor(
-    private _usersService: UsersService
-  ) 
-  {
-  }
+  
+  constructor(private _partesService: PartesService) { }
 
   ngOnInit(): void {
   }
@@ -55,7 +49,7 @@ export class UsuariosListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     //Prevents throwing an error for var status changed while initialization
     setTimeout(() => {
-      this.loadUsersList();
+      this.loadPartesList();
     },
     100);
   }
@@ -80,17 +74,17 @@ export class UsuariosListComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  public loadUsersList()
+  public loadPartesList()
   {
     this.loading = true;
 
-    this.clearDataTable(this.datatableElement_users);
-    this._usersService.getUsers()
+    this.clearDataTable(this.datatableElement_partes);
+    this._partesService.getPartes()
     .subscribe(
       //Success request
       (response: any) => {
-        this.users = response.data;
-        this.renderDataTable(this.datatableElement_users);
+        this.partes = response.data;
+        this.renderDataTable(this.datatableElement_partes);
 
         this.loading = false;
       },
@@ -122,7 +116,7 @@ export class UsuariosListComponent implements OnInit, AfterViewInit, OnDestroy {
           default: //Unhandled error
           {
             NotificationsService.showAlert(
-              'Error al intentar cargar la lista de usuarios',
+              'Error al intentar cargar la lista de partes',
               NotificationsService.messageType.error
             )
         
@@ -130,17 +124,17 @@ export class UsuariosListComponent implements OnInit, AfterViewInit, OnDestroy {
           }
         }
 
-        this.users = null as any;
+        this.partes = null as any;
         this.loading = false;
       }
     );
   }
 
-  public removeUser(user: User)
+  public removeParte(parte: Parte)
   {
     Swal.fire({
-      title: 'Eliminar usuario',
-      text: "¿Realmente quieres eliminar el usuario \"" + user.name + "\" (" + user.email + ")?",
+      title: 'Eliminar parte',
+      text: `¿Realmente quieres eliminar la parte N° ${ parte.nparte }?`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
@@ -163,12 +157,12 @@ export class UsuariosListComponent implements OnInit, AfterViewInit, OnDestroy {
           }    
         }]);
 
-        this._usersService.removeUser(user.id)
+        this._partesService.removeParte(parte.id)
         .subscribe(
           //Success request
           (response: any) => {
 
-            this.loadUsersList();
+            this.loadPartesList();
             NotificationsService.showToast(
               response.message,
               NotificationsService.messageType.success
@@ -223,7 +217,7 @@ export class UsuariosListComponent implements OnInit, AfterViewInit, OnDestroy {
               default: //Unhandled error
               {
                 NotificationsService.showAlert(
-                  'Error al intentar eliminar el usuario',
+                  'Error al intentar eliminar la parte',
                   NotificationsService.messageType.error
                 );
 
@@ -236,4 +230,5 @@ export class UsuariosListComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
   }  
+
 }

@@ -32,6 +32,8 @@ import { SolicitudesEditComponent } from './pages/solicitudes/edit/edit.componen
 import { SolicitudesCompleteComponent } from './pages/solicitudes/complete/complete.component';
 import { SolicitudesDetailsAdministratorComponent } from './pages/solicitudes/details/administrator/administrator.component';
 import { SolicitudesDetailsSellerComponent } from './pages/solicitudes/details/seller/seller.component';
+import { PartesListComponent } from './pages/partes/list/list.component';
+import { PartesEditComponent } from './pages/partes/edit/edit.component';
 
 
 /* Routes */
@@ -49,6 +51,8 @@ const routes: Routes = [
       { path: 'usuarios/create', component: UsuariosCreateComponent },
       { path: 'usuarios', component: UsuariosListComponent },
       { path: 'usuarios/edit/:id', component: UsuariosEditComponent },
+      { path: 'partes', component: PartesListComponent },
+      { path: 'partes/edit/:id', component: PartesEditComponent },
       { path: 'solicitudes/create', component: SolicitudesCreateComponent },
       { path: 'solicitudes/create/:id', component: SolicitudesCreateComponent },
       { path: 'solicitudes', component: SolicitudesListComponent },
@@ -75,6 +79,8 @@ const routes: Routes = [
     UsuariosCreateComponent,
     UsuariosListComponent,
     UsuariosEditComponent,
+    PartesListComponent,
+    PartesEditComponent,
     SolicitudesCreateComponent,
     SolicitudesListComponent,
     SolicitudesEditComponent,

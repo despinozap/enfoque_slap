@@ -133,6 +133,18 @@ export class UtilsService {
               ]
             },
             {
+              'title': 'Partes',
+              'icon': 'bx-barcode',
+              'header': true,
+              'route': '',
+              'items': [
+                {
+                  'title': 'Lista de partes',
+                  'route': 'partes'
+                }
+              ]
+            },
+            {
               'title': 'Solicitudes',
               'icon': 'bx-list-ol',
               'header': true,
