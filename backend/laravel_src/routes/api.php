@@ -22,7 +22,7 @@ use App\Http\Controllers\SolicitudesController;
 */
 
 /*  Login  */
-Route::prefix('auth')->group(function ()
+Route::prefix('auth')->middleware('cors')->group(function ()
 {
     Route::post('login', [AuthController::class, 'login']);
     Route::post('forgot', [AuthController::class, 'forgotPassword'])->name('password.email');
@@ -37,7 +37,7 @@ Route::prefix('auth')->group(function ()
 
 
 /*  Authenticated  */
-Route::middleware('auth:api')->group(function()
+Route::middleware(['auth:api', 'cors'])->group(function()
 {
     Route::get('/auth/user', [AuthController::class, 'getUser']);
 
