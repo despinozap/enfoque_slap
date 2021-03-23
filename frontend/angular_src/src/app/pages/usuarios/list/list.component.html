@@ -36,6 +36,11 @@
                             <th>Opciones</th>
                         </tr>
                     </thead>
+                    <tbody *ngIf="(loading === true)">
+                        <tr>
+                            <td colspan="6" style="text-align: center;"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</td>
+                        </tr>
+                    </tbody>
                     <tbody *ngIf="(loading === false)">
                         <tr *ngFor="let user of users">
                             <td>{{ user.id }}</td>
