@@ -20,43 +20,53 @@ class ClientesController extends Controller
 
     public function indexFull()
     {
-        $response = null;
-
-        $user = Auth::user();
-        if($user->role->hasRoutepermission('clientes index_full'))
+        try
         {
-            if($clientes = Cliente::all())
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('clientes index_full'))
             {
-                $clientes = $clientes->filter(function($cliente)
+                
+                if($clientes = Cliente::all())
                 {
-                    $cliente->makeHidden([
-                        'created_at',
-                        'updated_at'
-                    ]);
+                    $clientes = $clientes->filter(function($cliente)
+                    {
+                        $cliente->makeHidden([
+                            'created_at',
+                            'updated_at'
+                        ]);
 
-                    return $cliente;
-                });
+                        return $cliente;
+                    });
 
-                $response = HelpController::buildResponse(
-                    200,
-                    null,
-                    $clientes
-                );
+                    $response = HelpController::buildResponse(
+                        200,
+                        null,
+                        $clientes
+                    );
+                }
+                else
+                {
+                    $response = HelpController::buildResponse(
+                        500,
+                        'Error al obtener la lista de clientes',
+                        null
+                    );
+                }
             }
             else
             {
                 $response = HelpController::buildResponse(
-                    500,
-                    'Error al obtener la lista de clientes',
+                    405,
+                    'No tienes acceso a listar clientes',
                     null
                 );
             }
         }
-        else
+        catch(\Exception $e)
         {
             $response = HelpController::buildResponse(
-                405,
-                'No tienes acceso a listar clientes',
+                500,
+                'Error al obtener la lista de clientes [!]',
                 null
             );
         }

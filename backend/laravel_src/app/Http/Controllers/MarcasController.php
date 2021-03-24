@@ -21,44 +21,53 @@ class MarcasController extends Controller
 
     public function indexFull()
     {
-        $response = null;
-
-        $user = Auth::user();
-        if($user->role->hasRoutepermission('marcas index_full'))
+        try
         {
-            if($marcas = Marca::all())
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('marcas index_full'))
             {
-                $marcas = $marcas->filter(function($marca)
+                
+                if($marcas = Marca::all())
                 {
-                    $marca->makeHidden([
-                        'created_at',
-                        'updated_at'
-                    ]);
+                    $marcas = $marcas->filter(function($marca)
+                    {
+                        $marca->makeHidden([
+                            'created_at',
+                            'updated_at'
+                        ]);
 
-                    return $marca;
-                });
+                        return $marca;
+                    });
 
-                $response = HelpController::buildResponse(
-                    200,
-                    null,
-                    $marcas
-                );
+                    $response = HelpController::buildResponse(
+                        200,
+                        null,
+                        $marcas
+                    );
+                }
+                else
+                {
+                    $response = HelpController::buildResponse(
+                        500,
+                        'Error al obtener la lista de marcas',
+                        null
+                    );
+                }
             }
             else
             {
                 $response = HelpController::buildResponse(
-                    500,
-                    'Error al obtener la lista de marcas',
+                    405,
+                    'No tienes acceso a listar marcas',
                     null
                 );
             }
-
         }
-        else
+        catch(\Exception $e)
         {
             $response = HelpController::buildResponse(
-                405,
-                'No tienes acceso a listar marcas',
+                500,
+                'Error al obtener la lista de marcas [!]',
                 null
             );
         }

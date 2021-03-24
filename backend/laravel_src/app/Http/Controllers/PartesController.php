@@ -18,49 +18,57 @@ class PartesController extends Controller
      */
     public function index()
     {
-        $response = null;
-
-        $user = Auth::user();
-        if($user->role->hasRoutepermission('partes index'))
+        try
         {
-            if($partes = Parte::all())
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('partes index'))
             {
-                foreach($partes as $parte)
+                if($partes = Parte::all())
                 {
-                    $parte->makeHidden([
-                        'marca_id',
-                        'created_at',
-                        'updated_at'
-                    ]);
+                    foreach($partes as $parte)
+                    {
+                        $parte->makeHidden([
+                            'marca_id',
+                            'created_at',
+                            'updated_at'
+                        ]);
 
-                    $parte->marca;
-                    $parte->marca->makeHidden([
-                        'created_at',
-                        'updated_at'
-                    ]);
+                        $parte->marca;
+                        $parte->marca->makeHidden([
+                            'created_at',
+                            'updated_at'
+                        ]);
+                    }
+
+                    $response = HelpController::buildResponse(
+                        200,
+                        null,
+                        $partes
+                    );
                 }
-
-                $response = HelpController::buildResponse(
-                    200,
-                    null,
-                    $partes
-                );
+                else
+                {
+                    $response = HelpController::buildResponse(
+                        500,
+                        'Error al obtener la lista de partes',
+                        null
+                    );
+                }
             }
             else
             {
                 $response = HelpController::buildResponse(
-                    500,
-                    'Error al obtener la lista de partes',
+                    405,
+                    'No tienes acceso a listar partes',
                     null
                 );
             }
-
         }
-        else
+        catch(\Exception $e)
         {
             $response = HelpController::buildResponse(
-                405,
-                'No tienes acceso a listar partes',
+                500,
+                'Error al obtener la lista de partes [!]',
                 null
             );
         }
@@ -97,42 +105,53 @@ class PartesController extends Controller
      */
     public function show($id)
     {
-        $user = Auth::user();
-        if($user->role->hasRoutepermission('partes show'))
+        try
         {
-            if($parte = Parte::find($id))
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('partes show'))
             {
-                $parte->marca;
+                if($parte = Parte::find($id))
+                {
+                    $parte->marca;
 
-                $parte->makeHidden([
-                    'marca_id',
-                    'created_at', 
-                    'updated_at'
-                ]);
+                    $parte->makeHidden([
+                        'marca_id',
+                        'created_at', 
+                        'updated_at'
+                    ]);
 
-                $parte->marca->makeHidden(['created_at', 'updated_at']);
+                    $parte->marca->makeHidden(['created_at', 'updated_at']);
 
-                
-                $response = HelpController::buildResponse(
-                    200,
-                    null,
-                    $parte
-                );
-            }   
-            else     
+                    
+                    $response = HelpController::buildResponse(
+                        200,
+                        null,
+                        $parte
+                    );
+                }   
+                else     
+                {
+                    $response = HelpController::buildResponse(
+                        400,
+                        'La parte no existe',
+                        null
+                    );
+                }
+            }
+            else
             {
                 $response = HelpController::buildResponse(
-                    400,
-                    'La parte no existe',
+                    405,
+                    'No tienes acceso a visualizar partes',
                     null
                 );
             }
         }
-        else
+        catch(\Exception $e)
         {
             $response = HelpController::buildResponse(
-                405,
-                'No tienes acceso a visualizar partes',
+                500,
+                'Error al obtener la parte [!]',
                 null
             );
         }
@@ -160,121 +179,134 @@ class PartesController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $user = Auth::user();
-        if($user->role->hasRoutepermission('partes update'))
+        try
         {
-            $validatorInput = $request->only('nparte', 'marca_id');
-		
-            $validatorRules = [
-                'nparte'  => 'required',
-                'marca_id' => 'required|exists:marcas,id'
-            ];
-
-            $validatorMessages = [
-                'nparte.required' => 'Debes ingresar el numero de parte',
-                'marca_id.required' => 'Debes seleccionar la marca',
-                'marca_id.exists' => 'La marca ingresada no existe'
-            ];
-
-            $validator = Validator::make(
-                $validatorInput,
-                $validatorRules,
-                $validatorMessages
-            );
-
-            if ($validator->fails()) 
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('partes update'))
             {
-                $response = HelpController::buildResponse(
-                    400,
-                    $validator->errors(),
-                    null
+                $validatorInput = $request->only('nparte', 'marca_id');
+            
+                $validatorRules = [
+                    'nparte'  => 'required',
+                    'marca_id' => 'required|exists:marcas,id'
+                ];
+
+                $validatorMessages = [
+                    'nparte.required' => 'Debes ingresar el numero de parte',
+                    'marca_id.required' => 'Debes seleccionar la marca',
+                    'marca_id.exists' => 'La marca ingresada no existe'
+                ];
+
+                $validator = Validator::make(
+                    $validatorInput,
+                    $validatorRules,
+                    $validatorMessages
                 );
-            }  
-            else     
-            {
-                if($parte = Parte::find($id))
-                {
-                    if(Marca::find($request->marca_id)->partes->where('nparte', $request->nparte)->where('id', '<>', $id)->first())
-                    {
-                        $response = HelpController::buildResponse(
-                            409,
-                            'Ya existe una parte con el numero de parte ingresado en la marca seleccionada',
-                            null
-                        );
-                    }
-                    else
-                    {
-                        if($parte->marca_id == $request->marca_id)
-                        {
-                            $parte->fill($request->all());
 
-                                if($parte->save())
-                                {
-                                    $response = HelpController::buildResponse(
-                                        200,
-                                        'Parte actualizada',
-                                        null
-                                    );
-                                }
-                                else
-                                {
-                                    $response = HelpController::buildResponse(
-                                        500,
-                                        'Error al actualizar la parte',
-                                        null
-                                    );
-                                }
-                        }
-                        else
-                        {
-                            if($parte->solicitudes->count() === 0)
-                            {
-                                $parte->fill($request->all());
-
-                                if($parte->save())
-                                {
-                                    $response = HelpController::buildResponse(
-                                        200,
-                                        'Parte actualizada',
-                                        null
-                                    );
-                                }
-                                else
-                                {
-                                    $response = HelpController::buildResponse(
-                                        500,
-                                        'Error al actualizar la parte',
-                                        null
-                                    );
-                                }
-                            }
-                            else
-                            {
-                                $response = HelpController::buildResponse(
-                                    409,
-                                    'No puedes cambiar la marca de una parte asociada a solicitudes',
-                                    'Marca ID:' . $request->marca_id . ', Parte (marca) ID:' . $parte->marca_id
-                                );
-                            }
-                        }
-
-                    }
-                }
-                else
+                if ($validator->fails()) 
                 {
                     $response = HelpController::buildResponse(
                         400,
-                        'La parte no existe',
+                        $validator->errors(),
                         null
                     );
+                }  
+                else     
+                {
+                    
+                    if($parte = Parte::find($id))
+                    {
+                        if(Marca::find($request->marca_id)->partes->where('nparte', $request->nparte)->where('id', '<>', $id)->first())
+                        {
+                            $response = HelpController::buildResponse(
+                                409,
+                                'Ya existe una parte con el numero de parte ingresado en la marca seleccionada',
+                                null
+                            );
+                        }
+                        else
+                        {
+                            if($parte->marca_id == $request->marca_id)
+                            {
+                                $parte->fill($request->all());
+
+                                    if($parte->save())
+                                    {
+                                        $response = HelpController::buildResponse(
+                                            200,
+                                            'Parte actualizada',
+                                            null
+                                        );
+                                    }
+                                    else
+                                    {
+                                        $response = HelpController::buildResponse(
+                                            500,
+                                            'Error al actualizar la parte',
+                                            null
+                                        );
+                                    }
+                            }
+                            else
+                            {
+                                if($parte->solicitudes->count() === 0)
+                                {
+                                    $parte->fill($request->all());
+
+                                    if($parte->save())
+                                    {
+                                        $response = HelpController::buildResponse(
+                                            200,
+                                            'Parte actualizada',
+                                            null
+                                        );
+                                    }
+                                    else
+                                    {
+                                        $response = HelpController::buildResponse(
+                                            500,
+                                            'Error al actualizar la parte',
+                                            null
+                                        );
+                                    }
+                                }
+                                else
+                                {
+                                    $response = HelpController::buildResponse(
+                                        409,
+                                        'No puedes cambiar la marca de una parte asociada a solicitudes',
+                                        null
+                                    );
+                                }
+                            }
+
+                        }
+                    }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            400,
+                            'La parte no existe',
+                            null
+                        );
+                    }
+                    
                 }
             }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a actualizar partes',
+                    null
+                );
+            }
         }
-        else
+        catch(\Exception $e)
         {
             $response = HelpController::buildResponse(
-                405,
-                'No tienes acceso a actualizar partes',
+                500,
+                'Error al actualizar la parte [!]',
                 null
             );
         }
@@ -290,26 +322,37 @@ class PartesController extends Controller
      */
     public function destroy($id)
     {
-        $user = Auth::user();
-        if($user->role->hasRoutepermission('partes destroy'))
+        try
         {
-            if($parte = Parte::find($id))
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('partes destroy'))
             {
-                if($parte->solicitudes->count() === 0)
+                if($parte = Parte::find($id))
                 {
-                    if($parte->delete())
+                    if($parte->solicitudes->count() === 0)
                     {
-                        $response = HelpController::buildResponse(
-                            200,
-                            'Parte eliminada',
-                            null
-                        );
+                        if($parte->delete())
+                        {
+                            $response = HelpController::buildResponse(
+                                200,
+                                'Parte eliminada',
+                                null
+                            );
+                        }
+                        else
+                        {
+                            $response = HelpController::buildResponse(
+                                500,
+                                'Error al eliminar la parte',
+                                null
+                            );
+                        }
                     }
                     else
                     {
                         $response = HelpController::buildResponse(
-                            500,
-                            'Error al eliminar la parte',
+                            409,
+                            'No puedes eliminar una parte asociada a solicitudes',
                             null
                         );
                     }
@@ -317,8 +360,8 @@ class PartesController extends Controller
                 else
                 {
                     $response = HelpController::buildResponse(
-                        409,
-                        'No puedes eliminar una parte asociada a solicitudes',
+                        400,
+                        'La parte no existe',
                         null
                     );
                 }
@@ -326,17 +369,17 @@ class PartesController extends Controller
             else
             {
                 $response = HelpController::buildResponse(
-                    400,
-                    'La parte no existe',
+                    405,
+                    'No tienes acceso a eliminar partes',
                     null
                 );
             }
         }
-        else
+        catch(\Exception $e)
         {
             $response = HelpController::buildResponse(
-                405,
-                'No tienes acceso a eliminar partes',
+                500,
+                'Error al eliminar la parte [!]',
                 null
             );
         }
