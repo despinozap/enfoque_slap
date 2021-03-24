@@ -328,7 +328,7 @@ export class SolicitudesEditComponent implements OnInit {
     if(solicitudData['partes'].length > 0)
     {
       this.solicitudForm.controls.cliente.setValue(solicitudData.cliente.id);
-      this.solicitudForm.controls.marca.setValue(solicitudData['partes'][0].marca.id);
+      this.solicitudForm.controls.marca.setValue(solicitudData.marca.id);
       this.solicitudForm.controls.comentario.setValue(solicitudData.comentario);
 
       this.partes = [];

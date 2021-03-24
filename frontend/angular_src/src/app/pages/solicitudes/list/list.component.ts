@@ -5,7 +5,6 @@ import { SolicitudesService } from 'src/app/services/solicitudes.service';
 import { Subject } from 'rxjs';
 import { DataTableDirective } from 'angular-datatables';
 import { UtilsService } from 'src/app/services/utils.service';
-import { User } from 'src/app/interfaces/user';
 import { AuthService } from 'src/app/services/auth.service';
 
 /* SweetAlert2 */
@@ -274,7 +273,7 @@ export class SolicitudesListComponent implements OnInit {
         data.push([
           s.id,
           s.cliente.name,
-          s.partes[0].marca.name,
+          s.marca.name,
           s.user.name,
           s.partes_total,
           s.estadosolicitud.name

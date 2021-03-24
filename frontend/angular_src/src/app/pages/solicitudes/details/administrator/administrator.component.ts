@@ -84,7 +84,7 @@ export class SolicitudesDetailsAdministratorComponent implements OnInit {
     {
       this.solicitud.id = solicitudData.id;
       this.solicitud.cliente_name = solicitudData.cliente.name;
-      this.solicitud.marca_name = solicitudData.partes[0].marca.name;
+      this.solicitud.marca_name = solicitudData.marca.name;
       this.solicitud.estadosolicitud_id = solicitudData.estadosolicitud.id,
       this.solicitud.estadosolicitud_name = solicitudData.estadosolicitud.name;
       this.solicitud.comentario = solicitudData.comentario;
