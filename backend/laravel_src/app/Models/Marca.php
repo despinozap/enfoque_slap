@@ -17,4 +17,9 @@ class Marca extends Model
     {
         return $this->hasMany(Parte::class);
     }
+
+    public function solicitudes()
+    {
+        return $this->hasMany(Solicitud::class);
+    }
 }

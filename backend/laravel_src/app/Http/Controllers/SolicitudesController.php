@@ -28,7 +28,7 @@ class SolicitudesController extends Controller
                 {
                     foreach($solicitudes as $solicitud)
                     {
-                        $solicitud->makeHidden(['cliente_id', 'user_id', 'estadosolicitud_id']);
+                        $solicitud->makeHidden(['cliente_id', 'marca_id', 'user_id', 'estadosolicitud_id']);
 
                         $totalPartes = 0;
                         foreach($solicitud->partes as $parte)
@@ -46,6 +46,8 @@ class SolicitudesController extends Controller
                         $solicitud->partes_total;
                         $solicitud->cliente;
                         $solicitud->cliente->makeHidden(['created_at', 'updated_at']);
+                        $solicitud->marca;
+                        $solicitud->marca->makeHidden(['created_at', 'updated_at']);
                         $solicitud->user;
                         $solicitud->user->makeHidden(['email', 'phone', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
                         $solicitud->estadosolicitud;
@@ -181,7 +183,7 @@ class SolicitudesController extends Controller
                             else
                             {
                                 $p = new Parte();
-                                //$p->nparte = $parte['nparte'];
+                                $p->nparte = $parte['nparte'];
                                 $p->marca_id = $request->marca_id;
                                 if($p->save())
                                 {
@@ -273,6 +275,7 @@ class SolicitudesController extends Controller
                 {
                     $solicitud->makeHidden([
                         'cliente_id',
+                        'marca_id',
                         'estadosolicitud_id',
                         'created_at', 
                         'updated_at'
@@ -281,6 +284,9 @@ class SolicitudesController extends Controller
                     $solicitud->cliente;
                     $solicitud->cliente->makeHidden(['created_at', 'updated_at']);
                     
+                    $solicitud->marca;
+                    $solicitud->marca->makeHidden(['created_at', 'updated_at']);
+
                     $solicitud->estadosolicitud;
                     $solicitud->estadosolicitud->makeHidden(['created_at', 'updated_at']);
 
@@ -457,22 +463,32 @@ class SolicitudesController extends Controller
                                 }
                                 else
                                 {
-                                    $success = false;
-        
-                                    $response = HelpController::buildResponse(
-                                        422,
-                                        'La parte N:' . $parte['nparte'] . ' no existe en la marca seleccionada',
-                                        null
-                                    );
-        
-                                    break;
+                                    $p = new Parte();
+                                    $p->nparte = $parte['nparte'];
+                                    $p->marca_id = $request->marca_id;
+                                    if($p->save())
+                                    {
+                                        $syncData[$p->id] =  array('cantidad' => $parte['cantidad']);
+                                    }
+                                    else
+                                    {
+                                        $success = false;
+            
+                                        $response = HelpController::buildResponse(
+                                            500,
+                                            'Error al crear la parte N:' . $parte['nparte'],
+                                            null
+                                        );
+                
+                                        break;
+                                    }
                                 }
                             }
         
-                            $solicitud->partes()->sync($syncData);
-        
                             if($success === true)
                             {
+                                $solicitud->partes()->sync($syncData);
+
                                 DB::commit();
         
                                 $response = HelpController::buildResponse(

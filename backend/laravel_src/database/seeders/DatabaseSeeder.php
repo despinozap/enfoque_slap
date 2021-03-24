@@ -211,6 +211,7 @@ class DatabaseSeeder extends Seeder
         */
         $solicitud = new Solicitud();
         $solicitud->cliente_id = 1;
+        $solicitud->marca_id = 1;
         $solicitud->user_id = 1;
         $solicitud->estadosolicitud_id = 1;
         $solicitud->comentario = 'Testing comment for SolicitudTest01';

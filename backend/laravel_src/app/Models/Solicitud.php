@@ -11,7 +11,7 @@ class Solicitud extends Model
 
     protected $table = 'solicitudes';
     protected $fillable = [
-        'cliente_id', 'user_id', 'estadosolicitud_id', 'comentario', 
+        'cliente_id', 'marca_id', 'user_id', 'estadosolicitud_id', 'comentario', 
     ];
     public $appends = ['partes_total'];
 
@@ -30,6 +30,11 @@ class Solicitud extends Model
     public function cliente()
     {
         return $this->belongsTo(Cliente::class);
+    }
+
+    public function marca()
+    {
+        return $this->belongsTo(Marca::class);
     }
 
     public function user()
