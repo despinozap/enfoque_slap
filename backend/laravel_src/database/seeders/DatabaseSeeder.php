@@ -33,6 +33,10 @@ class DatabaseSeeder extends Seeder
             'users show',
             'users update',
             'users destroy',
+            //Parameters
+            'parameters index',
+            'parameters show',
+            'parameters update',
             //Clientes
             'clientes index_full',
             //Marcas

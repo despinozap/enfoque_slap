@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RolesController;
 use App\Http\Controllers\UsersController;
+use App\Http\Controllers\ParametersController;
 use App\Http\Controllers\PartesController;
 use App\Http\Controllers\ClientesController;
 use App\Http\Controllers\MarcasController;
@@ -53,6 +54,11 @@ Route::middleware(['auth:api', 'cors'])->group(function()
     Route::get('/users/{id}', [UsersController::class, 'show']);
     Route::put('/users/{id}', [UsersController::class, 'update']);
     Route::delete('/users/{id}', [UsersController::class, 'destroy']);
+
+    // Parameters
+    Route::get('/parameters', [ParametersController::class, 'index']);
+    Route::get('/parameters/{id}', [ParametersController::class, 'show']);
+    Route::put('/parameters/{id}', [ParametersController::class, 'update']);
 
     // Partes
     Route::get('/partes', [PartesController::class, 'index']);
