@@ -183,7 +183,6 @@ export class SolicitudesListComponent implements OnInit {
     }).then((result: any) => {
       if(result.isConfirmed)
       {
-        /*
         Swal.queue([{
           title: 'Eliminando..',
           icon: 'warning',
@@ -196,12 +195,12 @@ export class SolicitudesListComponent implements OnInit {
           }    
         }]);
 
-        this._usersService.removeUser(user.id)
+        this._solicitudesService.removeSolicitud(solicitud.id)
         .subscribe(
           //Success request
           (response: any) => {
 
-            this.loadUsersList();
+            this.loadSolicitudesList();
             NotificationsService.showToast(
               response.message,
               NotificationsService.messageType.success
@@ -233,6 +232,16 @@ export class SolicitudesListComponent implements OnInit {
                 break;
               }
 
+              case 409: //Conflict
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
               case 500: //Internal server
               {
                 NotificationsService.showAlert(
@@ -246,7 +255,7 @@ export class SolicitudesListComponent implements OnInit {
               default: //Unhandled error
               {
                 NotificationsService.showAlert(
-                  'Error al intentar eliminar el usuario',
+                  'Error al intentar eliminar la solicitud',
                   NotificationsService.messageType.error
                 );
 
@@ -255,7 +264,6 @@ export class SolicitudesListComponent implements OnInit {
             }
           }
         );
-        */
       }
     });
 

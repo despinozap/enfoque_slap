@@ -94,4 +94,20 @@ export class SolicitudesService {
 
     return this.httpClient.post(endpoint, solicitud, httpOptions);
   }
+
+  public removeSolicitud(id: number): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/solicitudes/${id}`;
+
+    let httpOptions = { 
+      method: 'DELETE',
+      headers:
+      {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    };
+    
+    return this.httpClient.delete(endpoint, httpOptions);
+  }
 }
