@@ -79,6 +79,16 @@ export class PartesEditComponent implements OnInit {
 
               break;
             }
+
+            case 500: //Internal server
+            {
+              NotificationsService.showToast(
+                errorResponse.error.message,
+                NotificationsService.messageType.error
+              );
+
+              break;
+            }
           
             default: //Unhandled error
             {
