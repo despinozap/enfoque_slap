@@ -49,6 +49,7 @@ class DatabaseSeeder extends Seeder
             'solicitudes update',
             'solicitudes complete',
             'solicitudes close',
+            'solicitudes destroy',
         ];
 
         //Add route permissions
@@ -94,6 +95,7 @@ class DatabaseSeeder extends Seeder
                 'solicitudes show',
                 'solicitudes update',
                 'solicitudes complete',
+                'solicitudes destroy',
             ];
 
             $routePermissionIds = [];
@@ -127,6 +129,7 @@ class DatabaseSeeder extends Seeder
                 'solicitudes show',
                 'solicitudes update',
                 'solicitudes close',
+                'solicitudes destroy',
             ];
 
             $routePermissionIds = [];

@@ -73,4 +73,5 @@ Route::middleware(['auth:api', 'cors'])->group(function()
     Route::put('/solicitudes/{id}', [SolicitudesController::class, 'update']);
     Route::post('/solicitudes/complete/{id}', [SolicitudesController::class, 'complete']);
     Route::post('/solicitudes/close/{id}', [SolicitudesController::class, 'close']);
+    Route::delete('/solicitudes/{id}', [SolicitudesController::class, 'destroy']);
 });

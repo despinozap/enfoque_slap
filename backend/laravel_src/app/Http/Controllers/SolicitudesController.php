@@ -883,7 +883,7 @@ class SolicitudesController extends Controller
             {
                 $response = HelpController::buildResponse(
                     405,
-                    'No tienes acceso a cerrar solicitudes',
+                    'No tienes acceso a eliminar solicitudes',
                     null
                 );
             }
