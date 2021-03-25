@@ -8,6 +8,7 @@ use App\Http\Controllers\UsersController;
 use App\Http\Controllers\ParametersController;
 use App\Http\Controllers\PartesController;
 use App\Http\Controllers\ClientesController;
+use App\Http\Controllers\FaenasController;
 use App\Http\Controllers\MarcasController;
 use App\Http\Controllers\SolicitudesController;
 
@@ -68,6 +69,9 @@ Route::middleware(['auth:api', 'cors'])->group(function()
 
     // Clientes
     Route::get('/clientes/all', [ClientesController::class, 'indexFull']);
+
+    // Marcas
+    Route::get('/faenas/all', [FaenasController::class, 'indexFull']);
     
     // Marcas
     Route::get('/marcas/all', [MarcasController::class, 'indexFull']);
