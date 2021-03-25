@@ -29,22 +29,21 @@
           <div class="row">
             <div class="col-6">
               <div class="form-group">
-                <label class="control-label">Cliente</label>
+                <label class="control-label">Faena</label>
                 <!-- Backend errors -->
-                <div class="alert alert-danger" *ngIf="(responseErrors.cliente)">
-                  <div *ngFor="let errorMessage of responseErrors.cliente">{{ errorMessage }}</div>
+                <div class="alert alert-danger" *ngIf="(responseErrors.faena)">
+                  <div *ngFor="let errorMessage of responseErrors.faena">{{ errorMessage }}</div>
                 </div>
-                <select class="form-control" name="cliente" id="cliente" formControlName="cliente">
-                  <option *ngFor="let cliente of clientes" [value]="cliente.id">{{ cliente.name }}</option>
+                <select class="form-control" name="faena" id="faena" formControlName="faena">
+                  <option *ngFor="let faena of faenas" [value]="faena.id">{{ faena.cliente.name + ' - ' + faena.name }}</option>
                 </select>
                 <!-- Frontend errors -->
                 <div
-                    *ngIf="(solicitudForm.controls.cliente.errors) && (solicitudForm.controls.cliente.touched) && (solicitudForm.controls.cliente.dirty)">
-                  <div class="error-response" *ngIf="solicitudForm.controls.cliente.errors.required === true">Debes
-                    seleccionar el cliente
+                    *ngIf="(solicitudForm.controls.faena.errors) && (solicitudForm.controls.faena.touched) && (solicitudForm.controls.faena.dirty)">
+                  <div class="error-response" *ngIf="solicitudForm.controls.faena.errors.required === true">Debes
+                    seleccionar la faena
                   </div>
-                  <div class="error-response" *ngIf="solicitudForm.controls.cliente.errors.minlength !== null">El
-                    cliente debe ser valido</div>
+                  <div class="error-response" *ngIf="solicitudForm.controls.faena.errors.minlength !== null">La faena debe ser valida</div>
                 </div>
               </div>
             </div>

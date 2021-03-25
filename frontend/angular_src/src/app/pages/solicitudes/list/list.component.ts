@@ -273,14 +273,15 @@ export class SolicitudesListComponent implements OnInit {
 
     let data: any[] = [];
     //Push header
-    data.push(['Solicitud', 'Cliente', 'Marca', 'Ejecutivo', 'Partes']);
+    data.push(['Solicitud', 'Cliente', 'Faena', 'Marca', 'Ejecutivo', 'Partes', 'Estado']);
     //Add checked rows
     this.solicitudes.forEach((s: any) => {
       if(s.checked === true)
       {
         data.push([
           s.id,
-          s.cliente.name,
+          s.faena.cliente.name,
+          s.faena.name,
           s.marca.name,
           s.user.name,
           s.partes_total,

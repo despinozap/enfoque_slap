@@ -4,8 +4,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
 import { Cliente } from 'src/app/interfaces/cliente';
+import { Faena } from 'src/app/interfaces/faena';
 import { Marca } from 'src/app/interfaces/marca';
-import { ClientesService } from 'src/app/services/clientes.service';
+import { FaenasService } from 'src/app/services/faenas.service';
 import { MarcasService } from 'src/app/services/marcas.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { SolicitudesService } from 'src/app/services/solicitudes.service';
@@ -52,7 +53,7 @@ export class SolicitudesEditComponent implements OnInit {
   
   dtTrigger: Subject<any> = new Subject<any>();
   
-  clientes: Array<Cliente> = null as any;
+  faenas: Array<Faena> = null as any;
   marcas: Array<Marca> = null as any;
   partes: any[] = [];
   loading: boolean = false;
@@ -81,7 +82,7 @@ export class SolicitudesEditComponent implements OnInit {
 
 
   solicitudForm: FormGroup = new FormGroup({
-    cliente: new FormControl('', [Validators.required]),
+    faena: new FormControl('', [Validators.required]),
     marca: new FormControl('', [Validators.required]),
     comentario: new FormControl('')
   });
@@ -94,7 +95,7 @@ export class SolicitudesEditComponent implements OnInit {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private _clientesService: ClientesService,
+    private _faenasService: FaenasService,
     private _marcasService: MarcasService,
     private _solicitudesService: SolicitudesService,
     private _utilsService: UtilsService
@@ -143,7 +144,7 @@ export class SolicitudesEditComponent implements OnInit {
     this.solicitudForm.disable();
     this.loading = true;
 
-    this.loadClientes();
+    this.loadFaenas();
     this.loadMarcas();
 
     this.clearDataTable(this.datatableElement_partes);
@@ -211,15 +212,15 @@ export class SolicitudesEditComponent implements OnInit {
     );
   }
 
-  private loadClientes() {
+  private loadFaenas() {
     this.loading = true;
-    this._clientesService.getClientes()
+    this._faenasService.getFaenas()
       .subscribe(
         //Success request
         (response: any) => {
           this.loading = false;
 
-          this.clientes = <Array<Cliente>>(response.data);
+          this.faenas = <Array<Faena>>(response.data);
 
           this.solicitudForm.enable();
         },
@@ -251,7 +252,7 @@ export class SolicitudesEditComponent implements OnInit {
             default: //Unhandled error
               {
                 NotificationsService.showToast(
-                  'Error al cargar la lista de clientes',
+                  'Error al cargar la lista de faenas',
                   NotificationsService.messageType.error
                 )
 
@@ -259,7 +260,7 @@ export class SolicitudesEditComponent implements OnInit {
               }
           }
 
-          this.clientes = null as any;
+          this.faenas = null as any;
           this.loading = false;
 
           this.goTo_solicitudesList();
@@ -327,7 +328,7 @@ export class SolicitudesEditComponent implements OnInit {
   {
     if(solicitudData['partes'].length > 0)
     {
-      this.solicitudForm.controls.cliente.setValue(solicitudData.cliente.id);
+      this.solicitudForm.controls.faena.setValue(solicitudData.faena.id);
       this.solicitudForm.controls.marca.setValue(solicitudData.marca.id);
       this.solicitudForm.controls.comentario.setValue(solicitudData.comentario);
 
@@ -430,7 +431,7 @@ export class SolicitudesEditComponent implements OnInit {
     this.responseErrors = [];
 
     let solicitud: any = {
-      cliente_id: this.solicitudForm.value.cliente,
+      faena_id: this.solicitudForm.value.faena,
       marca_id: this.solicitudForm.value.marca,
       comentario: this.solicitudForm.value.comentario,
       partes: this.partes
