@@ -135,6 +135,8 @@ class DatabaseSeeder extends Seeder
             $routePermissionNames = [
                 //Clientes
                 'clientes index_full',
+                //Faenas
+                'faenas index_full',
                 //Marcas
                 'marcas index_full',
                 //Solicitudes

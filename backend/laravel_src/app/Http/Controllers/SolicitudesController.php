@@ -46,6 +46,8 @@ class SolicitudesController extends Controller
                         $solicitud->partes_total;
                         $solicitud->faena;
                         $solicitud->faena->makeHidden(['created_at', 'updated_at']);
+                        $solicitud->faena->cliente;
+                        $solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
                         $solicitud->marca;
                         $solicitud->marca->makeHidden(['created_at', 'updated_at']);
                         $solicitud->user;
@@ -283,6 +285,9 @@ class SolicitudesController extends Controller
 
                     $solicitud->faena;
                     $solicitud->faena->makeHidden(['created_at', 'updated_at']);
+
+                    $solicitud->faena->cliente;
+                    $solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
 
                     $solicitud->faena->cliente;
                     $solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
