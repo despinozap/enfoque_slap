@@ -1,4 +1,4 @@
-export interface Parte {
+export interface Parameter {
   id: number,
   name: string,
   description: number,
