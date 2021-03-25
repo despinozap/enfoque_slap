@@ -20,7 +20,8 @@ export class SolicitudesDetailsAdministratorComponent implements OnInit {
     pageLength: 10,
     language: {
       url: '//cdn.datatables.net/plug-ins/1.10.22/i18n/Spanish.json'
-    }
+    },
+    order: [[0, 'desc']]
   };
 
   
@@ -195,14 +196,15 @@ export class SolicitudesDetailsAdministratorComponent implements OnInit {
     //Push header
     data.push(
       [
+        'Cantidad',
         'N parte',
         'Descripcion',
-        'Cantidad',
         'Costo (USD)',
         'Margen (%)',
         'Tiempo entrega (dias)',
         'Peso (kg)',
         'Valor flete (USD)',
+        'Monto (USD)',
         'Backorder (SI = 1, NO = 0)'
       ]
     );
@@ -210,14 +212,15 @@ export class SolicitudesDetailsAdministratorComponent implements OnInit {
     //Add rows
     this.partes.forEach((p: any) => {
       data.push([
+        p.cantidad,
         p.nparte,
         p.descripcion,
-        p.cantidad,
         p.costo,
         p.margen,
         p.tiempoentrega,
         p.peso,
         p.flete,
+        p.monto,
         (p.backorder === true) ? '1' : '0',
       ]);
     });

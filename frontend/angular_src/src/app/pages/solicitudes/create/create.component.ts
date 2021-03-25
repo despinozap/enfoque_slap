@@ -32,17 +32,7 @@ export class SolicitudesCreateComponent implements OnInit {
     language: {
       url: '//cdn.datatables.net/plug-ins/1.10.22/i18n/Spanish.json'
     },
-    /*
-    // Declare the use of the extension in the dom parameter
-    dom: 'Bfrtip',
-    // Configure the buttons
-    buttons: [
-      'colvis',
-      'excel',
-      'pdf',
-      'print'
-    ]
-    */
+    order: [[0, 'desc']]
   };
 
   
@@ -338,8 +328,8 @@ export class SolicitudesCreateComponent implements OnInit {
       solicitudData.partes.forEach((p: any) => {
         this.partes.push(
           {
-            'nparte': p.nparte,
-            'cantidad': p.pivot.cantidad
+            'cantidad': p.pivot.cantidad,
+            'nparte': p.nparte
           }
         )
       });
@@ -392,12 +382,12 @@ export class SolicitudesCreateComponent implements OnInit {
         if (sheet.length > 1) {
           for (let i = 1; i < sheet.length; i++) {
             
-            if((sheet[i].length > 0) && (sheet[i][0] !== undefined))
+            if((sheet[i].length > 1) && (sheet[i][0] !== undefined) && (sheet[i][1] !== undefined) && (isNaN(sheet[i][0]) === false))
             {
               this.partes.push(
                 {
-                  "nparte": sheet[i][0],
-                  "cantidad": sheet[i][1]
+                  "cantidad": sheet[i][0],
+                  "nparte": sheet[i][1]
                 }
               );
             }
@@ -574,8 +564,8 @@ export class SolicitudesCreateComponent implements OnInit {
 
   public addParte(): void {
     let parte: any = {
-      "nparte": this.parteForm.value.nparte,
-      "cantidad": this.parteForm.value.cantidad
+      "cantidad": this.parteForm.value.cantidad,
+      "nparte": this.parteForm.value.nparte
     };
 
     this.partes.push(parte);
@@ -584,8 +574,8 @@ export class SolicitudesCreateComponent implements OnInit {
 
   public updateParte(): void {
     let parte: any = {
-      "nparte": this.parteForm.value.nparte,
-      "cantidad": this.parteForm.value.cantidad
+      "cantidad": this.parteForm.value.cantidad,
+      "nparte": this.parteForm.value.nparte
     };
 
     this.partes[this.parte_index] = parte;
@@ -623,8 +613,8 @@ export class SolicitudesCreateComponent implements OnInit {
 
     this.parte_index = index;
 
-    this.parteForm.controls.nparte.setValue(this.partes[this.parte_index].nparte);
     this.parteForm.controls.cantidad.setValue(this.partes[this.parte_index].cantidad);
+    this.parteForm.controls.nparte.setValue(this.partes[this.parte_index].nparte);
 
     this.PARTEFORM_STATUS = 1;
     this.DISPLAYING_FORM = 1;

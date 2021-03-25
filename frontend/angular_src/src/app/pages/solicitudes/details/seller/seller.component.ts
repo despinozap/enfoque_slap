@@ -23,7 +23,8 @@ export class SolicitudesDetailsSellerComponent implements OnInit {
     pageLength: 10,
     language: {
       url: '//cdn.datatables.net/plug-ins/1.10.22/i18n/Spanish.json'
-    }
+    },
+    order: [[0, 'desc']]
   };
 
   
@@ -295,10 +296,11 @@ export class SolicitudesDetailsSellerComponent implements OnInit {
     //Push header
     data.push(
       [
+        'Cantidad',
         'N parte',
         'Descripcion',
-        'Cantidad',
         'Tiempo entrega (dias)',
+        'Monto (CLP)',
         'Backorder (SI = 1, NO = 0)'
       ]
     );
@@ -306,10 +308,11 @@ export class SolicitudesDetailsSellerComponent implements OnInit {
     //Add rows
     this.partes.forEach((p: any) => {
       data.push([
+        p.cantidad,
         p.nparte,
         p.descripcion,
-        p.cantidad,
         p.tiempoentrega,
+        p.monto,
         (p.backorder === true) ? '1' : '0',
       ]);
     });
@@ -318,7 +321,7 @@ export class SolicitudesDetailsSellerComponent implements OnInit {
   }
 
   public moneyStringFormat(value: number): string {
-    return this._utilsService.moneyStringFormat(value * this.DOLLAR_VALUE);
+    return this._utilsService.moneyStringFormat(value);
   }
 
   public goTo_duplicateSolicitud(): void {

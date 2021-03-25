@@ -65,9 +65,9 @@
           <table datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger" class="table table-hover table-bordered mb-2">
             <thead>
               <tr>
+                <th>Cantidad</th>
                 <th>N° Parte</th>
                 <th>Descripcion</th>
-                <th>Cantidad</th>
                 <th>Costo</th>
                 <th>Margen</th>
                 <th>Peso</th>
@@ -84,9 +84,9 @@
             </tbody>
             <tbody *ngIf="(loading === false)">
               <tr *ngFor="let parte of partes; index as i" [class.table-danger]="(parte.complete === false)">
+                <td align="right">{{ parte.cantidad }}</td>
                 <td align="left"><i class="bx bx-timer icon-table" *ngIf="(parte.backorder === true)"></i>{{ parte.nparte }}</td>
                 <td align="right">{{ parte.descripcion }}</td>
-                <td align="right">{{ parte.cantidad }}</td>
                 <td align="right">{{ parte.costo !== null ? "$" + moneyStringFormat(parte.costo) : parte.costo }}</td>
                 <td align="right">{{ parte.margen !== null ? parte.margen + "%" : parte.margen }}</td>
                 <td align="right">{{ parte.peso !== null ? parte.peso + " kg" : parte.peso }}</td>
@@ -149,13 +149,6 @@
         <form [formGroup]="parteForm" (ngSubmit)="submitFormParte()" action="#">
           <div class="row">
 
-            <div class="col-8">
-              <div class="form-group">
-                <label for="peso">Descripcion</label>
-                <input type="text" class="form-control" name="descripcion" id="peso" formControlName="descripcion">
-              </div>
-            </div>
-            
             <div class="col-4">
               <div class="form-group">
                 <label for="cantidad">Cantidad</label>
@@ -172,9 +165,16 @@
               </div>
             </div>
 
+            <div class="col-8">
+              <div class="form-group">
+                <label for="peso">Descripcion</label>
+                <input type="text" class="form-control" name="descripcion" id="peso" formControlName="descripcion">
+              </div>
+            </div>
+
             <div class="col-4">
               <div class="form-group">
-                <label for="costo">Costo repuesto (en dolares)</label>
+                <label for="costo">Costo repuesto (en USD)</label>
                 <input type="number" class="form-control valid-control" name="costo" id="costo" formControlName="costo">
                 <!-- Frontend errors -->
                 <div
@@ -228,7 +228,7 @@
 
             <div class="col-4">
               <div class="form-group">
-                <label for="flete">Valor flete (en dolares)</label>
+                <label for="flete">Valor flete (en USD)</label>
                 <input type="number" class="form-control valid-control" name="flete" id="flete" formControlName="flete">
                 <!-- Frontend errors -->
                 <div
@@ -241,7 +241,20 @@
 
             <div class="col-4">
               <div class="form-group">
-                <label for="flete">Backorder</label>
+                <label for="monto">Monto (en USD)</label>
+                <input type="number" class="form-control valid-control" name="monto" id="monto" formControlName="monto">
+                <!-- Frontend errors -->
+                <div
+                    *ngIf="(parteForm.controls.monto.errors) && (parteForm.controls.monto.touched) && (parteForm.controls.monto.dirty)">
+                  <div class="error-response" *ngIf="parteForm.controls.monto.errors.min !== null">EL monto
+                    debe ser igual o mayor a 0</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <div class="form-group">
+                <label for="backorder">Backorder</label>
                 <div class="custom-control custom-checkbox mb-3">
                   <input type="checkbox" class="custom-control-input" id="backorder" name="backorder" formControlName="backorder">
                   <label class="custom-control-label" for="backorder">Esta parte esta en Backorder</label>

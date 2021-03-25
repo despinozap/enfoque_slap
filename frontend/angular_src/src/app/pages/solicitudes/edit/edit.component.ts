@@ -33,21 +33,7 @@ export class SolicitudesEditComponent implements OnInit {
     language: {
       url: '//cdn.datatables.net/plug-ins/1.10.22/i18n/Spanish.json'
     },
-    columnDefs: [
-      { orderable: false, targets: 0 }
-    ],
-    order: [[1, 'desc']],
-    /*
-    // Declare the use of the extension in the dom parameter
-    dom: 'Bfrtip',
-    // Configure the buttons
-    buttons: [
-      'colvis',
-      'excel',
-      'pdf',
-      'print'
-    ]
-    */
+    order: [[0, 'desc']]
   };
 
   
@@ -391,12 +377,12 @@ export class SolicitudesEditComponent implements OnInit {
         if (sheet.length > 1) {
           for (let i = 1; i < sheet.length; i++) {
             
-            if((sheet[i].length > 0) && (sheet[i][0] !== undefined))
+            if((sheet[i].length > 1) && (sheet[i][0] !== undefined) && (sheet[i][1] !== undefined) && (isNaN(sheet[i][0]) === false))
             {
               this.partes.push(
                 {
-                  "nparte": sheet[i][0],
-                  "cantidad": sheet[i][1]
+                  "cantidad": sheet[i][0],
+                  "nparte": sheet[i][1]
                 }
               );
             }

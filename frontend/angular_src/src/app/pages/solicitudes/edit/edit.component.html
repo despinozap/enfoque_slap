@@ -90,15 +90,15 @@
 
             <thead>
               <tr>
-                <th>N° Parte</th>
                 <th>Cantidad</th>
+                <th>N° Parte</th>
                 <th>Opciones</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let parte of partes; index as i">
-                <td align="left">{{ parte.nparte }}</td>
                 <td align="right">{{ parte.cantidad }}</td>
+                <td align="left">{{ parte.nparte }}</td>
                 <td align="center">
                   <button (click)="goTo_updateParte(i)" class="btn-table btn btn-secondary" title="Editar" [disabled]="(loading === true)"><i class="bx bx-edit-alt"></i></button>
                   <button (click)="removeParte(i)" class="btn-table btn btn-secondary" title="Eliminar" [disabled]="(loading === true)"><i class="bx bx-trash-alt"></i></button>
@@ -161,18 +161,6 @@
             
             <div class="col-6">
               <div class="form-group">
-                <label for="nparte">N° Parte</label>
-                <input type="text" class="form-control valid-control" name="nparte" id="nparte" formControlName="nparte">
-                <!-- Frontend errors -->
-                <div
-                  *ngIf="(parteForm.controls.nparte.errors) && (parteForm.controls.nparte.touched) && (parteForm.controls.nparte.dirty)">
-                  <div class="error-response" *ngIf="parteForm.controls.nparte.errors.required === true">Debes ingresar el numero de parte</div>
-                </div>
-              </div>
-            </div>
-
-            <div class="col-6">
-              <div class="form-group">
                 <label for="cantidad">Cantidad</label>
                 <input type="number" class="form-control valid-control" name="cantidad" id="cantidad" formControlName="cantidad">
                 <!-- Frontend errors -->
@@ -180,6 +168,18 @@
                   *ngIf="(parteForm.controls.cantidad.errors) && (parteForm.controls.cantidad.touched) && (parteForm.controls.cantidad.dirty)">
                   <div class="error-response" *ngIf="parteForm.controls.cantidad.errors.required === true">Debes ingresar la cantidad</div>
                   <div class="error-response" *ngIf="parteForm.controls.cantidad.errors.min !== null">La cantidad debe ser mayor a 0</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-6">
+              <div class="form-group">
+                <label for="nparte">N° Parte</label>
+                <input type="text" class="form-control valid-control" name="nparte" id="nparte" formControlName="nparte">
+                <!-- Frontend errors -->
+                <div
+                  *ngIf="(parteForm.controls.nparte.errors) && (parteForm.controls.nparte.touched) && (parteForm.controls.nparte.dirty)">
+                  <div class="error-response" *ngIf="parteForm.controls.nparte.errors.required === true">Debes ingresar el numero de parte</div>
                 </div>
               </div>
             </div>
