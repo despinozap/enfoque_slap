@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Validator;
 use Auth;
 use Illuminate\Support\Facades\DB;
 
+use App\Models\Parameter;
 use App\Models\Solicitud;
 use App\Models\Parte;
 
@@ -275,81 +276,97 @@ class SolicitudesController extends Controller
             {
                 if($solicitud = Solicitud::find($id))
                 {
-                    $solicitud->makeHidden([
-                        'faena_id',
-                        'marca_id',
-                        'estadosolicitud_id',
-                        'created_at', 
-                        'updated_at'
-                    ]);
-
-                    $solicitud->faena;
-                    $solicitud->faena->makeHidden(['created_at', 'updated_at']);
-
-                    $solicitud->faena->cliente;
-                    $solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
-
-                    $solicitud->faena->cliente;
-                    $solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
-                    
-                    $solicitud->marca;
-                    $solicitud->marca->makeHidden(['created_at', 'updated_at']);
-
-                    $solicitud->estadosolicitud;
-                    $solicitud->estadosolicitud->makeHidden(['created_at', 'updated_at']);
-
-                    $solicitud->partes;
-                    foreach($solicitud->partes as $parte)
+                    if($usdToClp = Parameter::all()->where('name', 'usd_to_clp')->first())
                     {
-                        $parte->makeHidden([
-                            'marca_id', 
+                        $solicitud->makeHidden([
+                            'faena_id',
+                            'marca_id',
+                            'estadosolicitud_id',
                             'created_at', 
                             'updated_at'
                         ]);
-
-                        $parte->marca;
-                        $parte->marca->makeHidden(['created_at', 'updated_at']);
-
-                        switch($user->role_id)
+    
+                        $solicitud->faena;
+                        $solicitud->faena->makeHidden(['created_at', 'updated_at']);
+    
+                        $solicitud->faena->cliente;
+                        $solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
+    
+                        $solicitud->faena->cliente;
+                        $solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
+                        
+                        $solicitud->marca;
+                        $solicitud->marca->makeHidden(['created_at', 'updated_at']);
+    
+                        $solicitud->estadosolicitud;
+                        $solicitud->estadosolicitud->makeHidden(['created_at', 'updated_at']);
+    
+                        $solicitud->partes;
+                        foreach($solicitud->partes as $parte)
                         {
-                            case 1: { // Administrador
-
-                                $parte->pivot->makeHidden([
-                                    'marca_id', 
-                                    'created_at', 
-                                    'updated_at'
-                                ]);
-
-                                break;
-                            }
-
-                            case 2: { // Vendedor
-
-                                $parte->pivot->makeHidden([
-                                    'costo',
-                                    'margen',
-                                    'peso',
-                                    'flete',
-                                    'marca_id', 
-                                    'created_at', 
-                                    'updated_at'
-                                ]);
-
-                                break;
-                            }
-
-                            default: {
-
-                                break;
+                            $parte->makeHidden([
+                                'marca_id', 
+                                'created_at', 
+                                'updated_at'
+                            ]);
+    
+                            $parte->marca;
+                            $parte->marca->makeHidden(['created_at', 'updated_at']);
+    
+                            switch($user->role_id)
+                            {
+                                case 1: { // Administrador
+    
+                                    $parte->pivot->makeHidden([
+                                        'marca_id', 
+                                        'created_at', 
+                                        'updated_at'
+                                    ]);
+    
+                                    break;
+                                }
+    
+                                case 2: { // Vendedor
+    
+                                    if($parte->pivot->monto !== null)
+                                    {
+                                        $parte->pivot->monto = $parte->pivot->monto * $usdToClp->value;
+                                    }
+                                    
+                                    $parte->pivot->makeHidden([
+                                        'costo',
+                                        'margen',
+                                        'peso',
+                                        'flete',
+                                        'marca_id', 
+                                        'created_at', 
+                                        'updated_at'
+                                    ]);
+    
+                                    break;
+                                }
+    
+                                default: {
+    
+                                    break;
+                                }
                             }
                         }
+                        
+                        $response = HelpController::buildResponse(
+                            200,
+                            null,
+                            $solicitud
+                        );
                     }
-                    
-                    $response = HelpController::buildResponse(
-                        200,
-                        null,
-                        $solicitud
-                    );
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            500,
+                            'Error al obtener el valor USD para conversion',
+                            null
+                        );
+                    }
                 }   
                 else     
                 {
@@ -576,6 +593,7 @@ class SolicitudesController extends Controller
                     'partes.*.tiempoentrega'  => 'nullable|numeric|min:0',
                     'partes.*.peso'  => 'nullable|numeric|min:1',
                     'partes.*.flete'  => 'nullable|numeric|min:0',
+                    'partes.*.monto'  => 'nullable|numeric|min:0',
                     'partes.*.backorder'  => 'required|boolean',
                 ];
         
@@ -597,6 +615,8 @@ class SolicitudesController extends Controller
                     'partes.*.peso.min' => 'El peso para la parte debe ser mayor a 0',
                     'partes.*.flete.numeric' => 'El flete para la parte debe ser numerico',
                     'partes.*.flete.min' => 'El flete para la parte debe ser mayor o igual a 0',
+                    'partes.*.monto.numeric' => 'El monto para la parte debe ser numerico',
+                    'partes.*.monto.min' => 'El monto para la parte debe ser mayor o igual a 0',
                     'partes.*.backorder.required' => 'Debes seleccionar si la parte es backorder',
                     'partes.*.backorder.boolean' => 'La seleccion de backorder para la parte es invalida',
                 ];
@@ -629,15 +649,6 @@ class SolicitudesController extends Controller
                         {
                             if($p = $solicitud->partes->where('nparte', $parte['nparte'])->first())
                             {
-                                if(($parte['costo'] !== null) && ($parte['margen'] !== null) && ($parte['flete'] !== null))
-                                {
-                                    $monto = ($parte['costo'] * $parte['cantidad']) + (($parte['costo'] * $parte['cantidad']) * $parte['margen'] / 100) + $parte['flete'];
-                                }
-                                else
-                                {
-                                    $monto = null;
-                                }
-
                                 $syncData[$p->id] =  array(
                                     'descripcion' => $parte['descripcion'],
                                     'cantidad' => $parte['cantidad'],
@@ -646,8 +657,8 @@ class SolicitudesController extends Controller
                                     'tiempoentrega' => $parte['tiempoentrega'],
                                     'peso' => $parte['peso'],
                                     'flete' => $parte['flete'],
+                                    'monto' => $parte['monto'],
                                     'backorder' => $parte['backorder'],
-                                    'monto' => $monto
                                 );
                             }
                             else
@@ -701,14 +712,17 @@ class SolicitudesController extends Controller
                             $solicitud = Solicitud::find($id);
 
                             $solicitud->makeHidden([
-                                'cliente_id',
+                                'faena_id',
                                 'estadosolicitud_id',
                                 'created_at', 
                                 'updated_at'
                             ]);
             
-                            $solicitud->cliente;
-                            $solicitud->cliente->makeHidden(['created_at', 'updated_at']);
+                            $solicitud->faena;
+                            $solicitud->faena->makeHidden(['created_at', 'updated_at']);
+
+                            $solicitud->faena->cliente;
+                            $solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
                             
                             $solicitud->estadosolicitud;
                             $solicitud->estadosolicitud->makeHidden(['created_at', 'updated_at']);
