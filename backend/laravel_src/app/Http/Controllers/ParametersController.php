@@ -168,24 +168,54 @@ class ParametersController extends Controller
                 {
                     if($parameter = Parameter::find($id))
                     {
-                        $parameter->fill($request->all());
+                        $success = true;
 
-                        if($parameter->save())
+                        switch($parameter->name)
                         {
-                            $response = HelpController::buildResponse(
-                                200,
-                                'Parametro actualizado',
-                                null
-                            );
+                            case 'usd_to_clp': {
+
+                                if($request->value < 1)
+                                {
+                                    $success = false;
+
+                                    $response = HelpController::buildResponse(
+                                        409,
+                                        'El valor USD debe ser mayor a 0',
+                                        null
+                                    );
+                                }
+
+                                break;
+                            }
+
+                            default: {
+
+                                break;
+                            }
                         }
-                        else
+
+                        if($success === true)
                         {
-                            $response = HelpController::buildResponse(
-                                500,
-                                'Error al actualizar el parametro',
-                                null
-                            );
+                            $parameter->fill($request->all());
+
+                            if($parameter->save())
+                            {
+                                $response = HelpController::buildResponse(
+                                    200,
+                                    'Parametro actualizado',
+                                    null
+                                );
+                            }
+                            else
+                            {
+                                $response = HelpController::buildResponse(
+                                    500,
+                                    'Error al actualizar el parametro',
+                                    null
+                                );
+                            }
                         }
+                        
                     }
                     else
                     {

@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use App\Models\Role;
 use App\Models\Routepermission;
 use App\Models\User;
+use App\Models\Parameter;
 use App\Models\Cliente;
 use App\Models\Marca;
 use App\Models\Parte;
@@ -84,6 +85,10 @@ class DatabaseSeeder extends Seeder
                 'users show',
                 'users update',
                 'users destroy',
+                //Parameters
+                'parameters index',
+                'parameters show',
+                'parameters update',
                 //Partes
                 'partes index',
                 'partes show',
@@ -167,6 +172,15 @@ class DatabaseSeeder extends Seeder
         $user->password = bcrypt('seller');
         $user->role_id = 2; // Vendedor
         $user->save();
+
+        /*
+        *   Parameters
+        */
+        $parameter = new Parameter();
+        $parameter->name = 'usd_to_clp';
+        $parameter->description = 'Valor del Dolar (USD) para transformar a peso chileno (CLP)';
+        $parameter->value = 740;
+        $parameter->save();
 
         /*
         *   Clientes
