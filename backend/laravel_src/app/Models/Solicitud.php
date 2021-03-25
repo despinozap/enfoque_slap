@@ -11,7 +11,7 @@ class Solicitud extends Model
 
     protected $table = 'solicitudes';
     protected $fillable = [
-        'cliente_id', 'marca_id', 'user_id', 'estadosolicitud_id', 'comentario', 
+        'faena_id', 'marca_id', 'user_id', 'estadosolicitud_id', 'comentario', 
     ];
     public $appends = ['partes_total'];
 
@@ -27,9 +27,9 @@ class Solicitud extends Model
         return $quantity;
     }
 
-    public function cliente()
+    public function faena()
     {
-        return $this->belongsTo(Cliente::class);
+        return $this->belongsTo(Faena::class);
     }
 
     public function marca()

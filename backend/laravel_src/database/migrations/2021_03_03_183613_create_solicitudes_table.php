@@ -15,14 +15,14 @@ class CreateSolicitudesTable extends Migration
     {
         Schema::create('solicitudes', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('cliente_id')->unsigned();
+            $table->bigInteger('faena_id')->unsigned();
             $table->bigInteger('marca_id')->unsigned();
             $table->bigInteger('user_id')->unsigned();
             $table->bigInteger('estadosolicitud_id')->unsigned();
             $table->longText('comentario')->nullable();
             $table->timestamps();
 
-            $table->foreign('cliente_id')->references('id')->on('clientes')->onDelete('cascade');
+            $table->foreign('faena_id')->references('id')->on('faenas')->onDelete('cascade');
             $table->foreign('marca_id')->references('id')->on('marcas')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('estadosolicitud_id')->references('id')->on('estadosolicitudes')->onDelete('cascade');

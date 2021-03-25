@@ -8,6 +8,7 @@ use App\Models\Routepermission;
 use App\Models\User;
 use App\Models\Parameter;
 use App\Models\Cliente;
+use App\Models\Faena;
 use App\Models\Marca;
 use App\Models\Parte;
 use App\Models\Estadosolicitud;
@@ -40,6 +41,8 @@ class DatabaseSeeder extends Seeder
             'parameters update',
             //Clientes
             'clientes index_full',
+            //Faenas
+            'faenas index_full',
             //Marcas
             'marcas index_full',
             //Partes
@@ -96,6 +99,8 @@ class DatabaseSeeder extends Seeder
                 'partes destroy',
                 //Clientes
                 'clientes index_full',
+                //Faenas
+                'faenas index_full',
                 //Marcas
                 'marcas index_full',
                 //Solicitudes
@@ -193,6 +198,18 @@ class DatabaseSeeder extends Seeder
         $cliente->save();
 
         /*
+        *   Faenas
+        */
+        $faena = new Faena();
+        $faena->name = 'FaenaTest01';
+        $faena->cliente_id = 1;
+        $faena->save();
+        $faena = new Faena();
+        $faena->name = 'FaenaTest02';
+        $faena->cliente_id = 1;
+        $faena->save();
+
+        /*
         *   Marcas
         */
         $marca = new Marca();
@@ -231,7 +248,7 @@ class DatabaseSeeder extends Seeder
         *   Solicitudes
         */
         $solicitud = new Solicitud();
-        $solicitud->cliente_id = 1;
+        $solicitud->faena_id = 1;
         $solicitud->marca_id = 1;
         $solicitud->user_id = 1;
         $solicitud->estadosolicitud_id = 1;

@@ -44,8 +44,8 @@ class SolicitudesController extends Controller
                         }
 
                         $solicitud->partes_total;
-                        $solicitud->cliente;
-                        $solicitud->cliente->makeHidden(['created_at', 'updated_at']);
+                        $solicitud->faena;
+                        $solicitud->faena->makeHidden(['created_at', 'updated_at']);
                         $solicitud->marca;
                         $solicitud->marca->makeHidden(['created_at', 'updated_at']);
                         $solicitud->user;
@@ -114,14 +114,14 @@ class SolicitudesController extends Controller
             if($user->role->hasRoutepermission('solicitudes store'))
             {
                 $validatorInput = $request->only(
-                    'cliente_id',
+                    'faena_id',
                     'marca_id',
                     'comentario',
                     'partes'
                 );
                 
                 $validatorRules = [
-                    'cliente_id' => 'required|exists:clientes,id',
+                    'faena_id' => 'required|exists:faenas,id',
                     'marca_id' => 'required|exists:marcas,id',
                     'partes' => 'required|array|min:1',
                     'partes.*.nparte'  => 'required',
@@ -129,8 +129,8 @@ class SolicitudesController extends Controller
                 ];
         
                 $validatorMessages = [
-                    'cliente_id.required' => 'Debes seleccionar un cliente',
-                    'cliente_id.exists' => 'El cliente no existe',
+                    'faena_id.required' => 'Debes seleccionar una faena',
+                    'faena_id.exists' => 'La faena no existe',
                     'marca_id.required' => 'Debes seleccionar una marca',
                     'marca_id.exists' => 'La marca no existe',
                     'partes.required' => 'Debes seleccionar las partes',
@@ -274,15 +274,18 @@ class SolicitudesController extends Controller
                 if($solicitud = Solicitud::find($id))
                 {
                     $solicitud->makeHidden([
-                        'cliente_id',
+                        'faena_id',
                         'marca_id',
                         'estadosolicitud_id',
                         'created_at', 
                         'updated_at'
                     ]);
 
-                    $solicitud->cliente;
-                    $solicitud->cliente->makeHidden(['created_at', 'updated_at']);
+                    $solicitud->faena;
+                    $solicitud->faena->makeHidden(['created_at', 'updated_at']);
+
+                    $solicitud->faena->cliente;
+                    $solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
                     
                     $solicitud->marca;
                     $solicitud->marca->makeHidden(['created_at', 'updated_at']);
@@ -400,14 +403,14 @@ class SolicitudesController extends Controller
             if($user->role->hasRoutepermission('solicitudes update'))
             {
                 $validatorInput = $request->only(
-                    'cliente_id',
+                    'faena_id',
                     'marca_id',
                     'comentario',
                     'partes'
                 );
                 
                 $validatorRules = [
-                    'cliente_id' => 'required|exists:clientes,id',
+                    'faena_id' => 'required|exists:faenas,id',
                     'marca_id' => 'required|exists:marcas,id',
                     'partes' => 'required|array|min:1',
                     'partes.*.nparte'  => 'required',
@@ -415,8 +418,8 @@ class SolicitudesController extends Controller
                 ];
         
                 $validatorMessages = [
-                    'cliente_id.required' => 'Debes seleccionar un cliente',
-                    'cliente_id.exists' => 'El cliente no existe',
+                    'faena_id.required' => 'Debes seleccionar una faena',
+                    'faena_id.exists' => 'La faena no existe',
                     'marca_id.required' => 'Debes seleccionar una marca',
                     'marca_id.exists' => 'La marca no existe',
                     'partes.required' => 'Debes seleccionar las partes',

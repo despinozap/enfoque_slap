@@ -5,16 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Cliente extends Model
+class Faena extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'name',
+        'cliente_id', 'name' 
     ];
 
-    public function faenas()
+    public function cliente()
     {
-        return $this->hasMany(Faena::class);
+        return $this->belongsTo(Cliente::class);
     }
 }
