@@ -117,6 +117,18 @@ export class UtilsService {
           'title': 'Modulos',
           'groups': [
             {
+              'title': 'Sistema',
+              'icon': 'bx-cog',
+              'header': true,
+              'route': '',
+              'items': [
+                {
+                  'title': 'Parametros de sistema',
+                  'route': 'parameters'
+                }
+              ]
+            },
+            {
               'title': 'Usuarios',
               'icon': 'bxs-user-detail',
               'header': true,

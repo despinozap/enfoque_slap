@@ -1,0 +1,72 @@
+<!-- start page title -->
+<div class="row">
+	<div class="col-12">
+			<div class="page-title-box d-flex align-items-center justify-content-between">
+					<h4 class="mb-0 font-size-18">Editar parametro</h4>
+
+					<div class="page-title-right">
+							<ol class="breadcrumb m-0">
+									<li class="breadcrumb-item">Sistema</li>
+									<li class="breadcrumb-item active">Editar parametro</li>
+							</ol>
+					</div>
+
+			</div>
+	</div>
+</div>
+<!-- end page title -->
+
+<div class="row">
+	<div class="col-12">
+		<div class="card">
+			<div class="card-body">
+
+				<h4 class="card-title">{{ parameter.description }}</h4>
+				<p class="card-title-desc">Completa los siguientes campos para editar el parametro de sistema</p>
+
+				<form [formGroup]="parameterForm" (ngSubmit)="updateParameter()" action="#">
+					<div class="row">
+						<div class="col-12">
+							<div class="form-group">
+								<label class="control-label" for="value">Valor</label>
+								<!-- Backend errors -->
+								<div class="alert alert-danger" *ngIf="(responseErrors.value)">
+									<div *ngFor="let errorMessage of responseErrors.value">{{ errorMessage }}</div>
+								</div>
+								<input type="text" class="form-control valid-control" name="value" id="value"
+									formControlName="value">
+								<!-- Frontend errors -->
+								<div
+									*ngIf="(parameterForm.controls.value.errors) && (parameterForm.controls.value.touched) && (parameterForm.controls.value.dirty)">
+									<div class="error-response" *ngIf="parameterForm.controls.value.errors.required === true">
+										El valor es obligatorio
+									</div>
+								</div>
+							</div>
+						</div>
+
+            <div class="col-12">
+							<div class="form-buttons mt-2">
+								<button type="submit" class="btn btn-primary mr-2"
+									[disabled]="(parameterForm.invalid) || (loading === true)">
+									<span *ngIf="loading === true"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
+									<span *ngIf="loading === false">Guardar</span>
+								</button>
+								<button [disabled]="(loading === true)" class="btn btn-light"
+									(click)="goTo_parametersList()">
+									<span>Cancelar</span>
+								</button>
+							</div>
+						</div>
+						
+					</div>
+
+				</form>
+
+			</div>
+		</div>
+		<!-- end select2 -->
+
+	</div>
+</div>
+<!-- end row -->
