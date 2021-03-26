@@ -213,7 +213,7 @@ export class SolicitudesCompleteComponent implements OnInit {
             {
               case -2: {
 
-                console.log(response.message);
+                //console.log(response.message);
 
                 break;
               }
@@ -274,6 +274,8 @@ export class SolicitudesCompleteComponent implements OnInit {
             }
 
           }
+
+          this.renderDataTable(this.datatableElement_partes);
         }
         else {
           NotificationsService.showAlert(
@@ -693,6 +695,8 @@ export class SolicitudesCompleteComponent implements OnInit {
     this.partes[this.parte_index].complete = this.isParteCompleted(this.parte_index);
 
     this.dataUpdated = true;
+
+    this.renderDataTable(this.datatableElement_partes);
   }
 
   private isParteCompleted(index: number): boolean
