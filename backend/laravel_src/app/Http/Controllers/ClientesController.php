@@ -69,62 +69,6 @@ class ClientesController extends Controller
         return $response;
     }
 
-    public function indexFull()
-    {
-        try
-        {
-            $user = Auth::user();
-            if($user->role->hasRoutepermission('clientes index_full'))
-            {
-                
-                if($clientes = Cliente::all())
-                {
-                    $clientes = $clientes->filter(function($cliente)
-                    {
-                        $cliente->makeHidden([
-                            'created_at',
-                            'updated_at'
-                        ]);
-
-                        return $cliente;
-                    });
-
-                    $response = HelpController::buildResponse(
-                        200,
-                        null,
-                        $clientes
-                    );
-                }
-                else
-                {
-                    $response = HelpController::buildResponse(
-                        500,
-                        'Error al obtener la lista de clientes',
-                        null
-                    );
-                }
-            }
-            else
-            {
-                $response = HelpController::buildResponse(
-                    405,
-                    'No tienes acceso a listar clientes',
-                    null
-                );
-            }
-        }
-        catch(\Exception $e)
-        {
-            $response = HelpController::buildResponse(
-                500,
-                'Error al obtener la lista de clientes [!]',
-                null
-            );
-        }
-
-        return $response;
-    }
-
     /**
      * Show the form for creating a new resource.
      *

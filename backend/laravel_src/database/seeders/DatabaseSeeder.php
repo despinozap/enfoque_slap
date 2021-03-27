@@ -40,7 +40,6 @@ class DatabaseSeeder extends Seeder
             'parameters show',
             'parameters update',
             //Clientes
-            'clientes index_full',
             'clientes index',
             'clientes store',
             'clientes show',
@@ -108,7 +107,6 @@ class DatabaseSeeder extends Seeder
                 'partes update',
                 'partes destroy',
                 //Clientes
-                'clientes index_full',
                 'clientes index',
                 'clientes store',
                 'clientes show',
@@ -153,8 +151,6 @@ class DatabaseSeeder extends Seeder
 
             //Route permissions to for Role: Vendedor
             $routePermissionNames = [
-                //Clientes
-                'clientes index_full',
                 //Faenas
                 'faenas index_full',
                 //Marcas

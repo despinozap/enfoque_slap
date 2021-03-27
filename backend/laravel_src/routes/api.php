@@ -66,7 +66,6 @@ Route::middleware(['auth:api', 'cors'])->group(function()
     Route::delete('/partes/{id}', [PartesController::class, 'destroy']);
 
     // Clientes
-    Route::get('/clientes/all', [ClientesController::class, 'indexFull']);
     Route::get('/clientes', [ClientesController::class, 'index']);
     Route::post('/clientes', [ClientesController::class, 'store']);
     Route::get('/clientes/{id}', [ClientesController::class, 'show']);
