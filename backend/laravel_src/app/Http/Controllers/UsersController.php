@@ -159,7 +159,7 @@ class UsersController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al obtener la lista de usuarios [!]' . $e,
+                'Error al obtener la lista de usuarios [!]',
                 null
             );
         }
@@ -369,8 +369,17 @@ class UsersController extends Controller
                         null
                     );
                 }
-                else if($user->id === $id)
+                else if(($user->id === $id) && ($user->role->id !== $request->role_id))
                 {
+                    $response = HelpController::buildResponse(
+                        409,
+                        'No puedes actualizar el rol de tu propio usuario',
+                        null
+                    );
+                }  
+                else if(User::where('email', $request->email)->where('id', '<>', $id)->first())
+                {
+                    
                     $response = HelpController::buildResponse(
                         409,
                         [
@@ -378,14 +387,6 @@ class UsersController extends Controller
                                 'El email ya esta asociado a otro usuario'
                             ]
                         ],
-                        null
-                    );
-                }  
-                else if(User::where('email', $request->email)->where('id', '<>', $id)->first())
-                {
-                    $response = HelpController::buildResponse(
-                        500,
-                        'Error al actualizar el usuario',
                         null
                     );
                 }   
@@ -406,8 +407,8 @@ class UsersController extends Controller
                         else
                         {
                             $response = HelpController::buildResponse(
-                                409,
-                                'No puedes actualizar tu propio usuario',
+                                500,
+                                'Error al actualizar el usuario',
                                 null
                             );
                         }
