@@ -17,4 +17,14 @@ class Cliente extends Model
     {
         return $this->hasMany(Faena::class);
     }
+    
+    public function getSolicitudesAttribute()
+    {
+        $ids = $this->faenas->map(function($item, $key)
+        {
+            return $item->id;
+        });
+
+        return Solicitud::whereIn('faena_id', $ids)->get(); 
+    }
 }

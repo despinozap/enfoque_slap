@@ -69,6 +69,11 @@ Route::middleware(['auth:api', 'cors'])->group(function()
 
     // Clientes
     Route::get('/clientes/all', [ClientesController::class, 'indexFull']);
+    Route::get('/clientes', [ClientesController::class, 'index']);
+    Route::post('/clientes', [ClientesController::class, 'store']);
+    Route::get('/clientes/{id}', [ClientesController::class, 'show']);
+    Route::put('/clientes/{id}', [ClientesController::class, 'update']);
+    Route::delete('/clientes/{id}', [ClientesController::class, 'destroy']);
 
     // Marcas
     Route::get('/faenas/all', [FaenasController::class, 'indexFull']);

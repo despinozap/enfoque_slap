@@ -41,6 +41,11 @@ class DatabaseSeeder extends Seeder
             'parameters update',
             //Clientes
             'clientes index_full',
+            'clientes index',
+            'clientes store',
+            'clientes show',
+            'clientes update',
+            'clientes destroy',
             //Faenas
             'faenas index_full',
             //Marcas
@@ -99,6 +104,11 @@ class DatabaseSeeder extends Seeder
                 'partes destroy',
                 //Clientes
                 'clientes index_full',
+                'clientes index',
+                'clientes store',
+                'clientes show',
+                'clientes update',
+                'clientes destroy',
                 //Faenas
                 'faenas index_full',
                 //Marcas
