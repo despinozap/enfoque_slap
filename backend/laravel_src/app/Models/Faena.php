@@ -17,4 +17,9 @@ class Faena extends Model
     {
         return $this->belongsTo(Cliente::class);
     }
+
+    public function solicitudes()
+    {
+        return $this->hasMany(Solicitud::class);
+    }
 }

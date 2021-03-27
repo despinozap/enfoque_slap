@@ -48,6 +48,11 @@ class DatabaseSeeder extends Seeder
             'clientes destroy',
             //Faenas
             'faenas index_full',
+            'faenas index',
+            'faenas store',
+            'faenas show',
+            'faenas update',
+            'faenas destroy',
             //Marcas
             'marcas index_full',
             //Partes
@@ -111,6 +116,11 @@ class DatabaseSeeder extends Seeder
                 'clientes destroy',
                 //Faenas
                 'faenas index_full',
+                'faenas index',
+                'faenas store',
+                'faenas show',
+                'faenas update',
+                'faenas destroy',
                 //Marcas
                 'marcas index_full',
                 //Solicitudes

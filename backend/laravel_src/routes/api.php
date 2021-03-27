@@ -32,11 +32,9 @@ Route::prefix('auth')->middleware('cors')->group(function ()
 });
 
 /* ATTENTION: Only put routes here for testing. Then move them into the auth middleware */
-
-//Route::get('/solicitudes/{id}', [SolicitudesController::class, 'show']);
-//Route::delete('/solicitudes/{id}', [SolicitudesController::class, 'destroy']);
-
-
+/*
+*
+*/
 
 /*  Authenticated  */
 Route::middleware(['auth:api', 'cors'])->group(function()
@@ -74,10 +72,14 @@ Route::middleware(['auth:api', 'cors'])->group(function()
     Route::get('/clientes/{id}', [ClientesController::class, 'show']);
     Route::put('/clientes/{id}', [ClientesController::class, 'update']);
     Route::delete('/clientes/{id}', [ClientesController::class, 'destroy']);
-
-    // Marcas
-    Route::get('/faenas/all', [FaenasController::class, 'indexFull']);
     
+    // Faenas
+    Route::get('/faenas', [FaenasController::class, 'index']);
+    Route::post('/faenas', [FaenasController::class, 'store']);
+    Route::get('/faenas/{id}', [FaenasController::class, 'show']);
+    Route::put('/faenas/{id}', [FaenasController::class, 'update']);
+    Route::delete('/faenas/{id}', [FaenasController::class, 'destroy']);
+
     // Marcas
     Route::get('/marcas/all', [MarcasController::class, 'indexFull']);
 
