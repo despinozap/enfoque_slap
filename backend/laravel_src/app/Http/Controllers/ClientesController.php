@@ -30,6 +30,12 @@ class ClientesController extends Controller
                             'updated_at'
                         ]);
 
+                        $cliente->faenas;
+                        $cliente->faenas->makeHidden([
+                            'created_at', 
+                            'updated_at'
+                        ]);
+
                         return $cliente;
                     });
                     
