@@ -295,7 +295,7 @@ class UsersController extends Controller
                 else     
                 {
                     $response = HelpController::buildResponse(
-                        400,
+                    400,
                         'El usuario no existe',
                         null
                     );

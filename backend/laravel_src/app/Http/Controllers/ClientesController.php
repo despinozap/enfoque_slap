@@ -101,12 +101,13 @@ class ClientesController extends Controller
                 $validatorInput = $request->only('name');
             
                 $validatorRules = [
-                    'name' => 'required|min:2'
+                    'name' => 'required|min:2|unique:clientes,name'
                 ];
 
                 $validatorMessages = [
                     'name.required' => 'Debes ingresar el nombre',
                     'name.min' => 'El nombre debe tener al menos 2 caracteres',
+                    'name.unique' => 'Ya existe un cliente con el nombre ingresado',
                 ];
 
                 $validator = Validator::make(
@@ -203,7 +204,7 @@ class ClientesController extends Controller
                 else     
                 {
                     $response = HelpController::buildResponse(
-                        400,
+                        412,
                         'El cliente no existe',
                         null
                     );
@@ -280,7 +281,15 @@ class ClientesController extends Controller
                         null
                     );
                 }  
-                else     
+                else if(Cliente::where('name', $request->name)->where('id', '<>', $id)->first())
+                {
+                    $response = HelpController::buildResponse(
+                        409,
+                        'Ya existe un cliente con el nombre ingresado',
+                        null
+                    );
+                }   
+                else 
                 {
                     if($cliente = Cliente::find($id))
                     {
@@ -306,7 +315,7 @@ class ClientesController extends Controller
                     else
                     {
                         $response = HelpController::buildResponse(
-                            400,
+                            412,
                             'El cliente no existe',
                             null
                         );
@@ -380,7 +389,7 @@ class ClientesController extends Controller
                 else     
                 {
                     $response = HelpController::buildResponse(
-                        400,
+                        412,
                         'El cliente no existe',
                         null
                     );
