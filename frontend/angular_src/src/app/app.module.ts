@@ -28,6 +28,9 @@ import { ProfileDetailsComponent } from './pages/profile/details/details.compone
 import { ProfileEditComponent } from './pages/profile/edit/edit.component';
 import { ParametersListComponent } from './pages/parameters/list/list.component';
 import { ParametersEditComponent } from './pages/parameters/edit/edit.component';
+import { ClientesListComponent } from './pages/clientes/list/list.component';
+import { ClientesCreateComponent } from './pages/clientes/create/create.component';
+import { ClientesEditComponent } from './pages/clientes/edit/edit.component';
 import { SolicitudesCreateComponent } from './pages/solicitudes/create/create.component';
 import { SolicitudesListComponent } from './pages/solicitudes/list/list.component';
 import { SolicitudesEditComponent } from './pages/solicitudes/edit/edit.component';
@@ -55,8 +58,9 @@ const routes: Routes = [
       { path: 'usuarios/edit/:id', component: UsuariosEditComponent },
       { path: 'parameters', component: ParametersListComponent },
       { path: 'parameters/edit/:id', component: ParametersEditComponent },
-      { path: 'partes', component: PartesListComponent },
-      { path: 'partes/edit/:id', component: PartesEditComponent },
+      { path: 'clientes/create', component: ClientesCreateComponent },
+      { path: 'clientes', component: ClientesListComponent },
+      { path: 'clientes/edit/:id', component: ClientesEditComponent },
       { path: 'solicitudes/create', component: SolicitudesCreateComponent },
       { path: 'solicitudes/create/:id', component: SolicitudesCreateComponent },
       { path: 'solicitudes', component: SolicitudesListComponent },
@@ -64,6 +68,8 @@ const routes: Routes = [
       { path: 'solicitudes/complete/:id', component: SolicitudesCompleteComponent },
       { path: 'solicitudes/details/administrator/:id', component: SolicitudesDetailsAdministratorComponent },
       { path: 'solicitudes/details/seller/:id', component: SolicitudesDetailsSellerComponent },
+      { path: 'partes', component: PartesListComponent },
+      { path: 'partes/edit/:id', component: PartesEditComponent },
     ]
   },
   { path: '**', redirectTo: 'login', pathMatch: 'full' } //any other page, redirects to base path
@@ -85,14 +91,17 @@ const routes: Routes = [
     UsuariosEditComponent,
     ParametersListComponent,
     ParametersEditComponent,
-    PartesListComponent,
-    PartesEditComponent,
+    ClientesListComponent,
+    ClientesCreateComponent,
+    ClientesEditComponent,
     SolicitudesCreateComponent,
     SolicitudesListComponent,
     SolicitudesEditComponent,
     SolicitudesCompleteComponent,
     SolicitudesDetailsAdministratorComponent,
     SolicitudesDetailsSellerComponent,
+    PartesListComponent,
+    PartesEditComponent,
   ],
   imports: [
     BrowserModule,

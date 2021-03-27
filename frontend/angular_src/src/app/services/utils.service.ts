@@ -145,6 +145,22 @@ export class UtilsService {
               ]
             },
             {
+              'title': 'Clientes',
+              'icon': 'bxs-briefcase-alt',
+              'header': true,
+              'route': '',
+              'items': [
+                {
+                  'title': 'Nuevo cliente',
+                  'route': 'clientes/create'
+                },
+                {
+                  'title': 'Lista de clientes',
+                  'route': 'clientes'
+                }
+              ]
+            },
+            {
               'title': 'Partes',
               'icon': 'bx-barcode',
               'header': true,
