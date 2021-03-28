@@ -73,6 +73,7 @@ Route::middleware(['auth:api', 'cors'])->group(function()
     Route::delete('/clientes/{id}', [ClientesController::class, 'destroy']);
     
     // Faenas
+    Route::get('/faenas/all', [FaenasController::class, 'indexFull']);
     Route::get('/clientes/{cliente_id}/faenas', [FaenasController::class, 'index']);
     Route::post('/clientes/{cliente_id}/faenas', [FaenasController::class, 'store']);
     Route::get('/clientes/{cliente_id}/faenas/{id}', [FaenasController::class, 'show']);

@@ -100,6 +100,62 @@ class FaenasController extends Controller
         return $response;
     }
 
+    public function indexFull()
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('faenas index_full'))
+            {
+                if($faenas = Faena::all())
+                {
+                    $faenas = $faenas->filter(function($faena)
+                    {
+                        $faena->makeHidden([
+                            'cliente_id',
+                            'created_at',
+                            'updated_at'
+                        ]);
+
+                        return $faena;
+                    });
+
+                    $response = HelpController::buildResponse(
+                        200,
+                        null,
+                        $faenas
+                    );
+                }
+                else
+                {
+                    $response = HelpController::buildResponse(
+                        500,
+                        'Error al obtener la lista de faenas',
+                        null
+                    );
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a listar faenas',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al obtener la lista de faenas [!]',
+                null
+            );
+        }
+        
+        return $response;
+    }
+
     /**
      * Show the form for creating a new resource.
      *
