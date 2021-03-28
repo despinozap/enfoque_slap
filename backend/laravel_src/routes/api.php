@@ -73,11 +73,11 @@ Route::middleware(['auth:api', 'cors'])->group(function()
     Route::delete('/clientes/{id}', [ClientesController::class, 'destroy']);
     
     // Faenas
-    Route::get('/faenas', [FaenasController::class, 'index']);
-    Route::post('/faenas', [FaenasController::class, 'store']);
-    Route::get('/faenas/{id}', [FaenasController::class, 'show']);
-    Route::put('/faenas/{id}', [FaenasController::class, 'update']);
-    Route::delete('/faenas/{id}', [FaenasController::class, 'destroy']);
+    Route::get('/clientes/{cliente_id}/faenas', [FaenasController::class, 'index']);
+    Route::post('/clientes/{cliente_id}/faenas', [FaenasController::class, 'store']);
+    Route::get('/clientes/{cliente_id}/faenas/{id}', [FaenasController::class, 'show']);
+    Route::put('/clientes/{cliente_id}/faenas/{id}', [FaenasController::class, 'update']);
+    Route::delete('/clientes/{cliente_id}/faenas/{id}', [FaenasController::class, 'destroy']);
 
     // Marcas
     Route::get('/marcas/all', [MarcasController::class, 'indexFull']);

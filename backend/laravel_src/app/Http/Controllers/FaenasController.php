@@ -16,14 +16,14 @@ class FaenasController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index(Request $request, $cliente_id)
     {
         try
         {
             $user = Auth::user();
             if($user->role->hasRoutepermission('faenas index'))
             {
-                $validatorInput = $request->only('cliente_id');
+                $validatorInput = ['cliente_id' => $cliente_id];
             
                 $validatorRules = [
                     'cliente_id' => 'required|exists:clientes,id',
