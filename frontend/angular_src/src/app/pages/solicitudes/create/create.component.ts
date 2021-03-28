@@ -206,7 +206,7 @@ export class SolicitudesCreateComponent implements OnInit {
 
   private loadFaenas() {
     this.loading = true;
-    this._faenasService.getFaenas()
+    this._faenasService.getFaenasFull()
       .subscribe(
         //Success request
         (response: any) => {

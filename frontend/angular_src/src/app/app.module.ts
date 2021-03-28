@@ -31,6 +31,9 @@ import { ParametersEditComponent } from './pages/parameters/edit/edit.component'
 import { ClientesListComponent } from './pages/clientes/list/list.component';
 import { ClientesCreateComponent } from './pages/clientes/create/create.component';
 import { ClientesEditComponent } from './pages/clientes/edit/edit.component';
+import { FaenasListComponent } from './pages/clientes/faenas/list/list.component';
+import { FaenasCreateComponent } from './pages/clientes/faenas/create/create.component';
+import { FaenasEditComponent } from './pages/clientes/faenas/edit/edit.component';
 import { SolicitudesCreateComponent } from './pages/solicitudes/create/create.component';
 import { SolicitudesListComponent } from './pages/solicitudes/list/list.component';
 import { SolicitudesEditComponent } from './pages/solicitudes/edit/edit.component';
@@ -61,6 +64,9 @@ const routes: Routes = [
       { path: 'clientes/create', component: ClientesCreateComponent },
       { path: 'clientes', component: ClientesListComponent },
       { path: 'clientes/edit/:id', component: ClientesEditComponent },
+      { path: 'clientes/:cliente_id/faenas/create', component: FaenasCreateComponent },
+      { path: 'clientes/:cliente_id/faenas', component: FaenasListComponent },
+      { path: 'clientes/:cliente_id/faenas/edit/:id', component: FaenasEditComponent },
       { path: 'solicitudes/create', component: SolicitudesCreateComponent },
       { path: 'solicitudes/create/:id', component: SolicitudesCreateComponent },
       { path: 'solicitudes', component: SolicitudesListComponent },
@@ -94,6 +100,9 @@ const routes: Routes = [
     ClientesListComponent,
     ClientesCreateComponent,
     ClientesEditComponent,
+    FaenasListComponent,
+    FaenasCreateComponent,
+    FaenasEditComponent,
     SolicitudesCreateComponent,
     SolicitudesListComponent,
     SolicitudesEditComponent,
