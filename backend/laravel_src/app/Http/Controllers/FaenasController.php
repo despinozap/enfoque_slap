@@ -48,35 +48,33 @@ class FaenasController extends Controller
                         null
                     );
                 }
+                else if(($cliente = Cliente::find($cliente_id)) === null)
+                {
+                    $response = HelpController::buildResponse(
+                        412,
+                        'El cliente no existe',
+                        null
+                    );
+                }
                 else        
                 {
-                    if($faenas = Cliente::find($request->cliente_id)->faenas)
+                    $faenas = $cliente->faenas->filter(function($faena)
                     {
-                        $faenas = $faenas->filter(function($faena)
-                        {
-                            $faena->makeHidden([
-                                'cliente_id',
-                                'created_at',
-                                'updated_at'
-                            ]);
+                        $faena->makeHidden([
+                            'cliente_id',
+                            'created_at',
+                            'updated_at'
+                        ]);
 
-                            return $faena;
-                        });
+                        return $faena;
+                    });
 
-                        $response = HelpController::buildResponse(
-                            200,
-                            null,
-                            $faenas
-                        );
-                    }
-                    else
-                    {
-                        $response = HelpController::buildResponse(
-                            500,
-                            'Error al obtener la lista de faenas',
-                            null
-                        );
-                    }
+                    $response = HelpController::buildResponse(
+                        200,
+                        null,
+                        $faenas
+                    );
+
                 }
             }
             else
@@ -172,25 +170,22 @@ class FaenasController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request, $cliente_id)
     {
         try
         {
             $user = Auth::user();
             if($user->role->hasRoutepermission('faenas store'))
             {
-                $validatorInput = $request->only('name', 'cliente_id');
+                $validatorInput = $request->only('name');
             
                 $validatorRules = [
                     'name' => 'required|min:4',
-                    'cliente_id' => 'required|exists:clientes,id'
                 ];
 
                 $validatorMessages = [
                     'name.required' => 'Debes ingresar el nombre',
                     'name.min' => 'El nombre debe tener al menos 4 caracteres',
-                    'cliente_id.required' => 'Debes seleccionar el cliente',
-                    'cliente_id.exists' => 'El cliente ingresado no existe'
                 ];
 
                 $validator = Validator::make(
@@ -207,7 +202,15 @@ class FaenasController extends Controller
                         null
                     );
                 }
-                else if(Cliente::find($request->cliente_id)->faenas->where('name', $request->name)->first())
+                else if(!Cliente::find($cliente_id))
+                {
+                    $response = HelpController::buildResponse(
+                        412,
+                        'El cliente no existe',
+                        null
+                    );
+                }
+                else if(Cliente::find($cliente_id)->faenas->where('name', $request->name)->first())
                 {
                     $response = HelpController::buildResponse(
                         409,
@@ -219,6 +222,7 @@ class FaenasController extends Controller
                 {
                     $faena = new Faena();
                     $faena->fill($request->all());
+                    $faena->cliente_id = $cliente_id;
                     
                     if($faena->save())
                     {
@@ -265,38 +269,49 @@ class FaenasController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($cliente_id, $id)
     {
         try
         {
             $user = Auth::user();
             if($user->role->hasRoutepermission('faenas show'))
             {
-                if($faena = Faena::find($id))
+                if(Cliente::find($cliente_id))
                 {
-                    $faena->makeHidden([
-                        'cliente_id',
-                        'created_at', 
-                        'updated_at'
-                    ]);
+                    if($faena = Faena::find($id))
+                    {
+                        $faena->makeHidden([
+                            'cliente_id',
+                            'created_at', 
+                            'updated_at'
+                        ]);
 
-                    $faena->cliente;
-                    $faena->cliente->makeHidden([
-                        'created_at', 
-                        'updated_at'
-                    ]);
+                        $faena->cliente;
+                        $faena->cliente->makeHidden([
+                            'created_at', 
+                            'updated_at'
+                        ]);
 
-                    $response = HelpController::buildResponse(
-                        200,
-                        null,
-                        $faena
-                    );
-                }   
-                else     
+                        $response = HelpController::buildResponse(
+                            200,
+                            null,
+                            $faena
+                        );
+                    }   
+                    else     
+                    {
+                        $response = HelpController::buildResponse(
+                            412,
+                            'La faena no existe',
+                            null
+                        );
+                    }
+                }
+                else
                 {
                     $response = HelpController::buildResponse(
-                        400,
-                        'La faena no existe',
+                        412,
+                        'El cliente no existe',
                         null
                     );
                 }
@@ -340,18 +355,17 @@ class FaenasController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $cliente_id, $id)
     {
         try
         {
             $user = Auth::user();
             if($user->role->hasRoutepermission('faenas update'))
             {
-                $validatorInput = $request->only('name', 'cliente_id');
+                $validatorInput = $request->only('name');
             
                 $validatorRules = [
                     'name' => 'required|min:4',
-                    //'cliente_id' => 'required|exists:clientes,id'
                 ];
 
                 $validatorMessages = [
@@ -374,8 +388,16 @@ class FaenasController extends Controller
                         $validator->errors(),
                         null
                     );
-                } 
-                else if(Cliente::find($request->cliente_id)->faenas->where('name', $request->name)->where('id', '<>', $id)->first())
+                }
+                else if(($cliente = Cliente::find($cliente_id)) === null)
+                {
+                    $response = HelpController::buildResponse(
+                        412,
+                        'El cliente no existe',
+                        null
+                    );
+                }
+                else if($cliente->faenas->where('name', $request->name)->where('id', '<>', $id)->first())
                 {
                     
                     $response = HelpController::buildResponse(
@@ -393,6 +415,7 @@ class FaenasController extends Controller
                     if($faena = Faena::find($id))
                     {
                         $faena->fill($request->all());
+                        $faena->cliente_id = $cliente_id;
 
                         if($faena->save())
                         {
@@ -414,7 +437,7 @@ class FaenasController extends Controller
                     else
                     {
                         $response = HelpController::buildResponse(
-                            400,
+                            412,
                             'La faena no existe',
                             null
                         );
@@ -448,7 +471,7 @@ class FaenasController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy($cliente_id, $id)
     {
         try
         {
@@ -488,7 +511,7 @@ class FaenasController extends Controller
                 else     
                 {
                     $response = HelpController::buildResponse(
-                        400,
+                        412,
                         'La faena no existe',
                         null
                     );
