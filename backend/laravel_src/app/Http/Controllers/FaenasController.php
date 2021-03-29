@@ -115,6 +115,12 @@ class FaenasController extends Controller
                             'updated_at'
                         ]);
 
+                        $faena->cliente;
+                        $faena->cliente->makeHidden([
+                            'created_at',
+                            'updated_at'
+                        ]);
+
                         return $faena;
                     });
 
