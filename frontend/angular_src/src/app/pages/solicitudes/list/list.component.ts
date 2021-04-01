@@ -117,15 +117,7 @@ export class SolicitudesListComponent implements OnInit {
       //Success request
       (response: any) => {
 
-        if(response.data.length !== undefined)
-        {
-          this.solicitudes = response.data;
-        }
-        else
-        {
-          this.solicitudes = [];
-        }
-
+        this.solicitudes = response.data;
         this.solicitudes.forEach((solicitud: any) => {
           solicitud['checked'] = false;
         });
