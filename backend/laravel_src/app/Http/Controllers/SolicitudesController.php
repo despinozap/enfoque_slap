@@ -25,52 +25,113 @@ class SolicitudesController extends Controller
             $user = Auth::user();
             if($user->role->hasRoutepermission('solicitudes index'))
             {
-                if($solicitudes = Solicitud::all())
+                switch($user->role->id)
                 {
-                    foreach($solicitudes as $solicitud)
-                    {
-                        $solicitud->makeHidden(['cliente_id', 'marca_id', 'user_id', 'estadosolicitud_id']);
+                    case 2: //Vendedor
+                        {
+                            if($solicitudes = Solicitud::where('user_id', $user->id)) //Only belonging data
+                            {
+                                foreach($solicitudes as $solicitud)
+                                {
+                                    $solicitud->makeHidden(['cliente_id', 'marca_id', 'user_id', 'estadosolicitud_id']);
 
-                        $totalPartes = 0;
-                        foreach($solicitud->partes as $parte)
-                        {   
-                            $parte->makeHidden(['marca_id', 'created_at', 'updated_at']);
-                            
-                            $parte->pivot;
-                            $totalPartes += $parte->pivot->cantidad;
-                            $parte->pivot->makeHidden(['solicitud_id', 'parte_id']);
+                                    $totalPartes = 0;
+                                    foreach($solicitud->partes as $parte)
+                                    {   
+                                        $parte->makeHidden(['marca_id', 'created_at', 'updated_at']);
+                                        
+                                        $parte->pivot;
+                                        $totalPartes += $parte->pivot->cantidad;
+                                        $parte->pivot->makeHidden(['solicitud_id', 'parte_id']);
 
-                            $parte->marca;
-                            $parte->marca->makeHidden(['created_at', 'updated_at']);
+                                        $parte->marca;
+                                        $parte->marca->makeHidden(['created_at', 'updated_at']);
+                                    }
+
+                                    $solicitud->partes_total;
+                                    $solicitud->faena;
+                                    $solicitud->faena->makeHidden(['created_at', 'updated_at']);
+                                    $solicitud->faena->cliente;
+                                    $solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
+                                    $solicitud->marca;
+                                    $solicitud->marca->makeHidden(['created_at', 'updated_at']);
+                                    $solicitud->user;
+                                    $solicitud->user->makeHidden(['email', 'phone', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
+                                    $solicitud->estadosolicitud;
+                                    $solicitud->estadosolicitud->makeHidden(['created_at', 'updated_at']);
+                                }
+
+                                $response = HelpController::buildResponse(
+                                    200,
+                                    null,
+                                    $solicitudes
+                                );
+                            }
+                            else
+                            {
+                                $response = HelpController::buildResponse(
+                                    500,
+                                    'Error al obtener la lista de solicitudes',
+                                    null
+                                );
+                            }
+
+                            break;
                         }
 
-                        $solicitud->partes_total;
-                        $solicitud->faena;
-                        $solicitud->faena->makeHidden(['created_at', 'updated_at']);
-                        $solicitud->faena->cliente;
-                        $solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
-                        $solicitud->marca;
-                        $solicitud->marca->makeHidden(['created_at', 'updated_at']);
-                        $solicitud->user;
-                        $solicitud->user->makeHidden(['email', 'phone', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
-                        $solicitud->estadosolicitud;
-                        $solicitud->estadosolicitud->makeHidden(['created_at', 'updated_at']);
-                    }
+                    default: //All others
+                    {
+                        if($solicitudes = Solicitud::all())
+                        {
+                            foreach($solicitudes as $solicitud)
+                            {
+                                $solicitud->makeHidden(['cliente_id', 'marca_id', 'user_id', 'estadosolicitud_id']);
 
-                    $response = HelpController::buildResponse(
-                        200,
-                        null,
-                        $solicitudes
-                    );
+                                $totalPartes = 0;
+                                foreach($solicitud->partes as $parte)
+                                {   
+                                    $parte->makeHidden(['marca_id', 'created_at', 'updated_at']);
+                                    
+                                    $parte->pivot;
+                                    $totalPartes += $parte->pivot->cantidad;
+                                    $parte->pivot->makeHidden(['solicitud_id', 'parte_id']);
+
+                                    $parte->marca;
+                                    $parte->marca->makeHidden(['created_at', 'updated_at']);
+                                }
+
+                                $solicitud->partes_total;
+                                $solicitud->faena;
+                                $solicitud->faena->makeHidden(['created_at', 'updated_at']);
+                                $solicitud->faena->cliente;
+                                $solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
+                                $solicitud->marca;
+                                $solicitud->marca->makeHidden(['created_at', 'updated_at']);
+                                $solicitud->user;
+                                $solicitud->user->makeHidden(['email', 'phone', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
+                                $solicitud->estadosolicitud;
+                                $solicitud->estadosolicitud->makeHidden(['created_at', 'updated_at']);
+                            }
+
+                            $response = HelpController::buildResponse(
+                                200,
+                                null,
+                                $solicitudes
+                            );
+                        }
+                        else
+                        {
+                            $response = HelpController::buildResponse(
+                                500,
+                                'Error al obtener la lista de solicitudes',
+                                null
+                            );
+                        }
+
+                        break;
+                    }
                 }
-                else
-                {
-                    $response = HelpController::buildResponse(
-                        500,
-                        'Error al obtener la lista de solicitudes',
-                        null
-                    );
-                }
+                
             }
             else
             {
