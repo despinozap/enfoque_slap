@@ -876,34 +876,46 @@ class SolicitudesController extends Controller
             {
                 if($solicitud = Solicitud::find($id))
                 {    
-                    if($solicitud->estadosolicitud_id === 2) // If Estadosolicitud = 'Completada'
+                    if(($user->role_id === 2) && ($solicitud->user_id !== $user->id))
                     {
-                        $solicitud->estadosolicitud_id = 3; // Cerrada
-                        
-                        if($solicitud->save())
+                        //If Vendedor and solicitud doesn't belong
+                        $response = HelpController::buildResponse(
+                            405,
+                            'No tienes acceso a cerrar esta solicitud',
+                            null
+                        );
+                    }
+                    else
+                    {
+                        if($solicitud->estadosolicitud_id === 2) // If Estadosolicitud = 'Completada'
                         {
-                            $response = HelpController::buildResponse(
-                                200,
-                                'Solicitud cerrada',
-                                null
-                            );
+                            $solicitud->estadosolicitud_id = 3; // Cerrada
+                            
+                            if($solicitud->save())
+                            {
+                                $response = HelpController::buildResponse(
+                                    200,
+                                    'Solicitud cerrada',
+                                    null
+                                );
+                            }
+                            else
+                            {
+                                $response = HelpController::buildResponse(
+                                    500,
+                                    'Error al cerrar la solicitud',
+                                    null
+                                );
+                            }
                         }
                         else
                         {
                             $response = HelpController::buildResponse(
-                                500,
-                                'Error al cerrar la solicitud',
+                                409,
+                                'La solicitud no esta completa',
                                 null
                             );
                         }
-                    }
-                    else
-                    {
-                        $response = HelpController::buildResponse(
-                            409,
-                            'La solicitud no esta completa',
-                            null
-                        );
                     }
                 }
                 else
@@ -951,32 +963,44 @@ class SolicitudesController extends Controller
             {
                 if($solicitud = Solicitud::find($id))
                 {    
-                    if(($solicitud->estadosolicitud_id === 1) || ($solicitud->estadosolicitud_id === 2))// If Estadosolicitud = 'Pendiente' or 'Completada'
+                    if(($user->role_id === 2) && ($solicitud->user_id !== $user->id))
                     {
-                        if($solicitud->delete())
+                        //If Vendedor and solicitud doesn't belong
+                        $response = HelpController::buildResponse(
+                            405,
+                            'No tienes acceso a eliminar esta solicitud',
+                            null
+                        );
+                    }
+                    else
+                    {
+                        if(($solicitud->estadosolicitud_id === 1) || ($solicitud->estadosolicitud_id === 2))// If Estadosolicitud = 'Pendiente' or 'Completada'
                         {
-                            $response = HelpController::buildResponse(
-                                200,
-                                'Solicitud eliminada',
-                                null
-                            );
+                            if($solicitud->delete())
+                            {
+                                $response = HelpController::buildResponse(
+                                    200,
+                                    'Solicitud eliminada',
+                                    null
+                                );
+                            }
+                            else
+                            {
+                                $response = HelpController::buildResponse(
+                                    500,
+                                    'Error al eliminar la solicitud',
+                                    null
+                                );
+                            }
                         }
                         else
                         {
                             $response = HelpController::buildResponse(
-                                500,
-                                'Error al eliminar la solicitud',
+                                409,
+                                'La solicitud ya esta cerrada',
                                 null
                             );
                         }
-                    }
-                    else
-                    {
-                        $response = HelpController::buildResponse(
-                            409,
-                            'La solicitud ya esta cerrada',
-                            null
-                        );
                     }
                 }
                 else
