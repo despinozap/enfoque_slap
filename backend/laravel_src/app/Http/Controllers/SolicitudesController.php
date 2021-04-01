@@ -29,7 +29,7 @@ class SolicitudesController extends Controller
                 {
                     case 2: //Vendedor
                         {
-                            if($solicitudes = Solicitud::where('user_id', $user->id)) //Only belonging data
+                            if($solicitudes = Solicitud::where('user_id', $user->id)->get()) //Only belonging data
                             {
                                 foreach($solicitudes as $solicitud)
                                 {
@@ -545,72 +545,85 @@ class SolicitudesController extends Controller
                 {
                     if($solicitud = Solicitud::find($id))
                     {
-                        $solicitud->fill($request->all());
-        
-                        DB::beginTransaction();
-        
-                        if($solicitud->save())
+                        if(($user->role_id === 2) && ($solicitud->user_id !== $user->id))
                         {
-                            $success = true;
+                            //If Vendedor and solicitud doesn't belong
+                            $response = HelpController::buildResponse(
+                                405,
+                                'No tienes acceso a actualizar esta solicitud',
+                                null
+                            );
+                        }
+                        else
+                        {
+                            $solicitud->fill($request->all());
         
-                            $syncData = [];
-                            foreach($request->partes as $parte)
+                            DB::beginTransaction();
+            
+                            if($solicitud->save())
                             {
-                                if($p = Parte::where('nparte', $parte['nparte'])->where('marca_id', $request->marca_id)->first())
+                                $success = true;
+            
+                                $syncData = [];
+                                foreach($request->partes as $parte)
                                 {
-                                    $syncData[$p->id] =  array('cantidad' => $parte['cantidad']);
-                                }
-                                else
-                                {
-                                    $p = new Parte();
-                                    $p->nparte = $parte['nparte'];
-                                    $p->marca_id = $request->marca_id;
-                                    if($p->save())
+                                    if($p = Parte::where('nparte', $parte['nparte'])->where('marca_id', $request->marca_id)->first())
                                     {
                                         $syncData[$p->id] =  array('cantidad' => $parte['cantidad']);
                                     }
                                     else
                                     {
-                                        $success = false;
-            
-                                        $response = HelpController::buildResponse(
-                                            500,
-                                            'Error al crear la parte N:' . $parte['nparte'],
-                                            null
-                                        );
+                                        $p = new Parte();
+                                        $p->nparte = $parte['nparte'];
+                                        $p->marca_id = $request->marca_id;
+                                        if($p->save())
+                                        {
+                                            $syncData[$p->id] =  array('cantidad' => $parte['cantidad']);
+                                        }
+                                        else
+                                        {
+                                            $success = false;
                 
-                                        break;
+                                            $response = HelpController::buildResponse(
+                                                500,
+                                                'Error al crear la parte N:' . $parte['nparte'],
+                                                null
+                                            );
+                    
+                                            break;
+                                        }
                                     }
                                 }
-                            }
-        
-                            if($success === true)
-                            {
-                                $solicitud->partes()->sync($syncData);
+            
+                                if($success === true)
+                                {
+                                    $solicitud->partes()->sync($syncData);
 
-                                DB::commit();
-        
-                                $response = HelpController::buildResponse(
-                                    200,
-                                    'Solicitud editada',
-                                    null
-                                );
+                                    DB::commit();
+            
+                                    $response = HelpController::buildResponse(
+                                        200,
+                                        'Solicitud editada',
+                                        null
+                                    );
+                                }
+                                else
+                                {
+                                    DB::rollback();
+                                }
                             }
                             else
                             {
                                 DB::rollback();
+            
+                                $response = HelpController::buildResponse(
+                                    500,
+                                    'Error al editar la solicitud',
+                                    null
+                                );
                             }
                         }
-                        else
-                        {
-                            DB::rollback();
-        
-                            $response = HelpController::buildResponse(
-                                500,
-                                'Error al editar la solicitud',
-                                null
-                            );
-                        }
+                        
                     }
                     else
                     {
