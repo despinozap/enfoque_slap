@@ -13,6 +13,7 @@ use App\Models\Marca;
 use App\Models\Parte;
 use App\Models\Estadosolicitud;
 use App\Models\Solicitud;
+use App\Models\Estadocotizacion;
 
 class DatabaseSeeder extends Seeder
 {
@@ -67,6 +68,12 @@ class DatabaseSeeder extends Seeder
             'solicitudes complete',
             'solicitudes close',
             'solicitudes destroy',
+            //Cotizaciones
+            'cotizaciones index',
+            'cotizaciones show',
+            'cotizaciones update',
+            'cotizaciones close',
+            'cotizaciones destroy',
         ];
 
         //Add route permissions
@@ -128,6 +135,12 @@ class DatabaseSeeder extends Seeder
                 'solicitudes update',
                 'solicitudes complete',
                 'solicitudes destroy',
+                //Cotizaciones
+                'cotizaciones index',
+                'cotizaciones show',
+                'cotizaciones update',
+                'cotizaciones close',
+                'cotizaciones destroy',
             ];
 
             $routePermissionIds = [];
@@ -157,11 +170,16 @@ class DatabaseSeeder extends Seeder
                 'marcas index_full',
                 //Solicitudes
                 'solicitudes index',
-                'solicitudes store',
                 'solicitudes show',
                 'solicitudes update',
                 'solicitudes close',
                 'solicitudes destroy',
+                //Cotizaciones
+                'cotizaciones index',
+                'cotizaciones show',
+                'cotizaciones update',
+                'cotizaciones close',
+                'cotizaciones destroy',
             ];
 
             $routePermissionIds = [];
@@ -281,5 +299,18 @@ class DatabaseSeeder extends Seeder
                 'cantidad' => 850
             ]
         ]);
+
+        /*
+        *   Estado cotizaciones
+        */
+        $estadocotizacion = new Estadocotizacion();
+        $estadocotizacion->name = 'Pendiente';
+        $estadocotizacion->save();
+        $estadocotizacion = new Estadocotizacion();
+        $estadocotizacion->name = 'Aprobada';
+        $estadocotizacion->save();
+        $estadocotizacion = new Estadocotizacion();
+        $estadocotizacion->name = 'Rechazada';
+        $estadocotizacion->save();
     }
 }

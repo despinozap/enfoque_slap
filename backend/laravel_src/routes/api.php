@@ -11,6 +11,7 @@ use App\Http\Controllers\ClientesController;
 use App\Http\Controllers\FaenasController;
 use App\Http\Controllers\MarcasController;
 use App\Http\Controllers\SolicitudesController;
+use App\Http\Controllers\CotizacionesController;
 
 /*
 |--------------------------------------------------------------------------
@@ -91,4 +92,11 @@ Route::middleware(['auth:api', 'cors'])->group(function()
     Route::post('/solicitudes/complete/{id}', [SolicitudesController::class, 'complete']);
     Route::post('/solicitudes/close/{id}', [SolicitudesController::class, 'close']);
     Route::delete('/solicitudes/{id}', [SolicitudesController::class, 'destroy']);
+
+    // Cotizaciones
+    Route::get('/cotizaciones', [CotizacionesController::class, 'index']);
+    Route::get('/cotizaciones/{id}', [CotizacionesController::class, 'show']);
+    Route::put('/cotizaciones/{id}', [CotizacionesController::class, 'update']);
+    Route::post('/cotizaciones/close/{id}', [CotizacionesController::class, 'close']);
+    Route::delete('/cotizaciones/{id}', [CotizacionesController::class, 'destroy']);
 });
