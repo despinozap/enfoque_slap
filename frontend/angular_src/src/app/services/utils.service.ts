@@ -12,6 +12,10 @@ export class UtilsService {
 
   constructor() { }
 
+  public dateStringFormat(value: string): string {
+    return value.substr(0, 10);
+  }
+
   public moneyStringFormat(value: number): string {
     let sValue = value.toString();
     let dotIndex = sValue.indexOf('.');
@@ -185,6 +189,18 @@ export class UtilsService {
                 {
                   'title': 'Lista de solicitudes',
                   'route': 'solicitudes'
+                }
+              ]
+            },
+            {
+              'title': 'Cotizaciones',
+              'icon': 'bx-money',
+              'header': true,
+              'route': '',
+              'items': [
+                {
+                  'title': 'Lista de cotizaciones',
+                  'route': 'cotizaciones'
                 }
               ]
             }

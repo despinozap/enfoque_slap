@@ -42,6 +42,7 @@ import { SolicitudesDetailsAdministratorComponent } from './pages/solicitudes/de
 import { SolicitudesDetailsSellerComponent } from './pages/solicitudes/details/seller/seller.component';
 import { PartesListComponent } from './pages/partes/list/list.component';
 import { PartesEditComponent } from './pages/partes/edit/edit.component';
+import { CotizacionesListComponent } from './pages/cotizaciones/list/list.component';
 
 
 /* Routes */
@@ -76,6 +77,7 @@ const routes: Routes = [
       { path: 'solicitudes/details/seller/:id', component: SolicitudesDetailsSellerComponent },
       { path: 'partes', component: PartesListComponent },
       { path: 'partes/edit/:id', component: PartesEditComponent },
+      { path: 'cotizaciones', component: CotizacionesListComponent },
     ]
   },
   { path: '**', redirectTo: 'login', pathMatch: 'full' } //any other page, redirects to base path
@@ -111,6 +113,7 @@ const routes: Routes = [
     SolicitudesDetailsSellerComponent,
     PartesListComponent,
     PartesEditComponent,
+    CotizacionesListComponent,
   ],
   imports: [
     BrowserModule,

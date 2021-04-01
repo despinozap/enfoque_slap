@@ -1,25 +1,24 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { NotificationsService } from 'src/app/services/notifications.service';
-import { SolicitudesService } from 'src/app/services/solicitudes.service';
-import { Subject } from 'rxjs';
 import { DataTableDirective } from 'angular-datatables';
-import { UtilsService } from 'src/app/services/utils.service';
+import { Subject } from 'rxjs';
 import { AuthService } from 'src/app/services/auth.service';
+import { CotizacionesService } from 'src/app/services/cotizaciones.service';
+import { NotificationsService } from 'src/app/services/notifications.service';
+import { UtilsService } from 'src/app/services/utils.service';
 
 /* SweetAlert2 */
 const Swal = require('../../../../assets/vendors/sweetalert2/sweetalert2.all.min.js');
-
 
 @Component({
   selector: 'app-list',
   templateUrl: './list.component.html',
   styleUrls: ['./list.component.css']
 })
-export class SolicitudesListComponent implements OnInit {
+export class CotizacionesListComponent implements OnInit {
 
   @ViewChild(DataTableDirective, {static: false})
-  datatableElement_solicitudes: DataTableDirective = null as any;
+  datatableElement_cotizaciones: DataTableDirective = null as any;
   dtOptions: any = {
     pagingType: 'full_numbers',
     pageLength: 10,
@@ -46,23 +45,21 @@ export class SolicitudesListComponent implements OnInit {
   
   dtTrigger: Subject<any> = new Subject<any>();
 
-  solicitudes: any[] = [];
+  cotizaciones: any[] = [];
   loading: boolean = false;
   loggedUser: any = {
     role_id: -1,
   };
 
   constructor(
-    private router: Router,
     private _authService: AuthService,
-    private _solicitudesService: SolicitudesService,
+    private _cotizacionesService: CotizacionesService,
     private _utilsService: UtilsService
   ) { 
 
     this.loggedUser = {
       role_id: -1,
     };
-
   }
 
   ngOnInit(): void {
@@ -81,7 +78,7 @@ export class SolicitudesListComponent implements OnInit {
 
     //Prevents throwing an error for var status changed while initialization
     setTimeout(() => {
-      this.loadSolicitudesList();
+      this.loadCotizacionesList();
     },
     100);
   }
@@ -106,22 +103,22 @@ export class SolicitudesListComponent implements OnInit {
     });
   }
 
-  public loadSolicitudesList()
+  public loadCotizacionesList()
   {
     this.loading = true;
 
-    this.clearDataTable(this.datatableElement_solicitudes);
-    this._solicitudesService.getSolicitudes()
+    this.clearDataTable(this.datatableElement_cotizaciones);
+    this._cotizacionesService.getCotizaciones()
     .subscribe(
       //Success request
       (response: any) => {
 
-        this.solicitudes = response.data;
-        this.solicitudes.forEach((solicitud: any) => {
-          solicitud['checked'] = false;
+        this.cotizaciones = response.data;
+        this.cotizaciones.forEach((cotizacion: any) => {
+          cotizacion['checked'] = false;
         });
 
-        this.renderDataTable(this.datatableElement_solicitudes);
+        this.renderDataTable(this.datatableElement_cotizaciones);
 
         this.loggedUser = this._authService.getLoggedUser();
         this.loading = false;
@@ -154,7 +151,7 @@ export class SolicitudesListComponent implements OnInit {
           default: //Unhandled error
           {
             NotificationsService.showAlert(
-              'Error al intentar cargar la lista de solicitudes',
+              'Error al intentar cargar la lista de cotizaciones',
               NotificationsService.messageType.error
             )
         
@@ -162,17 +159,17 @@ export class SolicitudesListComponent implements OnInit {
           }
         }
 
-        this.solicitudes= null as any;
+        this.cotizaciones = null as any;
         this.loading = false;
       }
     );
   }
-
-  public removeSolicitud(solicitud: any)
+  
+  public removeCotizacion(cotizacion: any)
   {
     Swal.fire({
-      title: 'Eliminar solicitud',
-      text: "¿Realmente quieres eliminar la solicitud #" + solicitud.id + "?",
+      title: 'Eliminar cotizacion',
+      text: "¿Realmente quieres eliminar la cotizacion #" + cotizacion.id + "?",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
@@ -195,12 +192,12 @@ export class SolicitudesListComponent implements OnInit {
           }    
         }]);
 
-        this._solicitudesService.removeSolicitud(solicitud.id)
+        this._cotizacionesService.removeCotizacion(cotizacion.id)
         .subscribe(
           //Success request
           (response: any) => {
 
-            this.loadSolicitudesList();
+            this.loadCotizacionesList();
             NotificationsService.showToast(
               response.message,
               NotificationsService.messageType.success
@@ -255,7 +252,7 @@ export class SolicitudesListComponent implements OnInit {
               default: //Unhandled error
               {
                 NotificationsService.showAlert(
-                  'Error al intentar eliminar la solicitud',
+                  'Error al intentar eliminar la cotizacion',
                   NotificationsService.messageType.error
                 );
 
@@ -269,38 +266,48 @@ export class SolicitudesListComponent implements OnInit {
 
   }
 
-  public exportSolicitudesToExcel(): void {
+  public exportCotizacionesToExcel(): void {
 
     let data: any[] = [];
     //Push header
-    data.push(['Solicitud', 'Cliente', 'Faena', 'Marca', 'Ejecutivo', 'Partes', 'Estado']);
+    data.push(['Cotizacion', 'Fecha', 'Cliente', 'Marca', 'Ejecutivo', 'Partes', 'Dias', 'Monto (USD)', 'Estado']);
     //Add checked rows
-    this.solicitudes.forEach((s: any) => {
-      if(s.checked === true)
+    this.cotizaciones.forEach((c: any) => {
+      if(c.checked === true)
       {
         data.push([
-          s.id,
-          s.faena.cliente.name,
-          s.faena.name,
-          s.marca.name,
-          s.user.name,
-          s.partes_total,
-          s.estadosolicitud.name
+          c.id,
+          this._utilsService.dateStringFormat(c.updated_at),
+          c.solicitud.faena.cliente.name,
+          c.solicitud.marca.name,
+          c.solicitud.user.name,
+          c.partes_total,
+          c.dias,
+          c.monto,
+          c.estadocotizacion.name
         ]);
       }
     });
 
-    this._utilsService.exportTableToExcel(data, 'Solicitudes');
+    this._utilsService.exportTableToExcel(data, 'Cotizaciones');
   }
 
-  public checkSolicitudesList(evt: any): void {
-    this.solicitudes.forEach((solicitud: any) => {
-      solicitud.checked = evt.target.checked;
+  public dateStringFormat(value: string): string {
+    return this._utilsService.dateStringFormat(value);
+  }
+
+  public moneyStringFormat(value: number): string {
+    return this._utilsService.moneyStringFormat(value);
+  }
+
+  public checkCotizacionesList(evt: any): void {
+    this.cotizaciones.forEach((cotizacion: any) => {
+      cotizacion.checked = evt.target.checked;
     });
   }
 
-  public checkSolicitudItem(solicitud: any, evt: any): void {
-    solicitud.checked = evt.target.checked;
+  public checkCotizacionItem(cotizacion: any, evt: any): void {
+    cotizacion.checked = evt.target.checked;
   }
 
   public isCheckedItem(dataSource: any[]): boolean
@@ -317,10 +324,6 @@ export class SolicitudesListComponent implements OnInit {
     });
 
     return index >= 0 ? true : false;
-  }
-
-  public goTo_newSolicitud(): void {
-    this.router.navigate(['/panel/solicitudes/create']);
   }
 
 }
