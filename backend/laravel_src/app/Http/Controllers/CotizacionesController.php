@@ -21,7 +21,149 @@ class CotizacionesController extends Controller
      */
     public function index()
     {
-        //
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('cotizaciones index'))
+            {
+                switch($user->role->id)
+                {
+                    /*
+                    case 2: //Vendedor
+                    {
+                        if($solicitudes = Solicitud::where('user_id', $user->id)->get()) //Only belonging data
+                        {
+                            foreach($solicitudes as $solicitud)
+                            {
+                                $solicitud->makeHidden(['cliente_id', 'marca_id', 'user_id', 'estadosolicitud_id']);
+
+                                $totalPartes = 0;
+                                foreach($solicitud->partes as $parte)
+                                {   
+                                    $parte->makeHidden(['marca_id', 'created_at', 'updated_at']);
+                                    
+                                    $parte->pivot;
+                                    $totalPartes += $parte->pivot->cantidad;
+                                    $parte->pivot->makeHidden(['solicitud_id', 'parte_id']);
+
+                                    $parte->marca;
+                                    $parte->marca->makeHidden(['created_at', 'updated_at']);
+                                }
+
+                                $solicitud->partes_total;
+                                $solicitud->faena;
+                                $solicitud->faena->makeHidden(['created_at', 'updated_at']);
+                                $solicitud->faena->cliente;
+                                $solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
+                                $solicitud->marca;
+                                $solicitud->marca->makeHidden(['created_at', 'updated_at']);
+                                $solicitud->user;
+                                $solicitud->user->makeHidden(['email', 'phone', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
+                                $solicitud->estadosolicitud;
+                                $solicitud->estadosolicitud->makeHidden(['created_at', 'updated_at']);
+                            }
+
+                            $response = HelpController::buildResponse(
+                                200,
+                                null,
+                                $solicitudes
+                            );
+                        }
+                        else
+                        {
+                            $response = HelpController::buildResponse(
+                                500,
+                                'Error al obtener la lista de solicitudes',
+                                null
+                            );
+                        }
+
+                        break;
+                    }
+                    */
+
+                    default: //All others
+                    {
+                        if($cotizaciones = Cotizacion::all())
+                        {
+                            foreach($cotizaciones as $cotizacion)
+                            {
+                                $cotizacion->partes_total;
+                                $cotizacion->dias;
+                                $cotizacion->monto;
+
+                                $cotizacion->makeHidden([
+                                    'solicitud_id', 
+                                    'estadocotizacion_id', 
+                                    'created_at', 
+                                    //'updated_at'
+                                ]);
+
+                                foreach($cotizacion->partes as $parte)
+                                {   
+                                    $parte->makeHidden(['marca_id', 'created_at', 'updated_at']);
+                                    
+                                    $parte->pivot;
+                                    $parte->pivot->makeHidden(['cotizacion_id', 'parte_id']);
+
+                                    $parte->marca;
+                                    $parte->marca->makeHidden(['created_at', 'updated_at']);
+                                }
+
+                                $cotizacion->solicitud;
+                                $cotizacion->solicitud->makeHidden(['partes', 'faena_id', 'marca_id', 'user_id', 'estadosolicitud_id', 'marca_id', 'created_at', 'updated_at']);
+                                $cotizacion->solicitud->faena;
+                                $cotizacion->solicitud->faena->makeHidden(['cliente_id', 'created_at', 'updated_at']);
+                                $cotizacion->solicitud->faena->cliente;
+                                $cotizacion->solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
+                                $cotizacion->solicitud->marca;
+                                $cotizacion->solicitud->marca->makeHidden(['created_at', 'updated_at']);
+                                $cotizacion->solicitud->user;
+                                $cotizacion->solicitud->user->makeHidden(['email', 'phone', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
+
+                                $cotizacion->estadocotizacion;
+                                $cotizacion->estadocotizacion->makeHidden(['created_at', 'updated_at']);
+                            }
+
+                            $response = HelpController::buildResponse(
+                                200,
+                                null,
+                                $cotizaciones
+                            );
+                        }
+                        else
+                        {
+                            $response = HelpController::buildResponse(
+                                500,
+                                'Error al obtener la lista de cotizaciones',
+                                null
+                            );
+                        }
+
+                        break;
+                    }
+                }
+                
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a listar cotizaciones',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al obtener la lista de cotizaciones [!]' .$e,
+                null
+            );
+        }
+
+        return $response;
     }
 
     /**

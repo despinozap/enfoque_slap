@@ -307,6 +307,9 @@ class DatabaseSeeder extends Seeder
         $estadocotizacion->name = 'Pendiente';
         $estadocotizacion->save();
         $estadocotizacion = new Estadocotizacion();
+        $estadocotizacion->name = 'Vencida';
+        $estadocotizacion->save();
+        $estadocotizacion = new Estadocotizacion();
         $estadocotizacion->name = 'Aprobada';
         $estadocotizacion->save();
         $estadocotizacion = new Estadocotizacion();
