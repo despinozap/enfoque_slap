@@ -337,97 +337,110 @@ class SolicitudesController extends Controller
             {
                 if($solicitud = Solicitud::find($id))
                 {
-                    if($usdToClp = Parameter::all()->where('name', 'usd_to_clp')->first())
+                    if(($user->role_id === 2) && ($solicitud->user_id !== $user->id))
                     {
-                        $solicitud->makeHidden([
-                            'faena_id',
-                            'marca_id',
-                            'estadosolicitud_id',
-                            'created_at', 
-                            'updated_at'
-                        ]);
-    
-                        $solicitud->faena;
-                        $solicitud->faena->makeHidden(['created_at', 'updated_at']);
-    
-                        $solicitud->faena->cliente;
-                        $solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
-    
-                        $solicitud->faena->cliente;
-                        $solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
-                        
-                        $solicitud->marca;
-                        $solicitud->marca->makeHidden(['created_at', 'updated_at']);
-    
-                        $solicitud->estadosolicitud;
-                        $solicitud->estadosolicitud->makeHidden(['created_at', 'updated_at']);
-    
-                        $solicitud->partes;
-                        foreach($solicitud->partes as $parte)
-                        {
-                            $parte->makeHidden([
-                                'marca_id', 
-                                'created_at', 
-                                'updated_at'
-                            ]);
-    
-                            $parte->marca;
-                            $parte->marca->makeHidden(['created_at', 'updated_at']);
-    
-                            switch($user->role_id)
-                            {
-                                case 1: { // Administrador
-    
-                                    $parte->pivot->makeHidden([
-                                        'marca_id', 
-                                        'created_at', 
-                                        'updated_at'
-                                    ]);
-    
-                                    break;
-                                }
-    
-                                case 2: { // Vendedor
-    
-                                    if($parte->pivot->monto !== null)
-                                    {
-                                        $parte->pivot->monto = $parte->pivot->monto * $usdToClp->value;
-                                    }
-                                    
-                                    $parte->pivot->makeHidden([
-                                        'costo',
-                                        'margen',
-                                        'peso',
-                                        'flete',
-                                        'marca_id', 
-                                        'created_at', 
-                                        'updated_at'
-                                    ]);
-    
-                                    break;
-                                }
-    
-                                default: {
-    
-                                    break;
-                                }
-                            }
-                        }
-                        
+                        //If Vendedor and solicitud doesn't belong
                         $response = HelpController::buildResponse(
-                            200,
-                            null,
-                            $solicitud
+                            405,
+                            'No tienes acceso a visualizar esta solicitud',
+                            null
                         );
                     }
                     else
                     {
-                        $response = HelpController::buildResponse(
-                            500,
-                            'Error al obtener el valor USD para conversion',
-                            null
-                        );
+                        if($usdToClp = Parameter::all()->where('name', 'usd_to_clp')->first())
+                        {
+                            $solicitud->makeHidden([
+                                'faena_id',
+                                'marca_id',
+                                'estadosolicitud_id',
+                                'created_at', 
+                                'updated_at'
+                            ]);
+        
+                            $solicitud->faena;
+                            $solicitud->faena->makeHidden(['created_at', 'updated_at']);
+        
+                            $solicitud->faena->cliente;
+                            $solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
+        
+                            $solicitud->faena->cliente;
+                            $solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
+                            
+                            $solicitud->marca;
+                            $solicitud->marca->makeHidden(['created_at', 'updated_at']);
+        
+                            $solicitud->estadosolicitud;
+                            $solicitud->estadosolicitud->makeHidden(['created_at', 'updated_at']);
+        
+                            $solicitud->partes;
+                            foreach($solicitud->partes as $parte)
+                            {
+                                $parte->makeHidden([
+                                    'marca_id', 
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+        
+                                $parte->marca;
+                                $parte->marca->makeHidden(['created_at', 'updated_at']);
+        
+                                switch($user->role_id)
+                                {
+                                    case 1: { // Administrador
+        
+                                        $parte->pivot->makeHidden([
+                                            'marca_id', 
+                                            'created_at', 
+                                            'updated_at'
+                                        ]);
+        
+                                        break;
+                                    }
+        
+                                    case 2: { // Vendedor
+        
+                                        if($parte->pivot->monto !== null)
+                                        {
+                                            $parte->pivot->monto = $parte->pivot->monto * $usdToClp->value;
+                                        }
+                                        
+                                        $parte->pivot->makeHidden([
+                                            'costo',
+                                            'margen',
+                                            'peso',
+                                            'flete',
+                                            'marca_id', 
+                                            'created_at', 
+                                            'updated_at'
+                                        ]);
+        
+                                        break;
+                                    }
+        
+                                    default: {
+        
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            $response = HelpController::buildResponse(
+                                200,
+                                null,
+                                $solicitud
+                            );
+                        }
+                        else
+                        {
+                            $response = HelpController::buildResponse(
+                                500,
+                                'Error al obtener el valor USD para conversion',
+                                null
+                            );
+                        }
                     }
+                    
                 }   
                 else     
                 {
