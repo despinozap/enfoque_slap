@@ -6,6 +6,7 @@ import { Subject } from 'rxjs';
 import { DataTableDirective } from 'angular-datatables';
 import { UtilsService } from 'src/app/services/utils.service';
 import { AuthService } from 'src/app/services/auth.service';
+import { min } from 'rxjs/operators';
 
 /* SweetAlert2 */
 const Swal = require('../../../../assets/vendors/sweetalert2/sweetalert2.all.min.js');
@@ -115,8 +116,16 @@ export class SolicitudesListComponent implements OnInit {
     .subscribe(
       //Success request
       (response: any) => {
-        
-        this.solicitudes = response.data;
+
+        if(response.data.length !== undefined)
+        {
+          this.solicitudes = response.data;
+        }
+        else
+        {
+          this.solicitudes = [];
+        }
+
         this.solicitudes.forEach((solicitud: any) => {
           solicitud['checked'] = false;
         });
