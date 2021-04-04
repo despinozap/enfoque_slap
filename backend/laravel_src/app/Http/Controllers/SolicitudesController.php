@@ -363,10 +363,7 @@ class SolicitudesController extends Controller
                             $solicitud->faena->makeHidden(['created_at', 'updated_at']);
         
                             $solicitud->faena->cliente;
-                            $solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
-        
-                            $solicitud->faena->cliente;
-                            $solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
+                            $solicitud->faena->cliente->makeHidden(['cliente_id', 'created_at', 'updated_at']);
                             
                             $solicitud->marca;
                             $solicitud->marca->makeHidden(['created_at', 'updated_at']);
@@ -391,6 +388,8 @@ class SolicitudesController extends Controller
                                     case 1: { // Administrador
         
                                         $parte->pivot->makeHidden([
+                                            'solicitud_id',
+                                            'parte_id',
                                             'marca_id', 
                                             'created_at', 
                                             'updated_at'

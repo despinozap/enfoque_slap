@@ -195,7 +195,147 @@ class CotizacionesController extends Controller
      */
     public function show($id)
     {
-        //
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('cotizaciones show'))
+            {
+                if($cotizacion = Cotizacion::find($id))
+                {
+                    if(($user->role_id === 2) && ($cotizacion->solicitud->user_id !== $user->id))
+                    {
+                        //If Vendedor and cotizacion doesn't belong
+                        $response = HelpController::buildResponse(
+                            405,
+                            'No tienes acceso a visualizar esta cotizacion',
+                            null
+                        );
+                    }
+                    else
+                    {
+                        $cotizacion->dias;
+                        $cotizacion->makeHidden([
+                            'solicitud_id',
+                            'estadocotizacion_id',
+                            'created_at',
+                        ]);
+
+                        $cotizacion->solicitud->makeHidden([
+                            'partes',
+                            'faena_id',
+                            'marca_id',
+                            'user_id',
+                            'estadosolicitud_id',
+                            'created_at', 
+                            'updated_at'
+                        ]);
+    
+                        $cotizacion->solicitud->faena;
+                        $cotizacion->solicitud->faena->makeHidden(['cliente_id', 'created_at', 'updated_at']);
+    
+                        $cotizacion->solicitud->faena->cliente;
+                        $cotizacion->solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
+                        
+                        $cotizacion->solicitud->marca;
+                        $cotizacion->solicitud->marca->makeHidden(['created_at', 'updated_at']);
+    
+                        $cotizacion->estadocotizacion;
+                        $cotizacion->estadocotizacion->makeHidden(['created_at', 'updated_at']);
+    
+                        $cotizacion->partes;
+                        foreach($cotizacion->partes as $parte)
+                        {
+                            $parte->makeHidden([
+                                'marca_id', 
+                                'created_at', 
+                                'updated_at'
+                            ]);
+    
+                            $parte->marca;
+                            $parte->marca->makeHidden(['created_at', 'updated_at']);
+    
+                            switch($user->role_id)
+                            {
+                                
+                                case 1: { // Administrador
+    
+                                    $parte->pivot->makeHidden([
+                                        'cotizacion_id',
+                                        'parte_id',
+                                        'marca_id', 
+                                        'created_at', 
+                                        'updated_at'
+                                    ]);
+    
+                                    break;
+                                }
+                                
+                                case 2: { // Vendedor
+    
+                                    if($parte->pivot->monto !== null)
+                                    {
+                                        $parte->pivot->monto = $parte->pivot->monto * $cotizacion->usdvalue;
+                                    }
+                                    
+                                    $parte->pivot->makeHidden([
+                                        //'costo',
+                                        //'margen',
+                                        //'peso',
+                                        //'flete',
+                                        'cotizacion_id',
+                                        'parte_id',
+                                        'marca_id', 
+                                        'created_at', 
+                                        'updated_at'
+                                    ]);
+    
+                                    break;
+                                }
+    
+                                default: {
+
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        $response = HelpController::buildResponse(
+                            200,
+                            null,
+                            $cotizacion
+                        );
+                    }
+                    
+                }   
+                else     
+                {
+                    $response = HelpController::buildResponse(
+                        400,
+                        'La cotizacion no existe',
+                        null
+                    );
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a visualizar cotizaciones',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al obtener la cotizacion [!]',
+                null
+            );
+        }
+        
+
+        return $response;
     }
 
     /**
