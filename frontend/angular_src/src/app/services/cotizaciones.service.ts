@@ -10,6 +10,13 @@ export class CotizacionesService {
 
   constructor(private httpClient: HttpClient) { }
 
+  public getCotizacion(cotizacion_id: number): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/cotizaciones/${cotizacion_id}`;
+    
+    return this.httpClient.get(endpoint);
+  }
+
   public getCotizaciones(): Observable<any>
   {
     let endpoint: string = `${environment.ENDPOINT_BASE}/cotizaciones`;

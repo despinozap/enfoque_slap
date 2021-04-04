@@ -1,5 +1,10 @@
 /* You can add global styles to this file, and also import other style files */
 
+/*  Display forms */
+label.control-label {
+  font-weight: 700;
+}
+
 /*  DataTables */
 .dataTables_length .custom-select {
   padding: 4px 28px 4px 8px !important;

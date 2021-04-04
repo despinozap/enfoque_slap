@@ -13,7 +13,7 @@ export class UtilsService {
   constructor() { }
 
   public dateStringFormat(value: string): string {
-    return value.substr(0, 10);
+    return (value !== null) ? value.substr(0, 10) : '';
   }
 
   public moneyStringFormat(value: number): string {
