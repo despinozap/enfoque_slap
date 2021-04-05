@@ -195,14 +195,8 @@ export class UtilsService {
             {
               'title': 'Cotizaciones',
               'icon': 'bx-money',
-              'header': true,
-              'route': '',
-              'items': [
-                {
-                  'title': 'Lista de cotizaciones',
-                  'route': 'cotizaciones'
-                }
-              ]
+              'header': false,
+              'route': '/panel/cotizaciones'
             }
           ]
         };
@@ -230,6 +224,18 @@ export class UtilsService {
                 {
                   'title': 'Lista de solicitudes',
                   'route': 'solicitudes'
+                }
+              ]
+            },
+            {
+              'title': 'Cotizaciones',
+              'icon': 'bx-money',
+              'header': true,
+              'route': '',
+              'items': [
+                {
+                  'title': 'Lista de cotizaciones',
+                  'route': 'cotizaciones'
                 }
               ]
             }

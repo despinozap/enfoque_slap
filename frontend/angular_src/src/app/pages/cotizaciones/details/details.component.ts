@@ -202,11 +202,7 @@ export class CotizacionesDetailsComponent implements OnInit {
         'Cantidad',
         'N parte',
         'Descripcion',
-        'Costo (USD)',
-        'Margen (%)',
         'Tiempo entrega (dias)',
-        'Peso (kg)',
-        'Valor flete (USD)',
         'Monto (USD)',
         'Backorder (SI = 1, NO = 0)'
       ]
@@ -218,11 +214,7 @@ export class CotizacionesDetailsComponent implements OnInit {
         p.cantidad,
         p.nparte,
         p.descripcion,
-        p.costo,
-        p.margen,
         p.tiempoentrega,
-        p.peso,
-        p.flete,
         p.monto,
         (p.backorder === true) ? '1' : '0',
       ]);

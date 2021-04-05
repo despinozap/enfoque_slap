@@ -72,10 +72,6 @@
                 <th>Cantidad</th>
                 <th>N° Parte</th>
                 <th>Descripcion</th>
-                <!-- <th>Costo</th> -->
-                <!-- <th>Margen</th> -->
-                <!-- <th>Peso</th> -->
-                <!-- <th>Flete</th> -->
                 <th>Tiempo de entrega</th>
                 <th>Monto</th>
               </tr>
@@ -85,10 +81,6 @@
                 <td align="right">{{ parte.cantidad !== null ? parte.cantidad : "" }}</td>
                 <td align="left"><i class="bx bx-timer icon-table" *ngIf="(parte.backorder === true)"></i>{{ parte.nparte !== null ? parte.nparte : "" }}</td>
                 <td align="right">{{ parte.descripcion !== null ? parte.descripcion : "" }}</td>
-                <!-- <td align="right">{{ parte.costo !== null ? "$" + moneyStringFormat(parte.costo) : "" }}</td> -->
-                <!-- <td align="right">{{ parte.margen !== null ? parte.margen + "%" : "" }}</td> -->
-                <!-- <td align="right">{{ parte.peso !== null ? parte.peso + " kg" : "" }}</td> -->
-                <!-- <td align="right">{{ parte.flete !== null ? "$" + moneyStringFormat(parte.flete) : "" }}</td> -->
                 <td align="right">{{ parte.tiempoentrega !== null ? parte.tiempoentrega + " dias" : ""
                   }}</td>
                 <td align="right">{{ parte.monto !== null ? "$" + moneyStringFormat(parte.monto) : "" }}</td>
