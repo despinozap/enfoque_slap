@@ -158,7 +158,7 @@ class CotizacionesController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al obtener la lista de cotizaciones [!]' .$e,
+                'Error al obtener la lista de cotizaciones [!]',
                 null
             );
         }
