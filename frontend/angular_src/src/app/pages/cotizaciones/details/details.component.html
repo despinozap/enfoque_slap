@@ -55,7 +55,7 @@
             <div class="form-group">
               <label class="control-label">Creada en</label>
               <br>
-              <label>{{ dateStringFormat(cotizacion.updated_at) + ((cotizacion.dias >= 0) ? ((cotizacion.dias === 1) ? ' (hace 1 dia)' : ((cotizacion.dias > 0) ? ' (hace ' + cotizacion.dias + ' dias)' : ' (hoy)')) : '') }}</label>
+              <label>{{ dateStringFormat(cotizacion.updated_at) + ((cotizacion.dias >= 0) ? ((cotizacion.dias == 1) ? ' (hace 1 dia)' : ((cotizacion.dias > 1) ? ' (hace ' + cotizacion.dias + ' dias)' : ' (hoy)')) : '') }}</label>
             </div>
           </div>
         </div>
