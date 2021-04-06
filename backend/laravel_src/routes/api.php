@@ -95,8 +95,11 @@ Route::middleware(['auth:api', 'cors'])->group(function()
 
     // Cotizaciones
     Route::get('/cotizaciones', [CotizacionesController::class, 'index']);
+    Route::get('/motivosrechazo/all', [CotizacionesController::class, 'indexMotivosRechazoFull']);
     Route::get('/cotizaciones/{id}', [CotizacionesController::class, 'show']);
     Route::put('/cotizaciones/{id}', [CotizacionesController::class, 'update']);
+    Route::post('/cotizaciones/approve/{id}', [CotizacionesController::class, 'approve']);
+    Route::post('/cotizaciones/reject/{id}', [CotizacionesController::class, 'reject']);
     Route::post('/cotizaciones/close/{id}', [CotizacionesController::class, 'close']);
     Route::delete('/cotizaciones/{id}', [CotizacionesController::class, 'destroy']);
 });

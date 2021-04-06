@@ -11,6 +11,7 @@ use App\Models\Parameter;
 use App\Models\Solicitud;
 use App\Models\Parte;
 use App\Models\Cotizacion;
+use App\Models\Motivorechazo;
 
 class CotizacionesController extends Controller
 {
@@ -26,124 +27,68 @@ class CotizacionesController extends Controller
             $user = Auth::user();
             if($user->role->hasRoutepermission('cotizaciones index'))
             {
-                switch($user->role->id)
-                {
-                    /*
-                    case 2: //Vendedor
-                    {
-                        if($solicitudes = Solicitud::where('user_id', $user->id)->get()) //Only belonging data
-                        {
-                            foreach($solicitudes as $solicitud)
-                            {
-                                $solicitud->makeHidden(['cliente_id', 'marca_id', 'user_id', 'estadosolicitud_id']);
-
-                                $totalPartes = 0;
-                                foreach($solicitud->partes as $parte)
-                                {   
-                                    $parte->makeHidden(['marca_id', 'created_at', 'updated_at']);
-                                    
-                                    $parte->pivot;
-                                    $totalPartes += $parte->pivot->cantidad;
-                                    $parte->pivot->makeHidden(['solicitud_id', 'parte_id']);
-
-                                    $parte->marca;
-                                    $parte->marca->makeHidden(['created_at', 'updated_at']);
-                                }
-
-                                $solicitud->partes_total;
-                                $solicitud->faena;
-                                $solicitud->faena->makeHidden(['created_at', 'updated_at']);
-                                $solicitud->faena->cliente;
-                                $solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
-                                $solicitud->marca;
-                                $solicitud->marca->makeHidden(['created_at', 'updated_at']);
-                                $solicitud->user;
-                                $solicitud->user->makeHidden(['email', 'phone', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
-                                $solicitud->estadosolicitud;
-                                $solicitud->estadosolicitud->makeHidden(['created_at', 'updated_at']);
-                            }
-
-                            $response = HelpController::buildResponse(
-                                200,
-                                null,
-                                $solicitudes
-                            );
-                        }
-                        else
-                        {
-                            $response = HelpController::buildResponse(
-                                500,
-                                'Error al obtener la lista de solicitudes',
-                                null
-                            );
-                        }
-
-                        break;
-                    }
-                    */
-
-                    default: //All others
-                    {
-                        if($cotizaciones = Cotizacion::all())
-                        {
-                            foreach($cotizaciones as $cotizacion)
-                            {
-                                $cotizacion->partes_total;
-                                $cotizacion->dias;
-                                $cotizacion->monto;
-
-                                $cotizacion->makeHidden([
-                                    'solicitud_id', 
-                                    'estadocotizacion_id', 
-                                    'created_at', 
-                                    //'updated_at'
-                                ]);
-
-                                foreach($cotizacion->partes as $parte)
-                                {   
-                                    $parte->makeHidden(['marca_id', 'created_at', 'updated_at']);
-                                    
-                                    $parte->pivot;
-                                    $parte->pivot->makeHidden(['cotizacion_id', 'parte_id']);
-
-                                    $parte->marca;
-                                    $parte->marca->makeHidden(['created_at', 'updated_at']);
-                                }
-
-                                $cotizacion->solicitud;
-                                $cotizacion->solicitud->makeHidden(['partes', 'faena_id', 'marca_id', 'user_id', 'estadosolicitud_id', 'marca_id', 'created_at', 'updated_at']);
-                                $cotizacion->solicitud->faena;
-                                $cotizacion->solicitud->faena->makeHidden(['cliente_id', 'created_at', 'updated_at']);
-                                $cotizacion->solicitud->faena->cliente;
-                                $cotizacion->solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
-                                $cotizacion->solicitud->marca;
-                                $cotizacion->solicitud->marca->makeHidden(['created_at', 'updated_at']);
-                                $cotizacion->solicitud->user;
-                                $cotizacion->solicitud->user->makeHidden(['email', 'phone', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
-
-                                $cotizacion->estadocotizacion;
-                                $cotizacion->estadocotizacion->makeHidden(['created_at', 'updated_at']);
-                            }
-
-                            $response = HelpController::buildResponse(
-                                200,
-                                null,
-                                $cotizaciones
-                            );
-                        }
-                        else
-                        {
-                            $response = HelpController::buildResponse(
-                                500,
-                                'Error al obtener la lista de cotizaciones',
-                                null
-                            );
-                        }
-
-                        break;
-                    }
-                }
                 
+                if($cotizaciones = ($user->role->id === 2) ? // By role
+                    // If Vendedor filters only the belonging data
+                    Cotizacion::select('cotizaciones.solicitud_id')->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')->where('solicitudes.user_id', '=', $user->id)->get() :
+                    // For any other role
+                    Cotizacion::all()
+                )
+                {
+                    foreach($cotizaciones as $cotizacion)
+                    {
+                        $cotizacion->partes_total;
+                        $cotizacion->dias;
+                        $cotizacion->monto;
+
+                        $cotizacion->makeHidden([
+                            'solicitud_id', 
+                            'estadocotizacion_id', 
+                            'created_at', 
+                            //'updated_at'
+                        ]);
+
+                        foreach($cotizacion->partes as $parte)
+                        {   
+                            $parte->makeHidden(['marca_id', 'created_at', 'updated_at']);
+                            
+                            $parte->pivot;
+                            $parte->pivot->makeHidden(['cotizacion_id', 'parte_id']);
+
+                            $parte->marca;
+                            $parte->marca->makeHidden(['created_at', 'updated_at']);
+                        }
+
+                        $cotizacion->solicitud;
+                        $cotizacion->solicitud->makeHidden(['partes', 'faena_id', 'marca_id', 'user_id', 'estadosolicitud_id', 'marca_id', 'created_at', 'updated_at']);
+                        $cotizacion->solicitud->faena;
+                        $cotizacion->solicitud->faena->makeHidden(['cliente_id', 'created_at', 'updated_at']);
+                        $cotizacion->solicitud->faena->cliente;
+                        $cotizacion->solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
+                        $cotizacion->solicitud->marca;
+                        $cotizacion->solicitud->marca->makeHidden(['created_at', 'updated_at']);
+                        $cotizacion->solicitud->user;
+                        $cotizacion->solicitud->user->makeHidden(['email', 'phone', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
+
+                        $cotizacion->estadocotizacion;
+                        $cotizacion->estadocotizacion->makeHidden(['created_at', 'updated_at']);
+                    }
+
+                    $response = HelpController::buildResponse(
+                        200,
+                        null,
+                        $cotizaciones
+                    );
+                }
+                else
+                {
+                    $response = HelpController::buildResponse(
+                        500,
+                        'Error al obtener la lista de cotizaciones',
+                        null
+                    );
+                }
+
             }
             else
             {
@@ -159,6 +104,59 @@ class CotizacionesController extends Controller
             $response = HelpController::buildResponse(
                 500,
                 'Error al obtener la lista de cotizaciones [!]',
+                null
+            );
+        }
+
+        return $response;
+    }
+
+    public function indexMotivosRechazoFull()
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('cotizaciones show'))
+            {
+                if($motivosRechazo = Motivorechazo::all())
+                {
+                    foreach($motivosRechazo as $motivoRechazo)
+                    {
+                        $motivoRechazo->makeHidden([ 
+                            'created_at', 
+                            'updated_at'
+                        ]);
+                    }
+
+                    $response = HelpController::buildResponse(
+                        200,
+                        null,
+                        $motivosRechazo
+                    );
+                }
+                else
+                {
+                    $response = HelpController::buildResponse(
+                        500,
+                        'Error al obtener la lista de motivos de rechazo',
+                        null
+                    );
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a listar motivos de rechazo',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al obtener la lista de motivos de rechazo [!]',
                 null
             );
         }
@@ -241,6 +239,12 @@ class CotizacionesController extends Controller
     
                         $cotizacion->estadocotizacion;
                         $cotizacion->estadocotizacion->makeHidden(['created_at', 'updated_at']);
+
+                        $cotizacion->motivorechazo;
+                        if($cotizacion->motivorechazo !== null)
+                        {
+                            $cotizacion->motivorechazo->makeHidden(['created_at', 'updated_at']);
+                        }
     
                         $cotizacion->partes;
                         foreach($cotizacion->partes as $parte)
@@ -359,6 +363,210 @@ class CotizacionesController extends Controller
     public function update(Request $request, $id)
     {
         //
+    }
+
+    public function approve(Request $request, $id)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('cotizaciones approve'))
+            {
+                $validatorInput = $request->only(
+                    'occliente'
+                );
+                
+                $validatorRules = [
+                    'occliente' => 'required|min:1',
+                ];
+        
+                $validatorMessages = [
+                    'occliente.required' => 'Debes ingresar el numero de OC cliente',
+                    'occliente.min' => 'El numero de OC cliente debe tener al menos un digito',
+                ];
+        
+                $validator = Validator::make(
+                    $validatorInput,
+                    $validatorRules,
+                    $validatorMessages
+                );
+        
+                if ($validator->fails()) 
+                {
+                    $response = HelpController::buildResponse(
+                        400,
+                        $validator->errors(),
+                        null
+                    );
+                }
+                else        
+                {
+                    if($cotizacion = Cotizacion::find($id))
+                    {
+                        if(($user->role_id === 2) && ($cotizacion->solicitud->user_id !== $user->id))
+                        {
+                            //If Vendedor and solicitud doesn't belong
+                            $response = HelpController::buildResponse(
+                                405,
+                                'No tienes acceso a aprobar esta cotizacion',
+                                null
+                            );
+                        }
+                        else
+                        {
+                            $cotizacion->estadocotizacion_id = 3; // Aprobada
+                            //SAVE FILE HERE
+                            
+                            if($cotizacion->save())
+                            {
+                                $response = HelpController::buildResponse(
+                                    200,
+                                    'Cotizacion aprobada',
+                                    null
+                                );
+                            }
+                            else
+                            {
+                                $response = HelpController::buildResponse(
+                                    500,
+                                    'Error al aprobar la cotizacion',
+                                    null
+                                );   
+                            }
+                        }
+                        
+                    }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            400,
+                            'La cotizacion no existe',
+                            null
+                        );
+                    }
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a aprobar cotizaciones',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al aprobar la cotizacion [!]',
+                null
+            );
+        }
+        
+        return $response;
+    }
+
+    public function reject(Request $request, $id)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('cotizaciones reject'))
+            {
+                $validatorInput = $request->only(
+                    'motivorechazo_id'
+                );
+                
+                $validatorRules = [
+                    'motivorechazo_id' => 'required|exists:motivosrechazo,id',
+                ];
+        
+                $validatorMessages = [
+                    'motivorechazo_id.required' => 'Debes seleccionar el motivo de rechazo',
+                    'motivorechazo_id.exists' => 'El motivo de rechazo no existe',
+                ];
+        
+                $validator = Validator::make(
+                    $validatorInput,
+                    $validatorRules,
+                    $validatorMessages
+                );
+        
+                if ($validator->fails()) 
+                {
+                    $response = HelpController::buildResponse(
+                        400,
+                        $validator->errors(),
+                        null
+                    );
+                }
+                else        
+                {
+                    if($cotizacion = Cotizacion::find($id))
+                    {
+                        if(($user->role_id === 2) && ($cotizacion->solicitud->user_id !== $user->id))
+                        {
+                            //If Vendedor and solicitud doesn't belong
+                            $response = HelpController::buildResponse(
+                                405,
+                                'No tienes acceso a rechazar esta cotizacion',
+                                null
+                            );
+                        }
+                        else
+                        {
+                            $cotizacion->estadocotizacion_id = 4; // Rechazada
+                            $cotizacion->motivorechazo_id = $request->motivorechazo_id;
+                            
+                            if($cotizacion->save())
+                            {
+                                $response = HelpController::buildResponse(
+                                    200,
+                                    'Cotizacion rechazada',
+                                    null
+                                );
+                            }
+                            else
+                            {
+                                $response = HelpController::buildResponse(
+                                    500,
+                                    'Error al rechazar la cotizacion',
+                                    null
+                                );   
+                            }
+                        }
+                        
+                    }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            400,
+                            'La cotizacion no existe',
+                            null
+                        );
+                    }
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a rechazar cotizaciones',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al rechazar la cotizacion [!]',
+                null
+            );
+        }
+        
+        return $response;
     }
 
     /**

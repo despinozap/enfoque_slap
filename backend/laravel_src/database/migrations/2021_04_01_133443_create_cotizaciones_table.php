@@ -17,12 +17,14 @@ class CreateCotizacionesTable extends Migration
             $table->id();
             $table->bigInteger('solicitud_id')->unsigned();
             $table->bigInteger('estadocotizacion_id')->unsigned();
+            $table->bigInteger('motivorechazo_id')->unsigned()->nullable()->default(null);
             $table->float('usdvalue');
 
             $table->timestamps();
 
             $table->foreign('solicitud_id')->references('id')->on('solicitudes')->onDelete('cascade');
             $table->foreign('estadocotizacion_id')->references('id')->on('estadocotizaciones')->onDelete('cascade');
+            $table->foreign('motivorechazo_id')->references('id')->on('motivosrechazo')->onDelete('cascade');
         });
     }
 

@@ -14,6 +14,7 @@ use App\Models\Parte;
 use App\Models\Estadosolicitud;
 use App\Models\Solicitud;
 use App\Models\Estadocotizacion;
+use App\Models\Motivorechazo;
 
 class DatabaseSeeder extends Seeder
 {
@@ -71,7 +72,8 @@ class DatabaseSeeder extends Seeder
             //Cotizaciones
             'cotizaciones index',
             'cotizaciones show',
-            'cotizaciones update',
+            'cotizaciones approve',
+            'cotizaciones reject',
             'cotizaciones close',
             'cotizaciones destroy',
         ];
@@ -138,7 +140,8 @@ class DatabaseSeeder extends Seeder
                 //Cotizaciones
                 'cotizaciones index',
                 'cotizaciones show',
-                'cotizaciones update',
+                'cotizaciones approve',
+                'cotizaciones reject',
                 'cotizaciones close',
                 'cotizaciones destroy',
             ];
@@ -177,7 +180,8 @@ class DatabaseSeeder extends Seeder
                 //Cotizaciones
                 'cotizaciones index',
                 'cotizaciones show',
-                'cotizaciones update',
+                'cotizaciones approve',
+                'cotizaciones reject',
                 'cotizaciones close',
                 'cotizaciones destroy',
             ];
@@ -286,7 +290,7 @@ class DatabaseSeeder extends Seeder
         $solicitud = new Solicitud();
         $solicitud->faena_id = 1;
         $solicitud->marca_id = 1;
-        $solicitud->user_id = 1;
+        $solicitud->user_id = 2;
         $solicitud->estadosolicitud_id = 1;
         $solicitud->comentario = 'Testing comment for SolicitudTest01';
         $solicitud->save();
@@ -315,5 +319,18 @@ class DatabaseSeeder extends Seeder
         $estadocotizacion = new Estadocotizacion();
         $estadocotizacion->name = 'Rechazada';
         $estadocotizacion->save();
+
+        /*
+        *   Motivos de rechazo (cotizaciones)
+        */
+        $motivorechazo = new Motivorechazo();
+        $motivorechazo->name = 'Precio';
+        $motivorechazo->save();
+        $motivorechazo = new Motivorechazo();
+        $motivorechazo->name = 'Gestion';
+        $motivorechazo->save();
+        $motivorechazo = new Motivorechazo();
+        $motivorechazo->name = 'Tiempo';
+        $motivorechazo->save();
     }
 }

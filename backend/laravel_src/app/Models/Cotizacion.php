@@ -13,7 +13,7 @@ class Cotizacion extends Model
 
     protected $table = 'cotizaciones';
     protected $fillable = [
-        'solicitud_id', 'estadocotizacion_id', 'usdvalue',
+        'solicitud_id', 'estadocotizacion_id', 'motivorechazo_id', 'usdvalue',
     ];
     public $appends = ['partes_total', 'dias', 'monto'];
 
@@ -55,6 +55,11 @@ class Cotizacion extends Model
     public function estadocotizacion()
     {
         return $this->belongsTo(Estadocotizacion::class);
+    }
+
+    public function motivorechazo()
+    {
+        return $this->belongsTo(Motivorechazo::class);
     }
 
     public function partes()
