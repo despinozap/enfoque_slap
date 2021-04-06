@@ -1,4 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
@@ -6,6 +7,7 @@ import { CotizacionesService } from 'src/app/services/cotizaciones.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { SolicitudesService } from 'src/app/services/solicitudes.service';
 import { UtilsService } from 'src/app/services/utils.service';
+import { threadId } from 'worker_threads';
 
 @Component({
   selector: 'app-details',
@@ -37,13 +39,43 @@ export class CotizacionesDetailsComponent implements OnInit {
     marca_name: null,
     estadocotizacion_id: -1,
     estadocotizacion_name: null,
+    motivorechazo_name: null
   };
 
+  motivosRechazo: Array<any> = null as any;
   partes: any[] = [];
   loading: boolean = false;
   responseErrors: any = [];
 
+  estadoComercialForm: FormGroup = new FormGroup({
+    decision: new FormControl('')
+  });
+
+  estadoComercialAprobarForm: FormGroup = new FormGroup({
+    occliente: new FormControl('', [Validators.required, Validators.minLength(1)])
+  });
+
+  estadoComercialRechazarForm: FormGroup = new FormGroup({
+    motivorechazo_id: new FormControl('', [Validators.required]),
+  });
+
   private sub: any;
+
+  /*
+  *   Displayed form:
+  * 
+  *       0: Partes list
+  *       1: Estado comercial
+  */
+  DISPLAYING_FORM: number = 0;
+
+  /*
+  *   Estado comercial form:
+  * 
+  *       0: Aprobar
+  *       1: Rechazar
+  */
+  ESTADOCOMERCIAL_FORM: number = -1;
 
   constructor(
     private router: Router,
@@ -94,6 +126,8 @@ export class CotizacionesDetailsComponent implements OnInit {
       this.cotizacion.marca_name = cotizacionData.solicitud.marca.name;
       this.cotizacion.estadocotizacion_id = cotizacionData.estadocotizacion.id,
       this.cotizacion.estadocotizacion_name = cotizacionData.estadocotizacion.name;
+      // If Rechazada, then store Motivo rechazo name
+      this.cotizacion.motivorechazo_name = ((this.cotizacion.estadocotizacion_id === 4) && (cotizacionData.motivorechazo !== null)) ? cotizacionData.motivorechazo.name : null
 
       this.partes = [];
       cotizacionData.partes.forEach((p: any) => {
@@ -128,7 +162,6 @@ export class CotizacionesDetailsComponent implements OnInit {
   public loadCotizacion(): void {
     
     this.loading = true;
-
     this._cotizacionesService.getCotizacion(this.cotizacion.id)
     .subscribe(
       //Success request
@@ -193,6 +226,64 @@ export class CotizacionesDetailsComponent implements OnInit {
     );
   }
 
+  private loadMotivosRechazo() {
+    this.estadoComercialRechazarForm.disable();
+    this.loading = true;
+
+    this._cotizacionesService.getMotivosRechazoFull()
+      .subscribe(
+        //Success request
+        (response: any) => {
+          this.loading = false;
+
+          this.motivosRechazo = <Array<any>>(response.data);
+
+          this.estadoComercialRechazarForm.enable();
+        },
+        //Error request
+        (errorResponse: any) => {
+
+          switch (errorResponse.status) 
+          {
+            case 405: //Permission denied
+            {
+              NotificationsService.showToast(
+                errorResponse.error.message,
+                NotificationsService.messageType.error
+              );
+
+              break;
+            }
+
+            case 500: //Internal server
+              {
+                NotificationsService.showToast(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+            default: //Unhandled error
+              {
+                NotificationsService.showToast(
+                  'Error al cargar la lista de motivos de rechazo',
+                  NotificationsService.messageType.error
+                )
+
+                break;
+              }
+          }
+
+          this.motivosRechazo = null as any;
+          this.loading = false;
+
+          this.goTo_partesList();
+        }
+      );
+  }
+
   public exportPartesToExcel(): void {
 
     let data: any[] = [];
@@ -229,6 +320,229 @@ export class CotizacionesDetailsComponent implements OnInit {
 
   public dateStringFormat(value: string): string {
     return this._utilsService.dateStringFormat(value);
+  }
+
+  public estadoComercial_decisionChanged(): void {
+    let value = this.estadoComercialForm.controls.decision.value;
+
+    if(value !== '')
+    {
+      switch(parseInt(value))
+      {
+        case 0:
+          {
+            this.goTo_estadoComercial_aprobar();
+            
+            break;
+          }
+
+        case 1:
+          {
+            this.goTo_estadoComercial_rechazar();
+
+            break;
+          }
+
+        default: 
+        {
+
+          break;
+        }
+      }
+    }
+    else
+    {
+      this.ESTADOCOMERCIAL_FORM = -1;
+    }
+    
+  }
+
+  public submitFormEstadoComercial_aprobar(): void {
+    this.loading = true;
+    this.responseErrors = [];
+
+    this.estadoComercialForm.disable();
+    this.estadoComercialAprobarForm.disable();
+
+    let data: any = {
+      occliente: this.estadoComercialAprobarForm.value.occliente
+    };
+    
+    this._cotizacionesService.approveCotizacion(this.cotizacion.id, data)
+      .subscribe(
+        //Success request
+        (response: any) => {
+
+          NotificationsService.showToast(
+            response.message,
+            NotificationsService.messageType.success
+          );
+
+          this.goTo_cotizacionesList();
+        },
+        //Error request
+        (errorResponse: any) => {
+          switch (errorResponse.status) 
+          {
+            case 400: //Invalid request parameters
+              {
+                this.responseErrors = errorResponse.error.message;
+
+                break;
+              }
+
+              case 405: //Permission denied
+                {
+                  NotificationsService.showAlert(
+                    errorResponse.error.message,
+                    NotificationsService.messageType.error
+                  );
+
+                  break;
+                }
+
+            case 422: //Invalid request parameters
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+            case 500: //Internal server
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+            default: //Unhandled error
+              {
+                NotificationsService.showAlert(
+                  'Error al intentar aprobar la cotizacion',
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+          }
+
+          this.estadoComercialForm.enable();
+          this.estadoComercialAprobarForm.enable();
+          this.loading = false;
+        }
+      );
+  }
+
+  public submitFormEstadoComercial_rechazar(): void {
+    this.loading = true;
+    this.responseErrors = [];
+
+    this.estadoComercialForm.disable();
+    this.estadoComercialRechazarForm.disable();
+
+    let data: any = {
+      motivorechazo_id: this.estadoComercialRechazarForm.value.motivorechazo_id
+    };
+    
+    this._cotizacionesService.rejectCotizacion(this.cotizacion.id, data)
+      .subscribe(
+        //Success request
+        (response: any) => {
+
+          NotificationsService.showToast(
+            response.message,
+            NotificationsService.messageType.success
+          );
+
+          this.goTo_cotizacionesList();
+        },
+        //Error request
+        (errorResponse: any) => {
+          switch (errorResponse.status) 
+          {
+            case 400: //Invalid request parameters
+              {
+                this.responseErrors = errorResponse.error.message;
+
+                break;
+              }
+
+              case 405: //Permission denied
+                {
+                  NotificationsService.showAlert(
+                    errorResponse.error.message,
+                    NotificationsService.messageType.error
+                  );
+
+                  break;
+                }
+
+            case 422: //Invalid request parameters
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+            case 500: //Internal server
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+            default: //Unhandled error
+              {
+                NotificationsService.showAlert(
+                  'Error al intentar rechazar la cotizacion',
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+          }
+
+          this.estadoComercialForm.enable();
+          this.estadoComercialRechazarForm.enable();
+          this.loading = false;
+        }
+      );
+  }
+
+  public goTo_estadoComercial(): void {
+    this.estadoComercialForm.controls.decision.setValue(-1);
+
+    this.ESTADOCOMERCIAL_FORM = -1;
+    this.DISPLAYING_FORM = 1;
+  }
+
+  public goTo_estadoComercial_aprobar(): void {
+    this.estadoComercialAprobarForm.reset();
+    this.ESTADOCOMERCIAL_FORM = 0;
+  }
+
+  public goTo_estadoComercial_rechazar(): void {
+    this.motivosRechazo = null as any;
+    this.loadMotivosRechazo();
+
+    this.ESTADOCOMERCIAL_FORM = 1;
+  }
+
+  public goTo_partesList(): void {
+    this.ESTADOCOMERCIAL_FORM = -1;
+    this.DISPLAYING_FORM = 0;
   }
 
   public goTo_cotizacionesList(): void {

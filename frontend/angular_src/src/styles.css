@@ -1,6 +1,11 @@
 /* You can add global styles to this file, and also import other style files */
 
 /*  Display forms */
+.badge {
+  font-size: 90%;
+  margin-bottom: 20px;
+}
+
 label.control-label {
   font-weight: 700;
 }
