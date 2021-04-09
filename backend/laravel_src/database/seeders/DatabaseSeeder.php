@@ -15,6 +15,9 @@ use App\Models\Estadosolicitud;
 use App\Models\Solicitud;
 use App\Models\Estadocotizacion;
 use App\Models\Motivorechazo;
+use App\Models\Proveedor;
+use App\Models\Estadooc;
+use App\Models\Estadoocparte;
 
 class DatabaseSeeder extends Seeder
 {
@@ -332,5 +335,43 @@ class DatabaseSeeder extends Seeder
         $motivorechazo = new Motivorechazo();
         $motivorechazo->name = 'Tiempo';
         $motivorechazo->save();
+
+        /*
+        *   Proveedores
+        */
+        $proveedor = new Proveedor();
+        $proveedor->rut = '12.345.678-9';
+        $proveedor->name = 'ProveedorTest01';
+        $proveedor->save();
+        $proveedor = new Proveedor();
+        $proveedor->rut = '98.765.432-1';
+        $proveedor->name = 'ProveedorTest02';
+        $proveedor->save();
+
+        /*
+        *   Estado ocs
+        */
+        $estadooc = new Estadooc();
+        $estadooc->name = 'Pendiente';
+        $estadooc->save();
+        $estadooc = new Estadooc();
+        $estadooc->name = 'En proceso';
+        $estadooc->save();
+        $estadooc = new Estadooc();
+        $estadooc->name = 'Cerrada';
+        $estadooc->save();
+
+        /*
+        *   Estado oc partes
+        */
+        $estadoocparte = new Estadoocparte();
+        $estadoocparte->name = 'Pendiente';
+        $estadoocparte->save();
+        $estadoocparte = new Estadoocparte();
+        $estadoocparte->name = 'En proceso';
+        $estadoocparte->save();
+        $estadoocparte = new Estadoocparte();
+        $estadoocparte->name = 'Entregado';
+        $estadoocparte->save();
     }
 }

@@ -12,6 +12,7 @@ use App\Models\Solicitud;
 use App\Models\Parte;
 use App\Models\Cotizacion;
 use App\Models\Motivorechazo;
+use App\Models\Oc;
 
 class CotizacionesController extends Controller
 {
@@ -30,7 +31,8 @@ class CotizacionesController extends Controller
                 
                 if($cotizaciones = ($user->role->id === 2) ? // By role
                     // If Vendedor filters only the belonging data
-                    Cotizacion::select('cotizaciones.solicitud_id')->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')->where('solicitudes.user_id', '=', $user->id)->get() :
+                    //Cotizacion::select('cotizaciones.solicitud_id')->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')->where('solicitudes.user_id', '=', $user->id)->get() :
+                    Cotizacion::all() :
                     // For any other role
                     Cotizacion::all()
                 )
@@ -44,6 +46,7 @@ class CotizacionesController extends Controller
                         $cotizacion->makeHidden([
                             'solicitud_id', 
                             'estadocotizacion_id', 
+                            'motivorechazo_id', 
                             'created_at', 
                             //'updated_at'
                         ]);
@@ -373,16 +376,31 @@ class CotizacionesController extends Controller
             if($user->role->hasRoutepermission('cotizaciones approve'))
             {
                 $validatorInput = $request->only(
-                    'occliente'
+                    'noccliente',
+                    'partes'
                 );
                 
                 $validatorRules = [
-                    'occliente' => 'required|min:1',
+                    'noccliente' => 'required|min:1',
+                    'partes' => 'required|array|min:1',
+                    'partes.*.id'  => 'required|exists:cotizacion_parte,parte_id,cotizacion_id,' . $id,
+                    'partes.*.cantidad'  => 'required|numeric|min:1',
+                    'partes.*.monto'  => 'required|numeric|min:0',
                 ];
         
                 $validatorMessages = [
-                    'occliente.required' => 'Debes ingresar el numero de OC cliente',
-                    'occliente.min' => 'El numero de OC cliente debe tener al menos un digito',
+                    'noccliente.required' => 'Debes ingresar el numero de OC cliente',
+                    'noccliente.min' => 'El numero de OC cliente debe tener al menos un digito',
+                    'partes.required' => 'Debes seleccionar las partes aprobadas',
+                    'partes.array' => 'Lista de partes aprobadas invalida',
+                    'partes.min' => 'La cotizacion debe contener al menos 1 parte aprobada',
+                    'partes.*.id.required' => 'La lista de partes aprobadas es invalida',
+                    'partes.*.id.exists' => 'La parte aprobada ingresada no existe',
+                    'partes.*.cantidad.required' => 'Debes ingresar la cantidad para la parte aprobada',
+                    'partes.*.cantidad.numeric' => 'La cantidad para la parte aprobada debe ser numerica',
+                    'partes.*.cantidad.min' => 'La cantidad para la parte aprobada debe ser mayor a 0',
+                    'partes.*.monto.numeric' => 'El monto para la parte aprobada debe ser numerico',
+                    'partes.*.monto.min' => 'El monto para la parte aprobada debe ser mayor o igual a 0',
                 ];
         
                 $validator = Validator::make(
@@ -414,24 +432,110 @@ class CotizacionesController extends Controller
                         }
                         else
                         {
-                            $cotizacion->estadocotizacion_id = 3; // Aprobada
-                            //SAVE FILE HERE
-                            
-                            if($cotizacion->save())
+                            if(($cotizacion->estadocotizacion_id === 1) || ($cotizacion->estadocotizacion_id === 2)) // If Estadocotizacion = 'Pendiente' or 'Vencida'
                             {
-                                $response = HelpController::buildResponse(
-                                    200,
-                                    'Cotizacion aprobada',
-                                    null
-                                );
+                                DB::beginTransaction();
+
+                                $cotizacion->estadocotizacion_id = 3; // Aprobada
+                                $cotizacion->motivorechazo_id = null; // Removes Motivorechazo if it had
+
+                                if($cotizacion->save())
+                                {
+                                    $oc = new OC();
+                                    $oc->cotizacion_id = $cotizacion->id;
+                                    $oc->estadooc_id = 1; //Initial Estadooc
+                                    $oc->noccliente = $request->noccliente;
+                                    $oc->usdvalue = $cotizacion->usdvalue;
+
+                                    if($oc->save())
+                                    {
+                                        //Attaching each Parte to the Cotizacion
+                                        $syncData = [];
+
+                                        $success = true;
+                                        foreach($request->partes as $parte)
+                                        {
+                                            if($cparte = $cotizacion->partes->find($parte['id']))
+                                            {
+                                                $syncData[$cparte->id] =  array(
+                                                    'estadoocparte_id' => 1, // Pendiente
+                                                    'descripcion' => $cparte->pivot->descripcion,
+                                                    'cantidad' => $parte['cantidad'],
+                                                    'cantidadpendiente' => $parte['cantidad'],
+                                                );
+                                            }
+                                            else
+                                            {
+                                                $success = false;
+                                                $response = HelpController::buildResponse(
+                                                    500,
+                                                    'Error al aprobar la cotizacion',
+                                                    null
+                                                );
+
+                                                break;
+                                            }
+                                        }
+
+                                        if($success === true)
+                                        {
+                                            if($oc->partes()->sync($syncData))
+                                            {
+                                                DB::commit();
+
+                                                $response = HelpController::buildResponse(
+                                                    201,
+                                                    'Cotizacion aprobada',
+                                                    null
+                                                );
+                                            }
+                                            else
+                                            {
+                                                DB::rollback();
+
+                                                $response = HelpController::buildResponse(
+                                                    500,
+                                                    'Error al aprobar la cotizacion',
+                                                    null
+                                                );
+                                            }
+                                        }
+                                        else
+                                        {
+                                            //Error message already set
+                                        }
+                                        
+                                    }
+                                    else
+                                    {
+                                        DB::rollback();
+
+                                        $response = HelpController::buildResponse(
+                                            500,
+                                            'Error al aprobar la cotizacion',
+                                            null
+                                        );
+                                    }
+                                    
+                                }
+                                else
+                                {
+                                    DB::rollback();
+
+                                    $response = HelpController::buildResponse(
+                                        500,
+                                        'Error al aprobar la solicitud',
+                                        null
+                                    );
+                                }
                             }
                             else
                             {
                                 $response = HelpController::buildResponse(
-                                    500,
-                                    'Error al aprobar la cotizacion',
+                                    409,
+                                    'El estado comercial de la cotizacion ya esta definido',
                                     null
-                                );   
+                                );
                             }
                         }
                         
@@ -459,7 +563,7 @@ class CotizacionesController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al aprobar la cotizacion [!]',
+                'Error al aprobar la cotizacion [!]' . $e,
                 null
             );
         }
