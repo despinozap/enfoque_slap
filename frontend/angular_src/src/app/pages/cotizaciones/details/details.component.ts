@@ -1,13 +1,11 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
 import { CotizacionesService } from 'src/app/services/cotizaciones.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
-import { SolicitudesService } from 'src/app/services/solicitudes.service';
 import { UtilsService } from 'src/app/services/utils.service';
-import { threadId } from 'worker_threads';
 
 @Component({
   selector: 'app-details',
@@ -16,8 +14,8 @@ import { threadId } from 'worker_threads';
 })
 export class CotizacionesDetailsComponent implements OnInit {
 
-  @ViewChild(DataTableDirective, {static: false})
-  datatableElement_partes: DataTableDirective = null as any;
+  @ViewChildren(DataTableDirective)
+  datatableELements: QueryList<DataTableDirective> = null as any;
   dtOptions: any = {
     pagingType: 'full_numbers',
     pageLength: 10,
@@ -26,9 +24,24 @@ export class CotizacionesDetailsComponent implements OnInit {
     },
     order: [[0, 'desc']]
   };
+  dtOptionsAprobar: any = {
+    pagingType: 'full_numbers',
+    pageLength: 10,
+    language: {
+      url: '//cdn.datatables.net/plug-ins/1.10.22/i18n/Spanish.json'
+    },
+    columnDefs: [
+      { 
+        targets: [0, 1, 5],
+        orderable: false
+      }
+    ],
+    order: [[1, 'desc']]
+  };
 
   
   dtTrigger: Subject<any> = new Subject<any>();
+  dtTriggerAprobar: Subject<any> = new Subject<any>();
   
   cotizacion: any = {
     id: -1,
@@ -44,6 +57,7 @@ export class CotizacionesDetailsComponent implements OnInit {
 
   motivosRechazo: Array<any> = null as any;
   partes: any[] = [];
+  partesAprobadas: any[] = [];
   loading: boolean = false;
   responseErrors: any = [];
 
@@ -52,7 +66,7 @@ export class CotizacionesDetailsComponent implements OnInit {
   });
 
   estadoComercialAprobarForm: FormGroup = new FormGroup({
-    occliente: new FormControl('', [Validators.required, Validators.minLength(1)])
+    noccliente: new FormControl('', [Validators.required, Validators.minLength(1)])
   });
 
   estadoComercialRechazarForm: FormGroup = new FormGroup({
@@ -92,6 +106,7 @@ export class CotizacionesDetailsComponent implements OnInit {
 
   ngAfterViewInit(): void {
     this.dtTrigger.next();
+    this.dtTriggerAprobar.next();
 
     //Prevents throwing an error for var status changed while initialization
     setTimeout(() => {
@@ -103,14 +118,15 @@ export class CotizacionesDetailsComponent implements OnInit {
   ngOnDestroy(): void {
     this.sub.unsubscribe();
     this.dtTrigger.unsubscribe();
+    this.dtTriggerAprobar.unsubscribe();
   }
   
-  private renderDataTable(dataTableElement: DataTableDirective): void {
+  private renderDataTable(dataTableElement: DataTableDirective, trigger: Subject<any>): void {
     dataTableElement.dtInstance.then((dtInstance: DataTables.Api) => {
       // Destroy the table first
       dtInstance.destroy();
-      // Call the dtTrigger to rerender again
-      this.dtTrigger.next();
+      // Call the trigger to rerender again
+      trigger.next();
     });
   }
   
@@ -133,6 +149,7 @@ export class CotizacionesDetailsComponent implements OnInit {
       cotizacionData.partes.forEach((p: any) => {
         this.partes.push(
           {
+            'id': p.id,
             'nparte': p.nparte,
             'descripcion': p.pivot.descripcion,
             'cantidad': p.pivot.cantidad,
@@ -168,7 +185,8 @@ export class CotizacionesDetailsComponent implements OnInit {
       (response: any) => {
 
         this.loadFormData(response.data);
-        this.renderDataTable(this.datatableElement_partes);
+        // Uses the first datatables instance
+        this.renderDataTable(this.datatableELements.first, this.dtTrigger);
 
         this.loading = false;
       },
@@ -364,10 +382,25 @@ export class CotizacionesDetailsComponent implements OnInit {
     this.estadoComercialForm.disable();
     this.estadoComercialAprobarForm.disable();
 
+    let partes: any[] = [];
+    //Add checked partes
+    this.partesAprobadas.forEach((parte: any) => {
+
+      // Adding only required data to send
+      let dataParte: any = {
+        id: parte.id,
+        cantidad: parte.cantidad,
+        monto: parte.monto,
+      };
+
+      partes.push(dataParte);
+    });
+
     let data: any = {
-      occliente: this.estadoComercialAprobarForm.value.occliente
+      partes: partes,
+      noccliente: this.estadoComercialAprobarForm.value.noccliente
     };
-    
+
     this._cotizacionesService.approveCotizacion(this.cotizacion.id, data)
       .subscribe(
         //Success request
@@ -528,7 +561,89 @@ export class CotizacionesDetailsComponent implements OnInit {
     this.DISPLAYING_FORM = 1;
   }
 
+  public checkPartesList(evt: any): void {
+    this.partesAprobadas.forEach((parte: any) => {
+      parte.checked = evt.target.checked;
+    });
+  }
+
+  public checkParteItem(parte: any, evt: any): void {
+    parte.checked = evt.target.checked;
+  }
+
+  public isCheckedItem(dataSource: any[]): boolean
+  {
+    let index = dataSource.findIndex((e) => {
+      if(e.checked === true)
+      {
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+    });
+
+    return index >= 0 ? true : false;
+  }
+
+  public isUncheckedItem(dataSource: any[]): boolean
+  {
+    let index = dataSource.findIndex((e) => {
+      if(e.checked === false)
+      {
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+    });
+
+    return index >= 0 ? true : false;
+  }
+
+  public updateParteAprobada_cantidad(parteAprobada: any, evt: any): void {
+    if((isNaN(evt.target.value) === false) && (parseInt(evt.target.value) > 0))
+    {
+      parteAprobada.cantidad = parseInt(evt.target.value);
+    }
+    else
+    {
+      evt.target.value = parteAprobada.cantidad;
+    }
+  }
+
+  public updateParteAprobada_monto(parteAprobada: any, evt: any): void {
+    if((isNaN(evt.target.value) === false) && (parseInt(evt.target.value) >= 0))
+    {
+      parteAprobada.monto = parseInt(evt.target.value);
+    }
+    else
+    {
+      evt.target.value = parteAprobada.monto;
+    }
+  }
+
   public goTo_estadoComercial_aprobar(): void {
+    
+    // Copy partesAprobadas from partes list
+    this.partesAprobadas = [];
+    this.partes.forEach((parte) => {  
+      this.partesAprobadas.push(parte);
+    });
+
+    // Uses the second (and last) datatables instance
+    this.renderDataTable(this.datatableELements.last, this.dtTriggerAprobar);
+    //Simulates the Event (evt) for checking all items in list using the same function
+    let evt = {
+      "target": {
+        "checked" : true
+      }
+    } as any;
+    // Check all items in list
+    this.checkPartesList(evt);
+
     this.estadoComercialAprobarForm.reset();
     this.ESTADOCOMERCIAL_FORM = 0;
   }
