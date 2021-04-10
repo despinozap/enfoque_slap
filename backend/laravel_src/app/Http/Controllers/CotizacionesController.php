@@ -370,15 +370,20 @@ class CotizacionesController extends Controller
 
     public function approve(Request $request, $id)
     {
+        //$request->file('dococcliente')->store('ocscliente', 'public');
+
         try
         {
             $user = Auth::user();
             if($user->role->hasRoutepermission('cotizaciones approve'))
             {
-                $validatorInput = $request->only(
-                    'noccliente',
-                    'partes'
-                );
+                // Reconstruct partes lists from a multipart/form-data request
+                $partes = json_decode($request->partes, true);
+
+                $validatorInput = [
+                    'noccliente' => $request->noccliente,
+                    'partes' => $partes
+                ];
                 
                 $validatorRules = [
                     'noccliente' => 'required|min:1',
@@ -453,7 +458,7 @@ class CotizacionesController extends Controller
                                         $syncData = [];
 
                                         $success = true;
-                                        foreach($request->partes as $parte)
+                                        foreach($partes as $parte)
                                         {
                                             if($cparte = $cotizacion->partes->find($parte['id']))
                                             {
