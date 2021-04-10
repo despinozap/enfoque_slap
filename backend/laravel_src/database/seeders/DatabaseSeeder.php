@@ -176,6 +176,7 @@ class DatabaseSeeder extends Seeder
                 'marcas index_full',
                 //Solicitudes
                 'solicitudes index',
+                'solicitudes store',
                 'solicitudes show',
                 'solicitudes update',
                 'solicitudes close',
