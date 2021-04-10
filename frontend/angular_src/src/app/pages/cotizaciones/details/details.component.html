@@ -235,7 +235,7 @@
                         <span class="input-group-text bg-transparent"><i class="bx bxs-folder-open"></i></span>
                     </div>
                     <div class="custom-file">
-                        <input type="file" class="custom-file-input" (change)="onFileDocOCClienteSelected($event)">
+                        <input type="file" class="custom-file-input" (change)="onFileDocOCClienteSelected($event)" [disabled]="(loading === true)">
                         <label class="custom-file-label">{{ dococcliente === null ? 'No hay un archivo seleccionado' : dococcliente.name }}</label>
                     </div>
                   </div>

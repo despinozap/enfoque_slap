@@ -420,7 +420,8 @@ export class CotizacionesDetailsComponent implements OnInit {
     const data = new FormData();
     data.append('partes', JSON.stringify(partes));
     data.append('noccliente', this.estadoComercialAprobarForm.value.noccliente);
-    data.append('dococcliente', this.dococcliente);
+    //Defining the file as an empty string when null it's interpreted as null by server
+    data.append('dococcliente', this.dococcliente !== null ? this.dococcliente : '');
 
     this._cotizacionesService.approveCotizacion(this.cotizacion.id, data)
       .subscribe(
