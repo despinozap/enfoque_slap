@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 use App\Models\Parameter;
 use App\Models\Solicitud;
@@ -382,11 +383,13 @@ class CotizacionesController extends Controller
 
                 $validatorInput = [
                     'noccliente' => $request->noccliente,
+                    'dococcliente' => $request->dococcliente,
                     'partes' => $partes
                 ];
                 
                 $validatorRules = [
                     'noccliente' => 'required|min:1',
+                    'dococcliente' => 'nullable|file|mimes:jpg,jpeg,png,bmp,pdf|max:5000', //Max size: 5mb (in kb)
                     'partes' => 'required|array|min:1',
                     'partes.*.id'  => 'required|exists:cotizacion_parte,parte_id,cotizacion_id,' . $id,
                     'partes.*.cantidad'  => 'required|numeric|min:1',
@@ -396,6 +399,9 @@ class CotizacionesController extends Controller
                 $validatorMessages = [
                     'noccliente.required' => 'Debes ingresar el numero de OC cliente',
                     'noccliente.min' => 'El numero de OC cliente debe tener al menos un digito',
+                    'dococcliente.file' => 'El archivo OC cliente es invalido',
+                    'dococcliente.mimes' => 'El archivo OC cliente debe ser una imagen o un documento PDF',
+                    'dococcliente.max' => 'El tamaño maximo para el archivo OC cliente es de 5 megabytes',
                     'partes.required' => 'Debes seleccionar las partes aprobadas',
                     'partes.array' => 'Lista de partes aprobadas invalida',
                     'partes.min' => 'La cotizacion debe contener al menos 1 parte aprobada',
@@ -447,9 +453,10 @@ class CotizacionesController extends Controller
                                 if($cotizacion->save())
                                 {
                                     $success = true;
+                                    $path = null;
 
                                     $filedata = null;
-                                    if($request->has('dococcliente'))
+                                    if($request->file('dococcliente'))
                                     {
                                         if($path = $request->file('dococcliente')->store('occlientes', 'public'))
                                         {
@@ -459,6 +466,8 @@ class CotizacionesController extends Controller
 
                                             if(!$filedata->save())
                                             {
+                                                Storage::disk('public')->delete($path);
+
                                                 $response = HelpController::buildResponse(
                                                     500,
                                                     'Error al adjuntar el archivo de OC cliente a la cotizacion',
