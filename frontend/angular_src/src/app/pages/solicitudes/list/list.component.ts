@@ -319,6 +319,22 @@ export class SolicitudesListComponent implements OnInit {
     return index >= 0 ? true : false;
   }
 
+  public isUncheckedItem(dataSource: any[]): boolean
+  {
+    let index = dataSource.findIndex((e) => {
+      if(e.checked === false)
+      {
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+    });
+
+    return index >= 0 ? true : false;
+  }
+  
   public goTo_newSolicitud(): void {
     this.router.navigate(['/panel/solicitudes/create']);
   }

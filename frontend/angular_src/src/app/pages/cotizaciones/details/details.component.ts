@@ -184,7 +184,6 @@ export class CotizacionesDetailsComponent implements OnInit {
     .subscribe(
       //Success request
       (response: any) => {
-        console.log(response);
         this.loadFormData(response.data);
         // Uses the first datatables instance
         this.renderDataTable(this.datatableELements.first, this.dtTrigger);
