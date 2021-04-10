@@ -68,6 +68,7 @@ export class CotizacionesDetailsComponent implements OnInit {
   estadoComercialAprobarForm: FormGroup = new FormGroup({
     noccliente: new FormControl('', [Validators.required, Validators.minLength(1)])
   });
+  dococcliente: File = null as any;
 
   estadoComercialRechazarForm: FormGroup = new FormGroup({
     motivorechazo_id: new FormControl('', [Validators.required]),
@@ -375,6 +376,17 @@ export class CotizacionesDetailsComponent implements OnInit {
     
   }
 
+  public onFileDocOCClienteSelected(evt: any): void {
+    if(evt.target.files.length > 0)
+    {
+      this.dococcliente = <File>evt.target.files[0];
+    }
+    else
+    {
+      console.log('Not file selected');
+    }
+  }
+
   public submitFormEstadoComercial_aprobar(): void {
     this.loading = true;
     this.responseErrors = [];
@@ -396,21 +408,21 @@ export class CotizacionesDetailsComponent implements OnInit {
       partes.push(dataParte);
     });
 
-    let data: any = {
-      partes: partes,
-      noccliente: this.estadoComercialAprobarForm.value.noccliente
-    };
+    const data = new FormData();
+    data.append('partes', JSON.stringify(partes));
+    data.append('noccliente', this.estadoComercialAprobarForm.value.noccliente);
+    data.append('dococcliente', this.dococcliente);
 
     this._cotizacionesService.approveCotizacion(this.cotizacion.id, data)
       .subscribe(
         //Success request
         (response: any) => {
-
+          
           NotificationsService.showToast(
             response.message,
             NotificationsService.messageType.success
           );
-
+          
           this.goTo_cotizacionesList();
         },
         //Error request

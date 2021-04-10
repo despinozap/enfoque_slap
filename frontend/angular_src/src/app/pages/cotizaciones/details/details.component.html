@@ -206,7 +206,7 @@
 
               <div class="col-12">
                 <div class="form-group">
-                  <label class="control-label">OC Cliente</label>
+                  <label class="control-label">Numero OC Cliente</label>
                   <!-- Backend errors -->
                   <div class="alert alert-danger" *ngIf="(responseErrors.noccliente)">
                     <div *ngFor="let errorMessage of responseErrors.noccliente">{{ errorMessage }}</div>
@@ -216,10 +216,30 @@
                   <div
                       *ngIf="(estadoComercialAprobarForm.controls.noccliente.errors) && (estadoComercialAprobarForm.controls.noccliente.touched) && (estadoComercialAprobarForm.controls.noccliente.dirty)">
                     <div class="error-response" *ngIf="estadoComercialAprobarForm.controls.noccliente.errors.required === true">Debes
-                      ingresar la OC cliente
+                      ingresar el numero de OC cliente
                     </div>
-                    <div class="error-response" *ngIf="estadoComercialAprobarForm.controls.noccliente.errors.minlength !== null">La OC cliente debe tener al menos 1 digito</div>
+                    <div class="error-response" *ngIf="estadoComercialAprobarForm.controls.noccliente.errors.minlength !== null">El numero OC cliente debe tener al menos 1 digito</div>
                   </div>
+                </div>
+              </div>
+
+              <div class="col-12">
+                <div class="form-group">
+                  <label class="control-label">Documento OC Cliente</label>
+                  <!-- Backend errors -->
+                  <div class="alert alert-danger" *ngIf="(responseErrors.dococcliente)">
+                    <div *ngFor="let errorMessage of responseErrors.dococcliente">{{ errorMessage }}</div>
+                  </div>
+                  <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text bg-transparent"><i class="bx bxs-folder-open"></i></span>
+                    </div>
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" (change)="onFileDocOCClienteSelected($event)">
+                        <label class="custom-file-label">{{ dococcliente === null ? 'No hay un archivo seleccionado' : dococcliente.name }}</label>
+                    </div>
+                  </div>
+                  
                 </div>
               </div>
 

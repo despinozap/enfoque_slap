@@ -10,6 +10,14 @@ label.control-label {
   font-weight: 700;
 }
 
+.custom-file-label {
+  cursor: pointer;
+}
+
+.custom-file-label::after {
+  display: none; 
+}
+
 /*  DataTables */
 .dataTables_length .custom-select {
   padding: 4px 28px 4px 8px !important;

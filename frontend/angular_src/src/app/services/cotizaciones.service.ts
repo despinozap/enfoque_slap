@@ -28,16 +28,16 @@ export class CotizacionesService {
     return this.httpClient.post(endpoint, data, httpOptions);
   }
 
-  public approveCotizacion(solicitud_id: number, data: any): Observable<any>
+  public approveCotizacion(cotizacion_id: number, data: FormData): Observable<any>
   {
-    let endpoint: string = `${environment.ENDPOINT_BASE}/cotizaciones/approve/${solicitud_id}`;
+    let endpoint: string = `${environment.ENDPOINT_BASE}/cotizaciones/approve/${cotizacion_id}`;
 
     let httpOptions = { 
       method: 'POST',
       headers:
       {
         'Accept': 'application/json',
-        'Content-Type': 'application/json',
+        'enctype': 'multipart/form-data',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET,POST,OPTIONS,DELETE,PUT'
       }
