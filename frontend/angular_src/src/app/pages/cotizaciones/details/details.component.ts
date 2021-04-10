@@ -1,4 +1,4 @@
-import { Component, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { Component, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
@@ -6,6 +6,9 @@ import { Subject } from 'rxjs';
 import { CotizacionesService } from 'src/app/services/cotizaciones.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { UtilsService } from 'src/app/services/utils.service';
+
+/* SweetAlert2 */
+const Swal = require('../../../../assets/vendors/sweetalert2/sweetalert2.all.min.js');
 
 @Component({
   selector: 'app-details',
@@ -393,6 +396,32 @@ export class CotizacionesDetailsComponent implements OnInit {
     else
     {
       this.dococcliente = null as any;
+    }
+  }
+
+  public preSubmitFormEstadoComercial_aprobar(): void {
+    if(this.dococcliente === null)
+    {
+      Swal.fire({
+        title: 'Aprobar cotizacion',
+        text: "No has ingresado el archivo OC cliente. ¿Deseas aprobar la cotizacion sin el documento?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#555555',
+        confirmButtonText: 'Sí, continuar',
+        cancelButtonText: 'Cancelar',
+        allowOutsideClick: false
+      }).then((result: any) => {
+        if(result.isConfirmed)
+        {
+          this.submitFormEstadoComercial_aprobar();
+        }
+      });
+    }
+    else
+    {
+      this.submitFormEstadoComercial_aprobar();
     }
   }
 

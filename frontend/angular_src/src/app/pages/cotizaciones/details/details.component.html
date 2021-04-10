@@ -153,7 +153,7 @@
           </form>
 
           <!-- Estado comercial - Aprobar -->
-          <form [formGroup]="estadoComercialAprobarForm" (ngSubmit)="submitFormEstadoComercial_aprobar()" action="#">
+          <form [formGroup]="estadoComercialAprobarForm" (ngSubmit)="preSubmitFormEstadoComercial_aprobar()" action="#">
             
             <div class="row" [hidden]="ESTADOCOMERCIAL_FORM !== 0">
               
@@ -185,18 +185,18 @@
                       <tr *ngFor="let parteAprobada of partesAprobadas; index as i">
                         <td align="center">
                           <div class="custom-control custom-checkbox custom-checkbox-outline custom-checkbox-primary mb-3">
-                            <input type="checkbox" class="custom-control-input" id="chkParte-{{ i }}" [checked]="parteAprobada.checked" (change)="checkParteItem(parteAprobada, $event)">
+                            <input type="checkbox" class="custom-control-input" id="chkParte-{{ i }}" [checked]="parteAprobada.checked" (change)="checkParteItem(parteAprobada, $event)" [disabled]="(loading === true)">
                             <label class="custom-control-label" for="chkParte-{{ i }}"></label>
                           </div>
                         </td>
                         <td align="center">
-                          <input class="form-control" type="number" name="" id="txtParte-{{ i }}-cantidad" value="{{ parteAprobada.cantidad !== null ? parteAprobada.cantidad : '' }}" (change)="updateParteAprobada_cantidad(parteAprobada, $event)" [disabled]="parteAprobada.checked ? false : true">
+                          <input class="form-control" type="number" name="" id="txtParte-{{ i }}-cantidad" value="{{ parteAprobada.cantidad !== null ? parteAprobada.cantidad : '' }}" (change)="updateParteAprobada_cantidad(parteAprobada, $event)" [disabled]="loading === true ? true : (parteAprobada.checked ? false : true)">
                         </td>
                         <td align="left"><i class="bx bx-timer icon-table" *ngIf="(parteAprobada.backorder === true)"></i>{{ parteAprobada.nparte !== null ? parteAprobada.nparte : "" }}</td>
                         <td align="right">{{ parteAprobada.descripcion !== null ? parteAprobada.descripcion : "" }}</td>
                         <td align="right">{{ parteAprobada.tiempoentrega !== null ? parteAprobada.tiempoentrega + " dias" : "" }}</td>
                         <td align="center">
-                          <input class="form-control" type="number" name="" id="txtParte-{{ i }}-monto" value="{{ parteAprobada.monto !== null ? parteAprobada.monto : '' }}" (change)="updateParteAprobada_monto(parteAprobada, $event)" [disabled]="parteAprobada.checked ? false : true">
+                          <input class="form-control" type="number" name="" id="txtParte-{{ i }}-monto" value="{{ parteAprobada.monto !== null ? parteAprobada.monto : '' }}" (change)="updateParteAprobada_monto(parteAprobada, $event)" [disabled]="loading === true ? true : (parteAprobada.checked ? false : true)">
                         </td>
                       </tr>
                     </tbody>
