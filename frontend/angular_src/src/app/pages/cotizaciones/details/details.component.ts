@@ -184,7 +184,7 @@ export class CotizacionesDetailsComponent implements OnInit {
     .subscribe(
       //Success request
       (response: any) => {
-
+        console.log(response);
         this.loadFormData(response.data);
         // Uses the first datatables instance
         this.renderDataTable(this.datatableELements.first, this.dtTrigger);
@@ -197,6 +197,16 @@ export class CotizacionesDetailsComponent implements OnInit {
         switch(errorResponse.status)
         {
         
+          case 400: //Bad request
+          {
+            NotificationsService.showToast(
+              errorResponse.error.message,
+              NotificationsService.messageType.error
+            );
+
+            break;
+          }
+
           case 405: //Permission denied
           {
             NotificationsService.showToast(
@@ -383,7 +393,7 @@ export class CotizacionesDetailsComponent implements OnInit {
     }
     else
     {
-      console.log('Not file selected');
+      this.dococcliente = null as any;
     }
   }
 
