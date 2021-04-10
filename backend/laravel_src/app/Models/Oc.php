@@ -11,8 +11,14 @@ class Oc extends Model
 
     protected $table = 'ocs';
     protected $fillable = [
-        'cotizacion_id', 'proveedor_id', 'estadooc_id', 'noccliente', 'usdvalue',
+        'cotizacion_id', 'proveedor_id', 'filedata_id', 'estadooc_id', 'noccliente', 'usdvalue',
     ];
+
+    public function filedata()
+    {
+        // It returns the filedata which represents the OC Cliente document attached to the OC
+        return $this->belongsTo(Filedata::class);
+    }
 
     public function partes()
     {

@@ -12,6 +12,7 @@ use App\Models\Solicitud;
 use App\Models\Parte;
 use App\Models\Cotizacion;
 use App\Models\Motivorechazo;
+use App\Models\Filedata;
 use App\Models\Oc;
 
 class CotizacionesController extends Controller
@@ -217,6 +218,7 @@ class CotizacionesController extends Controller
                         $cotizacion->dias;
                         $cotizacion->makeHidden([
                             'solicitud_id',
+                            'motivorechazo_id',
                             'estadocotizacion_id',
                             'created_at',
                         ]);
@@ -370,7 +372,6 @@ class CotizacionesController extends Controller
 
     public function approve(Request $request, $id)
     {
-        //$request->file('dococcliente')->store('ocscliente', 'public');
 
         try
         {
@@ -446,82 +447,126 @@ class CotizacionesController extends Controller
 
                                 if($cotizacion->save())
                                 {
-                                    $oc = new OC();
-                                    $oc->cotizacion_id = $cotizacion->id;
-                                    $oc->estadooc_id = 1; //Initial Estadooc
-                                    $oc->noccliente = $request->noccliente;
-                                    $oc->usdvalue = $cotizacion->usdvalue;
+                                    $success = true;
 
-                                    if($oc->save())
+                                    $filedata = null;
+                                    if($request->has('dococcliente'))
                                     {
-                                        //Attaching each Parte to the Cotizacion
-                                        $syncData = [];
-
-                                        $success = true;
-                                        foreach($partes as $parte)
+                                        if($path = $request->file('dococcliente')->store('occlientes', 'public'))
                                         {
-                                            if($cparte = $cotizacion->partes->find($parte['id']))
+                                            $filedata = new Filedata();
+                                            $filedata->path = $path;
+                                            $filedata->size = $request->file('dococcliente')->getSize();
+
+                                            if(!$filedata->save())
                                             {
-                                                $syncData[$cparte->id] =  array(
-                                                    'estadoocparte_id' => 1, // Pendiente
-                                                    'descripcion' => $cparte->pivot->descripcion,
-                                                    'cantidad' => $parte['cantidad'],
-                                                    'cantidadpendiente' => $parte['cantidad'],
+                                                $response = HelpController::buildResponse(
+                                                    500,
+                                                    'Error al adjuntar el archivo de OC cliente a la cotizacion',
+                                                    null
                                                 );
-                                            }
-                                            else
-                                            {
+
                                                 $success = false;
-                                                $response = HelpController::buildResponse(
-                                                    500,
-                                                    'Error al aprobar la cotizacion',
-                                                    null
-                                                );
-
-                                                break;
-                                            }
-                                        }
-
-                                        if($success === true)
-                                        {
-                                            if($oc->partes()->sync($syncData))
-                                            {
-                                                DB::commit();
-
-                                                $response = HelpController::buildResponse(
-                                                    201,
-                                                    'Cotizacion aprobada',
-                                                    null
-                                                );
-                                            }
-                                            else
-                                            {
-                                                DB::rollback();
-
-                                                $response = HelpController::buildResponse(
-                                                    500,
-                                                    'Error al aprobar la cotizacion',
-                                                    null
-                                                );
                                             }
                                         }
                                         else
                                         {
-                                            //Error message already set
+                                            $response = HelpController::buildResponse(
+                                                500,
+                                                'Error al guardar el archivo de OC cliente',
+                                                null
+                                            );
+
+                                            $success = false;
                                         }
-                                        
+                                    }
+
+                                    if($success === true)
+                                    {
+                                        $oc = new OC();
+                                        $oc->cotizacion_id = $cotizacion->id;
+                                        $oc->estadooc_id = 1; //Initial Estadooc
+                                        $oc->noccliente = $request->noccliente;
+                                        $oc->usdvalue = $cotizacion->usdvalue;
+                                        if($filedata !== null)
+                                        {
+                                            $oc->filedata_id = $filedata->id;
+                                        }
+
+                                        if($oc->save())
+                                        {
+                                            //Attaching each Parte to the Cotizacion
+                                            $syncData = [];
+
+                                            foreach($partes as $parte)
+                                            {
+                                                if($cparte = $cotizacion->partes->find($parte['id']))
+                                                {
+                                                    $syncData[$cparte->id] =  array(
+                                                        'estadoocparte_id' => 1, // Pendiente
+                                                        'descripcion' => $cparte->pivot->descripcion,
+                                                        'cantidad' => $parte['cantidad'],
+                                                        'cantidadpendiente' => $parte['cantidad'],
+                                                    );
+                                                }
+                                                else
+                                                {
+                                                    $success = false;
+                                                    $response = HelpController::buildResponse(
+                                                        500,
+                                                        'Error al aprobar la cotizacion',
+                                                        null
+                                                    );
+
+                                                    break;
+                                                }
+                                            }
+
+
+                                            if($success === true)
+                                            {
+                                                if($oc->partes()->sync($syncData))
+                                                {
+                                                    DB::commit();
+
+                                                    $response = HelpController::buildResponse(
+                                                        201,
+                                                        'Cotizacion aprobada',
+                                                        null
+                                                    );
+                                                }
+                                                else
+                                                {
+                                                    DB::rollback();
+
+                                                    $response = HelpController::buildResponse(
+                                                        500,
+                                                        'Error al aprobar la cotizacion',
+                                                        null
+                                                    );
+                                                }
+                                            }
+                                            else
+                                            {
+                                                //Error message already set
+                                            }
+                                            
+                                        }
+                                        else
+                                        {
+                                            DB::rollback();
+
+                                            $response = HelpController::buildResponse(
+                                                500,
+                                                'Error al aprobar la cotizacion',
+                                                null
+                                            );
+                                        }
                                     }
                                     else
                                     {
-                                        DB::rollback();
-
-                                        $response = HelpController::buildResponse(
-                                            500,
-                                            'Error al aprobar la cotizacion',
-                                            null
-                                        );
+                                        //Error message already set
                                     }
-                                    
                                 }
                                 else
                                 {
@@ -529,7 +574,7 @@ class CotizacionesController extends Controller
 
                                     $response = HelpController::buildResponse(
                                         500,
-                                        'Error al aprobar la solicitud',
+                                        'Error al aprobar la cotizacion',
                                         null
                                     );
                                 }
@@ -568,7 +613,7 @@ class CotizacionesController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al aprobar la cotizacion [!]' . $e,
+                'Error al aprobar la cotizacion [!]',
                 null
             );
         }
