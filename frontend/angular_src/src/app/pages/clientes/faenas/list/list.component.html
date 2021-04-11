@@ -30,19 +30,29 @@
                   <thead>
                       <tr>
                           <th>ID</th>
+                          <th>RUT</th>
                           <th>Nombre</th>
+                          <th>Direccion</th>
+                          <th>Ciudad</th>
+                          <th>Contacto</th>
+                          <th>Telefono</th>
                           <th>Opciones</th>
                       </tr>
                   </thead>
                   <tbody *ngIf="(loading === true)">
                       <tr>
-                          <td colspan="3" style="text-align: center;"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</td>
+                          <td colspan="8" style="text-align: center;"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</td>
                       </tr>
                   </tbody>
                   <tbody *ngIf="(loading === false)">
                       <tr *ngFor="let faena of faenas">
                           <td>{{ faena.id }}</td>
+                          <td>{{ faena.rut }}</td>
                           <td>{{ faena.name }}</td>
+                          <td>{{ faena.address }}</td>
+                          <td>{{ faena.city }}</td>
+                          <td>{{ faena.contact }}</td>
+                          <td>{{ faena.phone }}</td>
                           <td align="center">
                               <a [routerLink]="['edit', faena.id]" class="btn-table btn btn-secondary"
                                   title="Editar"><i class="bx bx-edit-alt"></i></a>
@@ -53,7 +63,7 @@
                   </tbody>
                   <tfoot>
                     <tr>
-                      <td colspan="3" align="left">
+                      <td colspan="8" align="left">
                         <button type="button" class="btn btn-outline-primary" (click)="goTo_newFaena()" [disabled]="(loading === true)">
                           <i class="bx bx-pen font-size-16 align-middle"></i> Nueva faena
                         </button>
