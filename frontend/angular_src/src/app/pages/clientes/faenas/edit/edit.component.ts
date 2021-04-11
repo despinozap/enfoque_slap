@@ -25,7 +25,12 @@ export class FaenasEditComponent implements OnInit {
   private id: number = -1;
 
   faenaForm: FormGroup = new FormGroup({
+    rut: new FormControl('', [Validators.required, Validators.minLength(1)]),
     name: new FormControl('', [Validators.required, Validators.minLength(4)]),
+    address: new FormControl('', [Validators.required, Validators.minLength(1)]),
+    city: new FormControl('', [Validators.required, Validators.minLength(1)]),
+    contact: new FormControl('', [Validators.required, Validators.minLength(1)]),
+    phone: new FormControl('', [Validators.required, Validators.minLength(1)]),
   });
   
   constructor(
@@ -52,19 +57,25 @@ export class FaenasEditComponent implements OnInit {
   private loadFormData(faenaData: any)
   {
     this.cliente = faenaData.cliente;
+    this.faenaForm.controls.rut.setValue(faenaData.rut);
     this.faenaForm.controls.name.setValue(faenaData.name);
+    this.faenaForm.controls.address.setValue(faenaData.address);
+    this.faenaForm.controls.city.setValue(faenaData.city);
+    this.faenaForm.controls.contact.setValue(faenaData.contact);
+    this.faenaForm.controls.phone.setValue(faenaData.phone);
   }
 
   public loadFaena(): void {
     
     this.loading = true;
-
+    this.faenaForm.disable();
     this._faenasService.getFaena(this.cliente.id, this.id)
     .subscribe(
       //Success request
       (response: any) => {
         this.loading = false;
         this.loadFormData(response.data);
+        this.faenaForm.enable();
       },
       //Error request
       (errorResponse: any) => {
@@ -127,7 +138,12 @@ export class FaenasEditComponent implements OnInit {
     this.responseErrors = [];
 
     let faena: Faena = {
+      rut: this.faenaForm.value.rut,
       name: this.faenaForm.value.name,
+      address: this.faenaForm.value.address,
+      city: this.faenaForm.value.city,
+      contact: this.faenaForm.value.contact,
+      phone: this.faenaForm.value.phone
     } as Faena;
     
     this._faenasService.updateFaena(this.cliente.id, this.id, faena)

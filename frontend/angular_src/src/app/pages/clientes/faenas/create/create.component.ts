@@ -25,7 +25,12 @@ export class FaenasCreateComponent implements OnInit {
   private sub: any;
 
   faenaForm: FormGroup = new FormGroup({
+    rut: new FormControl('', [Validators.required, Validators.minLength(1)]),
     name: new FormControl('', [Validators.required, Validators.minLength(4)]),
+    address: new FormControl('', [Validators.required, Validators.minLength(1)]),
+    city: new FormControl('', [Validators.required, Validators.minLength(1)]),
+    contact: new FormControl('', [Validators.required, Validators.minLength(1)]),
+    phone: new FormControl('', [Validators.required, Validators.minLength(1)]),
   });
 
   constructor(
@@ -124,7 +129,12 @@ export class FaenasCreateComponent implements OnInit {
     this.responseErrors = [];
 
     let faena: Faena = {
+      rut: this.faenaForm.value.rut,
       name: this.faenaForm.value.name,
+      address: this.faenaForm.value.address,
+      city: this.faenaForm.value.city,
+      contact: this.faenaForm.value.contact,
+      phone: this.faenaForm.value.phone
     } as Faena;
 
     this._faenasService.storeFaena(this.cliente.id, faena)
