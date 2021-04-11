@@ -44,6 +44,7 @@ import { PartesListComponent } from './pages/partes/list/list.component';
 import { PartesEditComponent } from './pages/partes/edit/edit.component';
 import { CotizacionesListComponent } from './pages/cotizaciones/list/list.component';
 import { CotizacionesDetailsComponent } from './pages/cotizaciones/details/details.component';
+import { PDFCotizacionComponent } from './pages/pdfs/cotizacion/cotizacion.component';
 
 
 /* Routes */
@@ -56,6 +57,7 @@ const routes: Routes = [
     children: [
       /* Pages */
       { path: '', component: TestComponent },
+      { path: 'pdf', component: PDFCotizacionComponent },
       { path: 'profile/edit', component: ProfileEditComponent },
       { path: 'profile/details', component: ProfileDetailsComponent },
       { path: 'usuarios/create', component: UsuariosCreateComponent },
@@ -117,6 +119,7 @@ const routes: Routes = [
     PartesEditComponent,
     CotizacionesListComponent,
     CotizacionesDetailsComponent,
+    PDFCotizacionComponent,
   ],
   imports: [
     BrowserModule,

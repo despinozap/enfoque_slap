@@ -29,7 +29,7 @@
             [class.badge-danger]="(cotizacion.estadocotizacion_id === 4)"
             *ngIf="(cotizacion.estadocotizacion_name !== null)">{{ cotizacion.estadocotizacion_name }} {{ (cotizacion.motivorechazo_name !== null) ? ': ' + cotizacion.motivorechazo_name : '' }}</span>
         <p class="card-title-desc">Detalle de la cotizacion</p>
-        <div class="row">
+        <div class="row" id="mypdfcontent">
           <div class="col-6">
             <div class="form-group">
               <label class="control-label">Cliente</label>
@@ -97,7 +97,7 @@
                     </button>
                     <button type="button" class="btn btn-outline-primary" (click)="exportPartesToExcel()"
                         [disabled]="(loading === true)">
-                      <i class="bx bx-spreadsheet font-size-16 align-middle"></i> Exportar a Excel
+                      <i class="bx bxs-file-pdf font-size-16 align-middle"></i> Exportar a PDF
                     </button>
                   </td>
                 </tr>
@@ -153,7 +153,7 @@
           </form>
 
           <!-- Estado comercial - Aprobar -->
-          <form [formGroup]="estadoComercialAprobarForm" (ngSubmit)="preSubmitFormEstadoComercial_aprobar()" action="#">
+          <form [formGroup]="estadoComercialAprobarForm" (ngSubmit)="preSubmitFormEstadoComercial_aprobar()" action="#" id="cardToPdf">
             
             <div class="row" [hidden]="ESTADOCOMERCIAL_FORM !== 0">
               

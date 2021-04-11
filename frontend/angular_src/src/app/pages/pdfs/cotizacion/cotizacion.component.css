@@ -1,0 +1,67 @@
+.report-container {
+  background-color: #ffffff;
+}
+
+table {
+  width: 100%;
+}
+
+table thead {
+  border: #000000 1px 1px 0px 1px solid;
+}
+
+table tbody {
+  border: #000000 1px 1px 0px 1px solid;
+}
+
+table thead tr {
+  border: #000000 1px solid;
+  color: #ffffff;
+  background-color: #1b2e42;
+}
+
+table thead tr th {
+  text-align: center;
+}
+
+table thead tr th,
+table tbody tr td,
+table tfoot tr td {
+  padding: 0.25rem;
+}
+
+table tbody tr td.td-center {
+  text-align: center;
+}
+
+table tbody tr td.td-right {
+  text-align: right;
+}
+
+/* Table Datos */
+table#tbDatos tbody tr td.td-title {
+  font-weight: bold;
+}
+
+table#tbDatos tbody tr td:not(.td-title)::before {
+  content: ':  ';
+}
+
+/* Table Partes */
+table#tbPartes tbody tr:last-child {
+  border-bottom: #000000 1px solid;
+}
+
+table#tbPartes tbody tr td {
+  margin-left: 5px;
+  margin-right: 5px;
+  border-left: #000000 1px solid;
+  border-right: #000000 1px solid;
+}
+
+table#tbPartes tfoot tr td.td-content {
+  color: #ffffff;
+  background-color: #1b2e42;
+  font-weight: bold;
+  border: #000000 1px solid;
+}

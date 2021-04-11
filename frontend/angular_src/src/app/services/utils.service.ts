@@ -3,7 +3,10 @@ import { WorkBook, WorkSheet } from 'xlsx/types';
 
 /* XLSX lib */
 import * as XLSX from 'xlsx';
-import { Role } from '../interfaces/role';
+
+/* JsPDF */
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 @Injectable({
   providedIn: 'root'
@@ -42,6 +45,35 @@ export class UtilsService {
     let strN = n.toString();
     
     return strN.length < 2 ? `0${strN}` : strN;
+  }
+
+  public exportHtmlToPdf(htmlContent: HTMLElement, filename: string): void {
+    const doc = new jsPDF('p', 'pt', 'a4');
+    const options = {
+      background: 'white',
+      scale: 3
+    };
+
+    if(htmlContent !== null)
+    {
+      html2canvas(htmlContent, options)
+        .then((canvas) => {
+          const img = canvas.toDataURL('image/PNG');
+          // Añadir imagen Canvas a PDF
+          const bufferX = 15;
+          const bufferY = 15;
+          const imgProps = (doc as any).getImageProperties(img);
+          const pdfWidth = doc.internal.pageSize.getWidth() - 2 * bufferX;
+          const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+          doc.addImage(img, 'PNG', bufferX, bufferY, pdfWidth, pdfHeight, undefined, 'FAST');
+
+          return doc;
+        })
+        .then((docResult) => {
+          docResult.save(filename);
+        });
+    }
+    
   }
 
   public exportTableToExcel(data: any[], title: string): void {

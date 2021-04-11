@@ -1,0 +1,96 @@
+<div id="divReport" class="report-container">
+  
+  <!-- Detalles -->
+  <table id="tbDatos">
+    <thead>
+      <tr>
+        <th colspan="2">DATOS DEL CLIENTE</th>
+        <th colspan="2">DATOS DEL PROVEEDOR</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="td-title">Razon social</td>
+        <td>{{ cotizacion.cliente_name !== null ? cotizacion.cliente_name : "" }}</td>
+        <td class="td-title">Razon social</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td class="td-title">RUT</td>
+        <td></td>
+        <td class="td-title">RUT</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td class="td-title">Direccion</td>
+        <td></td>
+        <td class="td-title">Direccion</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td class="td-title">Ciudad</td>
+        <td></td>
+        <td class="td-title">Ciudad</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td class="td-title">Contacto</td>
+        <td></td>
+        <td class="td-title">Cotiza</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td class="td-title">Telefono/Fax</td>
+        <td></td>
+        <td class="td-title">Email</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td class="td-title">Solicitud</td>
+        <td></td>
+        <td class="td-title">Telefono</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <!-- Partes -->
+  <table id="tbPartes">
+    <thead>
+      <tr>
+        <th>Item</th>
+        <th>Cantidad</th>
+        <th>Unidad</th>
+        <th>Nº de parte</th>
+        <th>Producto</th>
+        <th>Tiempo de entrega</th>
+        <th>Precio unitario</th>
+        <th>Precio total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let parte of partes;index as i">
+        <td align="center">{{ (i + 1) }}</td>
+        <td align="right">{{ parte.cantidad !== null ? parte.cantidad : "" }}</td>
+        <td align="center">UN</td>
+        <td align="center">{{ parte.nparte !== null ? parte.nparte : "" }}</td>
+        <td>{{ parte.descripcion !== null ? parte.descripcion : "" }}</td>
+        <td align="center">{{ parte.tiempoentrega !== null ? (((parte.tiempoentrega > 0) && (parte.tiempoentrega < 10)) ? (parte.tiempoentrega === 1 ? "1 dia habil" : "0" + parte.tiempoentrega + " dias habiles") : parte.tiempoentrega + " dias habiles") : "" }}</td>
+        <td align="right">{{ parte.monto !== null ? "$" + moneyStringFormat(parte.monto) : "" }}</td>
+        <td align="right">{{ parte.monto !== null ? "$" + moneyStringFormat(parte.monto * parte.cantidad) : "" }}</td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="6"></td>
+        <td class="td-content">Total Neto</td>
+        <td class="td-content" align="right">{{ "$" + moneyStringFormat(getTotalNetoPartes()) }}</td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+<div>
+  <button (click)="exportCotizacionToPdf()" [disabled]="(cotizacion.updated_at === null) || (loading === true)">
+    {{ loading === true ? 'Loading...' : 'Download pdf '}}
+  </button>
+</div>
