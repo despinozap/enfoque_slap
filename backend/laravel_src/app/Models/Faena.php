@@ -10,7 +10,7 @@ class Faena extends Model
     use HasFactory;
 
     protected $fillable = [
-        'cliente_id', 'name' 
+        'cliente_id', 'rut', 'name', 'address', 'city', 'contact', 'phone' 
     ];
 
     public function cliente()

@@ -183,15 +183,31 @@ class FaenasController extends Controller
             $user = Auth::user();
             if($user->role->hasRoutepermission('faenas store'))
             {
-                $validatorInput = $request->only('name');
+                $validatorInput = $request->only('rut', 'name', 'address', 'city', 'contact', 'phone');
             
                 $validatorRules = [
+                    'rut' => 'required|unique:faenas,rut|min:1',
                     'name' => 'required|min:4',
+                    'address' => 'required|min:1',
+                    'city' => 'required|min:1',
+                    'contact' => 'required|min:1',
+                    'phone' => 'required|min:1'
                 ];
 
                 $validatorMessages = [
+                    'rut.required' => 'Debes ingresar el RUT',
+                    'rut.min' => 'El RUT debe tener al menos 1 caracter',
+                    'rut.unique' => 'Otra faena ya tiene asociado el RUT ingresado',
                     'name.required' => 'Debes ingresar el nombre',
                     'name.min' => 'El nombre debe tener al menos 4 caracteres',
+                    'address.required' => 'Debes ingresar la direccion',
+                    'address.min' => 'La direccion debe tener al menos 1 caracter',
+                    'city.required' => 'Debes ingresar la ciudad',
+                    'city.min' => 'La ciudad debe tener al menos 1 caracter',
+                    'contact.required' => 'Debes ingresar el nombre de contacto',
+                    'contact.min' => 'El nombre de contacto debe tener al menos 1 caracter',
+                    'phone.required' => 'Debes ingresar el telefono',
+                    'phone.min' => 'El telefono debe tener al menos 1 caracter',
                 ];
 
                 $validator = Validator::make(
@@ -368,17 +384,32 @@ class FaenasController extends Controller
             $user = Auth::user();
             if($user->role->hasRoutepermission('faenas update'))
             {
-                $validatorInput = $request->only('name');
+                $validatorInput = $request->only('rut', 'name', 'address', 'city', 'contact', 'phone');
             
                 $validatorRules = [
+                    'rut' => 'required|min:1',
                     'name' => 'required|min:4',
+                    'address' => 'required|min:1',
+                    'city' => 'required|min:1',
+                    'contact' => 'required|min:1',
+                    'phone' => 'required|min:1'
                 ];
 
                 $validatorMessages = [
+                    'cliente_id.required' => 'Debes seleccionar el cliente',
+                    'cliente_id.exists' => 'El cliente ingresado no existe',
+                    'rut.required' => 'Debes ingresar el RUT',
+                    'rut.min' => 'El RUT debe tener al menos 1 caracter',
                     'name.required' => 'Debes ingresar el nombre',
                     'name.min' => 'El nombre debe tener al menos 4 caracteres',
-                    'cliente_id.required' => 'Debes seleccionar el cliente',
-                    'cliente_id.exists' => 'El cliente ingresado no existe'
+                    'address.required' => 'Debes ingresar la direccion',
+                    'address.min' => 'La direccion debe tener al menos 1 caracter',
+                    'city.required' => 'Debes ingresar la ciudad',
+                    'city.min' => 'La ciudad debe tener al menos 1 caracter',
+                    'contact.required' => 'Debes ingresar el nombre de contacto',
+                    'contact.min' => 'El nombre de contacto debe tener al menos 1 caracter',
+                    'phone.required' => 'Debes ingresar el telefono',
+                    'phone.min' => 'El telefono debe tener al menos 1 caracter',
                 ];
 
                 $validator = Validator::make(
@@ -411,6 +442,19 @@ class FaenasController extends Controller
                         [
                             'name' => [
                                 'Ya existe una faena con el nombre ingresado para el cliente seleccionado'
+                            ]
+                        ],
+                        null
+                    );
+                }  
+                else if(Faena::where('rut', $request->rut)->where('id', '<>', $id)->first())
+                {
+                    
+                    $response = HelpController::buildResponse(
+                        409,
+                        [
+                            'rut' => [
+                                'Ya existe otra faena con el con el RUT ingresado'
                             ]
                         ],
                         null

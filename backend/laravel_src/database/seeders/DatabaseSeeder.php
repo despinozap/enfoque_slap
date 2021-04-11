@@ -245,12 +245,22 @@ class DatabaseSeeder extends Seeder
         *   Faenas
         */
         $faena = new Faena();
-        $faena->name = 'FaenaTest01';
         $faena->cliente_id = 1;
+        $faena->rut = 'RutTest01';
+        $faena->name = 'FaenaTest01';
+        $faena->address = 'FaenaAddressTest01';
+        $faena->city = 'FaenaCityTest01';
+        $faena->contact = 'FaenaContactTest01';
+        $faena->phone = 'FaenaPhoneTest01';
         $faena->save();
         $faena = new Faena();
-        $faena->name = 'FaenaTest02';
         $faena->cliente_id = 1;
+        $faena->rut = 'RutTest02';
+        $faena->name = 'FaenaTest02';
+        $faena->address = 'FaenaAddressTest02';
+        $faena->city = 'FaenaCityTest02';
+        $faena->contact = 'FaenaContactTest02';
+        $faena->phone = 'FaenaPhoneTest02';
         $faena->save();
 
         /*
