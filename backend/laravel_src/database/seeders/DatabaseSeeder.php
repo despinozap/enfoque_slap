@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use App\Models\Sucursal;
 use App\Models\Role;
 use App\Models\Routepermission;
 use App\Models\User;
@@ -202,6 +203,16 @@ class DatabaseSeeder extends Seeder
             //Sync permissions to the role
             $role->routepermissions()->sync($routePermissionIds);
         }
+
+        /*
+        *   Sucursales
+        */
+        $sucursal = new Sucursal();
+        $sucursal->rut = 'SucursalRUTTest01';
+        $sucursal->name = 'SucursalNombreTest01';
+        $sucursal->address = 'SucursalDireccionTest01';
+        $sucursal->city = 'SucursalCiudadTest01';
+        $sucursal->save();
 
         /*
         *   Users
