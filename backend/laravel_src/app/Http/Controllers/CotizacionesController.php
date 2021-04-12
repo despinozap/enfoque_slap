@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 use App\Models\Parameter;
+use App\Models\Sucursal;
 use App\Models\Solicitud;
 use App\Models\Parte;
 use App\Models\Cotizacion;
@@ -324,6 +325,146 @@ class CotizacionesController extends Controller
                         null
                     );
                 }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a visualizar cotizaciones',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al obtener la cotizacion [!]',
+                null
+            );
+        }
+        
+
+        return $response;
+    }
+
+    public function report($id)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('cotizaciones report'))
+            {
+                if($sucursal = Sucursal::first())
+                {
+                    $sucursal->makeHidden([
+                        'created_at',
+                        'updated_at'
+                    ]);
+
+                    if($cotizacion = Cotizacion::find($id))
+                    {
+                        if(($user->role_id === 2) && ($cotizacion->solicitud->user_id !== $user->id))
+                        {
+                            //If Vendedor and cotizacion doesn't belong
+                            $response = HelpController::buildResponse(
+                                405,
+                                'No tienes acceso a visualizar esta cotizacion',
+                                null
+                            );
+                        }
+                        else
+                        {
+                            $cotizacion->dias;
+                            $cotizacion->makeHidden([
+                                'solicitud_id',
+                                'motivorechazo_id',
+                                'estadocotizacion_id',
+                                'created_at',
+                            ]);
+
+                            $cotizacion->solicitud->makeHidden([
+                                'partes',
+                                'faena_id',
+                                'marca_id',
+                                'user_id',
+                                'estadosolicitud_id',
+                                'created_at', 
+                                'updated_at'
+                            ]);
+        
+                            $cotizacion->solicitud->faena;
+                            $cotizacion->solicitud->faena->makeHidden(['cliente_id', 'created_at', 'updated_at']);
+        
+                            $cotizacion->solicitud->faena->cliente;
+                            $cotizacion->solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
+                            
+                            $cotizacion->solicitud->marca;
+                            $cotizacion->solicitud->marca->makeHidden(['created_at', 'updated_at']);
+
+                            $cotizacion->solicitud->user;
+                            $cotizacion->solicitud->user->makeHidden(['created_at', 'updated_at']);
+        
+                            $cotizacion->partes;
+                            foreach($cotizacion->partes as $parte)
+                            {
+                                $parte->makeHidden([
+                                    'marca',
+                                    'marca_id', 
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+        
+                                if($parte->pivot->monto !== null)
+                                {
+                                    $parte->pivot->monto = $parte->pivot->monto * $cotizacion->usdvalue;
+                                }
+                                
+                                $parte->pivot->makeHidden([
+                                    'costo',
+                                    'margen',
+                                    'peso',
+                                    'flete',
+                                    'backorder',
+                                    'cotizacion_id',
+                                    'parte_id',
+                                    'marca_id', 
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+                            }
+                            
+                            $data = [
+                                'cotizacion' => $cotizacion,
+                                'sucursal' => $sucursal
+                            ];
+
+                            $response = HelpController::buildResponse(
+                                200,
+                                null,
+                                $data
+                            );
+                        }
+                        
+                    }   
+                    else     
+                    {
+                        $response = HelpController::buildResponse(
+                            400,
+                            'La cotizacion no existe',
+                            null
+                        );
+                    }
+                }
+                else
+                {
+                    $response = HelpController::buildResponse(
+                        400,
+                        'La sucursal no existe',
+                        null
+                    );
+                }
+                
             }
             else
             {

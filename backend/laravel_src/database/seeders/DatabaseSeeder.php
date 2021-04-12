@@ -76,6 +76,7 @@ class DatabaseSeeder extends Seeder
             //Cotizaciones
             'cotizaciones index',
             'cotizaciones show',
+            'cotizaciones report',
             'cotizaciones approve',
             'cotizaciones reject',
             'cotizaciones close',
@@ -144,6 +145,7 @@ class DatabaseSeeder extends Seeder
                 //Cotizaciones
                 'cotizaciones index',
                 'cotizaciones show',
+                'cotizaciones report',
                 'cotizaciones approve',
                 'cotizaciones reject',
                 'cotizaciones close',
@@ -185,6 +187,7 @@ class DatabaseSeeder extends Seeder
                 //Cotizaciones
                 'cotizaciones index',
                 'cotizaciones show',
+                'cotizaciones report',
                 'cotizaciones approve',
                 'cotizaciones reject',
                 'cotizaciones close',
