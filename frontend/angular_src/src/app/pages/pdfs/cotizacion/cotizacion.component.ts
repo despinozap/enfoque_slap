@@ -15,13 +15,20 @@ export class PDFCotizacionComponent implements OnInit {
   cotizacion: any = {
     id: -1,
     updated_at: null,
-    dias: -1,
+    solicitud_id: -1,
+    faena_rut: null,
     faena_name: null,
-    cliente_name: null,
-    marca_name: null,
-    estadocotizacion_id: -1,
-    estadocotizacion_name: null,
-    motivorechazo_name: null
+    faena_address: null,
+    faena_city: null,
+    faena_contact: null,
+    faena_phone: null,
+    sucursal_rut: null,
+    sucursal_name: null,
+    sucursal_address: null,
+    sucursal_city: null,
+    user_name: null,
+    user_email: null,
+    user_phone: null
   };
 
   partes: any[] = [];
@@ -35,27 +42,32 @@ export class PDFCotizacionComponent implements OnInit {
 
   ngOnInit(): void {
     this.cotizacion.id = 1;
-    this.loadCotizacion();
+    this.loadReportCotizacion();
   }
 
-  private loadFormData(cotizacionData: any)
+  private loadReportData(cotizacionData: any)
   { 
-    console.log(cotizacionData);
-    if(cotizacionData['partes'].length > 0)
+    if(cotizacionData.cotizacion.partes.length > 0)
     {
-      this.cotizacion.id = cotizacionData.id;
-      this.cotizacion.updated_at = cotizacionData.updated_at;
-      this.cotizacion.dias = cotizacionData.dias;
-      this.cotizacion.faena_name = cotizacionData.solicitud.faena.name;
-      this.cotizacion.cliente_name = cotizacionData.solicitud.faena.cliente.name;
-      this.cotizacion.marca_name = cotizacionData.solicitud.marca.name;
-      this.cotizacion.estadocotizacion_id = cotizacionData.estadocotizacion.id,
-      this.cotizacion.estadocotizacion_name = cotizacionData.estadocotizacion.name;
-      // If Rechazada, then store Motivo rechazo name
-      this.cotizacion.motivorechazo_name = ((this.cotizacion.estadocotizacion_id === 4) && (cotizacionData.motivorechazo !== null)) ? cotizacionData.motivorechazo.name : null
-
+      this.cotizacion.id = cotizacionData.cotizacion.id;
+      this.cotizacion.updated_at = cotizacionData.cotizacion.updated_at;
+      this.cotizacion.solicitud_id = cotizacionData.cotizacion.solicitud.id;
+      this.cotizacion.faena_rut = cotizacionData.cotizacion.solicitud.faena.rut;
+      this.cotizacion.faena_name = cotizacionData.cotizacion.solicitud.faena.name;
+      this.cotizacion.faena_address = cotizacionData.cotizacion.solicitud.faena.address;
+      this.cotizacion.faena_city = cotizacionData.cotizacion.solicitud.faena.city;
+      this.cotizacion.faena_contact = cotizacionData.cotizacion.solicitud.faena.contact;
+      this.cotizacion.faena_phone = cotizacionData.cotizacion.solicitud.faena.phone;
+      this.cotizacion.sucursal_rut = cotizacionData.sucursal.rut;
+      this.cotizacion.sucursal_name = cotizacionData.sucursal.name;
+      this.cotizacion.sucursal_address = cotizacionData.sucursal.address;
+      this.cotizacion.sucursal_city = cotizacionData.sucursal.city;
+      this.cotizacion.user_name = cotizacionData.cotizacion.solicitud.user.name;
+      this.cotizacion.user_email = cotizacionData.cotizacion.solicitud.user.email;
+      this.cotizacion.user_phone = cotizacionData.cotizacion.solicitud.user.phone;
+      
       this.partes = [];
-      cotizacionData.partes.forEach((p: any) => {
+      cotizacionData.cotizacion.partes.forEach((p: any) => {
         this.partes.push(
           {
             'id': p.id,
@@ -84,14 +96,14 @@ export class PDFCotizacionComponent implements OnInit {
     }
   }
 
-  public loadCotizacion(): void {
+  public loadReportCotizacion(): void {
     
     this.loading = true;
-    this._cotizacionesService.getCotizacion(this.cotizacion.id)
+    this._cotizacionesService.getReportCotizacion(this.cotizacion.id)
     .subscribe(
       //Success request
       (response: any) => {
-        this.loadFormData(response.data);
+        this.loadReportData(response.data);
 
         this.loading = false;
       },
@@ -181,4 +193,7 @@ export class PDFCotizacionComponent implements OnInit {
     return this._utilsService.moneyStringFormat(value);
   }
 
+  public dateStringFormat(value: string): string {
+    return this._utilsService.dateStringFormat(value);
+  }
 }

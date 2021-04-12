@@ -52,6 +52,13 @@ export class CotizacionesService {
     return this.httpClient.get(endpoint);
   }
 
+  public getReportCotizacion(cotizacion_id: number): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/cotizaciones/report/${cotizacion_id}`;
+    
+    return this.httpClient.get(endpoint);
+  }
+
   public getCotizacion(cotizacion_id: number): Observable<any>
   {
     let endpoint: string = `${environment.ENDPOINT_BASE}/cotizaciones/${cotizacion_id}`;

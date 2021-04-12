@@ -1,5 +1,6 @@
 .report-container {
   background-color: #ffffff;
+  margin-bottom: 30px;
 }
 
 table {
@@ -8,16 +9,6 @@ table {
 
 table thead {
   border: #000000 1px 1px 0px 1px solid;
-}
-
-table tbody {
-  border: #000000 1px 1px 0px 1px solid;
-}
-
-table thead tr {
-  border: #000000 1px solid;
-  color: #ffffff;
-  background-color: #1b2e42;
 }
 
 table thead tr th {
@@ -30,6 +21,10 @@ table tfoot tr td {
   padding: 0.25rem;
 }
 
+table thead tr th.th-center {
+  text-align: center;
+}
+
 table tbody tr td.td-center {
   text-align: center;
 }
@@ -38,16 +33,64 @@ table tbody tr td.td-right {
   text-align: right;
 }
 
-/* Table Datos */
-table#tbDatos tbody tr td.td-title {
+/* Table Header */
+table#tbHeader thead tr th h4 {
   font-weight: bold;
 }
 
-table#tbDatos tbody tr td:not(.td-title)::before {
+table#tbHeader tbody tr td.td-logo {
+  width: 40%;
+  text-align: center;
+}
+
+table#tbHeader tbody tr td.td-logo img {
+  width: 40%;
+  height: auto;
+  background-color: #ffffff;
+  border: none;
+}
+
+table#tbHeader tbody tr td.td-title {
+  font-weight: bold;
+  color: #ffffff;
+  background-color: #1b2e42;
+  border-bottom: #ffffff 5px solid;
+}
+
+table#tbHeader tbody tr td:not(.td-title, .td-logo)::before {
   content: ':  ';
 }
 
+/* Table Details */
+table#tbDetails thead tr {
+  border: #000000 0px 1px 1px 1px solid;
+  color: #ffffff;
+  background-color: #1b2e42;
+}
+
+table#tbDetails tbody tr td.td-title {
+  font-weight: bold;
+}
+
+table#tbDetails tbody tr td:not(.td-title)::before {
+  content: ':  ';
+}
+
+table#tbDetails tbody tr td.td-name {
+  font-weight: bold;
+}
+
 /* Table Partes */
+table#tbPartes tbody {
+  border: #000000 1px 1px 0px 1px solid;
+}
+
+table#tbPartes thead tr {
+  border: #000000 1px solid;
+  color: #ffffff;
+  background-color: #1b2e42;
+}
+
 table#tbPartes tbody tr:last-child {
   border-bottom: #000000 1px solid;
 }
@@ -56,6 +99,9 @@ table#tbPartes tbody tr td {
   margin-left: 5px;
   margin-right: 5px;
   border-left: #000000 1px solid;
+}
+
+table#tbPartes tbody tr td:last-child {
   border-right: #000000 1px solid;
 }
 
