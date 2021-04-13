@@ -28,8 +28,8 @@ export class UtilsService {
         .then((canvas) => {
           const img = canvas.toDataURL('image/PNG');
           // Añadir imagen Canvas a PDF
-          const bufferX = 40;
-          const bufferY = 40;
+          const bufferX = 15;
+          const bufferY = 15;
           const imgProps = (doc as any).getImageProperties(img);
           const pdfWidth = doc.internal.pageSize.getWidth() - 2 * bufferX;
           const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;

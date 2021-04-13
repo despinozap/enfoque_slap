@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
@@ -6,6 +6,7 @@ import { from, Subject } from 'rxjs';
 import { CotizacionesService } from 'src/app/services/cotizaciones.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { UtilsService } from 'src/app/services/utils.service';
+import { PDFCotizacionComponent } from '../../pdfs/cotizacion/cotizacion.component';
 
 /* SweetAlert2 */
 const Swal = require('../../../../assets/vendors/sweetalert2/sweetalert2.all.min.js');
@@ -16,9 +17,8 @@ const Swal = require('../../../../assets/vendors/sweetalert2/sweetalert2.all.min
   styleUrls: ['./details.component.css']
 })
 export class CotizacionesDetailsComponent implements OnInit {
-  
-  @ViewChild('btnModalReportTrigger') btnModalReportTrigger: ElementRef | undefined;
 
+  @ViewChild('reportCotizacion') reportCotizacion: PDFCotizacionComponent = null as any;
   @ViewChildren(DataTableDirective)
   datatableELements: QueryList<DataTableDirective> = null as any;
   dtOptions: any = {
@@ -43,11 +43,10 @@ export class CotizacionesDetailsComponent implements OnInit {
     ],
     order: [[1, 'desc']]
   };
-
   
   dtTrigger: Subject<any> = new Subject<any>();
   dtTriggerAprobar: Subject<any> = new Subject<any>();
-  
+
   cotizacion: any = {
     id: -1,
     updated_at: null,
@@ -259,11 +258,95 @@ export class CotizacionesDetailsComponent implements OnInit {
     );
   }
 
-  public displayReportModalCotizacion(): void {
-    if(this.btnModalReportTrigger !== undefined)
-    {
-      this.btnModalReportTrigger.nativeElement.click();
-    }
+  public generateReportCotizacionPDF(cotizacion_id: number): void {    
+    this.loading = true;
+    this._cotizacionesService.getReportCotizacion(cotizacion_id)
+    .subscribe(
+      //Success request
+      (response: any) => {
+
+        if(this.reportCotizacion !== undefined)
+        {
+          this.reportCotizacion.loadReportData(response.data);
+
+          setTimeout(() => {
+              this.reportCotizacion.exportCotizacionToPdf();
+            },
+            2000
+          );
+          
+        }
+        else
+        {
+          NotificationsService.showToast(
+            'Error al cargar los datos para el reporte de cotizacion para',
+            NotificationsService.messageType.error
+          );
+        }
+
+        this.loading = false;
+      },
+      //Error request
+      (errorResponse: any) => {
+
+        switch(errorResponse.status)
+        {
+        
+          case 400: //Bad request
+          {
+            NotificationsService.showToast(
+              errorResponse.error.message,
+              NotificationsService.messageType.error
+            );
+
+            break;
+          }
+
+          case 405: //Permission denied
+          {
+            NotificationsService.showToast(
+              errorResponse.error.message,
+              NotificationsService.messageType.error
+            );
+
+            break;
+          }
+
+          case 412: //Object not found
+          {
+            NotificationsService.showToast(
+              errorResponse.error.message,
+              NotificationsService.messageType.warning
+            );
+
+            break;
+          }
+
+          case 500: //Internal server
+          {
+            NotificationsService.showToast(
+              errorResponse.error.message,
+              NotificationsService.messageType.error
+            );
+
+            break;
+          }
+        
+          default: //Unhandled error
+          {
+            NotificationsService.showToast(
+              'Error al cargar los datos para el reporte de cotizacion para',
+              NotificationsService.messageType.error
+            );
+  
+            break;
+
+          }
+        }
+
+        this.loading = false;
+      }
+    );
   }
 
   private loadMotivosRechazo() {
