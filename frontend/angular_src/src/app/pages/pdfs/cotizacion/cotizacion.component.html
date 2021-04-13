@@ -15,11 +15,11 @@
           <img src="assets/images/reports/cotizacion/logo.png" class="img-thumbnail" alt="">
         </td>
         <td class="td-title">Nº Cotización</td>
-        <td>{{ cotizacion.id > 0 ? cotizacion.id : '' }}</td>
+        <td>{{ report.cotizacion.id > 0 ? report.cotizacion.id : '' }}</td>
       </tr>
       <tr>
         <td class="td-title">Fecha de Cotización</td>
-        <td>{{ cotizacion.updated_at !== null ? dateStringFormat(cotizacion.updated_at) : '' }}</td>
+        <td>{{ report.cotizacion.updated_at !== null ? dateStringFormat(report.cotizacion.updated_at) : '' }}</td>
       </tr>
       <tr>
         <td class="td-title">Forma de Pago</td>
@@ -47,45 +47,45 @@
     <tbody>
       <tr>
         <td class="td-title">Razón social</td>
-        <td class="td-name">{{ cotizacion.faena_name !== null ? cotizacion.faena_name : "" }}</td>
+        <td class="td-name">{{ report.cotizacion.faena_name !== null ? report.cotizacion.faena_name : "" }}</td>
         <td class="td-title">Razón social</td>
-        <td>{{ cotizacion.sucursal_name !== null ? cotizacion.sucursal_name : "" }}</td>
+        <td>{{ report.cotizacion.sucursal_name !== null ? report.cotizacion.sucursal_name : "" }}</td>
       </tr>
       <tr>
         <td class="td-title">RUT</td>
-        <td>{{ cotizacion.faena_rut !== null ? cotizacion.faena_rut : "" }}</td>
+        <td>{{ report.cotizacion.faena_rut !== null ? report.cotizacion.faena_rut : "" }}</td>
         <td class="td-title">RUT</td>
-        <td>{{ cotizacion.sucursal_rut !== null ? cotizacion.sucursal_rut : "" }}</td>
+        <td>{{ report.cotizacion.sucursal_rut !== null ? report.cotizacion.sucursal_rut : "" }}</td>
       </tr>
       <tr>
         <td class="td-title">Dirección</td>
-        <td>{{ cotizacion.faena_address !== null ? cotizacion.faena_address : "" }}</td>
+        <td>{{ report.cotizacion.faena_address !== null ? report.cotizacion.faena_address : "" }}</td>
         <td class="td-title">Dirección</td>
-        <td>{{ cotizacion.sucursal_address !== null ? cotizacion.sucursal_address : "" }}</td>
+        <td>{{ report.cotizacion.sucursal_address !== null ? report.cotizacion.sucursal_address : "" }}</td>
       </tr>
       <tr>
         <td class="td-title">Ciudad</td>
-        <td>{{ cotizacion.faena_city !== null ? cotizacion.faena_city : "" }}</td>
+        <td>{{ report.cotizacion.faena_city !== null ? report.cotizacion.faena_city : "" }}</td>
         <td class="td-title">Ciudad</td>
-        <td>{{ cotizacion.sucursal_city !== null ? cotizacion.sucursal_city : "" }}</td>
+        <td>{{ report.cotizacion.sucursal_city !== null ? report.cotizacion.sucursal_city : "" }}</td>
       </tr>
       <tr>
         <td class="td-title">Contacto</td>
-        <td>{{ cotizacion.faena_contact !== null ? cotizacion.faena_contact : "" }}</td>
+        <td>{{ report.cotizacion.faena_contact !== null ? report.cotizacion.faena_contact : "" }}</td>
         <td class="td-title">Cotiza</td>
-        <td>{{ cotizacion.user_name !== null ? cotizacion.user_name : "" }}</td>
+        <td>{{ report.cotizacion.user_name !== null ? report.cotizacion.user_name : "" }}</td>
       </tr>
       <tr>
         <td class="td-title">Teléfono/Fax</td>
-        <td>{{ cotizacion.faena_phone !== null ? cotizacion.faena_phone : "" }}</td>
+        <td>{{ report.cotizacion.faena_phone !== null ? report.cotizacion.faena_phone : "" }}</td>
         <td class="td-title">Email</td>
-        <td>{{ cotizacion.user_email !== null ? cotizacion.user_email: "" }}</td>
+        <td>{{ report.cotizacion.user_email !== null ? report.cotizacion.user_email: "" }}</td>
       </tr>
       <tr>
         <td class="td-title">Solicitud</td>
-        <td>{{ cotizacion.solicitud_id > 0 ? cotizacion.solicitud_id : "" }}</td>
+        <td>{{ report.cotizacion.solicitud_id > 0 ? report.cotizacion.solicitud_id : "" }}</td>
         <td class="td-title">Teléfono</td>
-        <td>{{ cotizacion.user_phone !== null ? cotizacion.user_phone : "" }}</td>
+        <td>{{ report.cotizacion.user_phone !== null ? report.cotizacion.user_phone : "" }}</td>
       </tr>
     </tbody>
   </table>
@@ -105,7 +105,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let parte of partes;index as i">
+      <tr *ngFor="let parte of report.partes;index as i">
         <td align="center">{{ (i + 1) }}</td>
         <td align="right">{{ parte.cantidad !== null ? parte.cantidad : "" }}</td>
         <td align="center">UN</td>
@@ -134,7 +134,7 @@
 
 <div>
   <button class="btn btn-primary" (click)="exportCotizacionToPdf()"
-      [disabled]="(cotizacion.id < 1) || (loading === true)">
+      [disabled]="(report.cotizacion.id < 1) || (loading === true)">
     {{ loading === true ? 'Cargando...' : 'Descargar PDF '}}
   </button>
 </div>

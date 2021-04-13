@@ -11,26 +11,28 @@ import { UtilsService } from 'src/app/services/utils.service';
 })
 export class PDFCotizacionComponent implements OnInit {
 
-  cotizacion: any = {
-    id: -1,
-    updated_at: null,
-    solicitud_id: -1,
-    faena_rut: null,
-    faena_name: null,
-    faena_address: null,
-    faena_city: null,
-    faena_contact: null,
-    faena_phone: null,
-    sucursal_rut: null,
-    sucursal_name: null,
-    sucursal_address: null,
-    sucursal_city: null,
-    user_name: null,
-    user_email: null,
-    user_phone: null
+  report: any = {
+    cotizacion: {
+      id: -1,
+      updated_at: null,
+      solicitud_id: -1,
+      faena_rut: null,
+      faena_name: null,
+      faena_address: null,
+      faena_city: null,
+      faena_contact: null,
+      faena_phone: null,
+      sucursal_rut: null,
+      sucursal_name: null,
+      sucursal_address: null,
+      sucursal_city: null,
+      user_name: null,
+      user_email: null,
+      user_phone: null
+    },
+    partes: []
   };
 
-  partes: any[] = [];
   loading: boolean = false;
   responseErrors: any = [];
 
@@ -40,7 +42,7 @@ export class PDFCotizacionComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.cotizacion.id = 1;
+    this.report.cotizacion.id = 1;
     this.loadReportCotizacion();
   }
 
@@ -48,26 +50,26 @@ export class PDFCotizacionComponent implements OnInit {
   { 
     if(cotizacionData.cotizacion.partes.length > 0)
     {
-      this.cotizacion.id = cotizacionData.cotizacion.id;
-      this.cotizacion.updated_at = cotizacionData.cotizacion.updated_at;
-      this.cotizacion.solicitud_id = cotizacionData.cotizacion.solicitud.id;
-      this.cotizacion.faena_rut = cotizacionData.cotizacion.solicitud.faena.rut;
-      this.cotizacion.faena_name = cotizacionData.cotizacion.solicitud.faena.name;
-      this.cotizacion.faena_address = cotizacionData.cotizacion.solicitud.faena.address;
-      this.cotizacion.faena_city = cotizacionData.cotizacion.solicitud.faena.city;
-      this.cotizacion.faena_contact = cotizacionData.cotizacion.solicitud.faena.contact;
-      this.cotizacion.faena_phone = cotizacionData.cotizacion.solicitud.faena.phone;
-      this.cotizacion.sucursal_rut = cotizacionData.sucursal.rut;
-      this.cotizacion.sucursal_name = cotizacionData.sucursal.name;
-      this.cotizacion.sucursal_address = cotizacionData.sucursal.address;
-      this.cotizacion.sucursal_city = cotizacionData.sucursal.city;
-      this.cotizacion.user_name = cotizacionData.cotizacion.solicitud.user.name;
-      this.cotizacion.user_email = cotizacionData.cotizacion.solicitud.user.email;
-      this.cotizacion.user_phone = cotizacionData.cotizacion.solicitud.user.phone;
+      this.report.cotizacion.id = cotizacionData.cotizacion.id;
+      this.report.cotizacion.updated_at = cotizacionData.cotizacion.updated_at;
+      this.report.cotizacion.solicitud_id = cotizacionData.cotizacion.solicitud.id;
+      this.report.cotizacion.faena_rut = cotizacionData.cotizacion.solicitud.faena.rut;
+      this.report.cotizacion.faena_name = cotizacionData.cotizacion.solicitud.faena.name;
+      this.report.cotizacion.faena_address = cotizacionData.cotizacion.solicitud.faena.address;
+      this.report.cotizacion.faena_city = cotizacionData.cotizacion.solicitud.faena.city;
+      this.report.cotizacion.faena_contact = cotizacionData.cotizacion.solicitud.faena.contact;
+      this.report.cotizacion.faena_phone = cotizacionData.cotizacion.solicitud.faena.phone;
+      this.report.cotizacion.sucursal_rut = cotizacionData.sucursal.rut;
+      this.report.cotizacion.sucursal_name = cotizacionData.sucursal.name;
+      this.report.cotizacion.sucursal_address = cotizacionData.sucursal.address;
+      this.report.cotizacion.sucursal_city = cotizacionData.sucursal.city;
+      this.report.cotizacion.user_name = cotizacionData.cotizacion.solicitud.user.name;
+      this.report.cotizacion.user_email = cotizacionData.cotizacion.solicitud.user.email;
+      this.report.cotizacion.user_phone = cotizacionData.cotizacion.solicitud.user.phone;
       
-      this.partes = [];
+      this.report.partes = [];
       cotizacionData.cotizacion.partes.forEach((p: any) => {
-        this.partes.push(
+        this.report.partes.push(
           {
             'id': p.id,
             'nparte': p.nparte,
@@ -98,7 +100,7 @@ export class PDFCotizacionComponent implements OnInit {
   public loadReportCotizacion(): void {
     
     this.loading = true;
-    this._cotizacionesService.getReportCotizacion(this.cotizacion.id)
+    this._cotizacionesService.getReportCotizacion(this.report.cotizacion.id)
     .subscribe(
       //Success request
       (response: any) => {
@@ -180,8 +182,8 @@ export class PDFCotizacionComponent implements OnInit {
 
   public getTotalNetoPartes(): number
   {
-    return this.partes.reduce(
-      (carry, parte) => {
+    return this.report.partes.reduce(
+      (carry: any, parte: any) => {
         return carry + (parte.monto * parte.cantidad);
       },
       0
