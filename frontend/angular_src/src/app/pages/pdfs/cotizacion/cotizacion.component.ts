@@ -1,16 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { CotizacionesService } from 'src/app/services/cotizaciones.service';
 import { UtilsService } from 'src/app/services/utils.service';
 
 @Component({
-  selector: 'app-cotizacion',
+  selector: 'app-pdf-cotizacion',
   templateUrl: './cotizacion.component.html',
   styleUrls: ['./cotizacion.component.css']
 })
 export class PDFCotizacionComponent implements OnInit {
 
+  @ViewChild('btnModalReportTrigger') btnModalReportTrigger: ElementRef | undefined;
 
   cotizacion: any = {
     id: -1,
@@ -106,6 +107,8 @@ export class PDFCotizacionComponent implements OnInit {
         this.loadReportData(response.data);
 
         this.loading = false;
+
+        this.displayReportModalCotizacion();
       },
       //Error request
       (errorResponse: any) => {
@@ -168,6 +171,13 @@ export class PDFCotizacionComponent implements OnInit {
         this.loading = false;
       }
     );
+  }
+
+  private displayReportModalCotizacion(): void {
+    if(this.btnModalReportTrigger !== undefined)
+    {
+      this.btnModalReportTrigger.nativeElement.click();
+    }
   }
 
   public exportCotizacionToPdf(): void {
