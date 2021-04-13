@@ -1,158 +1,140 @@
-<!--  Modal content for report -->
-<div id="modalReportCotizacion" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel"
-    aria-hidden="true">
-  <button type="button" #btnModalReportTrigger data-toggle="modal" data-target="#modalReportCotizacion"></button>
-  <div class="modal-dialog modal-xl">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title mt-0">Documento Cotizacion {{ cotizacion.id >= 0 ? '#' + cotizacion.id : ''}}</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div id="divReport" class="report-container">
+<div id="divReport" class="report-container">
 
-          <!-- Header -->
-          <table id="tbHeader">
-            <thead>
-              <tr>
-                <th colspan="4" class="th-center">
-                  <h4>COTIZACIÓN</h4>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td colspan="2" rowspan="5" class="td-logo">
-                  <img src="assets/images/reports/cotizacion/logo.png" class="img-thumbnail" alt="">
-                </td>
-                <td class="td-title">Nº Cotización</td>
-                <td>{{ cotizacion.id > 0 ? cotizacion.id : '' }}</td>
-              </tr>
-              <tr>
-                <td class="td-title">Fecha de Cotización</td>
-                <td>{{ cotizacion.updated_at !== null ? dateStringFormat(cotizacion.updated_at) : '' }}</td>
-              </tr>
-              <tr>
-                <td class="td-title">Forma de Pago</td>
-                <td>EP mensual</td>
-              </tr>
-              <tr>
-                <td class="td-title">Plazo de Entrega</td>
-                <td>A convenir</td>
-              </tr>
-              <tr>
-                <td class="td-title">Lugar de Entrega</td>
-                <td>A convenir</td>
-              </tr>
-            </tbody>
-          </table>
+  <!-- Header -->
+  <table id="tbHeader">
+    <thead>
+      <tr>
+        <th colspan="4" class="th-center">
+          <h4>COTIZACIÓN</h4>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td colspan="2" rowspan="5" class="td-logo">
+          <img src="assets/images/reports/cotizacion/logo.png" class="img-thumbnail" alt="">
+        </td>
+        <td class="td-title">Nº Cotización</td>
+        <td>{{ cotizacion.id > 0 ? cotizacion.id : '' }}</td>
+      </tr>
+      <tr>
+        <td class="td-title">Fecha de Cotización</td>
+        <td>{{ cotizacion.updated_at !== null ? dateStringFormat(cotizacion.updated_at) : '' }}</td>
+      </tr>
+      <tr>
+        <td class="td-title">Forma de Pago</td>
+        <td>EP mensual</td>
+      </tr>
+      <tr>
+        <td class="td-title">Plazo de Entrega</td>
+        <td>A convenir</td>
+      </tr>
+      <tr>
+        <td class="td-title">Lugar de Entrega</td>
+        <td>A convenir</td>
+      </tr>
+    </tbody>
+  </table>
 
-          <!-- Details -->
-          <table id="tbDetails">
-            <thead>
-              <tr>
-                <th colspan="2">DATOS DEL CLIENTE</th>
-                <th colspan="2">DATOS DEL PROVEEDOR</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td class="td-title">Razón social</td>
-                <td class="td-name">{{ cotizacion.faena_name !== null ? cotizacion.faena_name : "" }}</td>
-                <td class="td-title">Razón social</td>
-                <td>{{ cotizacion.sucursal_name !== null ? cotizacion.sucursal_name : "" }}</td>
-              </tr>
-              <tr>
-                <td class="td-title">RUT</td>
-                <td>{{ cotizacion.faena_rut !== null ? cotizacion.faena_rut : "" }}</td>
-                <td class="td-title">RUT</td>
-                <td>{{ cotizacion.sucursal_rut !== null ? cotizacion.sucursal_rut : "" }}</td>
-              </tr>
-              <tr>
-                <td class="td-title">Dirección</td>
-                <td>{{ cotizacion.faena_address !== null ? cotizacion.faena_address : "" }}</td>
-                <td class="td-title">Dirección</td>
-                <td>{{ cotizacion.sucursal_address !== null ? cotizacion.sucursal_address : "" }}</td>
-              </tr>
-              <tr>
-                <td class="td-title">Ciudad</td>
-                <td>{{ cotizacion.faena_city !== null ? cotizacion.faena_city : "" }}</td>
-                <td class="td-title">Ciudad</td>
-                <td>{{ cotizacion.sucursal_city !== null ? cotizacion.sucursal_city : "" }}</td>
-              </tr>
-              <tr>
-                <td class="td-title">Contacto</td>
-                <td>{{ cotizacion.faena_contact !== null ? cotizacion.faena_contact : "" }}</td>
-                <td class="td-title">Cotiza</td>
-                <td>{{ cotizacion.user_name !== null ? cotizacion.user_name : "" }}</td>
-              </tr>
-              <tr>
-                <td class="td-title">Teléfono/Fax</td>
-                <td>{{ cotizacion.faena_phone !== null ? cotizacion.faena_phone : "" }}</td>
-                <td class="td-title">Email</td>
-                <td>{{ cotizacion.user_email !== null ? cotizacion.user_email: "" }}</td>
-              </tr>
-              <tr>
-                <td class="td-title">Solicitud</td>
-                <td>{{ cotizacion.solicitud_id > 0 ? cotizacion.solicitud_id : "" }}</td>
-                <td class="td-title">Teléfono</td>
-                <td>{{ cotizacion.user_phone !== null ? cotizacion.user_phone : "" }}</td>
-              </tr>
-            </tbody>
-          </table>
+  <!-- Details -->
+  <table id="tbDetails">
+    <thead>
+      <tr>
+        <th colspan="2">DATOS DEL CLIENTE</th>
+        <th colspan="2">DATOS DEL PROVEEDOR</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="td-title">Razón social</td>
+        <td class="td-name">{{ cotizacion.faena_name !== null ? cotizacion.faena_name : "" }}</td>
+        <td class="td-title">Razón social</td>
+        <td>{{ cotizacion.sucursal_name !== null ? cotizacion.sucursal_name : "" }}</td>
+      </tr>
+      <tr>
+        <td class="td-title">RUT</td>
+        <td>{{ cotizacion.faena_rut !== null ? cotizacion.faena_rut : "" }}</td>
+        <td class="td-title">RUT</td>
+        <td>{{ cotizacion.sucursal_rut !== null ? cotizacion.sucursal_rut : "" }}</td>
+      </tr>
+      <tr>
+        <td class="td-title">Dirección</td>
+        <td>{{ cotizacion.faena_address !== null ? cotizacion.faena_address : "" }}</td>
+        <td class="td-title">Dirección</td>
+        <td>{{ cotizacion.sucursal_address !== null ? cotizacion.sucursal_address : "" }}</td>
+      </tr>
+      <tr>
+        <td class="td-title">Ciudad</td>
+        <td>{{ cotizacion.faena_city !== null ? cotizacion.faena_city : "" }}</td>
+        <td class="td-title">Ciudad</td>
+        <td>{{ cotizacion.sucursal_city !== null ? cotizacion.sucursal_city : "" }}</td>
+      </tr>
+      <tr>
+        <td class="td-title">Contacto</td>
+        <td>{{ cotizacion.faena_contact !== null ? cotizacion.faena_contact : "" }}</td>
+        <td class="td-title">Cotiza</td>
+        <td>{{ cotizacion.user_name !== null ? cotizacion.user_name : "" }}</td>
+      </tr>
+      <tr>
+        <td class="td-title">Teléfono/Fax</td>
+        <td>{{ cotizacion.faena_phone !== null ? cotizacion.faena_phone : "" }}</td>
+        <td class="td-title">Email</td>
+        <td>{{ cotizacion.user_email !== null ? cotizacion.user_email: "" }}</td>
+      </tr>
+      <tr>
+        <td class="td-title">Solicitud</td>
+        <td>{{ cotizacion.solicitud_id > 0 ? cotizacion.solicitud_id : "" }}</td>
+        <td class="td-title">Teléfono</td>
+        <td>{{ cotizacion.user_phone !== null ? cotizacion.user_phone : "" }}</td>
+      </tr>
+    </tbody>
+  </table>
 
-          <!-- Partes -->
-          <table id="tbPartes">
-            <thead>
-              <tr>
-                <th>Ítem</th>
-                <th>Cantidad</th>
-                <th>Unidad</th>
-                <th>Nº de parte</th>
-                <th>Producto</th>
-                <th>Tiempo de entrega</th>
-                <th>Precio Unitario</th>
-                <th>Precio Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let parte of partes;index as i">
-                <td align="center">{{ (i + 1) }}</td>
-                <td align="right">{{ parte.cantidad !== null ? parte.cantidad : "" }}</td>
-                <td align="center">UN</td>
-                <td align="center">{{ parte.nparte !== null ? parte.nparte : "" }}</td>
-                <td>{{ parte.descripcion !== null ? parte.descripcion : "" }}</td>
-                <td align="center">{{ parte.tiempoentrega !== null ? (((parte.tiempoentrega > 0) && (parte.tiempoentrega
-                  < 10)) ? (parte.tiempoentrega===1 ? "1 dia habil" : "0" + parte.tiempoentrega + " dias habiles" ) :
-                      parte.tiempoentrega + " dias habiles" ) : "" }}</td>
-                <td align="right">{{ parte.monto !== null ? "$" + moneyStringFormat(parte.monto) : "" }}</td>
-                <td align="right">{{ parte.monto !== null ? "$" + moneyStringFormat(parte.monto * parte.cantidad) : ""
-                  }}</td>
-              </tr>
-            </tbody>
-            <tfoot>
-              <tr>
-                <td colspan="6"></td>
-                <td class="td-content">Total Neto</td>
-                <td class="td-content" align="right">{{ "$" + moneyStringFormat(getTotalNetoPartes()) }}</td>
-              </tr>
-            </tfoot>
-          </table>
+  <!-- Partes -->
+  <table id="tbPartes">
+    <thead>
+      <tr>
+        <th>Ítem</th>
+        <th>Cantidad</th>
+        <th>Unidad</th>
+        <th>Nº de parte</th>
+        <th>Producto</th>
+        <th>Tiempo de entrega</th>
+        <th>Precio Unitario</th>
+        <th>Precio Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let parte of partes;index as i">
+        <td align="center">{{ (i + 1) }}</td>
+        <td align="right">{{ parte.cantidad !== null ? parte.cantidad : "" }}</td>
+        <td align="center">UN</td>
+        <td align="center">{{ parte.nparte !== null ? parte.nparte : "" }}</td>
+        <td>{{ parte.descripcion !== null ? parte.descripcion : "" }}</td>
+        <td align="center">{{ parte.tiempoentrega !== null ? (((parte.tiempoentrega > 0) && (parte.tiempoentrega
+          < 10)) ? (parte.tiempoentrega===1 ? "1 dia habil" : "0" + parte.tiempoentrega + " dias habiles" ) :
+              parte.tiempoentrega + " dias habiles" ) : "" }}</td>
+        <td align="right">{{ parte.monto !== null ? "$" + moneyStringFormat(parte.monto) : "" }}</td>
+        <td align="right">{{ parte.monto !== null ? "$" + moneyStringFormat(parte.monto * parte.cantidad) : ""
+          }}</td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="6"></td>
+        <td class="td-content">Total Neto</td>
+        <td class="td-content" align="right">{{ "$" + moneyStringFormat(getTotalNetoPartes()) }}</td>
+      </tr>
+    </tfoot>
+  </table>
 
-        </div>
+</div>
 
-        <hr>
+<hr>
 
-        <div>
-          <button class="btn btn-primary" (click)="exportCotizacionToPdf()"
-              [disabled]="(cotizacion.id < 1) || (loading === true)">
-            {{ loading === true ? 'Cargando...' : 'Descargar PDF '}}
-          </button>
-        </div>
-      </div>
-
-    </div><!-- /.modal-content -->
-  </div><!-- /.modal-dialog -->
-</div><!-- /.modal -->
+<div>
+  <button class="btn btn-primary" (click)="exportCotizacionToPdf()"
+      [disabled]="(cotizacion.id < 1) || (loading === true)">
+    {{ loading === true ? 'Cargando...' : 'Descargar PDF '}}
+  </button>
+</div>

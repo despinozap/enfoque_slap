@@ -1,4 +1,4 @@
-import { Component, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { Component, ElementRef, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
@@ -16,6 +16,8 @@ const Swal = require('../../../../assets/vendors/sweetalert2/sweetalert2.all.min
   styleUrls: ['./details.component.css']
 })
 export class CotizacionesDetailsComponent implements OnInit {
+  
+  @ViewChild('btnModalReportTrigger') btnModalReportTrigger: ElementRef | undefined;
 
   @ViewChildren(DataTableDirective)
   datatableELements: QueryList<DataTableDirective> = null as any;
@@ -255,6 +257,13 @@ export class CotizacionesDetailsComponent implements OnInit {
         this.goTo_cotizacionesList();
       }
     );
+  }
+
+  public displayReportModalCotizacion(): void {
+    if(this.btnModalReportTrigger !== undefined)
+    {
+      this.btnModalReportTrigger.nativeElement.click();
+    }
   }
 
   private loadMotivosRechazo() {

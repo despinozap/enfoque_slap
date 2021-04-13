@@ -15,38 +15,6 @@ export class UtilsService {
 
   constructor() { }
 
-  public dateStringFormat(value: string): string {
-    return (value !== null) ? value.substr(0, 10) : '';
-  }
-
-  public moneyStringFormat(value: number): string {
-    let sValue = value.toString();
-    let dotIndex = sValue.indexOf('.');
-
-    let index = (dotIndex >= 0) ? dotIndex : sValue.length; 
-
-    let response = '';
-    let counter = 0;
-    while(index > 0)
-    {
-      response = sValue[--index] + response;
-
-      if((++counter === 3) && (index > 0))
-      {
-        response = ',' + response;
-        counter = 0;
-      }
-    }
-
-    return (dotIndex > 0) ? response + sValue.substring(dotIndex, sValue.length) : response;
-  }
-
-  private parseNumberToTwoDigits(n: number): string {
-    let strN = n.toString();
-    
-    return strN.length < 2 ? `0${strN}` : strN;
-  }
-
   public exportHtmlToPdf(htmlContent: HTMLElement, filename: string): void {
     const doc = new jsPDF('p', 'pt', 'a4');
     const options = {
@@ -60,8 +28,8 @@ export class UtilsService {
         .then((canvas) => {
           const img = canvas.toDataURL('image/PNG');
           // Añadir imagen Canvas a PDF
-          const bufferX = 15;
-          const bufferY = 15;
+          const bufferX = 40;
+          const bufferY = 40;
           const imgProps = (doc as any).getImageProperties(img);
           const pdfWidth = doc.internal.pageSize.getWidth() - 2 * bufferX;
           const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
@@ -287,5 +255,37 @@ export class UtilsService {
     }
 
     return menu;
+  }
+
+  public dateStringFormat(value: string): string {
+    return (value !== null) ? value.substr(0, 10) : '';
+  }
+
+  public moneyStringFormat(value: number): string {
+    let sValue = value.toString();
+    let dotIndex = sValue.indexOf('.');
+
+    let index = (dotIndex >= 0) ? dotIndex : sValue.length; 
+
+    let response = '';
+    let counter = 0;
+    while(index > 0)
+    {
+      response = sValue[--index] + response;
+
+      if((++counter === 3) && (index > 0))
+      {
+        response = ',' + response;
+        counter = 0;
+      }
+    }
+
+    return (dotIndex > 0) ? response + sValue.substring(dotIndex, sValue.length) : response;
+  }
+
+  private parseNumberToTwoDigits(n: number): string {
+    let strN = n.toString();
+    
+    return strN.length < 2 ? `0${strN}` : strN;
   }
 }

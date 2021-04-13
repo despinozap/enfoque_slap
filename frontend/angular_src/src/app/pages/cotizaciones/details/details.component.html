@@ -95,9 +95,9 @@
                         [disabled]="(loading === true)">
                       <i class="bx bx-check font-size-16 align-middle"></i> Definir estado comercial
                     </button>
-                    <button type="button" class="btn btn-outline-primary" (click)="exportPartesToExcel()"
+                    <button type="button" class="btn btn-outline-primary" (click)="displayReportModalCotizacion()"
                         [disabled]="(loading === true)">
-                      <i class="bx bxs-file-pdf font-size-16 align-middle"></i> Exportar a PDF
+                      <i class="bx bxs-file-pdf font-size-16 align-middle"></i> Generar documento PDF
                     </button>
                   </td>
                 </tr>
@@ -322,3 +322,22 @@
 
 </div>
 <!-- end row -->
+
+<!--  Modal content for report -->
+<div id="modalReportCotizacion" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel"
+    aria-hidden="true">
+  <button type="button" #btnModalReportTrigger data-toggle="modal" data-target="#modalReportCotizacion"></button>
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title mt-0">Documento Cotizacion {{ cotizacion.id >= 0 ? '#' + cotizacion.id : ''}}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <app-pdf-cotizacion></app-pdf-cotizacion>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
