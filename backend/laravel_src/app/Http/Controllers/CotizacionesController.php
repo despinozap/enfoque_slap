@@ -594,8 +594,7 @@ class CotizacionesController extends Controller
                     'dococcliente' => 'nullable|file|mimes:jpg,jpeg,png,bmp,pdf|max:5000', //Max size: 5mb (in kb)
                     'partes' => 'required|array|min:1',
                     'partes.*.id'  => 'required|exists:cotizacion_parte,parte_id,cotizacion_id,' . $id,
-                    'partes.*.cantidad'  => 'required|numeric|min:1',
-                    'partes.*.monto'  => 'required|numeric|min:0',
+                    'partes.*.cantidad'  => 'required|numeric|min:1'
                 ];
         
                 $validatorMessages = [
@@ -611,9 +610,7 @@ class CotizacionesController extends Controller
                     'partes.*.id.exists' => 'La parte aprobada ingresada no existe',
                     'partes.*.cantidad.required' => 'Debes ingresar la cantidad para la parte aprobada',
                     'partes.*.cantidad.numeric' => 'La cantidad para la parte aprobada debe ser numerica',
-                    'partes.*.cantidad.min' => 'La cantidad para la parte aprobada debe ser mayor a 0',
-                    'partes.*.monto.numeric' => 'El monto para la parte aprobada debe ser numerico',
-                    'partes.*.monto.min' => 'El monto para la parte aprobada debe ser mayor o igual a 0',
+                    'partes.*.cantidad.min' => 'La cantidad para la parte aprobada debe ser mayor a 0'
                 ];
         
                 $validator = Validator::make(
