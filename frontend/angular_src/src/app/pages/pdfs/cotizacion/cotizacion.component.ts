@@ -41,7 +41,7 @@ export class PDFCotizacionComponent implements OnInit {
 
   public loadReportData(cotizacionData: any)
   { 
-    if(cotizacionData.cotizacion.partes.length > 0)
+    if(cotizacionData.partes.length > 0)
     {
       this.reportData.cotizacion.id = cotizacionData.cotizacion.id;
       this.reportData.cotizacion.updated_at = cotizacionData.cotizacion.updated_at;
@@ -60,24 +60,7 @@ export class PDFCotizacionComponent implements OnInit {
       this.reportData.cotizacion.user_email = cotizacionData.cotizacion.solicitud.user.email;
       this.reportData.cotizacion.user_phone = cotizacionData.cotizacion.solicitud.user.phone;
       
-      this.reportData.partes = [];
-      cotizacionData.cotizacion.partes.forEach((p: any) => {
-        this.reportData.partes.push(
-          {
-            'id': p.id,
-            'nparte': p.nparte,
-            'descripcion': p.pivot.descripcion,
-            'cantidad': p.pivot.cantidad,
-            //'costo': p.pivot.costo,
-            //'margen': p.pivot.margen,
-            'tiempoentrega': 2,//p.pivot.tiempoentrega,
-            //'peso': p.pivot.peso,
-            //'flete': p.pivot.flete,
-            'monto': p.pivot.monto,
-            'backorder': p.pivot.backorder === 1 ? true : false,
-          }
-        )
-      });
+      this.reportData.partes = cotizacionData.partes;
     }
     else
     {

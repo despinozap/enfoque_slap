@@ -52,11 +52,22 @@ export class CotizacionesService {
     return this.httpClient.get(endpoint);
   }
 
-  public getReportCotizacion(cotizacion_id: number): Observable<any>
+  public getReportCotizacion(data: any): Observable<any>
   {
-    let endpoint: string = `${environment.ENDPOINT_BASE}/cotizaciones/report/${cotizacion_id}`;
+    let endpoint: string = `${environment.ENDPOINT_BASE}/cotizaciones/report`;
+
+    let httpOptions = { 
+      method: 'POST',
+      headers:
+      {
+        'Accept': 'application/json',
+        'enctype': 'multipart/form-data',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET,POST,OPTIONS,DELETE,PUT'
+      }
+    };
     
-    return this.httpClient.get(endpoint);
+    return this.httpClient.post(endpoint, data, httpOptions);
   }
 
   public getCotizacion(cotizacion_id: number): Observable<any>

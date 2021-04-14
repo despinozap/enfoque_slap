@@ -48,15 +48,31 @@ export class CotizacionesDetailsComponent implements OnInit {
   dtTriggerAprobar: Subject<any> = new Subject<any>();
 
   cotizacion: any = {
+    // Common fields
     id: -1,
     updated_at: null,
-    dias: -1,
     faena_name: null,
+    // Details
+    dias: -1,
     cliente_name: null,
     marca_name: null,
     estadocotizacion_id: -1,
     estadocotizacion_name: null,
-    motivorechazo_name: null
+    motivorechazo_name: null,
+    // Report
+    solicitud_id: -1,
+    faena_rut: null,
+    faena_address: null,
+    faena_city: null,
+    faena_contact: null,
+    faena_phone: null,
+    sucursal_rut: null,
+    sucursal_name: null,
+    sucursal_address: null,
+    sucursal_city: null,
+    user_name: null,
+    user_email: null,
+    user_phone: null
   };
 
   motivosRechazo: Array<any> = null as any;
@@ -139,16 +155,34 @@ export class CotizacionesDetailsComponent implements OnInit {
   { 
     if(cotizacionData['partes'].length > 0)
     {
+      // Common fields
       this.cotizacion.id = cotizacionData.id;
       this.cotizacion.updated_at = cotizacionData.updated_at;
-      this.cotizacion.dias = cotizacionData.dias;
       this.cotizacion.faena_name = cotizacionData.solicitud.faena.name;
+
+      // Details
+      this.cotizacion.dias = cotizacionData.dias;
       this.cotizacion.cliente_name = cotizacionData.solicitud.faena.cliente.name;
       this.cotizacion.marca_name = cotizacionData.solicitud.marca.name;
       this.cotizacion.estadocotizacion_id = cotizacionData.estadocotizacion.id,
       this.cotizacion.estadocotizacion_name = cotizacionData.estadocotizacion.name;
-      // If Rechazada, then store Motivo rechazo name
+      // Details - If Rechazada, then store Motivo rechazo name
       this.cotizacion.motivorechazo_name = ((this.cotizacion.estadocotizacion_id === 4) && (cotizacionData.motivorechazo !== null)) ? cotizacionData.motivorechazo.name : null
+
+      // Report
+      this.cotizacion.solicitud_id = cotizacionData.solicitud.id;
+      this.cotizacion.faena_rut = cotizacionData.solicitud.faena.rut;
+      this.cotizacion.faena_address = cotizacionData.solicitud.faena.address;
+      this.cotizacion.faena_city = cotizacionData.solicitud.faena.city;
+      this.cotizacion.faena_contact = cotizacionData.solicitud.faena.contact;
+      this.cotizacion.faena_phone = cotizacionData.solicitud.faena.phone;
+      this.cotizacion.sucursal_rut = cotizacionData.solicitud.faena.cliente.sucursal.rut;
+      this.cotizacion.sucursal_name = cotizacionData.solicitud.faena.cliente.sucursal.name;
+      this.cotizacion.sucursal_address = cotizacionData.solicitud.faena.cliente.sucursal.address;
+      this.cotizacion.sucursal_city = cotizacionData.solicitud.faena.cliente.sucursal.city;
+      this.cotizacion.user_name = cotizacionData.solicitud.user.name;
+      this.cotizacion.user_email = cotizacionData.solicitud.user.email;
+      this.cotizacion.user_phone = cotizacionData.solicitud.user.phone;
 
       this.partes = [];
       cotizacionData.partes.forEach((p: any) => {
@@ -184,15 +218,35 @@ export class CotizacionesDetailsComponent implements OnInit {
   public loadCotizacion(): void {
     
     this.loading = true;
-    this._cotizacionesService.getCotizacion(this.cotizacion.id)
+    let data = {
+      cotizaciones: [this.cotizacion.id]
+    };
+
+    this._cotizacionesService.getReportCotizacion(data)
     .subscribe(
       //Success request
       (response: any) => {
-        this.loadFormData(response.data);
-        // Uses the first datatables instance
-        this.renderDataTable(this.datatableELements.first, this.dtTrigger);
 
-        this.loading = false;
+        // Loads the first item
+        if(response.data.length > 0)
+        {
+          this.loadFormData(response.data[0]);
+          // Uses the first datatables instance
+          this.renderDataTable(this.datatableELements.first, this.dtTrigger);
+
+          this.loading = false;
+        }
+        else
+        {
+          NotificationsService.showToast(
+            'Error al cargar los datos de la cotizacion',
+            NotificationsService.messageType.error
+          );
+
+          this.loading = false;
+          this.goTo_cotizacionesList();
+        }
+        
       },
       //Error request
       (errorResponse: any) => {
@@ -258,95 +312,34 @@ export class CotizacionesDetailsComponent implements OnInit {
     );
   }
 
-  public generateReportCotizacionPDF(cotizacion_id: number): void {    
-    this.loading = true;
-    this._cotizacionesService.getReportCotizacion(cotizacion_id)
-    .subscribe(
-      //Success request
-      (response: any) => {
+  public generateReportCotizacionPDF(): void {  
 
-        if(this.reportCotizacion !== undefined)
-        {
-          this.reportCotizacion.loadReportData(response.data);
+    // If report component was found
+    if(this.reportCotizacion !== undefined)
+    {
+      let reportData = {
+        cotizacion: this.cotizacion,
+        partes: this.partes
+      };
 
-          setTimeout(() => {
-              this.reportCotizacion.exportCotizacionToPdf();
-            },
-            2000
-          );
-          
-        }
-        else
-        {
-          NotificationsService.showToast(
-            'Error al cargar los datos para el reporte de cotizacion para',
-            NotificationsService.messageType.error
-          );
-        }
+      // Set report data
+      this.reportCotizacion.reportData = reportData;
 
-        this.loading = false;
-      },
-      //Error request
-      (errorResponse: any) => {
-
-        switch(errorResponse.status)
-        {
-        
-          case 400: //Bad request
-          {
-            NotificationsService.showToast(
-              errorResponse.error.message,
-              NotificationsService.messageType.error
-            );
-
-            break;
-          }
-
-          case 405: //Permission denied
-          {
-            NotificationsService.showToast(
-              errorResponse.error.message,
-              NotificationsService.messageType.error
-            );
-
-            break;
-          }
-
-          case 412: //Object not found
-          {
-            NotificationsService.showToast(
-              errorResponse.error.message,
-              NotificationsService.messageType.warning
-            );
-
-            break;
-          }
-
-          case 500: //Internal server
-          {
-            NotificationsService.showToast(
-              errorResponse.error.message,
-              NotificationsService.messageType.error
-            );
-
-            break;
-          }
-        
-          default: //Unhandled error
-          {
-            NotificationsService.showToast(
-              'Error al cargar los datos para el reporte de cotizacion para',
-              NotificationsService.messageType.error
-            );
-  
-            break;
-
-          }
-        }
-
-        this.loading = false;
-      }
-    );
+      // Export report to PDF after 1 sec
+      setTimeout(() => {
+          this.reportCotizacion.exportCotizacionToPdf();
+        },
+        1000
+      );
+      
+    }
+    else
+    {
+      NotificationsService.showToast(
+        'Error al generar el reporte de cotizacion',
+        NotificationsService.messageType.error
+      );
+    }
   }
 
   private loadMotivosRechazo() {
