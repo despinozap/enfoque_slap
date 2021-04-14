@@ -32,7 +32,7 @@
             <tr>
               <th>
                 <div class="custom-header-checkbox custom-checkbox custom-checkbox-outline custom-checkbox-primary">
-                  <input type="checkbox" class="custom-control-input" id="chkCotizacion-header" (change)="checkCotizacionesList($event)">
+                  <input type="checkbox" class="custom-control-input" id="chkCotizacion-header" (change)="checkCotizacionesList($event)" [checked]="isCheckedItem(cotizaciones) ? (isUncheckedItem(cotizaciones) ? false : true) : false">
                   <label class="custom-control-label" for="chkCotizacion-header">Todos</label>
                 </div>
               </th>

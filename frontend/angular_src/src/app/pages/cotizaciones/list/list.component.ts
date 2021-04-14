@@ -1,6 +1,4 @@
-import { ValueTransformer } from '@angular/compiler/src/util';
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { Router } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
 import { AuthService } from 'src/app/services/auth.service';
@@ -117,7 +115,6 @@ export class CotizacionesListComponent implements OnInit {
     .subscribe(
       //Success request
       (response: any) => {
-
         this.cotizaciones = response.data;
         this.cotizaciones.forEach((cotizacion: any) => {
           cotizacion['checked'] = false;
@@ -125,7 +122,6 @@ export class CotizacionesListComponent implements OnInit {
 
         this.renderDataTable(this.datatableElement_cotizaciones);
 
-        this.loggedUser = this._authService.getLoggedUser();
         this.loading = false;
       },
       //Error request
@@ -330,23 +326,30 @@ export class CotizacionesListComponent implements OnInit {
       }
     });
 
-    this.reportsDataCotizacion.forEach((reportData) => this.generateReportCotizacionPDF(reportData, reportData.partes));
+    // Generate reports delayed by 3 secs each one
+    this.reportsDataCotizacion.forEach((cotizacion, index) => {
+        setTimeout(() => {
+          this.generateReportCotizacionPDF(cotizacion);
+        },
+        3000 * index
+      );
+    });
   }
 
-  public generateReportCotizacionPDF(cotizacion: any, partes: any[]): void {  
+  public generateReportCotizacionPDF(cotizacion: any): void {  
 
     // If report component was found
     if(this.reportCotizacion !== undefined)
     {
       let reportData = {
         cotizacion: cotizacion,
-        partes: partes
+        partes: cotizacion.partes
       };
 
       // Set report data
       this.reportCotizacion.reportData = reportData;
 
-      // Export report to PDF after 1 sec
+      // Export report to PDF after 1 sec after data loaded in report
       setTimeout(() => {
           this.reportCotizacion.exportCotizacionToPdf();
         },
@@ -500,6 +503,22 @@ export class CotizacionesListComponent implements OnInit {
   {
     let index = dataSource.findIndex((e) => {
       if(e.checked === true)
+      {
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+    });
+
+    return index >= 0 ? true : false;
+  }
+
+  public isUncheckedItem(dataSource: any[]): boolean
+  {
+    let index = dataSource.findIndex((e) => {
+      if(e.checked === false)
       {
         return true;
       }

@@ -75,7 +75,7 @@ export class PDFCotizacionComponent implements OnInit {
     const data = document.getElementById('divReport');
     if(data !== null)
     {
-      this._utilsService.exportHtmlToPdf(data, 'Cotizacion.pdf');
+      this._utilsService.exportHtmlToPdf(data, `Cotizacion-${ this.reportData.cotizacion.id }.pdf`);
     }    
   }
 
