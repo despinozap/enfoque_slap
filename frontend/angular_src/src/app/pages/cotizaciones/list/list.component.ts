@@ -178,7 +178,6 @@ export class CotizacionesListComponent implements OnInit {
     .subscribe(
       //Success request
       (response: any) => {
-
         // Load reports data
         this.loadReportsDataCotizacion(response.data);
         this.loading = false;
@@ -470,12 +469,17 @@ export class CotizacionesListComponent implements OnInit {
   public exportCotizacionesToPDF(): void {
     
     // Get selected elements id
-    let ids = this.cotizaciones.map((cotizacion:any) => {
-      if(cotizacion.checked === true)
-      {
-        return cotizacion.id;
-      }
-    });
+    let ids = this.cotizaciones.reduce(
+      (idsList, cotizacion) => {
+        if(cotizacion.checked === true)
+        {
+          idsList.push(cotizacion.id);
+        }
+
+        return idsList;
+      },
+      [] // Initial ids list
+    );
 
     // Request reports list
     this.loadReportsCotizacion(ids);

@@ -1,6 +1,7 @@
 .report-container {
   background-color: #ffffff;
   padding: 20px 20px 100px 10px;
+  width: 1000px;
 }
 
 table {
