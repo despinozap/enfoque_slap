@@ -197,9 +197,7 @@
                         <td align="left"><i class="bx bx-timer icon-table" *ngIf="(parteAprobada.backorder === true)"></i>{{ parteAprobada.nparte !== null ? parteAprobada.nparte : "" }}</td>
                         <td align="right">{{ parteAprobada.descripcion !== null ? parteAprobada.descripcion : "" }}</td>
                         <td align="right">{{ parteAprobada.tiempoentrega !== null ? parteAprobada.tiempoentrega + " dias" : "" }}</td>
-                        <td align="center">
-                          <input class="form-control" type="number" name="" id="txtParte-{{ i }}-monto" value="{{ parteAprobada.monto !== null ? parteAprobada.monto : '' }}" (change)="updateParteAprobada_monto(parteAprobada, $event)" [disabled]="loading === true ? true : (parteAprobada.checked ? false : true)">
-                        </td>
+                        <td align="right">{{ parteAprobada.monto !== null ? "$" + moneyStringFormat(parteAprobada.monto) : "" }}</td>
                       </tr>
                     </tbody>
                   </table>

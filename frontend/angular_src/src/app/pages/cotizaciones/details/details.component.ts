@@ -400,36 +400,6 @@ export class CotizacionesDetailsComponent implements OnInit {
       );
   }
 
-  public exportPartesToExcel(): void {
-
-    let data: any[] = [];
-    //Push header
-    data.push(
-      [
-        'Cantidad',
-        'N parte',
-        'Descripcion',
-        'Tiempo entrega (dias)',
-        'Monto (USD)',
-        'Backorder (SI = 1, NO = 0)'
-      ]
-    );
-
-    //Add rows
-    this.partes.forEach((p: any) => {
-      data.push([
-        p.cantidad,
-        p.nparte,
-        p.descripcion,
-        p.tiempoentrega,
-        p.monto,
-        (p.backorder === true) ? '1' : '0',
-      ]);
-    });
-
-    this._utilsService.exportTableToExcel(data, `Cotizacion_${ this.cotizacion.id }-Partes`);
-  }
-
   public moneyStringFormat(value: number): string {
     return this._utilsService.moneyStringFormat(value);
   }
@@ -525,7 +495,6 @@ export class CotizacionesDetailsComponent implements OnInit {
       let dataParte: any = {
         id: parte.id,
         cantidad: parte.cantidad,
-        monto: parte.monto,
       };
 
       partes.push(dataParte);
@@ -747,17 +716,6 @@ export class CotizacionesDetailsComponent implements OnInit {
     else
     {
       evt.target.value = parteAprobada.cantidad;
-    }
-  }
-
-  public updateParteAprobada_monto(parteAprobada: any, evt: any): void {
-    if((isNaN(evt.target.value) === false) && (parseInt(evt.target.value) >= 0))
-    {
-      parteAprobada.monto = parseInt(evt.target.value);
-    }
-    else
-    {
-      evt.target.value = parteAprobada.monto;
     }
   }
 
