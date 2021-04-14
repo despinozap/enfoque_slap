@@ -17,6 +17,7 @@ class CreateSolicitudesTable extends Migration
             $table->id();
             $table->bigInteger('faena_id')->unsigned();
             $table->bigInteger('marca_id')->unsigned();
+            $table->bigInteger('comprador_id')->unsigned();
             $table->bigInteger('user_id')->unsigned();
             $table->bigInteger('estadosolicitud_id')->unsigned();
             $table->longText('comentario')->nullable();
@@ -24,6 +25,7 @@ class CreateSolicitudesTable extends Migration
 
             $table->foreign('faena_id')->references('id')->on('faenas')->onDelete('cascade');
             $table->foreign('marca_id')->references('id')->on('marcas')->onDelete('cascade');
+            $table->foreign('comprador_id')->references('id')->on('compradores')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('estadosolicitud_id')->references('id')->on('estadosolicitudes')->onDelete('cascade');
         });

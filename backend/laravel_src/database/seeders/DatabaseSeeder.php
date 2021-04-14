@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use Illuminate\Support\Facades\DB;
+
 use Illuminate\Database\Seeder;
 use App\Models\Sucursal;
 use App\Models\Role;
@@ -12,10 +14,12 @@ use App\Models\Cliente;
 use App\Models\Faena;
 use App\Models\Marca;
 use App\Models\Parte;
+use App\Models\Comprador;
 use App\Models\Estadosolicitud;
 use App\Models\Solicitud;
 use App\Models\Estadocotizacion;
 use App\Models\Motivorechazo;
+use App\Models\Cotizacion;
 use App\Models\Proveedor;
 use App\Models\Estadooc;
 use App\Models\Estadoocparte;
@@ -91,10 +95,10 @@ class DatabaseSeeder extends Seeder
             $routepermission->save();
         }
 
+
         /*
         *   Roles
         */
-
         //Administrador
         {
             $role = new Role();
@@ -207,6 +211,7 @@ class DatabaseSeeder extends Seeder
             $role->routepermissions()->sync($routePermissionIds);
         }
 
+
         /*
         *   Sucursales
         */
@@ -216,6 +221,7 @@ class DatabaseSeeder extends Seeder
         $sucursal->address = 'SucursalDireccionTest01';
         $sucursal->city = 'SucursalCiudadTest01';
         $sucursal->save();
+
 
         /*
         *   Users
@@ -236,6 +242,7 @@ class DatabaseSeeder extends Seeder
         $user->role_id = 2; // Vendedor
         $user->save();
 
+
         /*
         *   Parameters
         */
@@ -245,6 +252,7 @@ class DatabaseSeeder extends Seeder
         $parameter->value = 740;
         $parameter->save();
 
+        
         /*
         *   Clientes
         */
@@ -256,6 +264,7 @@ class DatabaseSeeder extends Seeder
         $cliente->name = 'ClienteTest02';
         $cliente->sucursal_id = 1;
         $cliente->save();
+
 
         /*
         *   Faenas
@@ -279,6 +288,7 @@ class DatabaseSeeder extends Seeder
         $faena->phone = 'FaenaPhoneTest02';
         $faena->save();
 
+
         /*
         *   Marcas
         */
@@ -288,6 +298,7 @@ class DatabaseSeeder extends Seeder
         $marca = new Marca();
         $marca->name = 'MarcaTest02';
         $marca->save();
+
 
         /*
         *   Partes
@@ -300,6 +311,18 @@ class DatabaseSeeder extends Seeder
         $parte->marca_id = 1;
         $parte->nparte = 'NParteTest02';
         $parte->save();
+
+
+        /*
+        *   Compradores
+        */
+        $comprador = new Comprador();
+        $comprador->name = 'CompradorNombreTest01';
+        $comprador->address = 'CompradorDireccionTest01';
+        $comprador->city = 'CompradorCiudadTest01';
+        $comprador->country = 'CompradorRUTTest01';
+        $comprador->save();
+
 
         /*
         *   Estado solicitudes
@@ -314,25 +337,33 @@ class DatabaseSeeder extends Seeder
         $estadosolicitud->name = 'Cerrada';
         $estadosolicitud->save();
 
+
         /*
         *   Solicitudes
         */
-        $solicitud = new Solicitud();
-        $solicitud->faena_id = 1;
-        $solicitud->marca_id = 1;
-        $solicitud->user_id = 2;
-        $solicitud->estadosolicitud_id = 1;
-        $solicitud->comentario = 'Testing comment for SolicitudTest01';
-        $solicitud->save();
+        {
+            for($i = 0; $i <= 5; $i++)
+            {
+                $solicitud = new Solicitud();
+                $solicitud->faena_id = 1;
+                $solicitud->marca_id = 1;
+                $solicitud->comprador_id = 1;
+                $solicitud->user_id = 2;
+                $solicitud->estadosolicitud_id = 1;
+                $solicitud->comentario = 'Testing comment for SolicitudTest0' . ($i + 1);
+                $solicitud->save();
 
-        $solicitud->partes()->attach([ 
-            1 => [
-                'cantidad' => 100
-            ],
-            2 => [
-                'cantidad' => 850
-            ]
-        ]);
+                $solicitud->partes()->attach([ 
+                    1 => [
+                        'cantidad' => 10 * $i
+                    ],
+                    2 => [
+                        'cantidad' => 85 * $i
+                    ]
+                ]);
+            } 
+        }
+        
 
         /*
         *   Estado cotizaciones
@@ -350,6 +381,7 @@ class DatabaseSeeder extends Seeder
         $estadocotizacion->name = 'Rechazada';
         $estadocotizacion->save();
 
+
         /*
         *   Motivos de rechazo (cotizaciones)
         */
@@ -363,6 +395,77 @@ class DatabaseSeeder extends Seeder
         $motivorechazo->name = 'Tiempo';
         $motivorechazo->save();
 
+
+        /*
+        *   Cotizaciones
+        */
+        {
+            $success = true;
+
+            DB::beginTransaction();
+            foreach(Solicitud::whereIn('id', [2, 3, 4])->get() as $solicitud)
+            {
+                $solicitud->estadosolicitud_id = 3; // Cerrada
+                if($solicitud->save())
+                {
+                    $cotizacion = new Cotizacion();
+                    $cotizacion->solicitud_id = $solicitud->id;
+                    $cotizacion->estadocotizacion_id = 1; //Initial Estadocotizacion
+                    $cotizacion->usdvalue = 760;
+
+                    if($cotizacion->save())
+                    {
+                        //Attaching each Parte to the Cotizacion
+                        $syncData = [];
+                        foreach($solicitud->partes as $parte)
+                        {
+                            $syncData[$parte->id] =  array(
+                                'descripcion' => 'DescriptionParte-Rand' . rand(100, 999),
+                                'cantidad' => $parte->pivot->cantidad,
+                                'costo' => rand(1, 250),
+                                'margen' => rand(15, 75),
+                                'tiempoentrega' => rand(0, 40),
+                                'peso' => rand(5, 700),
+                                'flete' => rand(20, 100),
+                                'monto' => rand(2, 900),
+                                'backorder' => rand(0, 1),
+                            );
+                        }
+        
+                        // Fill randomly Partes for Cotizacion and update values on Solicitud
+                        if((!$solicitud->partes()->sync($syncData)) || (!$cotizacion->partes()->sync($syncData)))
+                        {
+                            $success = false;
+
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        $success = false;
+
+                        break;
+                    }
+                }
+                else
+                {
+                    $success = false;
+
+                    break;
+                }
+            }
+
+            if($success === true)
+            {
+                DB::commit();
+            }
+            else
+            {
+                DB::rollback();
+            }
+        }
+
+
         /*
         *   Proveedores
         */
@@ -374,6 +477,7 @@ class DatabaseSeeder extends Seeder
         $proveedor->rut = '98.765.432-1';
         $proveedor->name = 'ProveedorTest02';
         $proveedor->save();
+
 
         /*
         *   Estado ocs
@@ -387,6 +491,7 @@ class DatabaseSeeder extends Seeder
         $estadooc = new Estadooc();
         $estadooc->name = 'Cerrada';
         $estadooc->save();
+
 
         /*
         *   Estado oc partes

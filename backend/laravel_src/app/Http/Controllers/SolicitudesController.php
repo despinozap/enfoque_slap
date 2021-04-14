@@ -884,44 +884,58 @@ class SolicitudesController extends Controller
                     {
                         if($solicitud->estadosolicitud_id === 2) // If Estadosolicitud = 'Completada'
                         {
-                            DB::beginTransaction();
-
-                            $solicitud->estadosolicitud_id = 3; // Cerrada
-                            if($solicitud->save())
+                            if($usdToClp = Parameter::all()->where('name', 'usd_to_clp')->first())
                             {
-                                $cotizacion = new Cotizacion();
-                                $cotizacion->solicitud_id = $solicitud->id;
-                                $cotizacion->estadocotizacion_id = 1; //Initial Estadocotizacion
-                                $cotizacion->usdvalue = 760;
+                                DB::beginTransaction();
 
-                                if($cotizacion->save())
+                                $solicitud->estadosolicitud_id = 3; // Cerrada
+                                if($solicitud->save())
                                 {
-                                    //Attaching each Parte to the Cotizacion
-                                    $syncData = [];
-                                    foreach($solicitud->partes as $parte)
-                                    {
-                                        $syncData[$parte->id] =  array(
-                                            'descripcion' => $parte->pivot->descripcion,
-                                            'cantidad' => $parte->pivot->cantidad,
-                                            'costo' => $parte->pivot->costo,
-                                            'margen' => $parte->pivot->margen,
-                                            'tiempoentrega' => $parte->pivot->tiempoentrega,
-                                            'peso' => $parte->pivot->peso,
-                                            'flete' => $parte->pivot->flete,
-                                            'monto' => $parte->pivot->monto,
-                                            'backorder' => $parte->pivot->backorder,
-                                        );
-                                    }
-                    
-                                    if($cotizacion->partes()->sync($syncData))
-                                    {
-                                        DB::commit();
+                                    $cotizacion = new Cotizacion();
+                                    $cotizacion->solicitud_id = $solicitud->id;
+                                    $cotizacion->estadocotizacion_id = 1; //Initial Estadocotizacion
+                                    $cotizacion->usdvalue = 760;
 
-                                        $response = HelpController::buildResponse(
-                                            201,
-                                            'Solicitud cerrada',
-                                            null
-                                        );
+                                    if($cotizacion->save())
+                                    {
+                                        //Attaching each Parte to the Cotizacion
+                                        $syncData = [];
+                                        foreach($solicitud->partes as $parte)
+                                        {
+                                            $syncData[$parte->id] =  array(
+                                                'descripcion' => $parte->pivot->descripcion,
+                                                'cantidad' => $parte->pivot->cantidad,
+                                                'costo' => $parte->pivot->costo,
+                                                'margen' => $parte->pivot->margen,
+                                                'tiempoentrega' => $parte->pivot->tiempoentrega,
+                                                'peso' => $parte->pivot->peso,
+                                                'flete' => $parte->pivot->flete,
+                                                'monto' => $parte->pivot->monto,
+                                                'backorder' => $parte->pivot->backorder,
+                                            );
+                                        }
+                        
+                                        if($cotizacion->partes()->sync($syncData))
+                                        {
+                                            DB::commit();
+
+                                            $response = HelpController::buildResponse(
+                                                201,
+                                                'Solicitud cerrada',
+                                                null
+                                            );
+                                        }
+                                        else
+                                        {
+                                            DB::rollback();
+
+                                            $response = HelpController::buildResponse(
+                                                500,
+                                                'Error al crear la cotizacion',
+                                                null
+                                            );
+                                        }
+                                        
                                     }
                                     else
                                     {
@@ -941,19 +955,16 @@ class SolicitudesController extends Controller
 
                                     $response = HelpController::buildResponse(
                                         500,
-                                        'Error al crear la cotizacion',
+                                        'Error al cerrar la solicitud',
                                         null
                                     );
                                 }
-                                
                             }
                             else
                             {
-                                DB::rollback();
-
                                 $response = HelpController::buildResponse(
                                     500,
-                                    'Error al cerrar la solicitud',
+                                    'Error al obtener el valor USD para conversion',
                                     null
                                 );
                             }

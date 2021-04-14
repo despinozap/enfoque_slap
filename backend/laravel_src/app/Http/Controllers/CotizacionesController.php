@@ -8,7 +8,6 @@ use Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
-use App\Models\Parameter;
 use App\Models\Sucursal;
 use App\Models\Solicitud;
 use App\Models\Parte;

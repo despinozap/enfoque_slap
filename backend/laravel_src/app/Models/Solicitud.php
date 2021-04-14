@@ -37,6 +37,11 @@ class Solicitud extends Model
         return $this->belongsTo(Marca::class);
     }
 
+    public function comprador()
+    {
+        return $this->belongsTo(Comprador::class);
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
