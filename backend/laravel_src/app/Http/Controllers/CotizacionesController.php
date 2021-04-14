@@ -427,9 +427,9 @@ class CotizacionesController extends Controller
                 {
                     if($cotizaciones = ($user->role->id === 2) ? // By role
                         // If Vendedor filters only the belonging data
-                        Cotizacion::select('cotizaciones.*')->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')->where('solicitudes.user_id', '=', $user->id)->get() :
+                        Cotizacion::whereIn('id', $request->cotizaciones)->select('cotizaciones.*')->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')->where('solicitudes.user_id', '=', $user->id)->get() :
                         // For any other role
-                        Cotizacion::all()
+                        Cotizacion::whereIn('id', $request->cotizaciones)->get()
                     )
                     {
                         foreach($cotizaciones as $cotizacion) 
