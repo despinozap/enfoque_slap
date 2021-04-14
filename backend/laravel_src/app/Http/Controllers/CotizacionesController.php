@@ -224,6 +224,7 @@ class CotizacionesController extends Controller
                             'created_at',
                         ]);
 
+                        $cotizacion->solicitud;
                         $cotizacion->solicitud->makeHidden([
                             'partes',
                             'faena_id',
@@ -238,11 +239,17 @@ class CotizacionesController extends Controller
                         $cotizacion->solicitud->faena->makeHidden(['cliente_id', 'created_at', 'updated_at']);
     
                         $cotizacion->solicitud->faena->cliente;
-                        $cotizacion->solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
+                        $cotizacion->solicitud->faena->cliente->makeHidden(['sucursal_id', 'created_at', 'updated_at']);
+
+                        $cotizacion->solicitud->faena->cliente->sucursal;
+                        $cotizacion->solicitud->faena->cliente->sucursal->makeHidden([
+                            'created_at',
+                            'updated_at'
+                        ]);
                         
                         $cotizacion->solicitud->marca;
                         $cotizacion->solicitud->marca->makeHidden(['created_at', 'updated_at']);
-    
+
                         $cotizacion->estadocotizacion;
                         $cotizacion->estadocotizacion->makeHidden(['created_at', 'updated_at']);
 
@@ -250,6 +257,38 @@ class CotizacionesController extends Controller
                         if($cotizacion->motivorechazo !== null)
                         {
                             $cotizacion->motivorechazo->makeHidden(['created_at', 'updated_at']);
+                        }
+
+                        $cotizacion->solicitud->user;
+                        $cotizacion->solicitud->user->makeHidden(['created_at', 'updated_at']);
+    
+                        $cotizacion->partes;
+                        foreach($cotizacion->partes as $parte)
+                        {
+                            $parte->makeHidden([
+                                'marca',
+                                'marca_id', 
+                                'created_at', 
+                                'updated_at'
+                            ]);
+    
+                            if($parte->pivot->monto !== null)
+                            {
+                                $parte->pivot->monto = $parte->pivot->monto * $cotizacion->usdvalue;
+                            }
+                            
+                            $parte->pivot->makeHidden([
+                                'costo',
+                                'margen',
+                                'peso',
+                                'flete',
+                                'backorder',
+                                'cotizacion_id',
+                                'parte_id',
+                                'marca_id', 
+                                'created_at', 
+                                'updated_at'
+                            ]);
                         }
     
                         $cotizacion->partes;
@@ -348,32 +387,53 @@ class CotizacionesController extends Controller
         return $response;
     }
 
-    public function report($id)
+    public function report(Request $request)
     {
         try
         {
             $user = Auth::user();
             if($user->role->hasRoutepermission('cotizaciones report'))
             {
-                if($sucursal = Sucursal::first())
+                $validatorInput = $request->only(
+                    'cotizaciones'
+                );
+                
+                $validatorRules = [
+                    'cotizaciones' => 'required|array|min:1',
+                    'cotizaciones.*'  => 'required|exists:cotizaciones,id',
+                ];
+        
+                $validatorMessages = [
+                    'cotizaciones.required' => 'Debes seleccionar las cotizaciones',
+                    'cotizaciones.array' => 'Lista de cotizaciones es invalida',
+                    'cotizaciones.min' => 'El reporte debe contener al menos 1 cotizacion',
+                    'cotizaciones.*.exists' => 'La lista de cotizaciones es invalida',
+                ];
+        
+                $validator = Validator::make(
+                    $validatorInput,
+                    $validatorRules,
+                    $validatorMessages
+                );
+        
+                if ($validator->fails()) 
                 {
-                    $sucursal->makeHidden([
-                        'created_at',
-                        'updated_at'
-                    ]);
-
-                    if($cotizacion = Cotizacion::find($id))
+                    $response = HelpController::buildResponse(
+                        400,
+                        $validator->errors(),
+                        null
+                    );
+                }
+                else        
+                {
+                    if($cotizaciones = ($user->role->id === 2) ? // By role
+                        // If Vendedor filters only the belonging data
+                        Cotizacion::select('cotizaciones.*')->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')->where('solicitudes.user_id', '=', $user->id)->get() :
+                        // For any other role
+                        Cotizacion::all()
+                    )
                     {
-                        if(($user->role_id === 2) && ($cotizacion->solicitud->user_id !== $user->id))
-                        {
-                            //If Vendedor and cotizacion doesn't belong
-                            $response = HelpController::buildResponse(
-                                405,
-                                'No tienes acceso a visualizar esta cotizacion',
-                                null
-                            );
-                        }
-                        else
+                        foreach($cotizaciones as $cotizacion) 
                         {
                             $cotizacion->dias;
                             $cotizacion->makeHidden([
@@ -383,6 +443,7 @@ class CotizacionesController extends Controller
                                 'created_at',
                             ]);
 
+                            $cotizacion->solicitud;
                             $cotizacion->solicitud->makeHidden([
                                 'partes',
                                 'faena_id',
@@ -397,10 +458,25 @@ class CotizacionesController extends Controller
                             $cotizacion->solicitud->faena->makeHidden(['cliente_id', 'created_at', 'updated_at']);
         
                             $cotizacion->solicitud->faena->cliente;
-                            $cotizacion->solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
+                            $cotizacion->solicitud->faena->cliente->makeHidden(['sucursal_id', 'created_at', 'updated_at']);
+
+                            $cotizacion->solicitud->faena->cliente->sucursal;
+                            $cotizacion->solicitud->faena->cliente->sucursal->makeHidden([
+                                'created_at',
+                                'updated_at'
+                            ]);
                             
                             $cotizacion->solicitud->marca;
                             $cotizacion->solicitud->marca->makeHidden(['created_at', 'updated_at']);
+
+                            $cotizacion->estadocotizacion;
+                            $cotizacion->estadocotizacion->makeHidden(['created_at', 'updated_at']);
+
+                            $cotizacion->motivorechazo;
+                            if($cotizacion->motivorechazo !== null)
+                            {
+                                $cotizacion->motivorechazo->makeHidden(['created_at', 'updated_at']);
+                            }
 
                             $cotizacion->solicitud->user;
                             $cotizacion->solicitud->user->makeHidden(['created_at', 'updated_at']);
@@ -433,38 +509,23 @@ class CotizacionesController extends Controller
                                     'updated_at'
                                 ]);
                             }
-                            
-                            $data = [
-                                'cotizacion' => $cotizacion,
-                                'sucursal' => $sucursal
-                            ];
-
-                            $response = HelpController::buildResponse(
-                                200,
-                                null,
-                                $data
-                            );
                         }
-                        
-                    }   
-                    else     
-                    {
+
                         $response = HelpController::buildResponse(
-                            400,
-                            'La cotizacion no existe',
-                            null
+                            200,
+                            null,
+                            $cotizaciones
                         );
                     }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            500,
+                            'Error al obtener el reporte de cotizacion',
+                            null
+                        );
+                    }                     
                 }
-                else
-                {
-                    $response = HelpController::buildResponse(
-                        400,
-                        'La sucursal no existe',
-                        null
-                    );
-                }
-                
             }
             else
             {
@@ -479,7 +540,7 @@ class CotizacionesController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al obtener la cotizacion [!]',
+                'Error al obtener el reporte de cotizacion [!]',
                 null
             );
         }

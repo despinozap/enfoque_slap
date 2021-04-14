@@ -250,9 +250,11 @@ class DatabaseSeeder extends Seeder
         */
         $cliente = new Cliente();
         $cliente->name = 'ClienteTest01';
+        $cliente->sucursal_id = 1;
         $cliente->save();
         $cliente = new Cliente();
         $cliente->name = 'ClienteTest02';
+        $cliente->sucursal_id = 1;
         $cliente->save();
 
         /*

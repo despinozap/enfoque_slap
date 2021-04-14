@@ -128,6 +128,7 @@ class ClientesController extends Controller
                 {
                     $cliente = new Cliente();
                     $cliente->fill($request->all());
+                    $cliente->sucursal_id = 1; // Sucursal Chile by default
                     
                     if($cliente->save())
                     {
