@@ -168,6 +168,7 @@ export class CotizacionesListComponent implements OnInit {
 
   public loadReportsCotizacion(ids: any)
   {
+    console.log('Loading IDS', ids);
     this.loading = true;
 
     let data = {

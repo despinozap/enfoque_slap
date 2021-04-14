@@ -76,6 +76,8 @@
               <td align="center">
                 <a [routerLink]="['details', cotizacion.id]" class="btn-table btn btn-secondary" title="Detalle"><i
                   class="bx bx-zoom-in"></i></a>
+                <a (click)="loadReportsCotizacion([cotizacion.id])" class="btn-table btn btn-secondary" title="Generar PDF"><i
+                    class="bx bxs-file-pdf"></i></a>
                 <a [routerLink]="" (click)="removeCotizacion(cotizacion)" class="btn-table btn btn-secondary"
                     title="Eliminar"><i class="bx bx-trash-alt"></i></a>
               </td>
