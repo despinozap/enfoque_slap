@@ -35,6 +35,10 @@ table tbody tr td.td-right {
 }
 
 /* Table Header */
+table#tbHeader thead {
+  border: none;
+}
+
 table#tbHeader thead tr th h4 {
   font-weight: bold;
 }
