@@ -1,3 +1,4 @@
+import { ValueTransformer } from '@angular/compiler/src/util';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
@@ -6,6 +7,7 @@ import { AuthService } from 'src/app/services/auth.service';
 import { CotizacionesService } from 'src/app/services/cotizaciones.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { UtilsService } from 'src/app/services/utils.service';
+import { PDFCotizacionComponent } from '../../pdfs/cotizacion/cotizacion.component';
 
 /* SweetAlert2 */
 const Swal = require('../../../../assets/vendors/sweetalert2/sweetalert2.all.min.js');
@@ -17,6 +19,7 @@ const Swal = require('../../../../assets/vendors/sweetalert2/sweetalert2.all.min
 })
 export class CotizacionesListComponent implements OnInit {
 
+  @ViewChild('reportCotizacion') reportCotizacion: PDFCotizacionComponent = null as any;
   @ViewChild(DataTableDirective, {static: false})
   datatableElement_cotizaciones: DataTableDirective = null as any;
   dtOptions: any = {
@@ -50,6 +53,8 @@ export class CotizacionesListComponent implements OnInit {
   loggedUser: any = {
     role_id: -1,
   };
+
+  reportsDataCotizacion: any[] = [];
 
   constructor(
     private _authService: AuthService,
@@ -164,6 +169,199 @@ export class CotizacionesListComponent implements OnInit {
       }
     );
   }
+
+  public loadReportsCotizacion(ids: any)
+  {
+    this.loading = true;
+
+    let data = {
+      cotizaciones: ids
+    };
+
+    this._cotizacionesService.getReportCotizacion(data)
+    .subscribe(
+      //Success request
+      (response: any) => {
+
+        // Load reports data
+        this.loadReportsDataCotizacion(response.data);
+        this.loading = false;
+      },
+      //Error request
+      (errorResponse: any) => {
+        switch(errorResponse.status)
+        {     
+          case 405: //Permission denied
+          {
+            NotificationsService.showAlert(
+              errorResponse.error.message,
+              NotificationsService.messageType.error
+            );
+
+            break;
+          }
+
+          case 500: //Internal server
+          {
+            NotificationsService.showAlert(
+              errorResponse.error.message,
+              NotificationsService.messageType.error
+            );
+
+            break;
+          }
+        
+          default: //Unhandled error
+          {
+            NotificationsService.showAlert(
+              'Error al intentar cargar la lista de reportes',
+              NotificationsService.messageType.error
+            )
+        
+            break;
+          }
+        }
+
+        this.reportsDataCotizacion = [];
+        this.loading = false;
+      }
+    );
+  }
+  
+  private loadReportsDataCotizacion(reportsData: any)
+  { 
+    this.reportsDataCotizacion = [];
+    let cotizacion: any;
+
+    reportsData.forEach((cotizacionData: any) => {
+
+      cotizacion = {
+        // Common fields
+        id: -1,
+        updated_at: null,
+        faena_name: null,
+        // Details
+        dias: -1,
+        cliente_name: null,
+        marca_name: null,
+        estadocotizacion_id: -1,
+        estadocotizacion_name: null,
+        motivorechazo_name: null,
+        // Report
+        solicitud_id: -1,
+        faena_rut: null,
+        faena_address: null,
+        faena_city: null,
+        faena_contact: null,
+        faena_phone: null,
+        sucursal_rut: null,
+        sucursal_name: null,
+        sucursal_address: null,
+        sucursal_city: null,
+        user_name: null,
+        user_email: null,
+        user_phone: null,
+        //Partes
+        partes: []
+      };
+
+      if(cotizacionData['partes'].length > 0)
+      {
+        // Common fields
+        cotizacion.id = cotizacionData.id;
+        cotizacion.updated_at = cotizacionData.updated_at;
+        cotizacion.faena_name = cotizacionData.solicitud.faena.name;
+
+        // Details
+        cotizacion.dias = cotizacionData.dias;
+        cotizacion.cliente_name = cotizacionData.solicitud.faena.cliente.name;
+        cotizacion.marca_name = cotizacionData.solicitud.marca.name;
+        cotizacion.estadocotizacion_id = cotizacionData.estadocotizacion.id,
+        cotizacion.estadocotizacion_name = cotizacionData.estadocotizacion.name;
+        // Details - If Rechazada, then store Motivo rechazo name
+        cotizacion.motivorechazo_name = ((cotizacion.estadocotizacion_id === 4) && (cotizacionData.motivorechazo !== null)) ? cotizacionData.motivorechazo.name : null
+
+        // Report
+        cotizacion.solicitud_id = cotizacionData.solicitud.id;
+        cotizacion.faena_rut = cotizacionData.solicitud.faena.rut;
+        cotizacion.faena_address = cotizacionData.solicitud.faena.address;
+        cotizacion.faena_city = cotizacionData.solicitud.faena.city;
+        cotizacion.faena_contact = cotizacionData.solicitud.faena.contact;
+        cotizacion.faena_phone = cotizacionData.solicitud.faena.phone;
+        cotizacion.sucursal_rut = cotizacionData.solicitud.faena.cliente.sucursal.rut;
+        cotizacion.sucursal_name = cotizacionData.solicitud.faena.cliente.sucursal.name;
+        cotizacion.sucursal_address = cotizacionData.solicitud.faena.cliente.sucursal.address;
+        cotizacion.sucursal_city = cotizacionData.solicitud.faena.cliente.sucursal.city;
+        cotizacion.user_name = cotizacionData.solicitud.user.name;
+        cotizacion.user_email = cotizacionData.solicitud.user.email;
+        cotizacion.user_phone = cotizacionData.solicitud.user.phone;
+
+        cotizacion.checked = false;
+
+        cotizacionData.partes.forEach((p: any) => {
+          cotizacion.partes.push(
+            {
+              'id': p.id,
+              'nparte': p.nparte,
+              'descripcion': p.pivot.descripcion,
+              'cantidad': p.pivot.cantidad,
+              //'costo': p.pivot.costo,
+              //'margen': p.pivot.margen,
+              'tiempoentrega': p.pivot.tiempoentrega,
+              //'peso': p.pivot.peso,
+              //'flete': p.pivot.flete,
+              'monto': p.pivot.monto,
+              'backorder': p.pivot.backorder === 1 ? true : false,
+            }
+          )
+        });
+
+        this.reportsDataCotizacion.push(cotizacion);
+      }
+      else
+      {
+        NotificationsService.showToast(
+          'Error al intentar cargar la lista de partes de la cotizacion',
+          NotificationsService.messageType.error
+        );
+
+        this.reportsDataCotizacion = [];
+        this.loading = false;
+      }
+    });
+
+    this.reportsDataCotizacion.forEach((reportData) => this.generateReportCotizacionPDF(reportData, reportData.partes));
+  }
+
+  public generateReportCotizacionPDF(cotizacion: any, partes: any[]): void {  
+
+    // If report component was found
+    if(this.reportCotizacion !== undefined)
+    {
+      let reportData = {
+        cotizacion: cotizacion,
+        partes: partes
+      };
+
+      // Set report data
+      this.reportCotizacion.reportData = reportData;
+
+      // Export report to PDF after 1 sec
+      setTimeout(() => {
+          this.reportCotizacion.exportCotizacionToPdf();
+        },
+        1000
+      );
+      
+    }
+    else
+    {
+      NotificationsService.showToast(
+        'Error al generar el reporte de cotizacion',
+        NotificationsService.messageType.error
+      );
+    }
+  }
   
   public removeCotizacion(cotizacion: any)
   {
@@ -266,30 +464,18 @@ export class CotizacionesListComponent implements OnInit {
 
   }
 
-  public exportCotizacionesToExcel(): void {
-
-    let data: any[] = [];
-    //Push header
-    data.push(['Cotizacion', 'Fecha', 'Cliente', 'Marca', 'Ejecutivo', 'Partes', 'Dias', 'Monto (USD)', 'Estado']);
-    //Add checked rows
-    this.cotizaciones.forEach((c: any) => {
-      if(c.checked === true)
+  public exportCotizacionesToPDF(): void {
+    
+    // Get selected elements id
+    let ids = this.cotizaciones.map((cotizacion:any) => {
+      if(cotizacion.checked === true)
       {
-        data.push([
-          c.id,
-          this._utilsService.dateStringFormat(c.updated_at),
-          c.solicitud.faena.cliente.name,
-          c.solicitud.marca.name,
-          c.solicitud.user.name,
-          c.partes_total,
-          c.dias,
-          c.monto,
-          c.estadocotizacion.name
-        ]);
+        return cotizacion.id;
       }
     });
 
-    this._utilsService.exportTableToExcel(data, 'Cotizaciones');
+    // Request reports list
+    this.loadReportsCotizacion(ids);
   }
 
   public dateStringFormat(value: string): string {
