@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
+import { min } from 'rxjs/operators';
 import { AuthService } from 'src/app/services/auth.service';
 import { CotizacionesService } from 'src/app/services/cotizaciones.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
@@ -53,6 +54,7 @@ export class CotizacionesListComponent implements OnInit {
   };
 
   reportsDataCotizacion: any[] = [];
+  swalBox: any;
 
   constructor(
     private _authService: AuthService,
@@ -166,9 +168,32 @@ export class CotizacionesListComponent implements OnInit {
     );
   }
 
+  private showReportStatus(status: string)
+  {
+    let el = document.getElementById('swal2-content');
+    if(el !== null)
+    {
+      el.innerHTML = `${status} ..`;
+    }
+  }
+
   public loadReportsCotizacion(ids: any)
   {
-    console.log('Loading IDS', ids);
+    Swal.queue([{
+      title: 'Generar PDF',
+      imageUrl: 'assets/images/icons/pdf.png',
+      imageWidth: 88,
+      imageHeight: 88,
+      text: 'Solicitiando información de reportabilidad ..',
+      showConfirmButton: false,
+      showCancelButton: false,
+      allowOutsideClick: false,
+      showLoaderOnConfirm: true,
+      preConfirm: () => {
+      
+      }    
+    }]);
+
     this.loading = true;
 
     let data = {
@@ -179,16 +204,21 @@ export class CotizacionesListComponent implements OnInit {
     .subscribe(
       //Success request
       (response: any) => {
+        this.showReportStatus('Información de reportabilidad obtenida');
+        
         // Load reports data
-        this.loadReportsDataCotizacion(response.data);
+        this.parseReportsDataCotizacion(response.data);
         this.loading = false;
       },
       //Error request
       (errorResponse: any) => {
+
         switch(errorResponse.status)
         {     
           case 405: //Permission denied
           {
+            Swal.close();
+
             NotificationsService.showAlert(
               errorResponse.error.message,
               NotificationsService.messageType.error
@@ -199,6 +229,8 @@ export class CotizacionesListComponent implements OnInit {
 
           case 500: //Internal server
           {
+            Swal.close();
+
             NotificationsService.showAlert(
               errorResponse.error.message,
               NotificationsService.messageType.error
@@ -209,6 +241,8 @@ export class CotizacionesListComponent implements OnInit {
         
           default: //Unhandled error
           {
+            Swal.close();
+
             NotificationsService.showAlert(
               'Error al intentar cargar la lista de reportes',
               NotificationsService.messageType.error
@@ -224,8 +258,10 @@ export class CotizacionesListComponent implements OnInit {
     );
   }
   
-  private loadReportsDataCotizacion(reportsData: any)
+  private parseReportsDataCotizacion(reportsData: any)
   { 
+    this.showReportStatus('Analizando información de reportabilidad');
+
     this.reportsDataCotizacion = [];
     let cotizacion: any;
 
@@ -316,6 +352,8 @@ export class CotizacionesListComponent implements OnInit {
       }
       else
       {
+        Swal.close();
+
         NotificationsService.showToast(
           'Error al intentar cargar la lista de partes de la cotizacion',
           NotificationsService.messageType.error
@@ -327,20 +365,24 @@ export class CotizacionesListComponent implements OnInit {
     });
 
     // Generate reports delayed by 3 secs each one
-    this.reportsDataCotizacion.forEach((cotizacion, index) => {
+    this.reportsDataCotizacion.forEach((cotizacion, index, arr) => {
         setTimeout(() => {
-          this.generateReportCotizacionPDF(cotizacion);
+          this.showReportStatus(`Generando reporte de Cotización ·${cotizacion.id}`);
+
+          this.generateReportCotizacionPDF(cotizacion, (index === arr.length -1) ? true : false);
         },
         3000 * index
       );
     });
   }
 
-  public generateReportCotizacionPDF(cotizacion: any): void {  
+  public generateReportCotizacionPDF(cotizacion: any, last: boolean): void {  
 
     // If report component was found
     if(this.reportCotizacion !== undefined)
     {
+      this.showReportStatus(`Construyendo reporte de Cotización #${cotizacion.id}`);
+
       let reportData = {
         cotizacion: cotizacion,
         partes: cotizacion.partes
@@ -351,7 +393,20 @@ export class CotizacionesListComponent implements OnInit {
 
       // Export report to PDF after 1 sec after data loaded in report
       setTimeout(() => {
+          this.showReportStatus(`Descargando reporte de Cotización #${cotizacion.id}`);
+
           this.reportCotizacion.exportCotizacionToPdf();
+
+          // If it's the last report, then close notification
+          if(last === true)
+          {
+            setTimeout(() => {
+                Swal.close();
+              },
+              1000
+            );
+          }
+
         },
         1000
       );
@@ -359,6 +414,8 @@ export class CotizacionesListComponent implements OnInit {
     }
     else
     {
+      Swal.close();
+
       NotificationsService.showToast(
         'Error al generar el reporte de cotizacion',
         NotificationsService.messageType.error
@@ -366,6 +423,25 @@ export class CotizacionesListComponent implements OnInit {
     }
   }
   
+  public exportCotizacionesToPDF(): void {
+    
+    // Get selected elements id
+    let ids = this.cotizaciones.reduce(
+      (idsList, cotizacion) => {
+        if(cotizacion.checked === true)
+        {
+          idsList.push(cotizacion.id);
+        }
+
+        return idsList;
+      },
+      [] // Initial ids list
+    );
+
+    // Request reports list
+    this.loadReportsCotizacion(ids);
+  }
+
   public removeCotizacion(cotizacion: any)
   {
     Swal.fire({
@@ -465,25 +541,6 @@ export class CotizacionesListComponent implements OnInit {
       }
     });
 
-  }
-
-  public exportCotizacionesToPDF(): void {
-    
-    // Get selected elements id
-    let ids = this.cotizaciones.reduce(
-      (idsList, cotizacion) => {
-        if(cotizacion.checked === true)
-        {
-          idsList.push(cotizacion.id);
-        }
-
-        return idsList;
-      },
-      [] // Initial ids list
-    );
-
-    // Request reports list
-    this.loadReportsCotizacion(ids);
   }
 
   public dateStringFormat(value: string): string {
