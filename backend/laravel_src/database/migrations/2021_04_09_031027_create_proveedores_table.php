@@ -15,9 +15,12 @@ class CreateProveedoresTable extends Migration
     {
         Schema::create('proveedores', function (Blueprint $table) {
             $table->id();
+            $table->bigInteger('comprador_id')->unsigned();
             $table->string('rut');
             $table->string('name');
             $table->timestamps();
+
+            $table->foreign('comprador_id')->references('id')->on('compradores')->onDelete('cascade');
         });
     }
 

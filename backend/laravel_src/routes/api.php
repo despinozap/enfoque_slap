@@ -12,6 +12,7 @@ use App\Http\Controllers\FaenasController;
 use App\Http\Controllers\MarcasController;
 use App\Http\Controllers\SolicitudesController;
 use App\Http\Controllers\CotizacionesController;
+use App\Http\Controllers\OcsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -103,4 +104,7 @@ Route::middleware(['auth:api', 'cors'])->group(function()
     Route::post('/cotizaciones/reject/{id}', [CotizacionesController::class, 'reject']);
     Route::post('/cotizaciones/close/{id}', [CotizacionesController::class, 'close']);
     Route::delete('/cotizaciones/{id}', [CotizacionesController::class, 'destroy']);
+
+    // OCs
+    Route::get('/ocs', [OcsController::class, 'index']);
 });

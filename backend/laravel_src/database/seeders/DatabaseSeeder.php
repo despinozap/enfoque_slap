@@ -23,6 +23,7 @@ use App\Models\Cotizacion;
 use App\Models\Proveedor;
 use App\Models\Estadooc;
 use App\Models\Estadoocparte;
+use App\Models\OC;
 
 class DatabaseSeeder extends Seeder
 {
@@ -85,6 +86,8 @@ class DatabaseSeeder extends Seeder
             'cotizaciones reject',
             'cotizaciones close',
             'cotizaciones destroy',
+            //Ocs
+            'ocs index',
         ];
 
         //Add route permissions
@@ -154,6 +157,8 @@ class DatabaseSeeder extends Seeder
                 'cotizaciones reject',
                 'cotizaciones close',
                 'cotizaciones destroy',
+                //Ocs
+                'ocs index',
             ];
 
             $routePermissionIds = [];
@@ -196,6 +201,8 @@ class DatabaseSeeder extends Seeder
                 'cotizaciones reject',
                 'cotizaciones close',
                 'cotizaciones destroy',
+                //Ocs
+                'ocs index',
             ];
 
             $routePermissionIds = [];
@@ -470,10 +477,12 @@ class DatabaseSeeder extends Seeder
         *   Proveedores
         */
         $proveedor = new Proveedor();
+        $proveedor->comprador_id = $comprador->id;
         $proveedor->rut = '12.345.678-9';
         $proveedor->name = 'ProveedorTest01';
         $proveedor->save();
         $proveedor = new Proveedor();
+        $proveedor->comprador_id = $comprador->id;
         $proveedor->rut = '98.765.432-1';
         $proveedor->name = 'ProveedorTest02';
         $proveedor->save();
@@ -505,5 +514,74 @@ class DatabaseSeeder extends Seeder
         $estadoocparte = new Estadoocparte();
         $estadoocparte->name = 'Entregado';
         $estadoocparte->save();
+
+        /*
+        *   OCs
+        */
+        {
+            foreach(Cotizacion::whereIn('id', [3, 4])->get() as $cotizacion)
+            {
+                DB::beginTransaction();
+
+                $cotizacion->estadocotizacion_id = 3; // Aprobada
+                $cotizacion->motivorechazo_id = null; // Removes Motivorechazo if it had
+
+                if($cotizacion->save())
+                {
+                    $success = true;
+                    $path = null;
+
+                    $oc = new OC();
+                    $oc->cotizacion_id = $cotizacion->id;
+                    $oc->estadooc_id = 1; //Initial Estadooc
+                    $oc->noccliente = '1234';
+                    $oc->usdvalue = $cotizacion->usdvalue;
+
+                    if($oc->save())
+                    {
+                        //Attaching each Parte to the Cotizacion
+                        $syncData = [];
+
+                        foreach($cotizacion->partes as $parte)
+                        {
+                            $syncData[$parte->id] =  array(
+                                'estadoocparte_id' => 1, // Pendiente
+                                'descripcion' => $parte->pivot->descripcion,
+                                'cantidad' => $parte->pivot->cantidad,
+                                'cantidadpendiente' => $parte->pivot->cantidad,
+                            );
+                        }
+
+
+                        if($success === true)
+                        {
+                            if($oc->partes()->sync($syncData))
+                            {
+                                DB::commit();
+                            }
+                            else
+                            {
+                                DB::rollback();
+                            }
+                        }
+                        else
+                        {
+                            //Error message already set
+                        }
+                        
+                    }
+                    else
+                    {
+                        DB::rollback();
+                    }
+                   
+                }
+                else
+                {
+                    DB::rollback();
+                }
+            }
+
+        }
     }
 }
