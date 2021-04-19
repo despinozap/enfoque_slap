@@ -88,6 +88,9 @@ class DatabaseSeeder extends Seeder
             'cotizaciones destroy',
             //Ocs
             'ocs index',
+            //Compradores
+            'compradores index',
+            'compradores show',
             //Proveedores
             'proveedores index',
             'proveedores store',
@@ -165,6 +168,9 @@ class DatabaseSeeder extends Seeder
                 'cotizaciones destroy',
                 //Ocs
                 'ocs index',
+                //Compradores
+                'compradores index',
+                'compradores show',
                 //Proveedores
                 'proveedores index',
                 'proveedores store',

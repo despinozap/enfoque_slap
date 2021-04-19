@@ -13,6 +13,7 @@ use App\Http\Controllers\MarcasController;
 use App\Http\Controllers\SolicitudesController;
 use App\Http\Controllers\CotizacionesController;
 use App\Http\Controllers\OcsController;
+use App\Http\Controllers\CompradoresController;
 use App\Http\Controllers\ProveedoresController;
 
 /*
@@ -104,6 +105,10 @@ Route::middleware(['auth:api', 'cors'])->group(function()
     Route::post('/cotizaciones/reject/{id}', [CotizacionesController::class, 'reject']);
     Route::post('/cotizaciones/close/{id}', [CotizacionesController::class, 'close']);
     Route::delete('/cotizaciones/{id}', [CotizacionesController::class, 'destroy']);
+
+    // Compradores
+    Route::get('/compradores', [CompradoresController::class, 'index']);
+    Route::get('/compradores/{id}', [CompradoresController::class, 'show']);
 
     // Proveedores
     Route::get('/compradores/{comprador_id}/proveedores', [ProveedoresController::class, 'index']);

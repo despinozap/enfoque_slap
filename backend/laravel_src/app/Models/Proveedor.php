@@ -16,6 +16,11 @@ class Proveedor extends Model
 
     public function comprador()
     {
-        return $this->belongsTo(Comprado::class);
+        return $this->belongsTo(Comprador::class);
+    }
+
+    public function ocs()
+    {
+        return $this->hasMany(Oc::class);
     }
 }
