@@ -45,6 +45,7 @@ import { PartesEditComponent } from './pages/partes/edit/edit.component';
 import { CotizacionesListComponent } from './pages/cotizaciones/list/list.component';
 import { CotizacionesDetailsComponent } from './pages/cotizaciones/details/details.component';
 import { PDFCotizacionComponent } from './pages/pdfs/cotizacion/cotizacion.component';
+import { OcsListComponent } from './pages/ocs/list/list.component';
 
 
 /* Routes */
@@ -82,6 +83,7 @@ const routes: Routes = [
       { path: 'partes/edit/:id', component: PartesEditComponent },
       { path: 'cotizaciones', component: CotizacionesListComponent },
       { path: 'cotizaciones/details/:id', component: CotizacionesDetailsComponent },
+      { path: 'ocs', component: OcsListComponent },
     ]
   },
   { path: '**', redirectTo: 'login', pathMatch: 'full' } //any other page, redirects to base path
@@ -120,6 +122,7 @@ const routes: Routes = [
     CotizacionesListComponent,
     CotizacionesDetailsComponent,
     PDFCotizacionComponent,
+    OcsListComponent,
   ],
   imports: [
     BrowserModule,

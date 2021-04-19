@@ -197,6 +197,12 @@ export class UtilsService {
               'icon': 'bx-money',
               'header': false,
               'route': '/panel/cotizaciones'
+            },
+            {
+              'title': 'OCs',
+              'icon': 'bx-hive',
+              'header': false,
+              'route': '/panel/ocs'
             }
           ]
         };
@@ -238,6 +244,12 @@ export class UtilsService {
                   'route': 'cotizaciones'
                 }
               ]
+            },
+            {
+              'title': 'OCs',
+              'icon': 'bx-hive',
+              'header': false,
+              'route': '/panel/ocs'
             }
           ]
         };

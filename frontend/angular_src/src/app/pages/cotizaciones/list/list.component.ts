@@ -1,7 +1,6 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
-import { min } from 'rxjs/operators';
 import { AuthService } from 'src/app/services/auth.service';
 import { CotizacionesService } from 'src/app/services/cotizaciones.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
@@ -16,7 +15,7 @@ const Swal = require('../../../../assets/vendors/sweetalert2/sweetalert2.all.min
   templateUrl: './list.component.html',
   styleUrls: ['./list.component.css']
 })
-export class CotizacionesListComponent implements OnInit {
+export class CotizacionesListComponent implements OnInit, AfterViewInit {
 
   @ViewChild('reportCotizacion') reportCotizacion: PDFCotizacionComponent = null as any;
   @ViewChild(DataTableDirective, {static: false})
@@ -54,17 +53,12 @@ export class CotizacionesListComponent implements OnInit {
   };
 
   reportsDataCotizacion: any[] = [];
-  swalBox: any;
 
   constructor(
     private _authService: AuthService,
     private _cotizacionesService: CotizacionesService,
     private _utilsService: UtilsService
   ) { 
-
-    this.loggedUser = {
-      role_id: -1,
-    };
   }
 
   ngOnInit(): void {

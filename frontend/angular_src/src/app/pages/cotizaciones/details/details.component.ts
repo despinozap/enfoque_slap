@@ -3,6 +3,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
 import { from, Subject } from 'rxjs';
+import { AuthService } from 'src/app/services/auth.service';
 import { CotizacionesService } from 'src/app/services/cotizaciones.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { UtilsService } from 'src/app/services/utils.service';
@@ -52,6 +53,7 @@ export class CotizacionesDetailsComponent implements OnInit {
     id: -1,
     updated_at: null,
     faena_name: null,
+    usdvalue: null,
     // Details
     dias: -1,
     cliente_name: null,
@@ -112,14 +114,29 @@ export class CotizacionesDetailsComponent implements OnInit {
   */
   ESTADOCOMERCIAL_FORM: number = -1;
 
+
+  loggedUser: any = {
+    role_id: -1,
+  };
+  
   constructor(
     private router: Router,
     private route: ActivatedRoute,
+    private _authService: AuthService,
     private _cotizacionesService: CotizacionesService,
     private _utilsService: UtilsService
   ) { }
 
   ngOnInit(): void {
+    //For loggedUser
+    {
+      this._authService.loggedUser$.subscribe((data) => {
+        this.loggedUser = data.user;
+      });
+      
+      this._authService.notifyLoggedUser(this._authService.NOTIFICATION_RECEIVER_CONTENTPAGE);
+    }
+
     this.sub = this.route.params.subscribe(params => {
       this.cotizacion.id = params['id'];
     });
@@ -159,6 +176,7 @@ export class CotizacionesDetailsComponent implements OnInit {
       this.cotizacion.id = cotizacionData.id;
       this.cotizacion.updated_at = cotizacionData.updated_at;
       this.cotizacion.faena_name = cotizacionData.solicitud.faena.name;
+      this.cotizacion.usdvalue = cotizacionData.usdvalue;
 
       // Details
       this.cotizacion.dias = cotizacionData.dias;
