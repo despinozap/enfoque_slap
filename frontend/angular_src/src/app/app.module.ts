@@ -45,7 +45,11 @@ import { PartesEditComponent } from './pages/partes/edit/edit.component';
 import { CotizacionesListComponent } from './pages/cotizaciones/list/list.component';
 import { CotizacionesDetailsComponent } from './pages/cotizaciones/details/details.component';
 import { PDFCotizacionComponent } from './pages/pdfs/cotizacion/cotizacion.component';
+import { CompradoresListComponent } from './pages/compradores/list/list.component';
 import { OcsListComponent } from './pages/ocs/list/list.component';
+import { ProveedoresListComponent } from './pages/compradores/proveedores/list/list.component';
+import { ProveedoresCreateComponent } from './pages/compradores/proveedores/create/create.component';
+import { ProveedoresEditComponent } from './pages/compradores/proveedores/edit/edit.component';
 
 
 /* Routes */
@@ -83,6 +87,10 @@ const routes: Routes = [
       { path: 'partes/edit/:id', component: PartesEditComponent },
       { path: 'cotizaciones', component: CotizacionesListComponent },
       { path: 'cotizaciones/details/:id', component: CotizacionesDetailsComponent },
+      { path: 'compradores', component: CompradoresListComponent },
+      { path: 'compradores/:comprador_id/proveedores/create', component: ProveedoresCreateComponent },
+      { path: 'compradores/:comprador_id/proveedores', component: ProveedoresListComponent },
+      { path: 'compradores/:comprador_id/proveedores/edit/:id', component: ProveedoresEditComponent },
       { path: 'ocs', component: OcsListComponent },
     ]
   },
@@ -122,6 +130,10 @@ const routes: Routes = [
     CotizacionesListComponent,
     CotizacionesDetailsComponent,
     PDFCotizacionComponent,
+    CompradoresListComponent,
+    ProveedoresListComponent,
+    ProveedoresCreateComponent,
+    ProveedoresEditComponent,
     OcsListComponent,
   ],
   imports: [

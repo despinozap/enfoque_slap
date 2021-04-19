@@ -1,22 +1,25 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { Router, ActivatedRoute } from '@angular/router';
 import { Faena } from 'src/app/interfaces/faena';
+import { Proveedor } from 'src/app/interfaces/proveedor';
 import { ClientesService } from 'src/app/services/clientes.service';
+import { CompradoresService } from 'src/app/services/compradores.service';
 import { FaenasService } from 'src/app/services/faenas.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
+import { ProveedoresService } from 'src/app/services/proveedores.service';
 
 @Component({
   selector: 'app-edit',
   templateUrl: './edit.component.html',
   styleUrls: ['./edit.component.css']
 })
-export class FaenasEditComponent implements OnInit {
+export class ProveedoresEditComponent implements OnInit {
 
   loading: boolean = false;
   responseErrors: any = [];
 
-  cliente: any = {
+  comprador: any = {
     id: null,
     name: null,
   };
@@ -24,7 +27,7 @@ export class FaenasEditComponent implements OnInit {
   private sub: any;
   private id: number = -1;
 
-  faenaForm: FormGroup = new FormGroup({
+  proveedorForm: FormGroup = new FormGroup({
     rut: new FormControl('', [Validators.required, Validators.minLength(1)]),
     name: new FormControl('', [Validators.required, Validators.minLength(4)]),
     address: new FormControl('', [Validators.required, Validators.minLength(1)]),
@@ -36,7 +39,7 @@ export class FaenasEditComponent implements OnInit {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private _faenasService: FaenasService,
+    private _proveedoresService: ProveedoresService,
   ) 
   {
   }
@@ -44,8 +47,8 @@ export class FaenasEditComponent implements OnInit {
   ngOnInit(): void {
     this.sub = this.route.params.subscribe(params => {
       this.id = params['id'];
-      this.cliente.id = params['cliente_id'];
-      this.loadFaena();
+      this.comprador.id = params['comprador_id'];
+      this.loadProveedor();
     });
   }
 
@@ -53,28 +56,28 @@ export class FaenasEditComponent implements OnInit {
     this.sub.unsubscribe();
   }
 
-  private loadFormData(faenaData: any)
+  private loadFormData(proveedorData: any)
   {
-    this.cliente = faenaData.cliente;
-    this.faenaForm.controls.rut.setValue(faenaData.rut);
-    this.faenaForm.controls.name.setValue(faenaData.name);
-    this.faenaForm.controls.address.setValue(faenaData.address);
-    this.faenaForm.controls.city.setValue(faenaData.city);
-    this.faenaForm.controls.contact.setValue(faenaData.contact);
-    this.faenaForm.controls.phone.setValue(faenaData.phone);
+    this.comprador = proveedorData.comprador;
+    this.proveedorForm.controls.rut.setValue(proveedorData.rut);
+    this.proveedorForm.controls.name.setValue(proveedorData.name);
+    this.proveedorForm.controls.address.setValue(proveedorData.address);
+    this.proveedorForm.controls.city.setValue(proveedorData.city);
+    this.proveedorForm.controls.contact.setValue(proveedorData.contact);
+    this.proveedorForm.controls.phone.setValue(proveedorData.phone);
   }
 
-  public loadFaena(): void {
+  public loadProveedor(): void {
     
     this.loading = true;
-    this.faenaForm.disable();
-    this._faenasService.getFaena(this.cliente.id, this.id)
+    this.proveedorForm.disable();
+    this._proveedoresService.getProveedor(this.comprador.id, this.id)
     .subscribe(
       //Success request
       (response: any) => {
         this.loading = false;
         this.loadFormData(response.data);
-        this.faenaForm.enable();
+        this.proveedorForm.enable();
       },
       //Error request
       (errorResponse: any) => {
@@ -115,7 +118,7 @@ export class FaenasEditComponent implements OnInit {
           default: //Unhandled error
           {
             NotificationsService.showToast(
-              'Error al cargar los datos de la faena',
+              'Error al cargar los datos del proveedor',
               NotificationsService.messageType.error
             );
   
@@ -125,27 +128,27 @@ export class FaenasEditComponent implements OnInit {
         }
 
         this.loading = false;
-        this.goTo_faenasList();
+        this.goTo_proveedoresList();
       }
     );
   }
 
-  public updateFaena()
+  public updateProveedor()
   {
-    this.faenaForm.disable();
+    this.proveedorForm.disable();
     this.loading = true;
     this.responseErrors = [];
 
-    let faena: Faena = {
-      rut: this.faenaForm.value.rut,
-      name: this.faenaForm.value.name,
-      address: this.faenaForm.value.address,
-      city: this.faenaForm.value.city,
-      contact: this.faenaForm.value.contact,
-      phone: this.faenaForm.value.phone
-    } as Faena;
+    let proveedor: Proveedor = {
+      rut: this.proveedorForm.value.rut,
+      name: this.proveedorForm.value.name,
+      address: this.proveedorForm.value.address,
+      city: this.proveedorForm.value.city,
+      contact: this.proveedorForm.value.contact,
+      phone: this.proveedorForm.value.phone
+    } as Proveedor;
     
-    this._faenasService.updateFaena(this.cliente.id, this.id, faena)
+    this._proveedoresService.updateProveedor(this.comprador.id, this.id, proveedor)
     .subscribe(
       //Success request
       (response: any) => {
@@ -154,11 +157,10 @@ export class FaenasEditComponent implements OnInit {
           NotificationsService.messageType.success
         );
 
-        this.goTo_faenasList();
+        this.goTo_proveedoresList();
       },
       //Error request
       (errorResponse: any) => {
-
         switch(errorResponse.status)
         {
           case 400: //Bad request
@@ -195,7 +197,7 @@ export class FaenasEditComponent implements OnInit {
               NotificationsService.messageType.warning
             );
 
-            this.goTo_faenasList();
+            this.goTo_proveedoresList();
 
             break;
           }
@@ -220,7 +222,7 @@ export class FaenasEditComponent implements OnInit {
           default: //Unhandled error
           {
             NotificationsService.showAlert(
-              'Error al actualizar la faena',
+              'Error al actualizar el proveedor',
               NotificationsService.messageType.error
             );
 
@@ -229,15 +231,15 @@ export class FaenasEditComponent implements OnInit {
 
         }
 
-        this.faenaForm.enable();
+        this.proveedorForm.enable();
         this.loading = false;
       }
     );
   }
 
-  public goTo_faenasList()
+  public goTo_proveedoresList()
   {
-    this.router.navigate([`/panel/clientes/${this.cliente.id}/faenas`]);
+    this.router.navigate([`/panel/compradores/${this.comprador.id}/proveedores`]);
   }
 
 }

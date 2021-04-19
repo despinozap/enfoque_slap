@@ -1,30 +1,30 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Faena } from 'src/app/interfaces/faena';
-import { ClientesService } from 'src/app/services/clientes.service';
-import { FaenasService } from 'src/app/services/faenas.service';
+import { Router, ActivatedRoute } from '@angular/router';
+import { Proveedor } from 'src/app/interfaces/proveedor';
+import { CompradoresService } from 'src/app/services/compradores.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
+import { ProveedoresService } from 'src/app/services/proveedores.service';
 
 @Component({
-  selector: 'app-edit',
-  templateUrl: './edit.component.html',
-  styleUrls: ['./edit.component.css']
+  selector: 'app-create',
+  templateUrl: './create.component.html',
+  styleUrls: ['./create.component.css']
 })
-export class FaenasEditComponent implements OnInit {
+export class ProveedoresCreateComponent implements OnInit {
 
-  loading: boolean = false;
-  responseErrors: any = [];
-
-  cliente: any = {
+  comprador: any = {
     id: null,
     name: null,
   };
 
-  private sub: any;
-  private id: number = -1;
+  proveedores: any[] = [];
+  loading: boolean = false;
+  responseErrors: any = [];
 
-  faenaForm: FormGroup = new FormGroup({
+  private sub: any;
+
+  proveedorForm: FormGroup = new FormGroup({
     rut: new FormControl('', [Validators.required, Validators.minLength(1)]),
     name: new FormControl('', [Validators.required, Validators.minLength(4)]),
     address: new FormControl('', [Validators.required, Validators.minLength(1)]),
@@ -32,20 +32,18 @@ export class FaenasEditComponent implements OnInit {
     contact: new FormControl('', [Validators.required, Validators.minLength(1)]),
     phone: new FormControl('', [Validators.required, Validators.minLength(1)]),
   });
-  
+
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private _faenasService: FaenasService,
-  ) 
-  {
-  }
+    private _compradoresService: CompradoresService,
+    private _proveedoresService: ProveedoresService,
+  ) { }
 
   ngOnInit(): void {
     this.sub = this.route.params.subscribe(params => {
-      this.id = params['id'];
-      this.cliente.id = params['cliente_id'];
-      this.loadFaena();
+      this.comprador.id = params['comprador_id'];
+      this.loadComprador();
     });
   }
 
@@ -53,28 +51,22 @@ export class FaenasEditComponent implements OnInit {
     this.sub.unsubscribe();
   }
 
-  private loadFormData(faenaData: any)
+  private loadFormData(compradorData: any)
   {
-    this.cliente = faenaData.cliente;
-    this.faenaForm.controls.rut.setValue(faenaData.rut);
-    this.faenaForm.controls.name.setValue(faenaData.name);
-    this.faenaForm.controls.address.setValue(faenaData.address);
-    this.faenaForm.controls.city.setValue(faenaData.city);
-    this.faenaForm.controls.contact.setValue(faenaData.contact);
-    this.faenaForm.controls.phone.setValue(faenaData.phone);
+    this.comprador.name = compradorData.name;
+    this.proveedores = compradorData.proveedores;
   }
 
-  public loadFaena(): void {
+  public loadComprador(): void {
     
     this.loading = true;
-    this.faenaForm.disable();
-    this._faenasService.getFaena(this.cliente.id, this.id)
+
+    this._compradoresService.getComprador(this.comprador.id)
     .subscribe(
       //Success request
       (response: any) => {
         this.loading = false;
         this.loadFormData(response.data);
-        this.faenaForm.enable();
       },
       //Error request
       (errorResponse: any) => {
@@ -115,7 +107,7 @@ export class FaenasEditComponent implements OnInit {
           default: //Unhandled error
           {
             NotificationsService.showToast(
-              'Error al cargar los datos de la faena',
+              'Error al cargar los datos del comprador',
               NotificationsService.messageType.error
             );
   
@@ -125,48 +117,46 @@ export class FaenasEditComponent implements OnInit {
         }
 
         this.loading = false;
-        this.goTo_faenasList();
+        this.goTo_proveedoresList();
       }
     );
   }
 
-  public updateFaena()
-  {
-    this.faenaForm.disable();
+  public storeProveedor():void {
+    
+    this.proveedorForm.disable();
     this.loading = true;
     this.responseErrors = [];
 
-    let faena: Faena = {
-      rut: this.faenaForm.value.rut,
-      name: this.faenaForm.value.name,
-      address: this.faenaForm.value.address,
-      city: this.faenaForm.value.city,
-      contact: this.faenaForm.value.contact,
-      phone: this.faenaForm.value.phone
-    } as Faena;
-    
-    this._faenasService.updateFaena(this.cliente.id, this.id, faena)
+    let proveedor: Proveedor = {
+      rut: this.proveedorForm.value.rut,
+      name: this.proveedorForm.value.name,
+      address: this.proveedorForm.value.address,
+      city: this.proveedorForm.value.city,
+      contact: this.proveedorForm.value.contact,
+      phone: this.proveedorForm.value.phone
+    } as Proveedor;
+
+    this._proveedoresService.storeProveedor(this.comprador.id, proveedor)
     .subscribe(
       //Success request
       (response: any) => {
+
         NotificationsService.showToast(
           response.message,
           NotificationsService.messageType.success
         );
 
-        this.goTo_faenasList();
+        this.goTo_proveedoresList();
       },
       //Error request
       (errorResponse: any) => {
-
+        console.log(errorResponse);
         switch(errorResponse.status)
         {
-          case 400: //Bad request
+          case 400: //Invalid request parameters
           {
-            NotificationsService.showAlert(
-              errorResponse.error.message,
-              NotificationsService.messageType.error
-            );
+            this.responseErrors = errorResponse.error.message;
 
             break;
           }
@@ -195,18 +185,11 @@ export class FaenasEditComponent implements OnInit {
               NotificationsService.messageType.warning
             );
 
-            this.goTo_faenasList();
+            this.goTo_proveedoresList();
 
             break;
           }
-        
-          case 422: //Invalid request parameters
-          {
-            this.responseErrors = errorResponse.error;
 
-            break;
-          }
-        
           case 500: //Internal server
           {
             NotificationsService.showAlert(
@@ -220,24 +203,22 @@ export class FaenasEditComponent implements OnInit {
           default: //Unhandled error
           {
             NotificationsService.showAlert(
-              'Error al actualizar la faena',
+              'Error al intentar guardar el proveedor',
               NotificationsService.messageType.error
             );
 
             break;
           }
-
         }
 
-        this.faenaForm.enable();
+        this.proveedorForm.enable();
         this.loading = false;
       }
     );
   }
 
-  public goTo_faenasList()
-  {
-    this.router.navigate([`/panel/clientes/${this.cliente.id}/faenas`]);
+  public goTo_proveedoresList(): void {
+    this.router.navigate([`/panel/compradores/${this.comprador.id}/proveedores`]);
   }
 
 }

@@ -149,6 +149,12 @@ export class UtilsService {
               ]
             },
             {
+              'title': 'Compradores',
+              'icon': 'bx-purchase-tag-alt',
+              'header': false,
+              'route': '/panel/compradores'
+            },
+            {
               'title': 'Clientes',
               'icon': 'bxs-briefcase-alt',
               'header': true,
