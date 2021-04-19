@@ -97,7 +97,6 @@ Route::middleware(['auth:api', 'cors'])->group(function()
     // Cotizaciones
     Route::get('/cotizaciones', [CotizacionesController::class, 'index']);
     Route::get('/motivosrechazo/all', [CotizacionesController::class, 'indexMotivosRechazoFull']);
-    Route::get('/cotizaciones/{id}', [CotizacionesController::class, 'show']);
     Route::post('/cotizaciones/report', [CotizacionesController::class, 'report']);
     Route::put('/cotizaciones/{id}', [CotizacionesController::class, 'update']);
     Route::post('/cotizaciones/approve/{id}', [CotizacionesController::class, 'approve']);

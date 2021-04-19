@@ -15,6 +15,37 @@ class Oc extends Model
     ];
     public $appends = ['partes_total'];
 
+    public function setMontoAttribute($value)
+    {
+        $this->attributes['monto'] = $value;
+    }
+
+    public function getUsdMontoAttribute()
+    {
+        // Partes ID's
+        $partesIds = $this->partes->reduce(function($carry, $cparte)
+            { 
+                array_push($carry, $cparte->id); 
+            
+                return $carry; 
+            }, 
+            // Initial empty array
+            array()
+        );
+        
+        // For all the Cotizacion partes match ID's with OC partes
+        $amount = $this->cotizacion->partes->whereIn('id', $partesIds)->reduce(function($carry, $parte) 
+            { 
+                // Adds the monto field multiplied by cantidad
+                return $carry += ($parte->pivot->monto * $parte->pivot->cantidad); 
+            }, 
+            // Initial value
+            0
+        );
+
+        return $amount;
+    }
+
     public function getPartesTotalAttribute()
     {
         $quantity = 0;
@@ -30,6 +61,11 @@ class Oc extends Model
     public function partes()
     {
         return $this->belongsToMany(Parte::class, 'oc_parte', 'oc_id', 'parte_id')->withPivot(['descripcion', 'estadoocparte_id', 'cantidad', 'cantidadpendiente', 'cantidadasignado', 'cantidaddespachado', 'cantidadrecibido', 'cantidadentregado'])->using(OcParte::class);
+    }
+
+    public function estadooc()
+    {
+        return $this->belongsTo(Estadooc::class);
     }
 
     public function cotizacion()

@@ -35,7 +35,18 @@ class OcsController extends Controller
                     {
                         $oc->partes_total;
                         $oc->dias;
-                        $oc->monto;
+                        
+                        // If user has role Vendedor retrieves monto converted to CLP
+                        if($user->role->id === 2)
+                        {
+                            // CLP conversion
+                            $oc->monto = $oc->usd_monto * $oc->usdvalue;
+                        }
+                        else
+                        {
+                            $oc->monto = $oc->usd_monto;
+                        }
+                        
 
                         $oc->makeHidden([
                             'cotizacion_id', 
@@ -44,30 +55,33 @@ class OcsController extends Controller
                             //'updated_at'
                         ]);
 
-                        // foreach($oc->partes as $parte)
-                        // {   
-                        //     $parte->makeHidden(['marca_id', 'created_at', 'updated_at']);
+                        foreach($oc->partes as $parte)
+                        {   
+                            $parte->makeHidden(['marca_id', 'created_at', 'updated_at']);
                             
-                        //     $parte->pivot;
-                        //     $parte->pivot->makeHidden(['cotizacion_id', 'parte_id']);
+                            $parte->pivot;
+                            $parte->pivot->makeHidden(['oc_id', 'parte_id']);
 
-                        //     $parte->marca;
-                        //     $parte->marca->makeHidden(['created_at', 'updated_at']);
-                        // }
+                            $parte->marca;
+                            $parte->marca->makeHidden(['created_at', 'updated_at']);
+                        }
+                        
 
-                        // $oc->solicitud;
-                        // $oc->solicitud->makeHidden(['partes', 'faena_id', 'marca_id', 'user_id', 'estadosolicitud_id', 'marca_id', 'created_at', 'updated_at']);
-                        // $oc->solicitud->faena;
-                        // $oc->solicitud->faena->makeHidden(['cliente_id', 'created_at', 'updated_at']);
-                        // $oc->solicitud->faena->cliente;
-                        // $oc->solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
-                        // $oc->solicitud->marca;
-                        // $oc->solicitud->marca->makeHidden(['created_at', 'updated_at']);
-                        // $oc->solicitud->user;
-                        // $oc->solicitud->user->makeHidden(['email', 'phone', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
+                        $oc->cotizacion;
+                        $oc->cotizacion->makeHidden(['partes', 'estadocotizacion_id', 'created_at', 'updated_at']);
+                        $oc->cotizacion->solicitud;
+                        $oc->cotizacion->solicitud->makeHidden(['partes', 'faena_id', 'marca_id', 'user_id', 'estadosolicitud_id', 'marca_id', 'created_at', 'updated_at']);
+                        $oc->cotizacion->solicitud->faena;
+                        $oc->cotizacion->solicitud->faena->makeHidden(['cliente_id', 'created_at', 'updated_at']);
+                        $oc->cotizacion->solicitud->faena->cliente;
+                        $oc->cotizacion->solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
+                        $oc->cotizacion->solicitud->marca;
+                        $oc->cotizacion->solicitud->marca->makeHidden(['created_at', 'updated_at']);
+                        $oc->cotizacion->solicitud->user;
+                        $oc->cotizacion->solicitud->user->makeHidden(['email', 'phone', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
 
-                        // $oc->estadocotizacion;
-                        // $oc->estadocotizacion->makeHidden(['created_at', 'updated_at']);
+                        $oc->estadooc;
+                        $oc->estadooc->makeHidden(['created_at', 'updated_at']);
                     }
 
                     $response = HelpController::buildResponse(
