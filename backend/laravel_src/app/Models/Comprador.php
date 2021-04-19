@@ -10,5 +10,12 @@ class Comprador extends Model
     use HasFactory;
 
     protected $table = 'compradores';
-    protected $fillable = ['name', 'address', 'city', 'country'];
+    protected $fillable = [
+        'rut', 'name', 'address', 'city', 'contact', 'phone' 
+    ];
+
+    public function proveedores()
+    {
+        return $this->hasMany(Proveedor::class);
+    }
 }

@@ -18,6 +18,10 @@ class CreateProveedoresTable extends Migration
             $table->bigInteger('comprador_id')->unsigned();
             $table->string('rut');
             $table->string('name');
+            $table->string('address');
+            $table->string('city');
+            $table->string('contact');
+            $table->string('phone');
             $table->timestamps();
 
             $table->foreign('comprador_id')->references('id')->on('compradores')->onDelete('cascade');

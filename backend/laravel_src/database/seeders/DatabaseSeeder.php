@@ -88,6 +88,12 @@ class DatabaseSeeder extends Seeder
             'cotizaciones destroy',
             //Ocs
             'ocs index',
+            //Proveedores
+            'proveedores index',
+            'proveedores store',
+            'proveedores show',
+            'proveedores update',
+            'proveedores destroy',
         ];
 
         //Add route permissions
@@ -159,6 +165,12 @@ class DatabaseSeeder extends Seeder
                 'cotizaciones destroy',
                 //Ocs
                 'ocs index',
+                //Proveedores
+                'proveedores index',
+                'proveedores store',
+                'proveedores show',
+                'proveedores update',
+                'proveedores destroy',
             ];
 
             $routePermissionIds = [];
@@ -324,10 +336,12 @@ class DatabaseSeeder extends Seeder
         *   Compradores
         */
         $comprador = new Comprador();
+        $comprador->rut = 'CompradorRUTTest01';
         $comprador->name = 'CompradorNombreTest01';
         $comprador->address = 'CompradorDireccionTest01';
         $comprador->city = 'CompradorCiudadTest01';
-        $comprador->country = 'CompradorRUTTest01';
+        $comprador->contact = 'CompradorContactoTest01';
+        $comprador->phone = 'CompradorTelefonoTest01';
         $comprador->save();
 
 
@@ -478,13 +492,21 @@ class DatabaseSeeder extends Seeder
         */
         $proveedor = new Proveedor();
         $proveedor->comprador_id = $comprador->id;
-        $proveedor->rut = '12.345.678-9';
-        $proveedor->name = 'ProveedorTest01';
+        $proveedor->rut = 'ProveedorRUTTest01';
+        $proveedor->name = 'ProveedorNombreTest01';
+        $proveedor->address = 'ProveedorDireccionTest01';
+        $proveedor->city = 'ProveedorCiudadTest01';
+        $proveedor->contact = 'ProveedorContactoTest01';
+        $proveedor->phone = 'ProveedorTelefonoTest01';
         $proveedor->save();
         $proveedor = new Proveedor();
         $proveedor->comprador_id = $comprador->id;
-        $proveedor->rut = '98.765.432-1';
-        $proveedor->name = 'ProveedorTest02';
+        $proveedor->rut = 'ProveedorRUTTest02';
+        $proveedor->name = 'ProveedorNombreTest02';
+        $proveedor->address = 'ProveedorDireccionTest02';
+        $proveedor->city = 'ProveedorCiudadTest02';
+        $proveedor->contact = 'ProveedorContactoTest02';
+        $proveedor->phone = 'ProveedorTelefonoTest02';
         $proveedor->save();
 
 

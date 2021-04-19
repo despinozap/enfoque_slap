@@ -11,6 +11,11 @@ class Proveedor extends Model
 
     protected $table = 'proveedores';
     protected $fillable = [
-        'comprador_id', 'rut', 'name', 
+        'comprador_id', 'rut', 'name', 'address', 'city', 'contact', 'phone' 
     ];
+
+    public function comprador()
+    {
+        return $this->belongsTo(Comprado::class);
+    }
 }

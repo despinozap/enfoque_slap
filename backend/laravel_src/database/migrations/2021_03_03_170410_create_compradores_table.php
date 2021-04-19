@@ -15,10 +15,12 @@ class CreateCompradoresTable extends Migration
     {
         Schema::create('compradores', function (Blueprint $table) {
             $table->id();
+            $table->string('rut');
             $table->string('name');
             $table->string('address');
             $table->string('city');
-            $table->string('country');
+            $table->string('contact');
+            $table->string('phone');
             $table->timestamps();
         });
     }
