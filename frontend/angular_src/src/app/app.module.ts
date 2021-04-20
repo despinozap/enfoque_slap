@@ -50,6 +50,7 @@ import { OcsListComponent } from './pages/ocs/list/list.component';
 import { ProveedoresListComponent } from './pages/compradores/proveedores/list/list.component';
 import { ProveedoresCreateComponent } from './pages/compradores/proveedores/create/create.component';
 import { ProveedoresEditComponent } from './pages/compradores/proveedores/edit/edit.component';
+import { OcsDetailsComponent } from './pages/ocs/details/details.component';
 
 
 /* Routes */
@@ -92,6 +93,7 @@ const routes: Routes = [
       { path: 'compradores/:comprador_id/proveedores', component: ProveedoresListComponent },
       { path: 'compradores/:comprador_id/proveedores/edit/:id', component: ProveedoresEditComponent },
       { path: 'ocs', component: OcsListComponent },
+      { path: 'ocs/details/:id', component: OcsDetailsComponent },
     ]
   },
   { path: '**', redirectTo: 'login', pathMatch: 'full' } //any other page, redirects to base path
@@ -135,6 +137,7 @@ const routes: Routes = [
     ProveedoresCreateComponent,
     ProveedoresEditComponent,
     OcsListComponent,
+    OcsDetailsComponent,
   ],
   imports: [
     BrowserModule,

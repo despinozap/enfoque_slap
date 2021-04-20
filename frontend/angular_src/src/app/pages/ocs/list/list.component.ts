@@ -103,7 +103,7 @@ export class OcsListComponent implements OnInit, AfterViewInit {
     this.loading = true;
 
     this.clearDataTable(this.datatableElement_ocs);
-    this._ocsService.getOcs()
+    this._ocsService.getOCs()
     .subscribe(
       //Success request
       (response: any) => {

@@ -12,14 +12,14 @@ export class OcsService {
     private httpClient: HttpClient
   ) { }
 
-  // public getOc(oc_id: number): Observable<any>
-  // {
-  //   let endpoint: string = `${environment.ENDPOINT_BASE}/ocs/${oc_id}`;
+  public getOC(oc_id: number): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/ocs/${oc_id}`;
     
-  //   return this.httpClient.get(endpoint);
-  // }
+    return this.httpClient.get(endpoint);
+  }
 
-  public getOcs(): Observable<any>
+  public getOCs(): Observable<any>
   {
     let endpoint: string = `${environment.ENDPOINT_BASE}/ocs`;
     
