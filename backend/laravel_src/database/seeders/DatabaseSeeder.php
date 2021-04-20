@@ -88,6 +88,7 @@ class DatabaseSeeder extends Seeder
             'cotizaciones destroy',
             //Ocs
             'ocs index',
+            'ocs show',
             //Compradores
             'compradores index',
             'compradores show',
@@ -168,6 +169,7 @@ class DatabaseSeeder extends Seeder
                 'cotizaciones destroy',
                 //Ocs
                 'ocs index',
+                'ocs show',
                 //Compradores
                 'compradores index',
                 'compradores show',
@@ -221,6 +223,7 @@ class DatabaseSeeder extends Seeder
                 'cotizaciones destroy',
                 //Ocs
                 'ocs index',
+                'ocs show',
             ];
 
             $routePermissionIds = [];

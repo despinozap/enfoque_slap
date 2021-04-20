@@ -150,7 +150,190 @@ class OcsController extends Controller
      */
     public function show($id)
     {
-        //
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('ocs show'))
+            {
+                if($oc = Oc::find($id))
+                {
+                    if(($user->role_id === 2) && ($oc->cotizacion->solicitud->user_id !== $user->id))
+                    {
+                        //If Vendedor and solicitud doesn't belong
+                        $response = HelpController::buildResponse(
+                            405,
+                            'No tienes acceso a visualizar esta OC',
+                            null
+                        );
+                    }
+                    else
+                    {
+                        $oc->makeHidden([
+                            'cotizacion_id',
+                            'filedata_id',
+                            'proveedor_id',
+                            'estadooc_id',
+                            'partes_total',
+                            'created_at', 
+                            'updated_at'
+                        ]);
+
+                        if($oc->proveedor)
+                        {
+                            $oc->proveedor->makeHidden([
+                                'comprador_id',
+                                'rut',
+                                'address',
+                                'city',
+                                'contact',
+                                'phone',
+                                'created_at', 
+                                'updated_at'
+                            ]);
+                        }
+    
+                        $oc->cotizacion;
+                        $oc->cotizacion->makeHidden([
+                            'solicitud_id',
+                            'motivorechazo_id',
+                            'estadocotizacion_id',
+                            'usdvalue',
+                            'partes_total',
+                            'dias',
+                            'created_at', 
+                            'updated_at'
+                        ]);
+
+                        $oc->cotizacion->solicitud;
+                        $oc->cotizacion->solicitud->makeHidden([
+                            'faena_id',
+                            'marca_id',
+                            'comprador_id',
+                            'estadosolicitud_id',
+                            'comentario',
+                            'partes_total',
+                            'user_id',
+                            'created_at', 
+                            'updated_at'
+                        ]);
+
+                        $oc->cotizacion->solicitud->faena;
+                        $oc->cotizacion->solicitud->faena->makeHidden([
+                            'cliente_id',
+                            'rut',
+                            'address',
+                            'city',
+                            'contact',
+                            'phone',
+                            'created_at',
+                            'updated_at'
+                        ]);
+    
+                        $oc->cotizacion->solicitud->faena->cliente;
+                        $oc->cotizacion->solicitud->faena->cliente->makeHidden([
+                            'sucursal_id', 
+                            'created_at', 
+                            'updated_at'
+                        ]);
+                        
+                        $oc->cotizacion->solicitud->marca;
+                        $oc->cotizacion->solicitud->marca->makeHidden(['created_at', 'updated_at']);
+
+                        $oc->estadooc;
+                        $oc->estadooc->makeHidden(['created_at', 'updated_at']);
+    
+                        $oc->partes;
+                        foreach($oc->partes as $parte)
+                        {
+                            $parte->makeHidden([
+                                'marca_id', 
+                                'created_at', 
+                                'updated_at'
+                            ]);
+    
+                            $parte->pivot->estadoocparte;
+                            $parte->pivot->estadoocparte->makeHidden([
+                                'created_at',
+                                'updated_at'
+                            ]);
+
+                            switch($user->role_id)
+                            {
+                                case 1: { // Administrador
+    
+                                    $parte->pivot->makeHidden([
+                                        'oc_id',
+                                        'parte_id',
+                                        'estadoocparte_id', 
+                                        'created_at', 
+                                        //'updated_at'
+                                    ]);
+    
+                                    break;
+                                }
+    
+                                case 2: { // Vendedor
+    
+                                    if($parte->pivot->monto !== null)
+                                    {
+                                        $parte->pivot->monto = $parte->pivot->monto * $oc->usdvalue;
+                                    }
+                                    
+                                    $parte->pivot->makeHidden([
+                                        'oc_id',
+                                        'parte_id',
+                                        'estadoocparte_id', 
+                                        'created_at', 
+                                        //'updated_at'
+                                    ]);
+    
+                                    break;
+                                }
+    
+                                default: {
+    
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        $response = HelpController::buildResponse(
+                            200,
+                            null,
+                            $oc
+                        );
+                    }
+                    
+                }   
+                else     
+                {
+                    $response = HelpController::buildResponse(
+                        400,
+                        'La OC no existe',
+                        null
+                    );
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a visualizar OCs',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al obtener la OC [!]',
+                null
+            );
+        }
+        
+
+        return $response;
     }
 
     /**
