@@ -58,11 +58,6 @@ export class SolicitudesListComponent implements OnInit {
     private _solicitudesService: SolicitudesService,
     private _utilsService: UtilsService
   ) { 
-
-    this.loggedUser = {
-      role_id: -1,
-    };
-
   }
 
   ngOnInit(): void {
@@ -123,7 +118,6 @@ export class SolicitudesListComponent implements OnInit {
 
         this.renderDataTable(this.datatableElement_solicitudes);
 
-        this.loggedUser = this._authService.getLoggedUser();
         this.loading = false;
       },
       //Error request
