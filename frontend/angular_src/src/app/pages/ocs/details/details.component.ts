@@ -1,10 +1,16 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { OcsService } from 'src/app/services/ocs.service';
+import { ProveedoresService } from 'src/app/services/proveedores.service';
 import { UtilsService } from 'src/app/services/utils.service';
+
+/* SweetAlert2 */
+const Swal = require('../../../../assets/vendors/sweetalert2/sweetalert2.all.min.js');
+
 
 @Component({
   selector: 'app-details',
@@ -33,20 +39,36 @@ export class OcsDetailsComponent implements OnInit {
     cliente_name: null,
     marca_name: null,
     proveedor_name: null,
+    comprador_id: null,
     estadooc_id: -1,
     estadooc_name: null,
   };
 
   partes: any[] = [];
+  proveedores: any[] = [];
   loading: boolean = false;
   responseErrors: any = [];
 
+
+  startOCForm: FormGroup = new FormGroup({
+    proveedor_id: new FormControl('', [Validators.required]),
+  });
+
   private sub: any;
+
+  /*
+  *   Displayed form:
+  * 
+  *       0: Partes list
+  *       1: Start OC
+  */
+  DISPLAYING_FORM: number = 0;
 
   constructor(
     private router: Router,
     private route: ActivatedRoute,
     private _ocsService: OcsService,
+    private _proveedoresService: ProveedoresService,
     private _utilsService: UtilsService
   ) { }
 
@@ -92,6 +114,7 @@ export class OcsDetailsComponent implements OnInit {
       {
         this.oc.proveedor_name = ocData.proveedor.name;
       }
+      this.oc.comprador_id = ocData.cotizacion.solicitud.comprador.id;
       this.oc.estadooc_id = ocData.estadooc.id;
       this.oc.estadooc_name = ocData.estadooc.name;
 
@@ -193,8 +216,184 @@ export class OcsDetailsComponent implements OnInit {
     );
   }
 
+  public startOC(): void{
+    Swal.fire({
+      title: 'Iniciar proceso OC',
+      text: `¿Realmente quieres inciiar el proceso de la OC #${ this.oc.id }?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#555555',
+      confirmButtonText: 'Sí, continuar',
+      cancelButtonText: 'Cancelar',
+      allowOutsideClick: false
+    }).then((result: any) => {
+      if(result.isConfirmed)
+      {
+        this.goTo_startOC();
+      }
+    });
+  }
+
+  public loadProveedores(): void {
+    
+    this.loading = true;
+
+    this._proveedoresService.getProveedores(this.oc.comprador_id)
+    .subscribe(
+      //Success request
+      (response: any) => {
+
+        this.proveedores = response.data;
+        this.loading = false;
+      },
+      //Error request
+      (errorResponse: any) => {
+
+        switch(errorResponse.status)
+        {
+        
+          case 405: //Permission denied
+          {
+            NotificationsService.showToast(
+              errorResponse.error.message,
+              NotificationsService.messageType.error
+            );
+
+            break;
+          }
+
+          case 412: //Object not found
+          {
+            NotificationsService.showToast(
+              errorResponse.error.message,
+              NotificationsService.messageType.warning
+            );
+
+            break;
+          }
+
+          case 500: //Internal server
+          {
+            NotificationsService.showToast(
+              errorResponse.error.message,
+              NotificationsService.messageType.error
+            );
+
+            break;
+          }
+        
+          default: //Unhandled error
+          {
+            NotificationsService.showToast(
+              'Error al cargar los datos de los proveedores',
+              NotificationsService.messageType.error
+            );
+  
+            break;
+
+          }
+        }
+
+        this.loading = false;
+        this.goTo_ocsList();
+      }
+    );
+  }
+
+  public submitFormStartOC(): void {
+    this.loading = true;
+    this.responseErrors = [];
+
+    this.startOCForm.disable();
+
+    let data: any = {
+      proveedor_id: this.startOCForm.value.proveedor_id
+    };
+    
+    this._ocsService.startOC(this.oc.id, data)
+      .subscribe(
+        //Success request
+        (response: any) => {
+
+          NotificationsService.showToast(
+            response.message,
+            NotificationsService.messageType.success
+          );
+
+          this.goTo_ocsList();
+        },
+        //Error request
+        (errorResponse: any) => {
+          switch (errorResponse.status) 
+          {
+            case 400: //Invalid request parameters
+              {
+                this.responseErrors = errorResponse.error.message;
+
+                break;
+              }
+
+              case 405: //Permission denied
+                {
+                  NotificationsService.showAlert(
+                    errorResponse.error.message,
+                    NotificationsService.messageType.error
+                  );
+
+                  break;
+                }
+
+            case 422: //Invalid request parameters
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+            case 500: //Internal server
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+            default: //Unhandled error
+              {
+                NotificationsService.showAlert(
+                  'Error al intentar iniciar el proceso de la OC',
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+          }
+
+          this.startOCForm.enable();
+          this.loading = false;
+        }
+      );
+  }
+
   public moneyStringFormat(value: number): string {
     return this._utilsService.moneyStringFormat(value);
+  }
+
+  public goTo_startOC(): void {
+    this.proveedores = null as any;
+    this.loadProveedores();
+
+    this.DISPLAYING_FORM = 1;
+  }
+
+  public goTo_partesList(): void {
+    this.DISPLAYING_FORM = 0;
   }
 
   public goTo_ocsList(): void {

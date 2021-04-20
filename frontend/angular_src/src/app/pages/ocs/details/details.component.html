@@ -21,6 +21,10 @@
   <div class="col-12">
     <div class="card">
       <div class="card-body">
+        <div class="alert alert-success alert-dismissible fade show" role="alert" *ngIf="(oc.estadooc_id === 1)">
+          La OC aun esta <strong>pendiente</strong>
+          <button type="button" class="ml-2 btn btn-light" aria-label="Cerrar solicitud" [disabled]="(loading === true)" (click)="startOC()"><i class="mdi mdi-thumb-up"></i> Iniciar proceso de OC</button>
+        </div>
         <h4 class="card-title">OC {{ oc.id !== null ? "#" + oc.id : '' }}</h4>
         <span class="badge" [class.badge-warning]="(oc.estadooc_id === 1)"
             [class.badge-primary]="(oc.estadooc_id === 2)"
@@ -59,37 +63,90 @@
         </div>
 
         <hr>
-        <h4 class="card-title">Lista de partes</h4>
-        <p class="card-title-desc">Lista de partes en la OC</p>
 
-        <div class="table-responsive">
+        <!-- Partes list -->
+        <div [hidden]="(DISPLAYING_FORM !== 0)">
+          <h4 class="card-title">Lista de partes</h4>
+          <p class="card-title-desc">Lista de partes en la OC</p>
 
-          <table datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger" class="table table-hover table-bordered mb-2">
-            <thead>
-              <tr>
-                <th>Cantidad</th>
-                <th>N° Parte</th>
-                <th>Descripcion</th>
-                <th>Dias estado</th>
-                <th>Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let parte of partes; index as i">
-                <td align="right">{{ parte.cantidad !== null ? parte.cantidad : "" }}</td>
-                <td align="left"><i class="bx bx-timer icon-table" *ngIf="(parte.backorder === true)"></i>{{ parte.nparte !== null ? parte.nparte : "" }}</td>
-                <td align="right">{{ parte.descripcion !== null ? parte.descripcion : "" }}</td>
-                <td align="right">{{ parte.statusdays !== null ? parte.statusdays + " dias" : ""
-                  }}</td>
-                <td align="right">{{ parte.estadoocparte_name !== null ? parte.estadoocparte_name : "" }}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="table-responsive">
+
+            <table datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger" class="table table-hover table-bordered mb-2">
+              <thead>
+                <tr>
+                  <th>Cantidad</th>
+                  <th>N° Parte</th>
+                  <th>Descripcion</th>
+                  <th>Dias estado</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let parte of partes; index as i">
+                  <td align="right">{{ parte.cantidad !== null ? parte.cantidad : "" }}</td>
+                  <td align="left"><i class="bx bx-timer icon-table" *ngIf="(parte.backorder === true)"></i>{{ parte.nparte !== null ? parte.nparte : "" }}</td>
+                  <td align="right">{{ parte.descripcion !== null ? parte.descripcion : "" }}</td>
+                  <td align="right">{{ parte.statusdays !== null ? parte.statusdays + " dias" : ""
+                    }}</td>
+                  <td align="right">{{ parte.estadoocparte_name !== null ? parte.estadoocparte_name : "" }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Start OC -->
+        <div [hidden]="(DISPLAYING_FORM !== 1)">
+          <h4 class="card-title">Procesar OC</h4>
+          <p class="card-title-desc">Completa los siguientes campos para procesar la OC</p>
+
+          <form [formGroup]="startOCForm" (ngSubmit)="submitFormStartOC()" action="#">
+          
+            <div class="row">
+              
+              <div class="col-12">
+                <div class="form-group">
+                  <label class="control-label">Proveedor</label>
+                  <!-- Backend errors -->
+                  <div class="alert alert-danger" *ngIf="(responseErrors.proveedor_id)">
+                    <div *ngFor="let errorMessage of responseErrors.proveedor_id">{{ errorMessage }}</div>
+                  </div>
+                  <select class="form-control" name="proveedor_id" id="proveedor_id" formControlName="proveedor_id">
+                    <option *ngFor="let proveedor of proveedores" [value]="proveedor.id">{{ proveedor.name }}</option>
+                  </select>
+                  <!-- Frontend errors -->
+                  <div
+                      *ngIf="(startOCForm.controls.proveedor_id.errors) && (startOCForm.controls.proveedor_id.touched) && (startOCForm.controls.proveedor_id.dirty)">
+                    <div class="error-response" *ngIf="startOCForm.controls.proveedor_id.errors.required === true">Debes
+                      seleccionar el proveedor
+                    </div>
+                    <div class="error-response" *ngIf="startOCForm.controls.proveedor_id.errors.minlength !== null">El proveedor
+                      debe ser valida</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12">
+                <div class="form-group">
+                  <button type="submit" [disabled]="(startOCForm.invalid) || (loading === true)" class="btn btn-primary mr-2">
+                    <span *ngIf="loading === true"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
+                    <span *ngIf="loading === false">Guardar</span>
+                  </button>
+                  <button type="button" class="btn btn-outline-primary" [disabled]="(loading === true)" (click)="goTo_partesList()">
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            
+            </div>
+  
+          </form>
+
         </div>
 
         <div class="row">
           <div class="col-12">
-            <div class="form-buttons mt-2">
+            <div class="form-buttons mt-2" [hidden]="(DISPLAYING_FORM === 1)">
               <button [disabled]="(loading === true)" class="btn btn-light" (click)="goTo_ocsList()">
                 <span>Volver</span>
               </button>

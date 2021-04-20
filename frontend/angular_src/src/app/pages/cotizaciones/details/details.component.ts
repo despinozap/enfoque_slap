@@ -2,7 +2,7 @@ import { Component, ElementRef, Input, OnInit, QueryList, ViewChild, ViewChildre
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
-import { from, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 import { AuthService } from 'src/app/services/auth.service';
 import { CotizacionesService } from 'src/app/services/cotizaciones.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
