@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Auth;
+use Illuminate\Support\Facades\Validator;
 
 use App\Models\Cotizacion;
 use App\Models\Oc;
@@ -239,6 +240,17 @@ class OcsController extends Controller
                         $oc->cotizacion->solicitud->marca;
                         $oc->cotizacion->solicitud->marca->makeHidden(['created_at', 'updated_at']);
 
+                        $oc->cotizacion->solicitud->comprador;
+                        $oc->cotizacion->solicitud->comprador->makeHidden([
+                            'rut',
+                            'address',
+                            'city',
+                            'contact',
+                            'phone',
+                            'created_at', 
+                            'updated_at'
+                        ]);
+
                         $oc->estadooc;
                         $oc->estadooc->makeHidden(['created_at', 'updated_at']);
     
@@ -358,6 +370,109 @@ class OcsController extends Controller
     {
         //
     }
+
+    public function start(Request $request, $id)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('ocs update'))
+            {
+                $validatorInput = $request->only(
+                    'proveedor_id'
+                );
+                
+                $validatorRules = [
+                    'proveedor_id' => 'required|exists:proveedores,id',
+                ];
+        
+                $validatorMessages = [
+                    'proveedor_id.required' => 'Debes seleccionar el proveedor',
+                    'proveedor_id.exists' => 'El proveedor no existe',
+                ];
+        
+                $validator = Validator::make(
+                    $validatorInput,
+                    $validatorRules,
+                    $validatorMessages
+                );
+        
+                if ($validator->fails()) 
+                {
+                    $response = HelpController::buildResponse(
+                        400,
+                        $validator->errors(),
+                        null
+                    );
+                }
+                else        
+                {
+                    if($oc = Oc::find($id))
+                    {
+                        if(($user->role_id === 2) && ($oc->cotizacion->solicitud->user_id !== $user->id))
+                        {
+                            //If Vendedor and solicitud doesn't belong
+                            $response = HelpController::buildResponse(
+                                405,
+                                'No tienes acceso a procesar esta OC',
+                                null
+                            );
+                        }
+                        else
+                        {
+                            $oc->estadooc_id = 2; // En proceso
+                            $oc->proveedor_id = $request->proveedor_id;
+                            
+                            if($oc->save())
+                            {
+                                $response = HelpController::buildResponse(
+                                    200,
+                                    'Proceso de OC iniciado',
+                                    null
+                                );
+                            }
+                            else
+                            {
+                                $response = HelpController::buildResponse(
+                                    500,
+                                    'Error al iniciar el proceso de la OC',
+                                    null
+                                );   
+                            }
+                        }
+                        
+                    }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            400,
+                            'La OC no existe',
+                            null
+                        );
+                    }
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a iniciar procesos de OCs',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al iniciar el proceso de la OC [!]',
+                null
+            );
+        }
+        
+        return $response;
+    }
+
 
     /**
      * Remove the specified resource from storage.

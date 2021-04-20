@@ -89,6 +89,7 @@ class DatabaseSeeder extends Seeder
             //Ocs
             'ocs index',
             'ocs show',
+            'ocs update',
             //Compradores
             'compradores index',
             'compradores show',
@@ -170,6 +171,7 @@ class DatabaseSeeder extends Seeder
                 //Ocs
                 'ocs index',
                 'ocs show',
+                'ocs update',
                 //Compradores
                 'compradores index',
                 'compradores show',
@@ -224,6 +226,7 @@ class DatabaseSeeder extends Seeder
                 //Ocs
                 'ocs index',
                 'ocs show',
+                'ocs update',
             ];
 
             $routePermissionIds = [];
