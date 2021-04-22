@@ -3,6 +3,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
+import { Comprador } from 'src/app/interfaces/comprador';
 import { Faena } from 'src/app/interfaces/faena';
 import { Marca } from 'src/app/interfaces/marca';
 import { FaenasService } from 'src/app/services/faenas.service';
@@ -40,6 +41,7 @@ export class SolicitudesCreateComponent implements OnInit {
 
   faenas: Array<Faena> = null as any;
   marcas: Array<Marca> = null as any;
+  compradores: Array<Comprador> = null as any;
   partes: any[] = [];
   loading: boolean = false;
   responseErrors: any = [];
@@ -69,6 +71,7 @@ export class SolicitudesCreateComponent implements OnInit {
   solicitudForm: FormGroup = new FormGroup({
     faena: new FormControl('', [Validators.required]),
     marca: new FormControl('', [Validators.required]),
+    comprador: new FormControl('', [Validators.required]),
     comentario: new FormControl('')
   });
 
@@ -80,8 +83,6 @@ export class SolicitudesCreateComponent implements OnInit {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private _faenasService: FaenasService,
-    private _marcasService: MarcasService,
     private _solicitudesService: SolicitudesService,
     private _utilsService: UtilsService
   ) { }
@@ -97,8 +98,7 @@ export class SolicitudesCreateComponent implements OnInit {
       {
         // New solicitud
         this.solicitudForm.disable();
-        this.loadFaenas();
-        this.loadMarcas();
+        this.prepareSolicitud();
       }
     });
   }
@@ -137,8 +137,7 @@ export class SolicitudesCreateComponent implements OnInit {
     this.solicitudForm.disable();
     this.loading = true;
 
-    this.loadFaenas();
-    this.loadMarcas();
+    this.prepareSolicitud();
 
     this._solicitudesService.getSolicitud(this.id)
     .subscribe(
@@ -204,15 +203,17 @@ export class SolicitudesCreateComponent implements OnInit {
     );
   }
 
-  private loadFaenas() {
+  private prepareSolicitud() {
     this.loading = true;
-    this._faenasService.getFaenasFull()
+    this._solicitudesService.prepareSolicitud()
       .subscribe(
         //Success request
         (response: any) => {
           this.loading = false;
 
-          this.faenas = <Array<Faena>>(response.data);
+          this.faenas = <Array<Faena>>(response.data.faenas);
+          this.marcas = <Array<Faena>>(response.data.marcas);
+          this.compradores = <Array<Faena>>(response.data.compradores);
 
           this.solicitudForm.enable();
         },
@@ -244,7 +245,7 @@ export class SolicitudesCreateComponent implements OnInit {
             default: //Unhandled error
               {
                 NotificationsService.showToast(
-                  'Error al cargar la lista de faenas',
+                  'Error al preparar la solicitud',
                   NotificationsService.messageType.error
                 );
 
@@ -253,62 +254,6 @@ export class SolicitudesCreateComponent implements OnInit {
           }
 
           this.faenas = null as any;
-          this.loading = false;
-
-          this.goTo_solicitudesList();
-        }
-      );
-  }
-
-  private loadMarcas() {
-    this.loading = true;
-    this._marcasService.getMarcas()
-      .subscribe(
-        //Success request
-        (response: any) => {
-          this.loading = false;
-
-          this.marcas = <Array<Marca>>(response.data);
-
-          this.solicitudForm.enable();
-        },
-        //Error request
-        (errorResponse: any) => {
-
-          switch (errorResponse.status) 
-          {
-            case 405: //Permission denied
-              {
-                NotificationsService.showToast(
-                  errorResponse.error.message,
-                  NotificationsService.messageType.error
-                );
-
-                break;
-              }
-
-            case 500: //Internal server
-              {
-                NotificationsService.showToast(
-                  errorResponse.error.message,
-                  NotificationsService.messageType.error
-                );
-
-                break;
-              }
-
-            default: //Unhandled error
-              {
-                NotificationsService.showToast(
-                  'Error al cargar la lista de marcas',
-                  NotificationsService.messageType.error
-                )
-
-                break;
-              }
-          }
-
-          this.marcas = null as any;
           this.loading = false;
 
           this.goTo_solicitudesList();
@@ -423,6 +368,7 @@ export class SolicitudesCreateComponent implements OnInit {
     let solicitud: any = {
       faena_id: this.solicitudForm.value.faena,
       marca_id: this.solicitudForm.value.marca,
+      comprador_id: this.solicitudForm.value.comprador,
       comentario: this.solicitudForm.value.comentario,
       partes: this.partes
     };
@@ -441,7 +387,7 @@ export class SolicitudesCreateComponent implements OnInit {
         },
         //Error request
         (errorResponse: any) => {
-
+          console.log(errorResponse);
           switch (errorResponse.status) 
           {
             case 400: //Invalid request parameters

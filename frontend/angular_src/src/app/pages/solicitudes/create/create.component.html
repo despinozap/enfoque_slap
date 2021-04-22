@@ -27,12 +27,12 @@
 
         <form [formGroup]="solicitudForm" action="#">
           <div class="row">
-            <div class="col-6">
+            <div class="col-4">
               <div class="form-group">
                 <label class="control-label">Faena</label>
                 <!-- Backend errors -->
-                <div class="alert alert-danger" *ngIf="(responseErrors.faena)">
-                  <div *ngFor="let errorMessage of responseErrors.faena">{{ errorMessage }}</div>
+                <div class="alert alert-danger" *ngIf="(responseErrors.faena_id)">
+                  <div *ngFor="let errorMessage of responseErrors.faena_id">{{ errorMessage }}</div>
                 </div>
                 <select class="form-control" name="faena" id="faena" formControlName="faena">
                   <option *ngFor="let faena of faenas" [value]="faena.id">{{ faena.cliente.name + ' - ' + faena.name }}</option>
@@ -47,12 +47,12 @@
                 </div>
               </div>
             </div>
-            <div class="col-6">
+            <div class="col-4">
               <div class="form-group">
                 <label class="control-label">Marca</label>
                 <!-- Backend errors -->
-                <div class="alert alert-danger" *ngIf="(responseErrors.marca)">
-                  <div *ngFor="let errorMessage of responseErrors.cliente">{{ errorMessage }}</div>
+                <div class="alert alert-danger" *ngIf="(responseErrors.marca_id)">
+                  <div *ngFor="let errorMessage of responseErrors.marca_id">{{ errorMessage }}</div>
                 </div>
                 <select class="form-control" name="marca" id="marca" formControlName="marca">
                   <option *ngFor="let marca of marcas" [value]="marca.id">{{ marca.name }}</option>
@@ -65,6 +65,26 @@
                   </div>
                   <div class="error-response" *ngIf="solicitudForm.controls.marca.errors.minlength !== null">La marca
                     debe ser valida</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="form-group">
+                <label class="control-label">Comprador</label>
+                <!-- Backend errors -->
+                <div class="alert alert-danger" *ngIf="(responseErrors.comprador_id)">
+                  <div *ngFor="let errorMessage of responseErrors.comprador_id">{{ errorMessage }}</div>
+                </div>
+                <select class="form-control" name="comprador" id="comprador" formControlName="comprador">
+                  <option *ngFor="let comprador of compradores" [value]="comprador.id">{{ comprador.name }}</option>
+                </select>
+                <!-- Frontend errors -->
+                <div
+                    *ngIf="(solicitudForm.controls.comprador.errors) && (solicitudForm.controls.comprador.touched) && (solicitudForm.controls.comprador.dirty)">
+                  <div class="error-response" *ngIf="solicitudForm.controls.comprador.errors.required === true">Debes
+                    seleccionar el comprador
+                  </div>
+                  <div class="error-response" *ngIf="solicitudForm.controls.comprador.errors.minlength !== null">El comprador debe ser valido</div>
                 </div>
               </div>
             </div>

@@ -95,6 +95,13 @@ export class SolicitudesService {
     return this.httpClient.post(endpoint, solicitud, httpOptions);
   }
 
+  public prepareSolicitud(): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/solicitudes/prepare`;
+    
+    return this.httpClient.get(endpoint);
+  }
+
   public removeSolicitud(id: number): Observable<any>
   {
     let endpoint: string = `${environment.ENDPOINT_BASE}/solicitudes/${id}`;

@@ -122,7 +122,7 @@ export class SolicitudesListComponent implements OnInit {
       },
       //Error request
       (errorResponse: any) => {
-
+        console.log(errorResponse);
         switch(errorResponse.status)
         {     
           case 405: //Permission denied
