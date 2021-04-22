@@ -247,11 +247,17 @@ class DatabaseSeeder extends Seeder
         *   Sucursales
         */
         $sucursal = new Sucursal();
-        $sucursal->rut = 'SucursalRUTTest01';
-        $sucursal->name = 'SucursalNombreTest01';
-        $sucursal->address = 'SucursalDireccionTest01';
-        $sucursal->city = 'SucursalCiudadTest01';
+        $sucursal->rut = '76.790.684-6';
+        $sucursal->name = 'American Parts SPA';
+        $sucursal->address = 'Coquimbo 712 Of. 401';
+        $sucursal->city = 'Antofagasta';
         $sucursal->save();
+        // $sucursal = new Sucursal();
+        // $sucursal->rut = 'SucursalRUTTest01';
+        // $sucursal->name = 'SucursalNombreTest01';
+        // $sucursal->address = 'SucursalDireccionTest01';
+        // $sucursal->city = 'SucursalCiudadTest01';
+        // $sucursal->save();
 
 
         /*
@@ -292,7 +298,7 @@ class DatabaseSeeder extends Seeder
         $cliente->sucursal_id = 1;
         $cliente->save();
         $cliente = new Cliente();
-        $cliente->name = 'ClienteTest02';
+        $cliente->name = 'Codelco';
         $cliente->sucursal_id = 1;
         $cliente->save();
 
@@ -310,13 +316,13 @@ class DatabaseSeeder extends Seeder
         $faena->phone = 'FaenaPhoneTest01';
         $faena->save();
         $faena = new Faena();
-        $faena->cliente_id = 1;
-        $faena->rut = 'RutTest02';
-        $faena->name = 'FaenaTest02';
-        $faena->address = 'FaenaAddressTest02';
-        $faena->city = 'FaenaCityTest02';
-        $faena->contact = 'FaenaContactTest02';
-        $faena->phone = 'FaenaPhoneTest02';
+        $faena->cliente_id = 2;
+        $faena->rut = '12.345.678-9';
+        $faena->name = 'Chuquicamata';
+        $faena->address = 'Chuquicamata';
+        $faena->city = 'Calama';
+        $faena->contact = 'Juan Gonzales';
+        $faena->phone = '+56998765432';
         $faena->save();
 
 
@@ -327,7 +333,7 @@ class DatabaseSeeder extends Seeder
         $marca->name = 'MarcaTest01';
         $marca->save();
         $marca = new Marca();
-        $marca->name = 'MarcaTest02';
+        $marca->name = 'Komatsu';
         $marca->save();
 
 
@@ -348,12 +354,12 @@ class DatabaseSeeder extends Seeder
         *   Compradores
         */
         $comprador = new Comprador();
-        $comprador->rut = 'CompradorRUTTest01';
-        $comprador->name = 'CompradorNombreTest01';
+        $comprador->rut = '5.917.158-5';
+        $comprador->name = 'American Parts Miami';
         $comprador->address = 'CompradorDireccionTest01';
-        $comprador->city = 'CompradorCiudadTest01';
-        $comprador->contact = 'CompradorContactoTest01';
-        $comprador->phone = 'CompradorTelefonoTest01';
+        $comprador->city = 'Miami';
+        $comprador->contact = 'John Doe';
+        $comprador->phone = '+12345678901';
         $comprador->save();
 
 
@@ -396,7 +402,7 @@ class DatabaseSeeder extends Seeder
                 ]);
             } 
         }
-        
+
 
         /*
         *   Estado cotizaciones
@@ -436,7 +442,7 @@ class DatabaseSeeder extends Seeder
             $success = true;
 
             DB::beginTransaction();
-            foreach(Solicitud::whereIn('id', [2, 3, 4])->get() as $solicitud)
+            foreach(Solicitud::whereIn('solicitudes.id', [2, 3, 4])->get() as $solicitud)
             {
                 $solicitud->estadosolicitud_id = 3; // Cerrada
                 if($solicitud->save())
@@ -513,12 +519,12 @@ class DatabaseSeeder extends Seeder
         $proveedor->save();
         $proveedor = new Proveedor();
         $proveedor->comprador_id = $comprador->id;
-        $proveedor->rut = 'ProveedorRUTTest02';
-        $proveedor->name = 'ProveedorNombreTest02';
-        $proveedor->address = 'ProveedorDireccionTest02';
-        $proveedor->city = 'ProveedorCiudadTest02';
-        $proveedor->contact = 'ProveedorContactoTest02';
-        $proveedor->phone = 'ProveedorTelefonoTest02';
+        $proveedor->rut = '39.230.797-4';
+        $proveedor->name = 'KTractor Parts, Inc.';
+        $proveedor->address = '8147 NW 67th St';
+        $proveedor->city = 'Miami';
+        $proveedor->contact = 'Paul Harrison';
+        $proveedor->phone = '+1 305-392-7452';
         $proveedor->save();
 
 
@@ -553,7 +559,7 @@ class DatabaseSeeder extends Seeder
         *   OCs
         */
         {
-            foreach(Cotizacion::whereIn('id', [3, 4])->get() as $cotizacion)
+            foreach(Cotizacion::whereIn('cotizaciones.id', [3, 4])->get() as $cotizacion)
             {
                 DB::beginTransaction();
 
@@ -616,6 +622,89 @@ class DatabaseSeeder extends Seeder
                 }
             }
 
+        }
+
+        /*
+         *  Solicitud American Parts, OC Interna: 422236
+         */
+        {
+            // Partes
+            $partes = array();
+            $parte = new Parte();
+            $parte->marca_id = 2;
+            $parte->nparte = '1987251121';
+            $item = [
+                'parte' => $parte,
+                'cantidad' => 2,
+                'descripcion' => 'BRACKET'
+            ];
+            array_push($partes, $item);
+            $parte = new Parte();
+            $parte->marca_id = 2;
+            $parte->nparte = '1986111250';
+            $item = [
+                'parte' => $parte,
+                'cantidad' => 2,
+                'descripcion' => 'BOLT'
+            ];
+            array_push($partes, $item);
+            $parte = new Parte();
+            $parte->marca_id = 2;
+            $parte->nparte = '5610782712';
+            $item = [
+                'parte' => $parte,
+                'cantidad' => 2,
+                'descripcion' => 'COVER'
+            ];
+            array_push($partes, $item);
+            $parte = new Parte();
+            $parte->marca_id = 2;
+            $parte->nparte = '5610782790';
+            $item = [
+                'parte' => $parte,
+                'cantidad' => 2,
+                'descripcion' => 'SCREW'
+            ];
+            array_push($partes, $item);
+            $parte = new Parte();
+            $parte->marca_id = 2;
+            $parte->nparte = '5615485771';
+            $item = [
+                'parte' => $parte,
+                'cantidad' => 1,
+                'descripcion' => 'MAT'
+            ];
+            array_push($partes, $item);
+            $parte = new Parte();
+            $parte->marca_id = 2;
+            $parte->nparte = '5615485780';
+            $item = [
+                'parte' => $parte,
+                'cantidad' => 1,
+                'descripcion' => 'MAT'
+            ];
+            array_push($partes, $item);
+
+            $solicitud = new Solicitud();
+            $solicitud->faena_id = 2;
+            $solicitud->marca_id = 2;
+            $solicitud->comprador_id = 1;
+            $solicitud->user_id = 2;
+            $solicitud->estadosolicitud_id = 1;
+            $solicitud->comentario = 'Esta es una solicitud que se ha creado para pruebas, basado en el caso real OC Interna: 422236';
+            $solicitud->save();
+
+            foreach($partes as $item)
+            {
+                $item['parte']->save();
+
+                $solicitud->partes()->attach([
+                    $item['parte']->id => [
+                        'cantidad' => $item['cantidad'],
+                        'descripcion' => $item['descripcion']
+                    ]
+                ]);
+            }
         }
     }
 }

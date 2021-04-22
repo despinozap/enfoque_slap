@@ -249,9 +249,9 @@ class CotizacionesController extends Controller
                 {
                     if($cotizaciones = ($user->role->id === 2) ? // By role
                         // If Vendedor filters only the belonging data
-                        Cotizacion::whereIn('id', $request->cotizaciones)->select('cotizaciones.*')->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')->where('solicitudes.user_id', '=', $user->id)->get() :
+                        Cotizacion::whereIn('cotizaciones.id', $request->cotizaciones)->select('cotizaciones.*')->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')->where('solicitudes.user_id', '=', $user->id)->get() :
                         // For any other role
-                        Cotizacion::whereIn('id', $request->cotizaciones)->get()
+                        Cotizacion::whereIn('cotizaciones.id', $request->cotizaciones)->get()
                     )
                     {
                         foreach($cotizaciones as $cotizacion) 
@@ -365,7 +365,7 @@ class CotizacionesController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al obtener el reporte de cotizacion [!]',
+                'Error al obtener el reporte de cotizacion [!]' . $e,
                 null
             );
         }
