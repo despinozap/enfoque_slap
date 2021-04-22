@@ -8,6 +8,9 @@ use Auth;
 use Illuminate\Support\Facades\DB;
 
 use App\Models\Parameter;
+use App\Models\Faena;
+use App\Models\Marca;
+use App\Models\Comprador;
 use App\Models\Solicitud;
 use App\Models\Parte;
 use App\Models\Cotizacion;
@@ -161,6 +164,120 @@ class SolicitudesController extends Controller
         //
     }
 
+    public function prepare()
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('solicitudes store'))
+            {
+                
+                if( ! ($faenas = Faena::all()) )
+                {
+                    $response = HelpController::buildResponse(
+                        500,
+                        'Error al obtener la lista de faenas',
+                        null
+                    );
+                }
+                else if( ! ($marcas = Marca::all()) )
+                {
+                    $response = HelpController::buildResponse(
+                        500,
+                        'Error al obtener la lista de marcas',
+                        null
+                    );
+                }
+                else if( ! ($compradores = Comprador::all()) )
+                {
+                    $response = HelpController::buildResponse(
+                        500,
+                        'Error al obtener la lista de compradores',
+                        null
+                    );
+                }
+                else
+                {
+                    $faenas = $faenas->filter(function($faena)
+                    {
+                        $faena->makeHidden([
+                            'cliente_id',
+                            'created_at',
+                            'updated_at'
+                        ]);
+
+                        $faena->cliente;
+                        $faena->cliente->makeHidden([
+                            'created_at',
+                            'updated_at'
+                        ]);
+
+                        return $faena;
+                    });
+
+                    $marcas = $marcas->filter(function($marca)
+                    {
+                        $marca->makeHidden([
+                            'created_at',
+                            'updated_at'
+                        ]);
+
+                        return $marca;
+                    });
+
+                    $compradores = $compradores->filter(function($comprador)
+                    {
+                        $comprador->makeHidden([
+                            'created_at', 
+                            'updated_at'
+                        ]);
+
+                        $comprador->proveedores;
+                        $comprador->proveedores->makeHidden([
+                            'comprador_id',
+                            'created_at', 
+                            'updated_at'
+                        ]);
+
+                        return $comprador;
+                    });
+                    
+                    $data = [
+                        'faenas' => $faenas,
+                        'marcas' => $marcas,
+                        'compradores' => $compradores
+                    ];
+
+                    $response = HelpController::buildResponse(
+                        200,
+                        null,
+                        $data
+                    );
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a registrar solicitudes',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            DB::rollback();
+
+            $response = HelpController::buildResponse(
+                500,
+                'Error al preparar la solicitud [!]',
+                null
+            );
+        }
+
+        return $response;
+    }
+
     /**
      * Store a newly created resource in storage.
      *
@@ -177,6 +294,7 @@ class SolicitudesController extends Controller
                 $validatorInput = $request->only(
                     'faena_id',
                     'marca_id',
+                    'comprador_id',
                     'comentario',
                     'partes'
                 );
@@ -184,6 +302,7 @@ class SolicitudesController extends Controller
                 $validatorRules = [
                     'faena_id' => 'required|exists:faenas,id',
                     'marca_id' => 'required|exists:marcas,id',
+                    'comprador_id' => 'required|exists:compradores,id',
                     'partes' => 'required|array|min:1',
                     'partes.*.nparte'  => 'required',
                     'partes.*.cantidad'  => 'required|numeric|min:1',
@@ -194,6 +313,8 @@ class SolicitudesController extends Controller
                     'faena_id.exists' => 'La faena no existe',
                     'marca_id.required' => 'Debes seleccionar una marca',
                     'marca_id.exists' => 'La marca no existe',
+                    'comprador_id.required' => 'Debes seleccionar un comprador',
+                    'comprador_id.exists' => 'El comprador no existe',
                     'partes.required' => 'Debes seleccionar las partes',
                     'partes.array' => 'Lista de partes invalida',
                     'partes.min' => 'La solicitud debe contener al menos 1 parte',
@@ -311,7 +432,7 @@ class SolicitudesController extends Controller
 
             $response = HelpController::buildResponse(
                 500,
-                'Error al crear la solicitud [!]',
+                'Error al crear la solicitud [!]' . $e,
                 null
             );
         }
@@ -363,6 +484,9 @@ class SolicitudesController extends Controller
                             
                             $solicitud->marca;
                             $solicitud->marca->makeHidden(['created_at', 'updated_at']);
+
+                            $solicitud->comprador;
+                            $solicitud->comprador->makeHidden(['created_at', 'updated_at']);
         
                             $solicitud->estadosolicitud;
                             $solicitud->estadosolicitud->makeHidden(['created_at', 'updated_at']);
@@ -497,6 +621,7 @@ class SolicitudesController extends Controller
                 $validatorInput = $request->only(
                     'faena_id',
                     'marca_id',
+                    'comprador_id',
                     'comentario',
                     'partes'
                 );
@@ -504,6 +629,7 @@ class SolicitudesController extends Controller
                 $validatorRules = [
                     'faena_id' => 'required|exists:faenas,id',
                     'marca_id' => 'required|exists:marcas,id',
+                    'comprador_id' => 'required|exists:compradores,id',
                     'partes' => 'required|array|min:1',
                     'partes.*.nparte'  => 'required',
                     'partes.*.cantidad'  => 'required|numeric|min:1',
@@ -514,6 +640,8 @@ class SolicitudesController extends Controller
                     'faena_id.exists' => 'La faena no existe',
                     'marca_id.required' => 'Debes seleccionar una marca',
                     'marca_id.exists' => 'La marca no existe',
+                    'comprador_id.required' => 'Debes seleccionar un comprador',
+                    'comprador_id.exists' => 'El comprador no existe',
                     'partes.required' => 'Debes seleccionar las partes',
                     'partes.array' => 'Lista de partes invalida',
                     'partes.min' => 'La solicitud debe contener al menos 1 parte',

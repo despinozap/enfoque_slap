@@ -89,6 +89,7 @@ Route::middleware(['auth:api', 'cors'])->group(function()
 
     // Solicitudes
     Route::get('/solicitudes', [SolicitudesController::class, 'index']);
+    Route::get('/solicitudes/prepare', [SolicitudesController::class, 'prepare']);
     Route::post('/solicitudes', [SolicitudesController::class, 'store']);
     Route::get('/solicitudes/{id}', [SolicitudesController::class, 'show']);
     Route::put('/solicitudes/{id}', [SolicitudesController::class, 'update']);

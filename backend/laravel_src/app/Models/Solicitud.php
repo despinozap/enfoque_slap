@@ -11,7 +11,7 @@ class Solicitud extends Model
 
     protected $table = 'solicitudes';
     protected $fillable = [
-        'faena_id', 'marca_id', 'user_id', 'estadosolicitud_id', 'comentario', 
+        'faena_id', 'marca_id', 'comprador_id', 'user_id', 'estadosolicitud_id', 'comentario', 
     ];
     public $appends = ['partes_total'];
 
