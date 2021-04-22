@@ -625,7 +625,7 @@ class DatabaseSeeder extends Seeder
         }
 
         /*
-         *  Solicitud American Parts, OC Interna: 422236
+         *  Solicitud American Parts, OC Interna: 228.SG
          */
         {
             // Partes
@@ -691,7 +691,7 @@ class DatabaseSeeder extends Seeder
             $solicitud->comprador_id = 1;
             $solicitud->user_id = 2;
             $solicitud->estadosolicitud_id = 1;
-            $solicitud->comentario = 'Esta es una solicitud que se ha creado para pruebas, basado en el caso real OC Interna: 422236';
+            $solicitud->comentario = 'Esta es una solicitud que se ha creado para pruebas, basado en el caso real OC Interna: 228.SG';
             $solicitud->save();
 
             foreach($partes as $item)
