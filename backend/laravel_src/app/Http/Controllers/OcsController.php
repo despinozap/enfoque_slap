@@ -176,7 +176,6 @@ class OcsController extends Controller
                             'proveedor_id',
                             'estadooc_id',
                             'partes_total',
-                            'created_at', 
                             'updated_at'
                         ]);
 
