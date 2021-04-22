@@ -169,6 +169,7 @@ class OcsController extends Controller
                     }
                     else
                     {
+                        $oc->dias;
                         $oc->makeHidden([
                             'cotizacion_id',
                             'filedata_id',

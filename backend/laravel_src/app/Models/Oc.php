@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use DateTime;
+
 class Oc extends Model
 {
     use HasFactory;
@@ -13,7 +15,7 @@ class Oc extends Model
     protected $fillable = [
         'cotizacion_id', 'proveedor_id', 'filedata_id', 'estadooc_id', 'noccliente', 'usdvalue',
     ];
-    public $appends = ['partes_total'];
+    public $appends = ['partes_total', 'dias'];
 
     public function setMontoAttribute($value)
     {
@@ -46,6 +48,12 @@ class Oc extends Model
         return $amount;
     }
 
+    public function getDiasAttribute()
+    {
+        $interval = (new DateTime($this->created_at))->diff(new DateTime('tomorrow')); // It counts the whole day
+        return $interval->format('%a');
+    }
+    
     public function getPartesTotalAttribute()
     {
         $quantity = 0;

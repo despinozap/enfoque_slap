@@ -31,7 +31,7 @@ class Cotizacion extends Model
 
     public function getDiasAttribute()
     {
-        $interval = (new DateTime($this->updated_at))->diff(new DateTime('tomorrow')); // It counts the whole day
+        $interval = (new DateTime($this->created_at))->diff(new DateTime('tomorrow')); // It counts the whole day
         return $interval->format('%a');
     }
 

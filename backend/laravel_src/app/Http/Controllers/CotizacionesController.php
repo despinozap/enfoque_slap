@@ -57,8 +57,7 @@ class CotizacionesController extends Controller
                             'solicitud_id', 
                             'estadocotizacion_id', 
                             'motivorechazo_id', 
-                            'created_at', 
-                            //'updated_at'
+                            'updated_at'
                         ]);
 
                         foreach($cotizacion->partes as $parte)
@@ -262,7 +261,7 @@ class CotizacionesController extends Controller
                                 'solicitud_id',
                                 'motivorechazo_id',
                                 'estadocotizacion_id',
-                                'created_at',
+                                'updated_at',
                             ]);
 
                             $cotizacion->solicitud;
@@ -290,6 +289,9 @@ class CotizacionesController extends Controller
                             
                             $cotizacion->solicitud->marca;
                             $cotizacion->solicitud->marca->makeHidden(['created_at', 'updated_at']);
+
+                            $cotizacion->solicitud->comprador;
+                            $cotizacion->solicitud->comprador->makeHidden(['created_at', 'updated_at']);
 
                             $cotizacion->estadocotizacion;
                             $cotizacion->estadocotizacion->makeHidden(['created_at', 'updated_at']);
