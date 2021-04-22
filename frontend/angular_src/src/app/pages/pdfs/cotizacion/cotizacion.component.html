@@ -19,7 +19,8 @@
       </tr>
       <tr>
         <td class="td-title">Fecha de Cotización</td>
-        <td>{{ reportData.cotizacion.updated_at !== null ? dateStringFormat(reportData.cotizacion.updated_at) : '' }}</td>
+        <!-- <td>{{ reportData.cotizacion.created_at !== null ? dateStringFormat(reportData.cotizacion.created_at) : '' }}</td> -->
+        <td>{{ reportData.cotizacion.currentdate !== null ? reportData.cotizacion.currentdate : '' }}</td>
       </tr>
       <tr>
         <td class="td-title">Forma de Pago</td>

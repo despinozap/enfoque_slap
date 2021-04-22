@@ -155,7 +155,6 @@ export class OcsListComponent implements OnInit, AfterViewInit {
     );
   }
 
-
   public dateStringFormat(value: string): string {
     return this._utilsService.dateStringFormat(value);
   }

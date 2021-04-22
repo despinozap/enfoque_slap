@@ -35,9 +35,12 @@ export class OcsDetailsComponent implements OnInit {
   
   oc: any = {
     id: -1,
+    created_at: null,
+    dias: -1,
     faena_name: null,
     cliente_name: null,
     marca_name: null,
+    comprador_name: null,
     proveedor_name: null,
     comprador_id: null,
     estadooc_id: -1,
@@ -107,12 +110,19 @@ export class OcsDetailsComponent implements OnInit {
     if(ocData['partes'].length > 0)
     {
       this.oc.id = ocData.id;
+      this.oc.created_at = ocData.created_at;
+      this.oc.dias = ocData.dias;
       this.oc.faena_name = ocData.cotizacion.solicitud.faena.name;
       this.oc.cliente_name = ocData.cotizacion.solicitud.faena.cliente.name;
       this.oc.marca_name = ocData.cotizacion.solicitud.marca.name;
+      this.oc.comprador_name = ocData.cotizacion.solicitud.comprador.name;
       if(ocData.proveedor !== null)
       {
         this.oc.proveedor_name = ocData.proveedor.name;
+      }
+      else
+      {
+        this.oc.proveedor_name = '[No asignado]';
       }
       this.oc.comprador_id = ocData.cotizacion.solicitud.comprador.id;
       this.oc.estadooc_id = ocData.estadooc.id;
@@ -383,6 +393,10 @@ export class OcsDetailsComponent implements OnInit {
 
   public moneyStringFormat(value: number): string {
     return this._utilsService.moneyStringFormat(value);
+  }
+
+  public dateStringFormat(value: string): string {
+    return this._utilsService.dateStringFormat(value);
   }
 
   public goTo_startOC(): void {

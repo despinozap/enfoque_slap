@@ -37,6 +37,7 @@
               <th>Marca</th>
               <th>Ejecutivo</th>
               <th>Partes</th>
+              <th>Dias</th>
               <th>Monto</th>
               <th>Estado</th>
               <th>Opciones</th>
@@ -44,7 +45,7 @@
           </thead>
           <tbody *ngIf="(loading === true)">
             <tr>
-              <td colspan="10" style="text-align: center;"><i
+              <td colspan="11" style="text-align: center;"><i
                     class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</td>
             </tr>
           </tbody>
@@ -53,11 +54,12 @@
               <td align="center">{{ oc.noccliente ? oc.noccliente : '' }}</td>
               <td>{{ oc.id }}</td>
               <td>{{ oc.cotizacion.id}}</td>
-              <!-- <td>{{ oc.solicitud.faena.name }}</td> -->
               <td>{{ oc.cotizacion.solicitud.faena.cliente.name }}</td>
+              <!-- <td>{{ oc.cotizacion.solicitud.faena.name }}</td> -->
               <td>{{ oc.cotizacion.solicitud.marca.name }}</td>
               <td>{{ oc.cotizacion.solicitud.user.name }}</td>
               <td align="right">{{ oc.partes_total }}</td>
+              <td align="right">{{ oc.dias }}</td>
               <td align="right">{{ "$" + moneyStringFormat(oc.monto) }}</td>
               <td align="center">{{ oc.estadooc.name }}</td>
               <td align="center">

@@ -13,7 +13,8 @@ export class PDFCotizacionComponent implements OnInit {
   reportData: any = {
     cotizacion: {
       id: -1,
-      updated_at: null,
+      currentdate: null,
+      created_at: null,
       solicitud_id: -1,
       faena_rut: null,
       faena_name: null,
@@ -44,7 +45,8 @@ export class PDFCotizacionComponent implements OnInit {
     if(cotizacionData.partes.length > 0)
     {
       this.reportData.cotizacion.id = cotizacionData.cotizacion.id;
-      this.reportData.cotizacion.updated_at = cotizacionData.cotizacion.updated_at;
+      this.reportData.cotizacion.currentdate = cotizacionData.cotizacion.currentdate;
+      this.reportData.cotizacion.created_at = cotizacionData.cotizacion.created_at;
       this.reportData.cotizacion.solicitud_id = cotizacionData.cotizacion.solicitud.id;
       this.reportData.cotizacion.faena_rut = cotizacionData.cotizacion.solicitud.faena.rut;
       this.reportData.cotizacion.faena_name = cotizacionData.cotizacion.solicitud.faena.name;

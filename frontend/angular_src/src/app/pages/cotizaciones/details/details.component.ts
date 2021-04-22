@@ -51,13 +51,14 @@ export class CotizacionesDetailsComponent implements OnInit {
   cotizacion: any = {
     // Common fields
     id: -1,
-    updated_at: null,
+    created_at: null,
     faena_name: null,
     usdvalue: null,
     // Details
     dias: -1,
     cliente_name: null,
     marca_name: null,
+    comprador_name: null,
     estadocotizacion_id: -1,
     estadocotizacion_name: null,
     motivorechazo_name: null,
@@ -171,10 +172,11 @@ export class CotizacionesDetailsComponent implements OnInit {
   private loadFormData(cotizacionData: any)
   { 
     if(cotizacionData['partes'].length > 0)
-    {
+    {      
       // Common fields
       this.cotizacion.id = cotizacionData.id;
-      this.cotizacion.updated_at = cotizacionData.updated_at;
+      this.cotizacion.created_at = cotizacionData.created_at;
+      
       this.cotizacion.faena_name = cotizacionData.solicitud.faena.name;
       this.cotizacion.usdvalue = cotizacionData.usdvalue;
 
@@ -182,12 +184,15 @@ export class CotizacionesDetailsComponent implements OnInit {
       this.cotizacion.dias = cotizacionData.dias;
       this.cotizacion.cliente_name = cotizacionData.solicitud.faena.cliente.name;
       this.cotizacion.marca_name = cotizacionData.solicitud.marca.name;
+      this.cotizacion.comprador_name = cotizacionData.solicitud.comprador.name;
       this.cotizacion.estadocotizacion_id = cotizacionData.estadocotizacion.id,
       this.cotizacion.estadocotizacion_name = cotizacionData.estadocotizacion.name;
       // Details - If Rechazada, then store Motivo rechazo name
       this.cotizacion.motivorechazo_name = ((this.cotizacion.estadocotizacion_id === 4) && (cotizacionData.motivorechazo !== null)) ? cotizacionData.motivorechazo.name : null
 
       // Report
+      let today = new Date();
+      this.cotizacion.currentdate = `${today.getFullYear()}-${(today.getMonth() + 1) < 10 ? '0' + (today.getMonth() + 1) : (today.getMonth() + 1)}-${today.getDate() < 10 ? '0' + today.getDate() : today.getDate()}`;
       this.cotizacion.solicitud_id = cotizacionData.solicitud.id;
       this.cotizacion.faena_rut = cotizacionData.solicitud.faena.rut;
       this.cotizacion.faena_address = cotizacionData.solicitud.faena.address;

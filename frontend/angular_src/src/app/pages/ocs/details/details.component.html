@@ -55,9 +55,23 @@
           </div>
           <div class="col-6">
             <div class="form-group">
+              <label class="control-label">Comprador</label>
+              <br>
+              <label>{{ oc.comprador_name ? oc.comprador_name : '' }}</label>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group">
               <label class="control-label">Proveedor</label>
               <br>
               <label>{{ oc.proveedor_name ? oc.proveedor_name : '' }}</label>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group">
+              <label class="control-label">Creada en</label>
+              <br>
+              <label>{{ dateStringFormat(oc.created_at) + ((oc.dias >= 0) ? ((oc.dias == 1) ? ' (hace 1 dia)' : ((oc.dias > 1) ? ' (hace ' + oc.dias + ' dias)' : ' (hoy)')) : '') }}</label>
             </div>
           </div>
         </div>
