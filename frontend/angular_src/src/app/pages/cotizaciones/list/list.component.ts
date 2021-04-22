@@ -268,6 +268,7 @@ export class CotizacionesListComponent implements OnInit, AfterViewInit {
         faena_name: null,
         // Details
         dias: -1,
+        currentdate: null,
         cliente_name: null,
         marca_name: null,
         estadocotizacion_id: -1,
@@ -295,7 +296,7 @@ export class CotizacionesListComponent implements OnInit, AfterViewInit {
       {
         // Common fields
         cotizacion.id = cotizacionData.id;
-        cotizacion.updated_at = cotizacionData.updated_at;
+        cotizacion.created_at = cotizacionData.created_at;
         cotizacion.faena_name = cotizacionData.solicitud.faena.name;
 
         // Details
@@ -308,6 +309,8 @@ export class CotizacionesListComponent implements OnInit, AfterViewInit {
         cotizacion.motivorechazo_name = ((cotizacion.estadocotizacion_id === 4) && (cotizacionData.motivorechazo !== null)) ? cotizacionData.motivorechazo.name : null
 
         // Report
+        let today = new Date();
+        cotizacion.currentdate = `${today.getFullYear()}-${(today.getMonth() + 1) < 10 ? '0' + (today.getMonth() + 1) : (today.getMonth() + 1)}-${today.getDate() < 10 ? '0' + today.getDate() : today.getDate()}`;
         cotizacion.solicitud_id = cotizacionData.solicitud.id;
         cotizacion.faena_rut = cotizacionData.solicitud.faena.rut;
         cotizacion.faena_address = cotizacionData.solicitud.faena.address;
