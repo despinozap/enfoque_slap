@@ -23,7 +23,7 @@ use App\Models\Cotizacion;
 use App\Models\Proveedor;
 use App\Models\Estadooc;
 use App\Models\Estadoocparte;
-use App\Models\OC;
+use App\Models\Oc;
 
 class DatabaseSeeder extends Seeder
 {
