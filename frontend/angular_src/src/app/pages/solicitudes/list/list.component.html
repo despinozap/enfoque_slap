@@ -36,9 +36,9 @@
                 </div>
               </th>
               <th>Solicitud</th>
-              <th>Cliente</th>
               <th>Faena</th>
               <th>Marca</th>
+              <th>Comprador</th>
               <th>Ejecutivo</th>
               <th>Partes</th>
               <th>Estado</th>
@@ -60,9 +60,9 @@
                 </div>
               </td>
               <td align="center">{{ solicitud.id }}</td>
-              <td>{{ solicitud.faena.cliente.name }}</td>
               <td>{{ solicitud.faena.name }}</td>
               <td>{{ solicitud.marca.name }}</td>
+              <td>{{ solicitud.comprador.name }}</td>
               <td>{{ solicitud.user.name }}</td>
               <td align="right">{{ solicitud.partes_total }}</td>
               <td align="center">{{ solicitud.estadosolicitud.name }}</td>

@@ -39,6 +39,7 @@ export class SolicitudesCompleteComponent implements OnInit {
     faena_name: null,
     cliente_name: null,
     marca_name: null,
+    comprador_name: null,
     estadosolicitud_id: -1,
     estadosolicitud_name: null,
     comentario: null
@@ -120,6 +121,7 @@ export class SolicitudesCompleteComponent implements OnInit {
         this.solicitud.faena_name = solicitudData.faena.name;
         this.solicitud.cliente_name = solicitudData.faena.cliente.name;
         this.solicitud.marca_name = solicitudData.marca.name;
+        this.solicitud.comprador_name = solicitudData.comprador.name;
         this.solicitud.estadosolicitud_id = solicitudData.estadosolicitud.id,
         this.solicitud.estadosolicitud_name = solicitudData.estadosolicitud.name;
         this.solicitud.comentario = solicitudData.comentario;
