@@ -47,6 +47,8 @@ export class OcsDetailsComponent implements OnInit {
     estadooc_name: null,
   };
 
+  parteTrack: any = null;
+
   partes: any[] = [];
   proveedores: any[] = [];
   loading: boolean = false;
@@ -139,6 +141,12 @@ export class OcsDetailsComponent implements OnInit {
             'nparte': p.nparte,
             'descripcion': p.pivot.descripcion,
             'cantidad': p.pivot.cantidad,
+            'cantidadpendiente': p.pivot.cantidadpendiente,
+            'cantidadasignado': p.pivot.cantidadasignado,
+            'cantidaddespachado': p.pivot.cantidaddespachado,
+            'cantidadrecibido': p.pivot.cantidadrecibido,
+            'cantidadentregado': p.pivot.cantidadentregado,
+            'updated_at': p.pivot.updated_at,
             'statusdays': statusDays,
             'estadoocparte_id': p.pivot.estadoocparte.id,
             'estadoocparte_name': p.pivot.estadoocparte.name,
@@ -402,6 +410,12 @@ export class OcsDetailsComponent implements OnInit {
   public goTo_startOC(): void {
     this.proveedores = null as any;
     this.loadProveedores();
+
+    this.DISPLAYING_FORM = 2;
+  }
+
+  public goTo_parteTracking(parte: any):void {
+    this.parteTrack = parte;
 
     this.DISPLAYING_FORM = 1;
   }
