@@ -50,7 +50,19 @@
 								<h5 class="mb-0">{{ loggedUser.phone }}</h5>
 							</div>
 						</div>
+						<div class="col-4"></div>
 					</div>
+
+					<div class="row">
+						<div class="col-12">
+							<div class="form-buttons mt-2">
+								<button [disabled]="(loading === true)" class="btn btn-light" (click)="goTo_back()">
+									<span>Volver</span>
+								</button>
+							</div>
+						</div>
+					</div>
+
 				</div>
 
 

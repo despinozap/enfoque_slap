@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Location } from '@angular/common';
 import { User } from 'src/app/interfaces/user';
 import { AuthService } from 'src/app/services/auth.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
-import { threadId } from 'worker_threads';
+
 
 @Component({
   selector: 'app-details',
@@ -18,7 +18,7 @@ export class ProfileDetailsComponent implements OnInit {
 
   constructor(
     private _authService: AuthService,
-    private router: Router
+    private location: Location
   ) 
   {
   }
@@ -55,16 +55,16 @@ export class ProfileDetailsComponent implements OnInit {
             );
 
             this.loading = false;
-            this.goTo_home();
+            this.goTo_back();
           }
         );
       }
     }
   }
 
-  public goTo_home()
+  public goTo_back()
   {
-    this.router.navigate(['panel']);
+    this.location.back();
   }
 
 }

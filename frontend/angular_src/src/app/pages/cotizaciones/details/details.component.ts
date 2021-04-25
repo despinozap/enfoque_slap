@@ -1,6 +1,7 @@
-import { Component, ElementRef, Input, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { Component, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { Location } from '@angular/common';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
 import { AuthService } from 'src/app/services/auth.service';
@@ -121,7 +122,7 @@ export class CotizacionesDetailsComponent implements OnInit {
   };
   
   constructor(
-    private router: Router,
+    private location: Location,
     private route: ActivatedRoute,
     private _authService: AuthService,
     private _cotizacionesService: CotizacionesService,
@@ -234,7 +235,7 @@ export class CotizacionesDetailsComponent implements OnInit {
       );
 
       this.loading = false;
-      this.goTo_cotizacionesList();
+      this.goTo_back();
     }
   }
 
@@ -267,7 +268,7 @@ export class CotizacionesDetailsComponent implements OnInit {
           );
 
           this.loading = false;
-          this.goTo_cotizacionesList();
+          this.goTo_back();
         }
         
       },
@@ -330,7 +331,7 @@ export class CotizacionesDetailsComponent implements OnInit {
         }
 
         this.loading = false;
-        this.goTo_cotizacionesList();
+        this.goTo_back();
       }
     );
   }
@@ -539,7 +540,7 @@ export class CotizacionesDetailsComponent implements OnInit {
             NotificationsService.messageType.success
           );
           
-          this.goTo_cotizacionesList();
+          this.goTo_back();
         },
         //Error request
         (errorResponse: any) => {
@@ -621,7 +622,7 @@ export class CotizacionesDetailsComponent implements OnInit {
             NotificationsService.messageType.success
           );
 
-          this.goTo_cotizacionesList();
+          this.goTo_back();
         },
         //Error request
         (errorResponse: any) => {
@@ -777,8 +778,8 @@ export class CotizacionesDetailsComponent implements OnInit {
     this.DISPLAYING_FORM = 0;
   }
 
-  public goTo_cotizacionesList(): void {
-    this.router.navigate(['/panel/cotizaciones']);
+  public goTo_back(): void {
+    this.location.back();
   }
 
 }

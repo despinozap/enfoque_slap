@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { Location } from '@angular/common';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
 import { NotificationsService } from 'src/app/services/notifications.service';
@@ -70,7 +71,7 @@ export class OcsDetailsComponent implements OnInit {
   DISPLAYING_FORM: number = 0;
 
   constructor(
-    private router: Router,
+    private location: Location,
     private route: ActivatedRoute,
     private _ocsService: OcsService,
     private _proveedoresService: ProveedoresService,
@@ -163,7 +164,7 @@ export class OcsDetailsComponent implements OnInit {
       );
 
       this.loading = false;
-      this.goTo_ocsList();
+      this.goTo_back();
     }
   }
 
@@ -229,7 +230,7 @@ export class OcsDetailsComponent implements OnInit {
         }
 
         this.loading = false;
-        this.goTo_ocsList();
+        this.goTo_back();
       }
     );
   }
@@ -314,7 +315,7 @@ export class OcsDetailsComponent implements OnInit {
         }
 
         this.loading = false;
-        this.goTo_ocsList();
+        this.goTo_back();
       }
     );
   }
@@ -339,7 +340,7 @@ export class OcsDetailsComponent implements OnInit {
             NotificationsService.messageType.success
           );
 
-          this.goTo_ocsList();
+          this.goTo_back();
         },
         //Error request
         (errorResponse: any) => {
@@ -424,8 +425,8 @@ export class OcsDetailsComponent implements OnInit {
     this.DISPLAYING_FORM = 0;
   }
 
-  public goTo_ocsList(): void {
-    this.router.navigate(['/panel/ocs']);
+  public goTo_back(): void {
+    this.location.back();
   }
 
 }

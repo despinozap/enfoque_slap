@@ -1,4 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
@@ -50,6 +51,7 @@ export class SolicitudesDetailsSellerComponent implements OnInit {
   DOLLAR_VALUE: number = 740;
 
   constructor(
+    private location: Location,
     private router: Router,
     private route: ActivatedRoute,
     private _solicitudesService: SolicitudesService,
@@ -121,7 +123,7 @@ export class SolicitudesDetailsSellerComponent implements OnInit {
       );
 
       this.loading = false;
-      this.goTo_solicitudesList();
+      this.goTo_back();
     }
   }
 
@@ -188,7 +190,7 @@ export class SolicitudesDetailsSellerComponent implements OnInit {
         }
 
         this.loading = false;
-        this.goTo_solicitudesList();
+        this.goTo_back();
       }
     );
   }
@@ -229,7 +231,7 @@ export class SolicitudesDetailsSellerComponent implements OnInit {
               NotificationsService.messageType.success
             );
 
-            this.goTo_solicitudesList();
+            this.goTo_back();
           },
           //Error request
           (errorResponse: any) => {
@@ -330,8 +332,8 @@ export class SolicitudesDetailsSellerComponent implements OnInit {
     this.router.navigate(['/panel/solicitudes/create', this.solicitud.id]);
   }
 
-  public goTo_solicitudesList(): void {
-    this.router.navigate(['/panel/solicitudes']);
+  public goTo_back(): void {
+    this.location.back();
   }
 
 }

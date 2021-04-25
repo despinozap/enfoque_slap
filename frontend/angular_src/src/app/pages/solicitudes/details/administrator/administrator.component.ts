@@ -1,4 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
@@ -45,7 +46,7 @@ export class SolicitudesDetailsAdministratorComponent implements OnInit {
   private sub: any;
 
   constructor(
-    private router: Router,
+    private location: Location,
     private route: ActivatedRoute,
     private _solicitudesService: SolicitudesService,
     private _utilsService: UtilsService
@@ -120,7 +121,7 @@ export class SolicitudesDetailsAdministratorComponent implements OnInit {
       );
 
       this.loading = false;
-      this.goTo_solicitudesList();
+      this.goTo_back();
     }
   }
 
@@ -187,7 +188,7 @@ export class SolicitudesDetailsAdministratorComponent implements OnInit {
         }
 
         this.loading = false;
-        this.goTo_solicitudesList();
+        this.goTo_back();
       }
     );
   }
@@ -234,8 +235,8 @@ export class SolicitudesDetailsAdministratorComponent implements OnInit {
     return this._utilsService.moneyStringFormat(value);
   }
 
-  public goTo_solicitudesList(): void {
-    this.router.navigate(['/panel/solicitudes']);
+  public goTo_back(): void {
+    this.location.back();
   }
 
 }
