@@ -437,7 +437,7 @@ export class OcsDetailsComponent implements OnInit {
     this.proveedores = null as any;
     this.loadProveedores();
 
-    this.DISPLAYING_FORM = 2;
+    this.DISPLAYING_FORM = 3;
   }
 
   public updateParte(): void {
