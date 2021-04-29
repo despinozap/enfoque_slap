@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Location } from '@angular/common';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
@@ -48,6 +48,8 @@ export class OcsDetailsComponent implements OnInit {
     estadooc_name: null,
   };
 
+  public parte_index: number = -1;
+  public parte_min: number = -1;
   parteTrack: any = null;
 
   partes: any[] = [];
@@ -55,20 +57,27 @@ export class OcsDetailsComponent implements OnInit {
   loading: boolean = false;
   responseErrors: any = [];
 
-
-  startOCForm: FormGroup = new FormGroup({
-    proveedor_id: new FormControl('', [Validators.required]),
-  });
-
   private sub: any;
 
   /*
   *   Displayed form:
   * 
   *       0: Partes list
-  *       1: Start OC
+  *       1: Parte edit
+  *       2: Parte tracking
+  *       3: Start OC
   */
   DISPLAYING_FORM: number = 0;
+
+  parteForm: FormGroup = new FormGroup({
+    cantidad: new FormControl(''),
+    tiempoentrega: new FormControl('', [Validators.min(0)]),
+    backorder: new FormControl(''),
+  });
+
+  startOCForm: FormGroup = new FormGroup({
+    proveedor_id: new FormControl('', [Validators.required]),
+  });
 
   constructor(
     private location: Location,
@@ -147,11 +156,12 @@ export class OcsDetailsComponent implements OnInit {
             'cantidaddespachado': p.pivot.cantidaddespachado,
             'cantidadrecibido': p.pivot.cantidadrecibido,
             'cantidadentregado': p.pivot.cantidadentregado,
+            'tiempoentrega': p.pivot.tiempoentrega,
+            'backorder': p.pivot.backorder === 1 ? true : false,
             'updated_at': p.pivot.updated_at,
             'statusdays': statusDays,
             'estadoocparte_id': p.pivot.estadoocparte.id,
             'estadoocparte_name': p.pivot.estadoocparte.name,
-            'backorder': p.pivot.backorder === 1 ? true : false,
           }
         )
       });
@@ -233,6 +243,21 @@ export class OcsDetailsComponent implements OnInit {
         this.goTo_back();
       }
     );
+  }
+
+  public validator_minCantidadAsignado(min: number): ValidatorFn {
+    return (control: AbstractControl): { [key: string]: boolean } | null => {
+
+      if((control.value !== undefined) && (!isNaN(control.value)))
+      {
+        if(control.value >= min)
+        {
+          return null;
+        }
+      }
+
+      return { 'mincantidadasignado': true };
+    }
   }
 
   public startOC(): void{
@@ -415,10 +440,139 @@ export class OcsDetailsComponent implements OnInit {
     this.DISPLAYING_FORM = 2;
   }
 
+  public updateParte(): void {
+    this.parteForm.disable();
+    this.loading = true;
+    this.responseErrors = [];
+    
+    let parte: any = {
+      nparte: this.partes[this.parte_index].nparte,
+      cantidad: this.parteForm.value.cantidad,
+      tiempoentrega: this.parteForm.value.tiempoentrega,
+      backorder: this.parteForm.value.backorder
+    };
+    
+    this._ocsService.updateParte(this.oc.id, parte)
+    .subscribe(
+      //Success request
+      (response: any) => {
+        NotificationsService.showToast(
+          response.message,
+          NotificationsService.messageType.success
+          );
+          
+          this.partes[this.parte_index].cantidad = this.parteForm.value.cantidad;
+          this.partes[this.parte_index].tiempoentrega = this.parteForm.value.tiempoentrega;
+          this.partes[this.parte_index].backorder = this.parteForm.value.backorder;
+          this.parteForm.reset();
+          this.parteForm.enable();
+          this.loading = false;
+          
+          this.renderDataTable(this.datatableElement_partes);
+          this.goTo_partesList();
+        },
+        //Error request
+      (errorResponse: any) => {
+        console.log(errorResponse);
+        switch(errorResponse.status)
+        {
+          case 400: //Bad request
+          {
+            NotificationsService.showAlert(
+              errorResponse.error.message,
+              NotificationsService.messageType.error
+            );
+
+            break;
+          }
+
+          case 405: //Permission denied
+          {
+            NotificationsService.showAlert(
+              errorResponse.error.message,
+              NotificationsService.messageType.error
+            );
+
+            break;
+          }
+
+          case 409: //Conflict
+          {
+            this.responseErrors = errorResponse.error.message;
+
+            break;
+          }
+
+          case 412: //Object not found
+          {
+            NotificationsService.showToast(
+              errorResponse.error.message,
+              NotificationsService.messageType.warning
+            );
+
+            this.goTo_partesList();
+
+            break;
+          }
+        
+          case 422: //Invalid request parameters
+          {
+            this.responseErrors = errorResponse.error;
+
+            break;
+          }
+        
+          case 500: //Internal server
+          {
+            NotificationsService.showAlert(
+              errorResponse.error.message,
+              NotificationsService.messageType.error
+            );
+
+            break;
+          }
+
+          default: //Unhandled error
+          {
+            NotificationsService.showAlert(
+              'Error al actualizar la parte',
+              NotificationsService.messageType.error
+            );
+
+            break;
+          }
+
+        }
+
+        this.parteForm.enable();
+        this.loading = false;
+      }
+    );
+
+  }
+
+  public goTo_updateParte(index: number): void {
+
+    this.parte_index = index;
+    this.parte_min = this.partes[this.parte_index].cantidadasignado;
+
+    this.parteForm.controls.cantidad.setValue(this.partes[this.parte_index].cantidad);
+    this.parteForm.controls.tiempoentrega.setValue(this.partes[this.parte_index].tiempoentrega);
+    this.parteForm.controls.backorder.setValue(this.partes[this.parte_index].backorder);
+
+    this.parteForm.controls.cantidad.clearValidators();
+    this.parteForm.controls.cantidad.setValidators([
+      Validators.required,
+      this.validator_minCantidadAsignado(this.parte_min) // Validates 'min' against cantidadasignado
+    ]);
+
+    this.DISPLAYING_FORM = 1;
+  }
+
   public goTo_parteTracking(parte: any):void {
     this.parteTrack = parte;
 
-    this.DISPLAYING_FORM = 1;
+    this.DISPLAYING_FORM = 2;
   }
 
   public goTo_partesList(): void {

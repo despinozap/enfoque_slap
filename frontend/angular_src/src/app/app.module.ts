@@ -137,7 +137,7 @@ const routes: Routes = [
     ProveedoresCreateComponent,
     ProveedoresEditComponent,
     OcsListComponent,
-    OcsDetailsComponent,
+    OcsDetailsComponent
   ],
   imports: [
     BrowserModule,

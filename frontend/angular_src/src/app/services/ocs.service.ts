@@ -30,6 +30,24 @@ export class OcsService {
     return this.httpClient.post(endpoint, data, httpOptions);
   }
 
+  public updateParte(oc_id: number, parte: any): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/ocs/${oc_id}/partes`;
+
+    let httpOptions = { 
+      method: 'PUT',
+      headers:
+      {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET,POST,OPTIONS,DELETE,PUT'
+      }
+    };
+    
+    return this.httpClient.put(endpoint, parte, httpOptions);
+  }
+
   public getOC(oc_id: number): Observable<any>
   {
     let endpoint: string = `${environment.ENDPOINT_BASE}/ocs/${oc_id}`;
