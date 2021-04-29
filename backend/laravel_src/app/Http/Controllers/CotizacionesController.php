@@ -539,6 +539,8 @@ class CotizacionesController extends Controller
                                                         'descripcion' => $cparte->pivot->descripcion,
                                                         'cantidad' => $parte['cantidad'],
                                                         'cantidadpendiente' => $parte['cantidad'],
+                                                        'tiempoentrega' => $cparte->pivot->tiempoentrega,
+                                                        'backorder' => $cparte->pivot->backorder
                                                     );
                                                 }
                                                 else
@@ -645,7 +647,7 @@ class CotizacionesController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al aprobar la cotizacion [!]',
+                'Error al aprobar la cotizacion [!]' . $e,
                 null
             );
         }
