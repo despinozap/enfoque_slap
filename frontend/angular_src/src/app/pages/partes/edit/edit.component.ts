@@ -201,7 +201,6 @@ export class PartesEditComponent implements OnInit {
       },
       //Error request
       (errorResponse: any) => {
-        console.log(errorResponse);
         switch(errorResponse.status)
         {
           case 400: //Bad request
