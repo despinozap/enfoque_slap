@@ -371,6 +371,133 @@ class OcsController extends Controller
         //
     }
 
+    public function updateParte(Request $request, $id)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('ocs update'))
+            {
+                $validatorInput = $request->only('nparte', 'cantidad', 'tiempoentrega', 'backorder');
+            
+                $validatorRules = [
+                    'nparte' => 'required|exists:partes,nparte',
+                    'cantidad.required' => 'Debes ingresar la cantidad para la parte',
+                    'backorder'  => 'required|boolean',
+                ];
+
+                $validatorMessages = [
+                    'nparte.required' => 'La lista de partes es invalida',
+                    'nparte.exists' => 'La parte seleccionada no existe en la OC',
+                    'cantidad.required' => 'Debes ingresar la cantidad para la parte',
+                    'cantidad.numeric' => 'La cantidad para la parte debe ser numerica',
+                    'cantidad.min' => 'La cantidad para la parte debe ser mayor a 0',
+                    'tiempoentrega.required' => 'Debes ingresar el tiempo de entrega para la parte',
+                    'tiempoentrega.numeric' => 'El tiempo de entrega para la parte debe ser numerico',
+                    'tiempoentrega.min' => 'El tiempo de entrega para la parte debe ser mayor o igual a 0',
+                ];
+
+                $validator = Validator::make(
+                    $validatorInput,
+                    $validatorRules,
+                    $validatorMessages
+                );
+
+                if ($validator->fails()) 
+                {
+                    $response = HelpController::buildResponse(
+                        400,
+                        $validator->errors(),
+                        null
+                    );
+                }
+                else if(($oc = Oc::find($id)) === null)
+                {
+                    $response = HelpController::buildResponse(
+                        412,
+                        'La OC no existe',
+                        null
+                    );
+                }
+                else     
+                {
+                    if($parte = $oc->partes->where('nparte', $request->nparte)->first())
+                    {
+                        if($parte->pivot->cantidadasignado <= $request->cantidad)
+                        {
+                            $parte->pivot->cantidad = $request->cantidad;
+                            $parte->pivot->tiempoentrega = $request->tiempoentrega;
+                            $parte->pivot->backorder = $request->backorder;
+
+                            $parte->pivot->cantidadpendiente = $request->cantidad - $parte->pivot->cantidadasignado; //Updates cantidadpendiente
+
+                            //If all of them (cantidad) were delivered
+                            if($parte->pivot->cantidadentregado === $request->cantidad)
+                            {
+                                $parte->pivot->estadoocparte_id = 3; //Entregado
+                            }
+                        
+                            if($parte->pivot->save())
+                            {
+                                $response = HelpController::buildResponse(
+                                    200,
+                                    'Parte actualizada',
+                                    null
+                                );
+                            }
+                            else
+                            {
+                                $response = HelpController::buildResponse(
+                                    500,
+                                    'Error al actualizar la parte en la OC',
+                                    null
+                                );
+                            }
+                        }
+                        else
+                        {
+                            $response = HelpController::buildResponse(
+                                409,
+                                [
+                                    'cantidad' => [
+                                        'La cantidad debe ser mayor o igual a la de partes ya asignadas'
+                                    ]
+                                ],
+                                null
+                            );
+                        }
+                    }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            412,
+                            'La parte no existe en la OC',
+                            null
+                        );
+                    }
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a actualizar OC',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al actualizar la parte en la OC [!]',
+                null
+            );
+        }
+        
+        return $response;
+    }
+
     public function start(Request $request, $id)
     {
         try

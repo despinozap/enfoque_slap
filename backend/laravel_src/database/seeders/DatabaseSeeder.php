@@ -589,6 +589,8 @@ class DatabaseSeeder extends Seeder
                                 'descripcion' => $parte->pivot->descripcion,
                                 'cantidad' => $parte->pivot->cantidad,
                                 'cantidadpendiente' => $parte->pivot->cantidad,
+                                'tiempoentrega' => rand(1, 30),
+                                'backorder' => rand(0, 1)
                             );
                         }
 

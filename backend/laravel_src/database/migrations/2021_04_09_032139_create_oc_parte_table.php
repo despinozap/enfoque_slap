@@ -25,6 +25,9 @@ class CreateOcParteTable extends Migration
             $table->integer('cantidaddespachado')->default(0);
             $table->integer('cantidadrecibido')->default(0);
             $table->integer('cantidadentregado')->default(0);
+            $table->integer('tiempoentrega');
+            $table->boolean('backorder');
+
 
             $table->timestamps();
 

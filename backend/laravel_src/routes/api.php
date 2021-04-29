@@ -121,5 +121,6 @@ Route::middleware(['auth:api', 'cors'])->group(function()
     // OCs
     Route::get('/ocs', [OcsController::class, 'index']);
     Route::get('/ocs/{id}', [OcsController::class, 'show']);
+    Route::put('/ocs/{id}/partes', [OcsController::class, 'updateParte']);
     Route::post('/ocs/start/{id}', [OcsController::class, 'start']);
 });
