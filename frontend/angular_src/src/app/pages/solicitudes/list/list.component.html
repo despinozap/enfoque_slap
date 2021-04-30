@@ -84,10 +84,12 @@
           </tbody>
           <tfoot>
             <tr>
-              <td colspan="9">
+              <td colspan="4" align="left">
                 <button type="button" class="btn btn-outline-primary mr-2" (click)="goTo_newSolicitud()" [disabled]="(loading === true)">
                   <i class="bx bx-notepad font-size-16 align-middle"></i> Nueva solicitud
                 </button>
+              </td>
+              <td colspan="5" align="right">
                 <button type="button" class="btn btn-outline-primary" (click)="exportSolicitudesToExcel()" [disabled]="(loading === true) || (isCheckedItem(solicitudes) === false)">
                   <i class="bx bx-spreadsheet font-size-16 align-middle"></i> Exportar a Excel
                 </button>

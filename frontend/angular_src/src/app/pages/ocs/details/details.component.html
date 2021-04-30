@@ -27,8 +27,8 @@
         </div>
         <div>
           <span class="card-title">OC {{ oc.id !== null ? "#" + oc.id : '' }}</span>
-          <div class="btn-group mr-1 mt-2 btn-right">
-            <button [hidden]="(oc.cotizacion_id <= 0) || (oc.solicitud_id <= 0)" type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Referencias <i class="mdi mdi-chevron-down"></i></button>
+          <div class="btn-group mr-1 mt-2 btn-right dropleft">
+            <button [hidden]="(oc.cotizacion_id <= 0) || (oc.solicitud_id <= 0)" type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="mdi mdi-chevron-left"></i> Referencias</button>
             <div class="dropdown-menu">
                 <a class="dropdown-item" [routerLink]="['/panel/cotizaciones/details', oc.cotizacion_id]">Ver Cotizacion</a>
                 <a class="dropdown-item" [hidden]="(loggedUser.role_id !== 1)" [routerLink]="['/panel/solicitudes/details/administrator', oc.solicitud_id]">Ver Solicitud</a>
@@ -132,7 +132,7 @@
               </tbody>
               <tfoot>
                 <tr>
-                  <td colspan="7" align="right">
+                  <td colspan="7" align="left">
                     <button type="button" class="btn btn-outline-primary mr-2" (click)="goTo_darBaja()" [hidden]="(oc.estadooc_id !== 1) && (oc.estadooc_id !== 2)"
                         [disabled]="(loading === true)">
                       <i class="bx bx-unlink font-size-16 align-middle"></i> Dar OC de baja

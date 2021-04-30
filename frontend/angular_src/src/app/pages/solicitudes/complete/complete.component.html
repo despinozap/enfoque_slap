@@ -108,12 +108,14 @@
             </tbody>
             <tfoot>
               <tr>
-                <td colspan="10" align="right">
+                <td colspan="5" align="left">
                   <input #inputFilePartes style="display: none;" type="file" multiple="false"
                       (change)="onPartesFileChange($event); inputFilePartes.value=''">
                   <button type="button" class="btn btn-outline-primary mr-2" (click)="inputFilePartes.click()">
                     <i class="bx bx-import font-size-16 align-middle"></i> Importar Excel
                   </button>
+                </td>
+                <td colspan="5" align="right">
                   <button type="button" class="btn btn-outline-primary" (click)="exportPartesToExcel()">
                     <i class="bx bx-spreadsheet font-size-16 align-middle"></i> Exportar a Excel
                   </button>

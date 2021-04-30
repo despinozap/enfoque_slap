@@ -360,6 +360,19 @@ export class SolicitudesCreateComponent implements OnInit {
 
   }
 
+  public exportExcelBaseFile(): void {
+    let data: any[] = [];
+    //Push header
+    data.push(
+      [
+        'Cantidad',
+        'N parte'
+      ]
+    );
+
+    this._utilsService.exportTableToExcel(data, `Solicitud_Nueva-Partes`);
+  }
+
   public storeSolicitud(): void {
     this.solicitudForm.disable();
     this.loading = true;

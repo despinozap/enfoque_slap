@@ -58,3 +58,7 @@ label.control-label {
 table tbody tr td .btn-table:not(:last-child) {
   margin-right: 5px;
 }
+
+table tfoot tr td:not(:last-child){
+  border-right: 0px;
+}

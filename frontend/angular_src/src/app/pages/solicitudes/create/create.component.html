@@ -131,13 +131,18 @@
             </tbody>
             <tfoot>
               <tr>
-                <td colspan="3" align="right">
+                <td colspan="1" align="left">
                   <input #inputFilePartes style="display: none;" type="file" multiple="false" (change)="onPartesFileChange($event); inputFilePartes.value=''">
                   <button type="button" class="btn btn-outline-primary mr-2" (click)="inputFilePartes.click()" [disabled]="(loading === true)">
                     <i class="bx bx-import font-size-16 align-middle"></i> Importar Excel
                   </button>
                   <button type="button" class="btn btn-outline-primary" (click)="goTo_addParte()" [disabled]="(loading === true)">
                     <i class="bx bx-pen font-size-16 align-middle"></i> Agregar manual
+                  </button>
+                </td>
+                <td colspan="2" align="right">
+                  <button type="button" class="btn btn-outline-primary mr-2" (click)="exportExcelBaseFile()" [disabled]="(loading === true)">
+                    <i class="bx bx-spreadsheet font-size-16 align-middle"></i> Descargar formato base
                   </button>
                 </td>
               </tr>
