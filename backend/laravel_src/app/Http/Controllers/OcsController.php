@@ -510,6 +510,117 @@ class OcsController extends Controller
         return $response;
     }
 
+    public function reject(Request $request, $id)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('ocs reject'))
+            {
+                $validatorInput = $request->only(
+                    'motivobaja_id'
+                );
+                
+                $validatorRules = [
+                    'motivobaja_id' => 'required|exists:motivosbaja,id',
+                ];
+        
+                $validatorMessages = [
+                    'motivobaja_id.required' => 'Debes seleccionar el motivo de baja',
+                    'motivobaja_id.exists' => 'El motivo de baja no existe',
+                ];
+        
+                $validator = Validator::make(
+                    $validatorInput,
+                    $validatorRules,
+                    $validatorMessages
+                );
+        
+                if ($validator->fails()) 
+                {
+                    $response = HelpController::buildResponse(
+                        400,
+                        $validator->errors(),
+                        null
+                    );
+                }
+                else        
+                {
+                    if($oc = Oc::find($id))
+                    {
+                        if(($user->role_id === 2) && ($oc->cotizacion->solicitud->user_id !== $user->id))
+                        {
+                            //If Vendedor and solicitud doesn't belong
+                            $response = HelpController::buildResponse(
+                                405,
+                                'No tienes acceso a dar de baja esta OC',
+                                null
+                            );
+                        }
+                        else if(($oc->estadooc_id === 3) || ($oc->estadooc_id === 4))
+                        {
+                            //If Cerrada or Baja
+                            $response = HelpController::buildResponse(
+                                400,
+                                'No puedes dar de baja una OC que ya esta cerrada o de baja',
+                                null
+                            );
+                        }
+                        else
+                        {
+                            $oc->estadooc_id = 4; // Baja
+                            $oc->motivobaja_id = $request->motivobaja_id;
+                            
+                            if($oc->save())
+                            {
+                                $response = HelpController::buildResponse(
+                                    200,
+                                    'OC dada de baja',
+                                    null
+                                );
+                            }
+                            else
+                            {
+                                $response = HelpController::buildResponse(
+                                    500,
+                                    'Error al dar de baja la OC',
+                                    null
+                                );   
+                            }
+                        }
+                        
+                    }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            400,
+                            'La OC no existe',
+                            null
+                        );
+                    }
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a dar de baja OCs',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al dar de baja la OC [!]' . $e,
+                null
+            );
+        }
+        
+        return $response;
+    }
+
     public function start(Request $request, $id)
     {
         try
@@ -554,6 +665,15 @@ class OcsController extends Controller
                             $response = HelpController::buildResponse(
                                 405,
                                 'No tienes acceso a procesar esta OC',
+                                null
+                            );
+                        }
+                        else if($oc->estadooc_id !== 1)
+                        {
+                            //If not Pendiente
+                            $response = HelpController::buildResponse(
+                                400,
+                                'Solo puedes procesar OCs que estan pendiente',
                                 null
                             );
                         }
@@ -611,7 +731,6 @@ class OcsController extends Controller
         
         return $response;
     }
-
 
     /**
      * Remove the specified resource from storage.

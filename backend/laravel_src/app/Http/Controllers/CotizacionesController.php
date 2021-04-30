@@ -465,6 +465,15 @@ class CotizacionesController extends Controller
                                 null
                             );
                         }
+                        else if(($cotizacion->estadocotizacion_id === 3) || ($cotizacion->estadocotizacion_id === 4))
+                        {
+                            //If Aprobada or Rechazada
+                            $response = HelpController::buildResponse(
+                                400,
+                                'No puedes aprobar una cotizacion con estado comercial ya definido',
+                                null
+                            );
+                        }
                         else
                         {
                             if(($cotizacion->estadocotizacion_id === 1) || ($cotizacion->estadocotizacion_id === 2)) // If Estadocotizacion = 'Pendiente' or 'Vencida'
@@ -700,6 +709,15 @@ class CotizacionesController extends Controller
                             $response = HelpController::buildResponse(
                                 405,
                                 'No tienes acceso a rechazar esta cotizacion',
+                                null
+                            );
+                        }
+                        else if(($cotizacion->estadocotizacion_id === 3) || ($cotizacion->estadocotizacion_id === 4))
+                        {
+                            //If Aprobada or Rechazada
+                            $response = HelpController::buildResponse(
+                                400,
+                                'No puedes rechazar una cotizacion con estado comercial ya definido',
                                 null
                             );
                         }

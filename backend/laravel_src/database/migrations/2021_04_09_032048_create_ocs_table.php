@@ -20,7 +20,9 @@ class CreateOcsTable extends Migration
             $table->bigInteger('filedata_id')->unsigned()->nullable()->default(null); //Document OC cliente
             $table->bigInteger('estadooc_id')->unsigned();
             $table->string('noccliente');
+            $table->bigInteger('motivobaja_id')->unsigned()->nullable()->default(null);
             $table->float('usdvalue');
+            
 
             $table->timestamps();
 
@@ -28,6 +30,7 @@ class CreateOcsTable extends Migration
             $table->foreign('proveedor_id')->references('id')->on('proveedores')->onDelete('cascade');
             $table->foreign('filedata_id')->references('id')->on('filedatas')->onDelete('cascade');
             $table->foreign('estadooc_id')->references('id')->on('estadoocs')->onDelete('cascade');
+            $table->foreign('motivobaja_id')->references('id')->on('motivosbaja')->onDelete('cascade');
         });
     }
 

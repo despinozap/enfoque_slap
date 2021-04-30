@@ -22,6 +22,7 @@ use App\Models\Motivorechazo;
 use App\Models\Cotizacion;
 use App\Models\Proveedor;
 use App\Models\Estadooc;
+use App\Models\Motivobaja;
 use App\Models\Estadoocparte;
 use App\Models\Oc;
 
@@ -90,6 +91,7 @@ class DatabaseSeeder extends Seeder
             'ocs index',
             'ocs show',
             'ocs update',
+            'ocs reject',
             //Compradores
             'compradores index',
             'compradores show',
@@ -172,6 +174,7 @@ class DatabaseSeeder extends Seeder
                 'ocs index',
                 'ocs show',
                 'ocs update',
+                'ocs reject',
                 //Compradores
                 'compradores index',
                 'compradores show',
@@ -227,6 +230,7 @@ class DatabaseSeeder extends Seeder
                 'ocs index',
                 'ocs show',
                 'ocs update',
+                'ocs reject',
             ];
 
             $routePermissionIds = [];
@@ -540,6 +544,23 @@ class DatabaseSeeder extends Seeder
         $estadooc = new Estadooc();
         $estadooc->name = 'Cerrada';
         $estadooc->save();
+        $estadooc = new Estadooc();
+        $estadooc->name = 'Baja';
+        $estadooc->save();
+
+        
+        /*
+        *   Motivos de baja (OCs)
+        */
+        $motivobaja = new Motivobaja();
+        $motivobaja->name = 'Disponibilidad';
+        $motivobaja->save();
+        $motivobaja = new Motivobaja();
+        $motivobaja->name = 'Gestion';
+        $motivobaja->save();
+        $motivobaja = new Motivobaja();
+        $motivobaja->name = 'Tiempo';
+        $motivobaja->save();
 
 
         /*
@@ -554,6 +575,8 @@ class DatabaseSeeder extends Seeder
         $estadoocparte = new Estadoocparte();
         $estadoocparte->name = 'Entregado';
         $estadoocparte->save();
+
+        
 
         /*
         *   OCs

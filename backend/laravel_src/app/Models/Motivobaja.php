@@ -5,12 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Motivorechazo extends Model
+class Motivobaja extends Model
 {
-    //This model represents a rejection reason for Cotizaciones
+    //This model represents a drop reason for OCs
     use HasFactory;
 
-    protected $table = 'motivosrechazo';
+    protected $table = 'motivosbaja';
     protected $fillable = [
         'name', 
     ];

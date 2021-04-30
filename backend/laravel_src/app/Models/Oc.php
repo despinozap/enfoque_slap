@@ -76,6 +76,11 @@ class Oc extends Model
         return $this->belongsTo(Estadooc::class);
     }
 
+    public function motivobaja()
+    {
+        return $this->belongsTo(Motivobaja::class);
+    }
+
     public function cotizacion()
     {
         return $this->belongsTo(Cotizacion::class);
