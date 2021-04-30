@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Validator;
 
 use App\Models\Cotizacion;
 use App\Models\Oc;
+use App\Models\Motivobaja;
 
 class OcsController extends Controller
 {
@@ -115,6 +116,59 @@ class OcsController extends Controller
             $response = HelpController::buildResponse(
                 500,
                 'Error al obtener la lista de OCs [!]',
+                null
+            );
+        }
+
+        return $response;
+    }
+
+    public function indexMotivosBajaFull()
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('ocs show'))
+            {
+                if($motivosBaja = Motivobaja::all())
+                {
+                    foreach($motivosBaja as $motivoBaja)
+                    {
+                        $motivoBaja->makeHidden([ 
+                            'created_at', 
+                            'updated_at'
+                        ]);
+                    }
+
+                    $response = HelpController::buildResponse(
+                        200,
+                        null,
+                        $motivosBaja
+                    );
+                }
+                else
+                {
+                    $response = HelpController::buildResponse(
+                        500,
+                        'Error al obtener la lista de motivos de baja',
+                        null
+                    );
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a listar motivos de baja',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al obtener la lista de motivos de baja [!]' .$e,
                 null
             );
         }
@@ -428,6 +482,15 @@ class OcsController extends Controller
                     $response = HelpController::buildResponse(
                         412,
                         'La OC no existe',
+                        null
+                    );
+                }
+                else if(($oc->estadooc_id === 3) || ($oc->estadooc_id === 4))
+                {
+                    //If Cerrada or Baja
+                    $response = HelpController::buildResponse(
+                        400,
+                        'No puedes editar una OC que ya esta cerrada o de baja',
                         null
                     );
                 }

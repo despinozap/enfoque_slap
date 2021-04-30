@@ -99,7 +99,7 @@ Route::middleware(['auth:api', 'cors'])->group(function()
 
     // Cotizaciones
     Route::get('/cotizaciones', [CotizacionesController::class, 'index']);
-    Route::get('/motivosrechazo/all', [CotizacionesController::class, 'indexMotivosRechazoFull']);
+    Route::get('/cotizaciones/motivosrechazo/all', [CotizacionesController::class, 'indexMotivosRechazoFull']);
     Route::post('/cotizaciones/report', [CotizacionesController::class, 'report']);
     Route::put('/cotizaciones/{id}', [CotizacionesController::class, 'update']);
     Route::post('/cotizaciones/approve/{id}', [CotizacionesController::class, 'approve']);
@@ -120,6 +120,7 @@ Route::middleware(['auth:api', 'cors'])->group(function()
 
     // OCs
     Route::get('/ocs', [OcsController::class, 'index']);
+    Route::get('/ocs/motivosbaja/all', [OcsController::class, 'indexMotivosBajaFull']);
     Route::get('/ocs/{id}', [OcsController::class, 'show']);
     Route::post('/ocs/reject/{id}', [OcsController::class, 'reject']);
     Route::put('/ocs/{id}/partes', [OcsController::class, 'updateParte']);
