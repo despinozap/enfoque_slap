@@ -486,6 +486,7 @@ class CotizacionesController extends Controller
                                         {
                                             $filedata = new Filedata();
                                             $filedata->path = $path;
+                                            $filedata->filename = $request->file('dococcliente')->getClientOriginalName();
                                             $filedata->size = $request->file('dococcliente')->getSize();
 
                                             if(!$filedata->save())

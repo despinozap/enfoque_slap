@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Support\Facades\Storage;
+
 class Filedata extends Model
 {
     use HasFactory;
@@ -13,4 +15,10 @@ class Filedata extends Model
     protected $fillable = [
         'path', 'size',
     ];
+    public $appends = ['url'];
+
+    public function getUrlAttribute()
+    {
+        return asset(Storage::url($this->path));
+    }
 }

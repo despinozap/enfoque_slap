@@ -192,6 +192,18 @@ class OcsController extends Controller
                                 'updated_at'
                             ]);
                         }
+
+                        if($oc->filedata)
+                        {
+                            $oc->filedata->url;
+                            $oc->filedata->name;
+                            $oc->filedata->makeHidden([
+                                'size',
+                                'path',
+                                'created_at', 
+                                'updated_at'
+                            ]);
+                        }
     
                         $oc->cotizacion;
                         $oc->cotizacion->makeHidden([
