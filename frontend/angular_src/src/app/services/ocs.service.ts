@@ -30,6 +30,30 @@ export class OcsService {
     return this.httpClient.post(endpoint, data, httpOptions);
   }
 
+  public rejectOC(oc_id: number, data: any): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/ocs/reject/${oc_id}`;
+
+    let httpOptions = { 
+      method: 'POST',
+      headers:
+      {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET,POST,OPTIONS,DELETE,PUT'
+      }
+    };
+    
+    return this.httpClient.post(endpoint, data, httpOptions);
+  }
+
+  public getMotivosBajaFull(): Observable<any> {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/ocs/motivosbaja/all`;
+    
+    return this.httpClient.get(endpoint);
+  }
+
   public updateParte(oc_id: number, parte: any): Observable<any>
   {
     let endpoint: string = `${environment.ENDPOINT_BASE}/ocs/${oc_id}/partes`;

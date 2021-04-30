@@ -47,7 +47,7 @@ export class CotizacionesService {
   }
 
   public getMotivosRechazoFull(): Observable<any> {
-    let endpoint: string = `${environment.ENDPOINT_BASE}/motivosrechazo/all`;
+    let endpoint: string = `${environment.ENDPOINT_BASE}/cotizaciones/motivosrechazo/all`;
     
     return this.httpClient.get(endpoint);
   }

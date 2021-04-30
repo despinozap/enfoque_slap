@@ -29,6 +29,7 @@
         <span class="badge" [class.badge-warning]="(oc.estadooc_id === 1)"
             [class.badge-primary]="(oc.estadooc_id === 2)"
             [class.badge-success]="(oc.estadooc_id === 3)"
+            [class.badge-danger]="(oc.estadooc_id === 4)"
             *ngIf="(oc.estadooc_name !== null)">{{ oc.estadooc_name }}</span>
         <p class="card-title-desc">Detalle de la OC</p>
         <div class="row">
@@ -114,11 +115,21 @@
                     }}</td>
                   <td align="right">{{ parte.estadoocparte_name !== null ? parte.estadoocparte_name : "" }}</td>
                   <td align="center">
-                    <button (click)="goTo_updateParte(i)" class="btn-table btn btn-secondary" title="Editar"><i class="bx bx-edit-alt"></i></button>
+                    <button (click)="goTo_updateParte(i)" [hidden]="(oc.estadooc_id !== 1) && (oc.estadooc_id !== 2)" class="btn-table btn btn-secondary" title="Editar"><i class="bx bx-edit-alt"></i></button>
                     <button (click)="goTo_parteTracking(parte)" class="btn-table btn btn-secondary" title="Seguimiento"><i class="bx bx-file-find"></i></button>
                   </td>                  
                 </tr>
               </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="7" align="right">
+                    <button type="button" class="btn btn-outline-primary mr-2" (click)="goTo_darBaja()" [hidden]="(oc.estadooc_id !== 1) && (oc.estadooc_id !== 2)"
+                        [disabled]="(loading === true)">
+                      <i class="bx bx-unlink font-size-16 align-middle"></i> Dar OC de baja
+                    </button>
+                  </td>
+                </tr>
+              </tfoot>
             </table>
           </div>
         </div>
@@ -262,8 +273,57 @@
           </div>
         </div>
 
-        <!-- Start OC -->
+        <!-- Reject OC (dar baja) -->
         <div [hidden]="(DISPLAYING_FORM !== 3)">
+          <h4 class="card-title">Dar de OC de baja</h4>
+          <p class="card-title-desc">Completa los siguientes campos para dar de baja la OC</p>
+
+          <form [formGroup]="darBajaOCForm" (ngSubmit)="submitFormDarBajaOC()" action="#">
+          
+            <div class="row">
+              
+              <div class="col-12">
+                <div class="form-group">
+                  <label class="control-label">Motivo de baja</label>
+                  <!-- Backend errors -->
+                  <div class="alert alert-danger" *ngIf="(responseErrors.motivobaja_id)">
+                    <div *ngFor="let errorMessage of responseErrors.motivobaja_id">{{ errorMessage }}</div>
+                  </div>
+                  <select class="form-control" name="motivobaja_id" id="motivobaja_id" formControlName="motivobaja_id">
+                    <option *ngFor="let motivoBaja of motivosBaja" [value]="motivoBaja.id">{{ motivoBaja.name }}</option>
+                  </select>
+                  <!-- Frontend errors -->
+                  <div
+                      *ngIf="(darBajaOCForm.controls.motivobaja_id.errors) && (darBajaOCForm.controls.motivobaja_id.touched) && (darBajaOCForm.controls.motivobaja_id.dirty)">
+                    <div class="error-response" *ngIf="darBajaOCForm.controls.motivobaja_id.errors.required === true">Debes
+                      seleccionar el motivo
+                    </div>
+                    <div class="error-response" *ngIf="darBajaOCForm.controls.motivobaja_id.errors.minlength !== null">El motivo
+                      debe ser valida</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12">
+                <div class="form-group">
+                  <button type="submit" [disabled]="(darBajaOCForm.invalid) || (loading === true)" class="btn btn-primary mr-2">
+                    <span *ngIf="loading === true"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
+                    <span *ngIf="loading === false">Guardar</span>
+                  </button>
+                  <button type="button" class="btn btn-outline-primary" [disabled]="(loading === true)" (click)="goTo_partesList()">
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            
+            </div>
+  
+          </form>
+
+        </div>
+
+        <!-- Start OC -->
+        <div [hidden]="(DISPLAYING_FORM !== 4)">
           <h4 class="card-title">Procesar OC</h4>
           <p class="card-title-desc">Completa los siguientes campos para procesar la OC</p>
 

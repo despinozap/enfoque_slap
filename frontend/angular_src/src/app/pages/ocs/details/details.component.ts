@@ -54,6 +54,7 @@ export class OcsDetailsComponent implements OnInit {
   public parte_min: number = -1;
   parteTrack: any = null;
 
+  motivosBaja: Array<any> = null as any;
   partes: any[] = [];
   proveedores: any[] = [];
   loading: boolean = false;
@@ -67,7 +68,8 @@ export class OcsDetailsComponent implements OnInit {
   *       0: Partes list
   *       1: Parte edit
   *       2: Parte tracking
-  *       3: Start OC
+  *       3: Reject (dar baja)
+  *       4: Start OC
   */
   DISPLAYING_FORM: number = 0;
 
@@ -75,6 +77,10 @@ export class OcsDetailsComponent implements OnInit {
     cantidad: new FormControl(''),
     tiempoentrega: new FormControl('', [Validators.min(0)]),
     backorder: new FormControl(''),
+  });
+
+  darBajaOCForm: FormGroup = new FormGroup({
+    motivobaja_id: new FormControl('', [Validators.required]),
   });
 
   startOCForm: FormGroup = new FormGroup({
@@ -268,6 +274,144 @@ export class OcsDetailsComponent implements OnInit {
     }
   }
 
+  private loadMotivosBaja() {
+    this.darBajaOCForm.disable();
+    this.loading = true;
+
+    this._ocsService.getMotivosBajaFull()
+      .subscribe(
+        //Success request
+        (response: any) => {
+          this.loading = false;
+
+          this.motivosBaja= <Array<any>>(response.data);
+
+          this.darBajaOCForm.enable();
+        },
+        //Error request
+        (errorResponse: any) => {
+
+          switch (errorResponse.status) 
+          {
+            case 405: //Permission denied
+            {
+              NotificationsService.showToast(
+                errorResponse.error.message,
+                NotificationsService.messageType.error
+              );
+
+              break;
+            }
+
+            case 500: //Internal server
+              {
+                NotificationsService.showToast(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+            default: //Unhandled error
+              {
+                NotificationsService.showToast(
+                  'Error al cargar la lista de motivos de baja',
+                  NotificationsService.messageType.error
+                )
+
+                break;
+              }
+          }
+
+          this.motivosBaja = null as any;
+          this.loading = false;
+
+          this.goTo_partesList();
+        }
+      );
+  }
+
+  public submitFormDarBajaOC(): void {
+    this.loading = true;
+    this.responseErrors = [];
+
+    this.darBajaOCForm.disable();
+
+    let data: any = {
+      motivobaja_id: this.darBajaOCForm.value.motivobaja_id
+    };
+    
+    this._ocsService.rejectOC(this.oc.id, data)
+      .subscribe(
+        //Success request
+        (response: any) => {
+
+          NotificationsService.showToast(
+            response.message,
+            NotificationsService.messageType.success
+          );
+
+          this.goTo_back();
+        },
+        //Error request
+        (errorResponse: any) => {
+          switch (errorResponse.status) 
+          {
+            case 400: //Invalid request parameters
+              {
+                this.responseErrors = errorResponse.error.message;
+
+                break;
+              }
+
+              case 405: //Permission denied
+                {
+                  NotificationsService.showAlert(
+                    errorResponse.error.message,
+                    NotificationsService.messageType.error
+                  );
+
+                  break;
+                }
+
+            case 422: //Invalid request parameters
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+            case 500: //Internal server
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+            default: //Unhandled error
+              {
+                NotificationsService.showAlert(
+                  'Error al intentar dar de baja la OC',
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+          }
+
+          this.darBajaOCForm.enable();
+          this.loading = false;
+        }
+      );
+  }
+
   public startOC(): void{
     Swal.fire({
       title: 'Iniciar proceso OC',
@@ -441,11 +585,18 @@ export class OcsDetailsComponent implements OnInit {
     return this._utilsService.dateStringFormat(value);
   }
 
+  public goTo_darBaja(): void {
+    this.motivosBaja = null as any;
+    this.loadMotivosBaja();
+
+    this.DISPLAYING_FORM = 3;
+  }
+
   public goTo_startOC(): void {
     this.proveedores = null as any;
     this.loadProveedores();
 
-    this.DISPLAYING_FORM = 3;
+    this.DISPLAYING_FORM = 4;
   }
 
   public updateParte(): void {
