@@ -44,6 +44,8 @@ export class OcsDetailsComponent implements OnInit {
     comprador_name: null,
     proveedor_name: null,
     comprador_id: null,
+    occliente_url: null,
+    occliente_filename: null,
     estadooc_id: -1,
     estadooc_name: null,
   };
@@ -135,6 +137,12 @@ export class OcsDetailsComponent implements OnInit {
       else
       {
         this.oc.proveedor_name = '[No asignado]';
+      }
+      
+      if(ocData.filedata !== null)
+      {
+        this.oc.occliente_url = ocData.filedata.url;
+        this.oc.occliente_filename = ocData.filedata.filename;
       }
       this.oc.comprador_id = ocData.cotizacion.solicitud.comprador.id;
       this.oc.estadooc_id = ocData.estadooc.id;

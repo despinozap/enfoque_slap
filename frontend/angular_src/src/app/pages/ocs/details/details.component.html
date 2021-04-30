@@ -32,46 +32,53 @@
             *ngIf="(oc.estadooc_name !== null)">{{ oc.estadooc_name }}</span>
         <p class="card-title-desc">Detalle de la OC</p>
         <div class="row">
-          <div class="col-6">
+          <div class="col-4">
             <div class="form-group">
               <label class="control-label">Cliente</label>
               <br>
               <label>{{ oc.cliente_name }}</label>
             </div>
           </div>
-          <div class="col-6">
+          <div class="col-4">
             <div class="form-group">
               <label class="control-label">Faena</label>
               <br>
               <label>{{ oc.faena_name }}</label>
             </div>
           </div>
-          <div class="col-6">
+          <div class="col-4">
             <div class="form-group">
               <label class="control-label">Marca</label>
               <br>
               <label>{{ oc.marca_name }}</label>
             </div>
           </div>
-          <div class="col-6">
+          <div class="col-4">
             <div class="form-group">
               <label class="control-label">Comprador</label>
               <br>
               <label>{{ oc.comprador_name ? oc.comprador_name : '' }}</label>
             </div>
           </div>
-          <div class="col-6">
+          <div class="col-4">
             <div class="form-group">
               <label class="control-label">Proveedor</label>
               <br>
               <label>{{ oc.proveedor_name ? oc.proveedor_name : '' }}</label>
             </div>
           </div>
-          <div class="col-6">
+          <div class="col-4">
             <div class="form-group">
               <label class="control-label">Creada en</label>
               <br>
               <label>{{ dateStringFormat(oc.created_at) + ((oc.dias >= 0) ? ((oc.dias == 1) ? ' (hace 1 dia)' : ((oc.dias > 1) ? ' (hace ' + oc.dias + ' dias)' : ' (hoy)')) : '') }}</label>
+            </div>
+          </div>
+          <div class="col-12" *ngIf="oc.occliente_url !== null">
+            <div class="form-group">
+              <label class="control-label">Documento OC cliente</label>
+              <br>
+              <a href="{{oc.occliente_url}}" download="{{oc.occliente_filename}}" target="_blank" class="btn btn-light btn-label"><i class="bx bx-download label-icon"></i> Descargar</a>
             </div>
           </div>
         </div>
