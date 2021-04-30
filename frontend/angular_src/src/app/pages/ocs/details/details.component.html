@@ -25,7 +25,17 @@
           La OC aun esta <strong>pendiente</strong>
           <button type="button" class="ml-2 btn btn-light" aria-label="Cerrar solicitud" [disabled]="(loading === true)" (click)="startOC()"><i class="mdi mdi-thumb-up"></i> Iniciar proceso de OC</button>
         </div>
-        <h4 class="card-title">OC {{ oc.id !== null ? "#" + oc.id : '' }}</h4>
+        <div>
+          <span class="card-title">OC {{ oc.id !== null ? "#" + oc.id : '' }}</span>
+          <div class="btn-group mr-1 mt-2 btn-right">
+            <button [hidden]="(oc.cotizacion_id <= 0) || (oc.solicitud_id <= 0)" type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Referencias <i class="mdi mdi-chevron-down"></i></button>
+            <div class="dropdown-menu">
+                <a class="dropdown-item" [routerLink]="['/panel/cotizaciones/details', oc.cotizacion_id]">Ver Cotizacion</a>
+                <a class="dropdown-item" [hidden]="(loggedUser.role_id !== 1)" [routerLink]="['/panel/solicitudes/details/administrator', oc.solicitud_id]">Ver Solicitud</a>
+                <a class="dropdown-item" [hidden]="(loggedUser.role_id !== 2)" [routerLink]="['/panel/solicitudes/details/seller', oc.solicitud_id]">Ver Solicitud</a>
+            </div>
+          </div>
+        </div>
         <span class="badge" [class.badge-warning]="(oc.estadooc_id === 1)"
             [class.badge-primary]="(oc.estadooc_id === 2)"
             [class.badge-success]="(oc.estadooc_id === 3)"

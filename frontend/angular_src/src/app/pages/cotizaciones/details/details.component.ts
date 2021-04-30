@@ -274,14 +274,14 @@ export class CotizacionesDetailsComponent implements OnInit {
       },
       //Error request
       (errorResponse: any) => {
-
+        console.log(errorResponse);
         switch(errorResponse.status)
         {
         
           case 400: //Bad request
           {
             NotificationsService.showToast(
-              errorResponse.error.message,
+              'Error al cargar los datos de la cotizacion',
               NotificationsService.messageType.error
             );
 
@@ -331,7 +331,7 @@ export class CotizacionesDetailsComponent implements OnInit {
         }
 
         this.loading = false;
-        this.goTo_back();
+        //this.goTo_back();
       }
     );
   }

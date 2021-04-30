@@ -8,6 +8,8 @@ import { NotificationsService } from 'src/app/services/notifications.service';
 import { OcsService } from 'src/app/services/ocs.service';
 import { ProveedoresService } from 'src/app/services/proveedores.service';
 import { UtilsService } from 'src/app/services/utils.service';
+import { User } from 'src/app/interfaces/user';
+import { AuthService } from 'src/app/services/auth.service';
 
 /* SweetAlert2 */
 const Swal = require('../../../../assets/vendors/sweetalert2/sweetalert2.all.min.js');
@@ -48,6 +50,8 @@ export class OcsDetailsComponent implements OnInit {
     occliente_filename: null,
     estadooc_id: -1,
     estadooc_name: null,
+    solicitud_id: -1,
+    cotizacion_id: -1
   };
 
   public parte_index: number = -1;
@@ -87,15 +91,29 @@ export class OcsDetailsComponent implements OnInit {
     proveedor_id: new FormControl('', [Validators.required]),
   });
 
+  loggedUser: any = {
+    role_id: -1,
+  };
+
   constructor(
     private location: Location,
     private route: ActivatedRoute,
+    private _authService: AuthService,
     private _ocsService: OcsService,
     private _proveedoresService: ProveedoresService,
     private _utilsService: UtilsService
   ) { }
 
   ngOnInit(): void {
+    //For loggedUser
+    {
+      this._authService.loggedUser$.subscribe((data) => {
+        this.loggedUser = data.user;
+      });
+      
+      this._authService.notifyLoggedUser(this._authService.NOTIFICATION_RECEIVER_CONTENTPAGE);
+    }
+
     this.sub = this.route.params.subscribe(params => {
       this.oc.id = params['id'];
     });
@@ -153,6 +171,8 @@ export class OcsDetailsComponent implements OnInit {
       this.oc.comprador_id = ocData.cotizacion.solicitud.comprador.id;
       this.oc.estadooc_id = ocData.estadooc.id;
       this.oc.estadooc_name = ocData.estadooc.name;
+      this.oc.solicitud_id = ocData.cotizacion.solicitud.id;
+      this.oc.cotizacion_id = ocData.cotizacion.id;
 
       this.partes = [];
       let statusDays = null
