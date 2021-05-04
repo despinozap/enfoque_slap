@@ -239,35 +239,49 @@
               <div class="form-group">
                 <label class="control-label">Pendiente de recepcion por comprador</label>
                 <br>
-                <label>{{ parteTrack !== null ? parteTrack.cantidadpendiente + '/' + parteTrack.cantidad : '' }}</label>
+                <label>{{ parteTrack !== null ? parteTrack.cantidad_pendiente + '/' + parteTrack.cantidad : '' }}</label>
               </div>
             </div>
             <div class="col-6">
               <div class="form-group">
                 <label class="control-label">Recibido por comprador (en stock)</label>
                 <br>
-                <label>{{ parteTrack !== null ? parteTrack.cantidadasignado + '/' + parteTrack.cantidad : '' }}</label>
+                <label>{{ parteTrack !== null ? parteTrack.cantidad_compradorrecepcionado + '/' + parteTrack.cantidad : '' }}</label>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-group">
+                <label class="control-label">Despachado a centro de distribucion (en trayecto)</label>
+                <br>
+                <label>{{ parteTrack !== null ? parteTrack.cantidad_compradordespachado + '/' + parteTrack.cantidad : '' }}</label>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-group">
+                <label class="control-label">Recibido en centro de distribucion (en stock)</label>
+                <br>
+                <label>{{ parteTrack !== null ? parteTrack.cantidad_centrodistribucionrecepcionado + '/' + parteTrack.cantidad : '' }}</label>
               </div>
             </div>
             <div class="col-6">
               <div class="form-group">
                 <label class="control-label">Despachado a sucursal (en trayecto)</label>
                 <br>
-                <label>{{ parteTrack !== null ? parteTrack.cantidaddespachado + '/' + parteTrack.cantidad : '' }}</label>
+                <label>{{ parteTrack !== null ? parteTrack.cantidad_centrodistribuciondespachado + '/' + parteTrack.cantidad : '' }}</label>
               </div>
             </div>
             <div class="col-6">
               <div class="form-group">
                 <label class="control-label">Recibido en sucursal (en stock)</label>
                 <br>
-                <label>{{ parteTrack !== null ? parteTrack.cantidadrecibido + '/' + parteTrack.cantidad : '' }}</label>
+                <label>{{ parteTrack !== null ? parteTrack.cantidad_sucursalrecepcionado + '/' + parteTrack.cantidad : '' }}</label>
               </div>
             </div>
             <div class="col-6">
               <div class="form-group">
                 <label class="control-label">Entregado a cliente</label>
                 <br>
-                <label>{{ parteTrack !== null ? parteTrack.cantidadentregado + '/' + parteTrack.cantidad : '' }}</label>
+                <label>{{ parteTrack !== null ? parteTrack.cantidad_sucursaldespachado + '/' + parteTrack.cantidad : '' }}</label>
               </div>
             </div>
           </div>
