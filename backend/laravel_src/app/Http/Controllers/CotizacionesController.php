@@ -548,7 +548,6 @@ class CotizacionesController extends Controller
                                                         'estadoocparte_id' => 1, // Pendiente
                                                         'descripcion' => $cparte->pivot->descripcion,
                                                         'cantidad' => $parte['cantidad'],
-                                                        'cantidadpendiente' => $parte['cantidad'],
                                                         'tiempoentrega' => $cparte->pivot->tiempoentrega,
                                                         'backorder' => $cparte->pivot->backorder
                                                     );

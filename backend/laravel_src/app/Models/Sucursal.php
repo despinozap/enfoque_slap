@@ -11,4 +11,9 @@ class Sucursal extends Model
 
     protected $table = 'sucursales';
     protected $fillable = ['rut', 'name', 'address', 'city'];
+
+    public function centrodistribucion()
+    {
+        return $this->belongsTo(Centrodistribucion::class);
+    }
 }

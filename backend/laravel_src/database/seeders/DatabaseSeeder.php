@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Support\Facades\DB;
 
 use Illuminate\Database\Seeder;
+use App\Models\Centrodistribucion;
 use App\Models\Sucursal;
 use App\Models\Role;
 use App\Models\Routepermission;
@@ -248,20 +249,27 @@ class DatabaseSeeder extends Seeder
 
 
         /*
+        *   CentrosDistribucion
+        */
+        $centrodistribucion = new Centrodistribucion();
+        $centrodistribucion->rut = '76.790.684-6';
+        $centrodistribucion->name = 'American Parts SPA (Central)';
+        $centrodistribucion->address = 'Av. La Dehesa 181 Of. 1313';
+        $centrodistribucion->city = 'Santiago';
+        $centrodistribucion->country = 'Chile';
+        $centrodistribucion->save();
+
+
+        /*
         *   Sucursales
         */
         $sucursal = new Sucursal();
         $sucursal->rut = '76.790.684-6';
-        $sucursal->name = 'American Parts SPA';
+        $sucursal->name = 'American Parts SPA (Antofagasta)';
         $sucursal->address = 'Coquimbo 712 Of. 401';
         $sucursal->city = 'Antofagasta';
+        $sucursal->centrodistribucion_id = $centrodistribucion->id;
         $sucursal->save();
-        // $sucursal = new Sucursal();
-        // $sucursal->rut = 'SucursalRUTTest01';
-        // $sucursal->name = 'SucursalNombreTest01';
-        // $sucursal->address = 'SucursalDireccionTest01';
-        // $sucursal->city = 'SucursalCiudadTest01';
-        // $sucursal->save();
 
 
         /*
@@ -611,7 +619,6 @@ class DatabaseSeeder extends Seeder
                                 'estadoocparte_id' => 1, // Pendiente
                                 'descripcion' => $parte->pivot->descripcion,
                                 'cantidad' => $parte->pivot->cantidad,
-                                'cantidadpendiente' => $parte->pivot->cantidad,
                                 'tiempoentrega' => rand(1, 30),
                                 'backorder' => rand(0, 1)
                             );

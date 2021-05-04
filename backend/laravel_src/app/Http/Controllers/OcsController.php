@@ -328,6 +328,15 @@ class OcsController extends Controller
                                 'created_at', 
                                 'updated_at'
                             ]);
+                            
+                            // Get quantities
+                            $parte->pivot->cantidad_pendiente;
+                            $parte->pivot->cantidad_compradorrecepcionado;
+                            $parte->pivot->cantidad_compradordespachado;
+                            $parte->pivot->cantidad_centrodistribucionrecepcionado;
+                            $parte->pivot->cantidad_centrodistribuciondespachado;
+                            $parte->pivot->cantidad_sucursalrecepcionado;
+                            $parte->pivot->cantidad_sucursaldespachado;
     
                             $parte->pivot->estadoocparte;
                             $parte->pivot->estadoocparte->makeHidden([
@@ -498,16 +507,14 @@ class OcsController extends Controller
                 {
                     if($parte = $oc->partes->where('nparte', $request->nparte)->first())
                     {
-                        if($parte->pivot->cantidadasignado <= $request->cantidad)
+                        if($request->cantidad >= $parte->pivot->cantidad_recepcionadocomprador)
                         {
                             $parte->pivot->cantidad = $request->cantidad;
                             $parte->pivot->tiempoentrega = $request->tiempoentrega;
                             $parte->pivot->backorder = $request->backorder;
 
-                            $parte->pivot->cantidadpendiente = $request->cantidad - $parte->pivot->cantidadasignado; //Updates cantidadpendiente
-
                             //If all of them (cantidad) were delivered
-                            if($parte->pivot->cantidadentregado === $request->cantidad)
+                            if($parte->pivot->cantidad_sucursaldespachado === $request->cantidad)
                             {
                                 $parte->pivot->estadoocparte_id = 3; //Entregado
                             }

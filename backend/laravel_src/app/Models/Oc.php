@@ -68,7 +68,7 @@ class Oc extends Model
     
     public function partes()
     {
-        return $this->belongsToMany(Parte::class, 'oc_parte', 'oc_id', 'parte_id')->withPivot(['descripcion', 'estadoocparte_id', 'cantidad', 'cantidadpendiente', 'cantidadasignado', 'cantidaddespachado', 'cantidadrecibido', 'cantidadentregado', 'tiempoentrega', 'backorder'])->using(OcParte::class)->withTimestamps();
+        return $this->belongsToMany(Parte::class, 'oc_parte', 'oc_id', 'parte_id')->withPivot(['descripcion', 'estadoocparte_id', 'cantidad', 'tiempoentrega', 'backorder'])->using(OcParte::class)->withTimestamps();
     }
 
     public function estadooc()

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateSucursalesTable extends Migration
+class CreateCentrosdistribucionTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,16 +13,14 @@ class CreateSucursalesTable extends Migration
      */
     public function up()
     {
-        Schema::create('sucursales', function (Blueprint $table) {
+        Schema::create('centrosdistribucion', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('centrodistribucion_id')->unsigned();
             $table->string('rut');
             $table->string('name');
             $table->string('address');
             $table->string('city');
+            $table->string('country');
             $table->timestamps();
-
-            $table->foreign('centrodistribucion_id')->references('id')->on('centrosdistribucion')->onDelete('cascade');
         });
     }
 
@@ -33,6 +31,6 @@ class CreateSucursalesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('sucursales');
+        Schema::dropIfExists('centrosdistribucion');
     }
 }

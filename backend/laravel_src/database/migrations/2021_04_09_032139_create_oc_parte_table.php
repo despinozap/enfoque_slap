@@ -20,11 +20,6 @@ class CreateOcParteTable extends Migration
             $table->bigInteger('estadoocparte_id')->unsigned();
             $table->longText('descripcion')->nullable();
             $table->integer('cantidad');
-            $table->integer('cantidadpendiente');
-            $table->integer('cantidadasignado')->default(0);
-            $table->integer('cantidaddespachado')->default(0);
-            $table->integer('cantidadrecibido')->default(0);
-            $table->integer('cantidadentregado')->default(0);
             $table->integer('tiempoentrega');
             $table->boolean('backorder');
 
