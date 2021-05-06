@@ -121,7 +121,7 @@ class CompradoresController extends Controller
                     $comprador->proveedores;
                     $comprador->proveedores = $comprador->proveedores->filter(function($proveedor)
                     {
-                        $proveedor->makeHidden(['comprador_id', 'created_at', 'updated_at']);
+                        return $proveedor->makeHidden(['comprador_id', 'created_at', 'updated_at']);
                     });
 
                     
@@ -193,5 +193,144 @@ class CompradoresController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    public function indexRecepciones($id)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('compradores recepciones_index'))
+            {
+                if($comprador = Comprador::find($id))
+                {
+                    $comprador->makeHidden([
+                        'created_at', 
+                        'updated_at'
+                    ]);
+
+                    $comprador->recepciones;
+                    $comprador->recepciones = $comprador->recepciones->filter(function($recepcion)
+                    {
+                        $recepcion->partes_total;
+                        
+                        $recepcion->makeHidden([
+                            'recepcionable_id', 
+                            'recepcionable_type', 
+                            'created_at', 
+                            'updated_at'
+                        ]);
+                        
+                        $recepcion->ocpartes;
+                        $recepcion->ocpartes = $recepcion->ocpartes->filter(function($ocparte)
+                        {
+                            $ocparte->makeHidden([
+                                'oc_id',
+                                'parte_id',
+                                'tiempoentrega',
+                                'estadoocparte_id',
+                                'created_at',
+                                'updated_at',
+                                'cantidad_pendiente',
+                                'cantidad_compradorrecepcionado',
+                                'cantidad_compradordespachado',
+                                'cantidad_centrodistribucionrecepcionado',
+                                'cantidad_centrodistribuciondespachado',
+                                'cantidad_sucursalrecepcionado',
+                                'cantidad_sucursaldespachado',
+                            ]);
+
+                            $ocparte->pivot->makeHidden([
+                                'recepcion_id',
+                                'oc_parte_id',
+                                'created_at',
+                                'updated_at',
+                            ]);
+
+                            $ocparte->oc;
+                            $ocparte->oc->makeHidden([
+                                'cotizacion_id',
+                                'proveedor_id',
+                                'filedata_id',
+                                'estadooc_id',
+                                'noccliente',
+                                'motivobaja_id',
+                                'usdvalue',
+                                'partes_total',
+                                'dias',
+                                'partes',
+                                'created_at', 
+                                'updated_at'
+                            ]);
+
+                            $ocparte->parte;
+                            $ocparte->parte->makeHidden(['marca_id', 'created_at', 'updated_at']);
+
+                            $ocparte->parte->marca;
+                            $ocparte->parte->marca->makeHidden(['created_at', 'updated_at']);
+
+                            return $ocparte;
+                        });
+
+                        $recepcion->proveedorrecepcion;
+                        if($recepcion->proveedorrecepcion !== null)
+                        {
+                            $recepcion->proveedorrecepcion->makeHidden([
+                                'recepcion_id',
+                                'proveedor_id',
+                                'created_at', 
+                                'updated_at'
+                            ]);
+
+                            $recepcion->proveedorrecepcion->proveedor;
+                            $recepcion->proveedorrecepcion->proveedor->makeHidden([
+                                'comprador_id',
+                                'rut',
+                                'address',
+                                'city',
+                                'contact',
+                                'phone',
+                                'created_at', 
+                                'updated_at'
+                            ]);
+                        }
+
+                        return $recepcion;
+                    });
+
+                    $response = HelpController::buildResponse(
+                        200,
+                        null,
+                        $comprador->recepciones
+                    );
+                }   
+                else     
+                {
+                    $response = HelpController::buildResponse(
+                        412,
+                        'El comprador no existe',
+                        null
+                    );
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a visualizar recepciones de compradores',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al obtener las recepciones del comprador [!]',
+                null
+            );
+        }
+            
+        return $response;
     }
 }

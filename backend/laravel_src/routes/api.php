@@ -110,6 +110,7 @@ Route::middleware(['auth:api', 'cors'])->group(function()
     // Compradores
     Route::get('/compradores', [CompradoresController::class, 'index']);
     Route::get('/compradores/{id}', [CompradoresController::class, 'show']);
+    Route::get('/compradores/{id}/recepciones', [CompradoresController::class, 'indexRecepciones']);
 
     // Proveedores
     Route::get('/compradores/{comprador_id}/proveedores', [ProveedoresController::class, 'index']);
