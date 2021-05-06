@@ -209,6 +209,12 @@ export class UtilsService {
               'icon': 'bx-hive',
               'header': false,
               'route': '/panel/ocs'
+            },
+            {
+              'title': 'Recepciones',
+              'icon': 'bx-log-in-circle',
+              'header': false,
+              'route': '/panel/recepciones/comprador'
             }
           ]
         };
