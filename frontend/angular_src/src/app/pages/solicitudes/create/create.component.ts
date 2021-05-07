@@ -6,8 +6,6 @@ import { Subject } from 'rxjs';
 import { Comprador } from 'src/app/interfaces/comprador';
 import { Faena } from 'src/app/interfaces/faena';
 import { Marca } from 'src/app/interfaces/marca';
-import { FaenasService } from 'src/app/services/faenas.service';
-import { MarcasService } from 'src/app/services/marcas.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { SolicitudesService } from 'src/app/services/solicitudes.service';
 import { UtilsService } from 'src/app/services/utils.service';

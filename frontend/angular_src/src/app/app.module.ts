@@ -52,6 +52,7 @@ import { ProveedoresCreateComponent } from './pages/compradores/proveedores/crea
 import { ProveedoresEditComponent } from './pages/compradores/proveedores/edit/edit.component';
 import { OcsDetailsComponent } from './pages/ocs/details/details.component';
 import { RecepcionesCompradorListComponent } from './pages/recepciones/comprador/list/list.component';
+import { RecepcionesCompradorCreateComponent } from './pages/recepciones/comprador/create/create.component';
 
 
 /* Routes */
@@ -96,6 +97,7 @@ const routes: Routes = [
       { path: 'ocs', component: OcsListComponent },
       { path: 'ocs/details/:id', component: OcsDetailsComponent },
       { path: 'recepciones/comprador', component: RecepcionesCompradorListComponent },
+      { path: 'recepciones/comprador/create', component: RecepcionesCompradorCreateComponent },
     ]
   },
   { path: '**', redirectTo: 'login', pathMatch: 'full' } //any other page, redirects to base path
@@ -140,7 +142,8 @@ const routes: Routes = [
     ProveedoresEditComponent,
     OcsListComponent,
     OcsDetailsComponent,
-    RecepcionesCompradorListComponent
+    RecepcionesCompradorListComponent,
+    RecepcionesCompradorCreateComponent,
   ],
   imports: [
     BrowserModule,

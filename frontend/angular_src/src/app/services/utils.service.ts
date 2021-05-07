@@ -213,9 +213,19 @@ export class UtilsService {
             {
               'title': 'Recepciones',
               'icon': 'bx-log-in-circle',
-              'header': false,
-              'route': '/panel/recepciones/comprador'
-            }
+              'header': true,
+              'route': '',
+              'items': [
+                {
+                  'title': 'Nueva recepcion',
+                  'route': '/panel/recepciones/comprador/create'
+                },
+                {
+                  'title': 'Lista de recepciones',
+                  'route': '/panel/recepciones/comprador'
+                }
+              ]
+            },
           ]
         };
 
@@ -282,7 +292,35 @@ export class UtilsService {
   }
 
   public dateStringFormat(value: string): string {
-    return (value !== null) ? value.substr(0, 10) : '';
+    
+    let strDate = null;
+    if(value != null)
+    {
+      try
+      {
+        let dt = null;
+        if(value.length >= 10)
+        {
+          dt = new Date(value);
+        }
+        else
+        {
+          dt = new Date(`${value} 00:00:00`);
+        }
+
+        strDate = `${dt.getFullYear()}-${ (dt.getMonth() + 1) < 10 ? '0' + (dt.getMonth() + 1) : (dt.getMonth() + 1)}-${ dt.getDate() < 10 ? '0' + dt.getDate() : dt.getDate()}`
+      }
+      catch(ex)
+      {
+        strDate = '';
+      }
+    }
+    else
+    {
+      strDate = '';
+    }
+
+    return strDate;
   }
 
   public moneyStringFormat(value: number): string {
