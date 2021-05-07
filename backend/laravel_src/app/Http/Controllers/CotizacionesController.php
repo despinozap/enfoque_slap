@@ -399,7 +399,6 @@ class CotizacionesController extends Controller
 
     public function approve(Request $request, $id)
     {
-
         try
         {
             $user = Auth::user();

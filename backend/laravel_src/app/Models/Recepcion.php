@@ -19,7 +19,7 @@ class Recepcion extends Model
 
     public function ocpartes()
     {
-        return $this->belongsToMany(OcParte::class, 'ocparte_recepcion', 'recepcion_id', 'oc_parte_id')->withPivot(['cantidad', 'comentario'])->withTimestamps();
+        return $this->belongsToMany(OcParte::class, 'ocparte_recepcion', 'recepcion_id', 'ocparte_id')->withPivot(['cantidad', 'comentario'])->using(OcParteRecepcion::class)->withTimestamps();
     }
 
     public function getPartesTotalAttribute()

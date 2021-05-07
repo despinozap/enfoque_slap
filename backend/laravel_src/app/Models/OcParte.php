@@ -37,12 +37,23 @@ class OcParte extends Pivot
 
     public function getCantidadPendienteAttribute()
     {
-        return $this->cantidad - $this->cantidad_recepcionadocomprador;
+        return $this->cantidad - $this->cantidad_compradorrecepcionado;
     }
 
     public function getCantidadCompradorRecepcionadoAttribute()
     {
-        return 0;
+        $ocParteRecepcionList = OcParteRecepcion::join('recepciones', 'recepciones.id', '=', 'ocparte_recepcion.recepcion_id')
+                                ->where('recepciones.recepcionable_type', '=', 'App\\Models\\Comprador')->where('ocparte_recepcion.ocparte_id', '=', $this->id)
+                                ->get();
+
+        $quantity = $ocParteRecepcionList->reduce(function ($carry, $ocParteRecepcion) 
+            {
+                return $carry + $ocParteRecepcion->cantidad;
+            }, 
+            0
+        );
+
+        return $quantity;
     }
 
     public function getCantidadCompradorDespachadoAttribute()

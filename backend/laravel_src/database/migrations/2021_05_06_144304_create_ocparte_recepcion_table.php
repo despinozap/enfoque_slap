@@ -15,7 +15,7 @@ class CreateOcparteRecepcionTable extends Migration
     {
         Schema::create('ocparte_recepcion', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('oc_parte_id')->unsigned();
+            $table->bigInteger('ocparte_id')->unsigned();
             $table->bigInteger('recepcion_id')->unsigned();
             $table->integer('cantidad');
             $table->longText('comentario')->nullable();
@@ -23,7 +23,7 @@ class CreateOcparteRecepcionTable extends Migration
 
             $table->timestamps();
 
-            $table->foreign('oc_parte_id')->references('id')->on('oc_parte')->onDelete('cascade');
+            $table->foreign('ocparte_id')->references('id')->on('oc_parte')->onDelete('cascade');
             $table->foreign('recepcion_id')->references('id')->on('recepciones')->onDelete('cascade');
         });
     }
