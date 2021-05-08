@@ -159,18 +159,14 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
     .subscribe(
       //Success request
       (response: any) => {
-
         this.partes = response.data.reduce((carry: any[], parte: any) => {
             carry.push({
               id: parte.id,
-              nparte: parte.parte.nparte,
-              descripcion: parte.descripcion,
+              nparte: parte.nparte,
+              marca: parte.marca,
               cantidad_pendiente: parte.cantidad_pendiente,
-              backorder: parte.backorder,
-              oc_id: parte.oc.id,
               checked: false,
               cantidad: parte.cantidad_pendiente,
-              comentario: null
             });
 
             return carry;
@@ -238,7 +234,113 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
   }
 
   public storeRecepcion(): void {
+    this.recepcionForm.disable();
+    this.loading = true;
+    this.responseErrors = [];
 
+    let receivedPartes = this.partes.reduce((carry, parte) => 
+      {
+        if(parte.checked === true)
+        {
+          carry.push(
+            {
+              id: parte.id,
+              cantidad: parte.cantidad
+            }
+          );
+        }
+      
+        return carry;
+      }, 
+      []
+    );
+
+    let recepcion: any = {
+      proveedor_id: this.recepcionForm.value.proveedor,
+      fecha: this.recepcionForm.value.fecha,
+      responsable: this.recepcionForm.value.responsable,
+      comentario: this.recepcionForm.value.comentario,
+      partes: receivedPartes
+    };
+
+    this._recepcionesService.storeRecepcion_comprador(this.comprador_id, recepcion)
+      .subscribe(
+        //Success request
+        (response: any) => {
+
+          NotificationsService.showToast(
+            response.message,
+            NotificationsService.messageType.success
+          );
+
+          this.goTo_recepcionesList();
+        },
+        //Error request
+        (errorResponse: any) => {
+          switch (errorResponse.status) 
+          {
+            case 400: //Invalid request parameters
+              {
+                this.responseErrors = errorResponse.error.message;
+
+                break;
+              }
+
+            case 405: //Permission denied
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+    
+                break;
+              }
+
+            case 409: //Permission denied
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+    
+                break;
+              }
+
+            case 422: //Invalid request parameters
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+            case 500: //Internal server
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+            default: //Unhandled error
+              {
+                NotificationsService.showAlert(
+                  'Error al intentar guardar la solicitud',
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+          }
+
+          this.recepcionForm.enable();
+          this.loading = false;
+        }
+      );
   }
 
   public updateParte_cantidad(parte: any, evt: any): void {

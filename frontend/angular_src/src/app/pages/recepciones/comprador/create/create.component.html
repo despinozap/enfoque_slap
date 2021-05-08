@@ -136,14 +136,13 @@
                         </div>
                       </th>
                       <th>N° Parte</th>
-                      <th>Descripcion</th>
                       <th>Cantidad</th>
-                      <th>Comentario</th>
+                      <th>Marca</th>
                     </tr>
                   </thead>
                   <tbody *ngIf="(loading === true)">
                     <tr>
-                      <td colspan="5" style="text-align: center;"><i
+                      <td colspan="4" style="text-align: center;"><i
                             class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</td>
                     </tr>
                   </tbody>
@@ -155,14 +154,11 @@
                           <label class="custom-control-label" for="chkParte-{{ i }}"></label>
                         </div>
                       </td>
-                      <td align="left"><i class="bx bx-timer icon-table" *ngIf="(parte.backorder === true)"></i>{{ parte.nparte !== null ? parte.nparte : '' }}</td>
-                      <td align="right">{{ parte.descripcion !== null ? parte.descripcion : "" }}</td>
+                      <td align="left">{{ parte.nparte !== null ? parte.nparte : '' }}</td>
                       <td align="center">
                         <input class="form-control" type="number" name="" id="txtParte-{{ i }}-cantidad" min="1" max="parte.cantidad_pendiente" value="{{ parte.cantidad_pendiente !== null ? parte.cantidad_pendiente : '' }}" (change)="updateParte_cantidad(parte, $event)" [disabled]="loading === true ? true : (parte.checked ? false : true)">
                       </td>
-                      <td align="center">
-                        <input class="form-control" type="text" name="" id="txtParte-{{ i }}-comentario" value="{{ parte.comentario !== null ? parte.comentario : '' }}" (change)="updateParte_comentario(parte, $event)" [disabled]="loading === true ? true : (parte.checked ? false : true)">
-                      </td>
+                      <td align="left">{{ parte.marca.name !== null ? parte.marca.name : '' }}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -175,7 +171,7 @@
             <div class="col-12">
               <div class="form-buttons mt-2">
                 <button class="btn btn-primary mr-2" (click)="storeRecepcion()"
-                    [disabled]="(recepcionForm.invalid) || (loading === true) || (partes.length < 1)">
+                    [disabled]="(recepcionForm.invalid) || (loading === true) || (isCheckedItem(partes) === false)">
                   <span *ngIf="loading === true"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
                   <span *ngIf="loading === false">Guardar</span>
                 </button>

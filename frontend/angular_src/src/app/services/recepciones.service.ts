@@ -10,6 +10,22 @@ export class RecepcionesService {
 
   constructor(private httpClient: HttpClient) { }
 
+  public storeRecepcion_comprador(comprador_id: number, recepcion: any): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/compradores/${comprador_id}/recepciones`;
+
+    let httpOptions = { 
+      method: 'POST',
+      headers:
+      {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    };
+
+    return this.httpClient.post(endpoint, recepcion, httpOptions);
+  }
+
   public getQueuePartes_comprador(comprador_id: number, proveedor_id: number): Observable<any>
   {
     let endpoint: string = `${environment.ENDPOINT_BASE}/compradores/${comprador_id}/proveedores/${proveedor_id}/queuepartes`;
