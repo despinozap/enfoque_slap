@@ -365,7 +365,7 @@ class CotizacionesController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al obtener el reporte de cotizacion [!]' . $e,
+                'Error al obtener el reporte de cotizacion [!]',
                 null
             );
         }
@@ -655,7 +655,7 @@ class CotizacionesController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al aprobar la cotizacion [!]' . $e,
+                'Error al aprobar la cotizacion [!]',
                 null
             );
         }

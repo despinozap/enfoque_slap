@@ -10,6 +10,7 @@ class Proveedorrecepcion extends Pivot
     use HasFactory;
 
     protected $table = 'proveedor_recepcion';
+    protected $fillable = ['proveedor_id', 'recepcion_id'];
 
     public function proveedor()
     {

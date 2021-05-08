@@ -168,6 +168,11 @@ class SolicitudesController extends Controller
         //
     }
 
+    /**
+     * It retrieves all the required info for
+     * selecting data and storing a new Solicitud
+     * 
+     */
     public function prepare()
     {
         try
@@ -436,7 +441,7 @@ class SolicitudesController extends Controller
 
             $response = HelpController::buildResponse(
                 500,
-                'Error al crear la solicitud [!]' . $e,
+                'Error al crear la solicitud [!]',
                 null
             );
         }
@@ -1133,7 +1138,7 @@ class SolicitudesController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al cerrar la solicitud [!]' . $e,
+                'Error al cerrar la solicitud [!]',
                 null
             );
         }

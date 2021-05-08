@@ -683,7 +683,7 @@ class OcsController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al dar de baja la OC [!]' . $e,
+                'Error al dar de baja la OC [!]',
                 null
             );
         }
