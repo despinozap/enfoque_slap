@@ -801,7 +801,6 @@ class CompradoresController extends Controller
                                     'parte_id',
                                     'estadoocparte_id',
                                     'tiempoentrega',
-                                    'backorder',
                                     'cantidad_pendiente',
                                     'cantidad_compradorrecepcionado',
                                     'cantidad_compradordespachado',
@@ -819,6 +818,76 @@ class CompradoresController extends Controller
                                     'created_at',
                                     'updated_at',
                                 ]);
+
+                                $ocparte->oc;
+                                $ocparte->oc->makeHidden([
+                                    'cotizacion_id',
+                                    'proveedor_id',
+                                    'filedata_id',
+                                    'estadooc_id',
+                                    'noccliente',
+                                    'motivobaja_id',
+                                    'usdvalue',
+                                    'partes_total',
+                                    'dias',
+                                    'partes',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+                                
+                                $ocparte->oc->cotizacion;
+                                $ocparte->oc->cotizacion->makeHidden([
+                                    'solicitud_id',
+                                    'motivorechazo_id',
+                                    'estadocotizacion_id',
+                                    'usdvalue',
+                                    'partes_total',
+                                    'dias',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+
+                                $ocparte->oc->cotizacion->solicitud;
+                                $ocparte->oc->cotizacion->solicitud->makeHidden([
+                                    'faena_id',
+                                    'marca_id',
+                                    'comprador_id',
+                                    'estadosolicitud_id',
+                                    'comentario',
+                                    'partes_total',
+                                    'user_id',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+
+                                $ocparte->oc->cotizacion->solicitud->faena;
+                                $ocparte->oc->cotizacion->solicitud->faena->makeHidden([
+                                    'cliente_id',
+                                    'rut',
+                                    'address',
+                                    'city',
+                                    'contact',
+                                    'phone',
+                                    'created_at',
+                                    'updated_at'
+                                ]);
+            
+                                $ocparte->oc->cotizacion->solicitud->faena->cliente;
+                                $ocparte->oc->cotizacion->solicitud->faena->cliente->makeHidden([
+                                    'sucursal_id', 
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+                                
+                                $ocparte->parte;
+                                $ocparte->parte->makeHidden([
+                                    'marca_id',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+
+                                $ocparte->parte->marca;
+                                $ocparte->parte->marca->makeHidden(['created_at', 'updated_at']);
                             }
                             
                             $response = HelpController::buildResponse(
