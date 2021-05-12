@@ -341,7 +341,7 @@ class CompradoresController extends Controller
     }
 
     
-    public function queuePartes($comprador_id, $id)
+    public function queuePartes($comprador_id, $proveedor_id)
     {
         try
         {
@@ -350,7 +350,7 @@ class CompradoresController extends Controller
             {
                 if($comprador = Comprador::find($comprador_id))
                 {
-                    if($proveedor = $comprador->proveedores->where('id', $id)->first())
+                    if($proveedor = $comprador->proveedores->where('id', $proveedor_id)->first())
                     {
                         
                         $ocParteList = OcParte::select('oc_parte.*')
@@ -705,6 +705,161 @@ class CompradoresController extends Controller
             $response = HelpController::buildResponse(
                 500,
                 'Error al crear la recepcion [!]' . $e,
+                null
+            );
+        }
+        
+        return $response;
+    }
+
+
+    public function showRecepcion($comprador_id, $id)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('compradores recepciones_show'))
+            {
+                $validatorInput = ['recepcion_id' => $id];
+            
+                $validatorRules = [
+                    'recepcion_id' => 'required|exists:recepciones,id,recepcionable_id,' . $comprador_id . ',recepcionable_type,' . get_class(new Comprador()), // Try to add recepcionable_type
+                ];
+        
+                $validatorMessages = [
+                    'recepcion_id.required' => 'Debes ingresar la recepcion',
+                    'recepcion_id.exists' => 'La recepcion ingresada no existe para el comprador',                    
+                ];
+        
+                $validator = Validator::make(
+                    $validatorInput,
+                    $validatorRules,
+                    $validatorMessages
+                );
+        
+                if ($validator->fails()) 
+                {
+                    $response = HelpController::buildResponse(
+                        400,
+                        $validator->errors(),
+                        null
+                    );
+                }
+                else        
+                {
+                    if($comprador = Comprador::find($comprador_id))
+                    {
+                        if($recepcion = Recepcion::find($id))
+                        {
+                            $recepcion->makeHidden([
+                                'recepcionable_id',
+                                'recepcionable_type',
+                                'proveedor_id',
+                                'partes_total',
+                                'updated_at',
+                            ]);
+
+                            $recepcion->recepcionable;
+                            $recepcion->recepcionable->makeHidden([
+                                'rut',
+                                'address',
+                                'city',
+                                'contact',
+                                'phone',
+                                'created_at', 
+                                'updated_at'
+                            ]);
+
+                            if($recepcion->proveedorrecepcion)
+                            {
+                                $recepcion->proveedorrecepcion->makeHidden([
+                                    'id',
+                                    'proveedor_id',
+                                    'recepcion_id',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+
+                                $recepcion->proveedorrecepcion->proveedor;
+                                $recepcion->proveedorrecepcion->proveedor->makeHidden([
+                                    'comprador_id',
+                                    'rut',
+                                    'address',
+                                    'city',
+                                    'contact',
+                                    'phone',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+                            }
+
+                            $recepcion->ocpartes;
+                            foreach($recepcion->ocpartes as $ocparte)
+                            {
+                                $ocparte->makeHidden([
+                                    'oc_id',
+                                    'parte_id',
+                                    'estadoocparte_id',
+                                    'tiempoentrega',
+                                    'backorder',
+                                    'cantidad_pendiente',
+                                    'cantidad_compradorrecepcionado',
+                                    'cantidad_compradordespachado',
+                                    'cantidad_centrodistribucionrecepcionado',
+                                    'cantidad_centrodistribuciondespachado',
+                                    'cantidad_sucursalrecepcionado',
+                                    'cantidad_sucursaldespachado',
+                                    'created_at',
+                                    'updated_at',
+                                ]);
+
+                                $ocparte->pivot->makeHidden([
+                                    'recepcion_id',
+                                    'ocparte_id',
+                                    'created_at',
+                                    'updated_at',
+                                ]);
+                            }
+                            
+                            $response = HelpController::buildResponse(
+                                200,
+                                null,
+                                $recepcion
+                            );
+                        }   
+                        else     
+                        {
+                            $response = HelpController::buildResponse(
+                                400,
+                                'La recepcion no existe',
+                                null
+                            );
+                        }                        
+                    }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            400,
+                            'El comprador no existe',
+                            null
+                        );
+                    }
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a visualizar recepciones de comprador',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al obtener la recepcion [!]' . $e,
                 null
             );
         }

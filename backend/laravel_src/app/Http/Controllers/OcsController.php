@@ -627,12 +627,12 @@ class OcsController extends Controller
                                 null
                             );
                         }
-                        else if(($oc->estadooc_id === 3) || ($oc->estadooc_id === 4))
+                        else if(($oc->estadooc_id === 2) || ($oc->estadooc_id === 3) || ($oc->estadooc_id === 4))
                         {
                             //If Cerrada or Baja
                             $response = HelpController::buildResponse(
                                 400,
-                                'No puedes dar de baja una OC que ya esta cerrada o de baja',
+                                'No puedes dar de baja una OC que ya esta en proceso, cerrada o de baja',
                                 null
                             );
                         }
