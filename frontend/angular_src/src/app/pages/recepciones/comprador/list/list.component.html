@@ -33,7 +33,7 @@
               <th>N° Recepcion</th>
               <th>Fecha</th>
               <th>Proveedor</th>
-              <th>Documento</th>
+              <th>N° Documento</th>
               <th>Partes</th>
               <th>Recepcionado por</th>
               <th>Comentario</th>
@@ -56,8 +56,8 @@
               <td align="center">{{ recepcion.responsable }}</td>
               <td>{{ recepcion.comentario !== null ? recepcion.comentario : '' }}</td>
               <td align="center">
-                <!-- <a [routerLink]="['details', recepcion.id]" class="btn-table btn btn-secondary" title="Detalle"><i
-                  class="bx bx-zoom-in"></i></a> -->
+                <a [routerLink]="['details', recepcion.id]" class="btn-table btn btn-secondary" title="Detalle"><i
+                  class="bx bx-zoom-in"></i></a>
                 <!-- <a [routerLink]="" class="btn-table btn btn-secondary"
                     title="Eliminar"><i class="bx bx-trash-alt"></i></a> -->
               </td>

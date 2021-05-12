@@ -1,0 +1,126 @@
+<!-- start page title -->
+<div class="row">
+  <div class="col-12">
+    <div class="page-title-box d-flex align-items-center justify-content-between">
+      <h4 class="mb-0 font-size-18">Detalle de recepcion</h4>
+
+      <div class="page-title-right">
+        <ol class="breadcrumb m-0">
+          <li class="breadcrumb-item">Recepciones</li>
+          <li class="breadcrumb-item">Comprador</li>
+          <li class="breadcrumb-item active">Detalle</li>
+        </ol>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- end page title -->
+
+<div class="row">
+
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body">
+        <div>
+          <span class="card-title">Recepcion {{ recepcion.id >= 0 ? "#" + recepcion.id : '' }}</span>
+        </div>
+        <span class="badge badge-primary"></span>
+        <p class="card-title-desc">Detalle de la recepcion</p>
+        <div class="row">
+          <div class="col-4">
+            <div class="form-group">
+              <label class="control-label">Comprador</label>
+              <br>
+              <label>{{ recepcion.comprador_name !== null ? recepcion.comprador_name : '' }}</label>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="form-group">
+              <label class="control-label">Creada en</label>
+              <br>
+              <label>{{ recepcion.created_at !== null ? dateStringFormat(recepcion.created_at) : '' }}</label>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="form-group">
+              <label class="control-label">Proveedor</label>
+              <br>
+              <label>{{ recepcion.proveedor_name !== null ? recepcion.proveedor_name : '' }}</label>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="form-group">
+              <label class="control-label">N° Documento</label>
+              <br>
+              <label>{{ recepcion.ndocumento !== null ? recepcion.ndocumento : '' }}</label>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="form-group">
+              <label class="control-label">Recepcionado por</label>
+              <br>
+              <label>{{ recepcion.responsable !== null ? recepcion.responsable : '' }}</label>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="form-group">
+              <label class="control-label">Comentario</label>
+              <br>
+              <label>{{ recepcion.comentario !== null ? recepcion.comentario : '' }}</label>
+            </div>
+          </div>
+        </div>
+
+        <hr>
+
+        <!-- Partes list -->
+        <div>
+          <h4 class="card-title">Lista de partes</h4>
+          <p class="card-title-desc">Lista de partes en la recepcion</p>
+
+          <div class="table-responsive">
+
+            <table datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger" class="table table-hover table-bordered mb-2">
+              <thead>
+                <tr>
+                  <th>N° Parte</th>
+                  <th>Descripcion</th>
+                  <th>Marca</th>
+                  <th>OC Interna</th>
+                  <th>Cliente</th>
+                  <th>Cantidad</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let ocparte of ocpartes; index as i">
+                  <td align="left"><i class="bx bx-timer icon-table" *ngIf="(ocparte.backorder === true)"></i>{{ ocparte.nparte !== null ? ocparte.nparte : "" }}</td>
+                  <td align="right">{{ ocparte.descripcion !== null ? ocparte.descripcion : "" }}</td>
+                  <td align="center">{{ ocparte.marca_name !== null ? ocparte.marca_name : "" }}</td>
+                  <td align="center">{{ ocparte.oc_id !== null ? ocparte.oc_id : "" }}</td>
+                  <td align="right">{{ ocparte.cliente_name !== null ? ocparte.cliente_name : "" }}</td>
+                  <td align="right">{{ ocparte.cantidad !== null ? ocparte.cantidad : "" }}/{{ ocparte.oc_cantidad !== null ? ocparte.oc_cantidad : "" }}</td>                 
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-12">
+            <div class="form-buttons mt-2">
+              <button [disabled]="(loading === true)" class="btn btn-light" (click)="goTo_back()">
+                <span>Volver</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- end card -->
+
+  </div>
+
+</div>
+<!-- end row -->

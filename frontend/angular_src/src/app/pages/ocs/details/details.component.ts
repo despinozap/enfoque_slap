@@ -8,7 +8,6 @@ import { NotificationsService } from 'src/app/services/notifications.service';
 import { OcsService } from 'src/app/services/ocs.service';
 import { ProveedoresService } from 'src/app/services/proveedores.service';
 import { UtilsService } from 'src/app/services/utils.service';
-import { User } from 'src/app/interfaces/user';
 import { AuthService } from 'src/app/services/auth.service';
 
 /* SweetAlert2 */

@@ -10,6 +10,13 @@ export class RecepcionesService {
 
   constructor(private httpClient: HttpClient) { }
 
+  public getRecepcion_comprador(comprador_id: number, recepcion_id: number): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/compradores/${comprador_id}/recepciones/${recepcion_id}`;
+    
+    return this.httpClient.get(endpoint);
+  }
+
   public storeRecepcion_comprador(comprador_id: number, recepcion: any): Observable<any>
   {
     let endpoint: string = `${environment.ENDPOINT_BASE}/compradores/${comprador_id}/recepciones`;
