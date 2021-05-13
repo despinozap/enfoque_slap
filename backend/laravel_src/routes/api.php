@@ -110,11 +110,7 @@ Route::middleware(['auth:api', 'cors'])->group(function()
     // Compradores
     Route::get('/compradores', [CompradoresController::class, 'index']);
     Route::get('/compradores/{id}', [CompradoresController::class, 'show']);
-    Route::get('/compradores/{id}/recepciones', [CompradoresController::class, 'indexRecepciones']);
-    Route::get('/compradores/{comprador_id}/proveedores/{proveedor_id}/queuepartes', [CompradoresController::class, 'queuePartes']);
-    Route::post('/compradores/{id}/recepciones', [CompradoresController::class, 'storeRecepcion']);
-    Route::get('/compradores/{comprador_id}/recepciones/{id}', [CompradoresController::class, 'showRecepcion']);
-
+    
     // Proveedores
     Route::get('/compradores/{comprador_id}/proveedores', [ProveedoresController::class, 'index']);
     Route::post('/compradores/{comprador_id}/proveedores', [ProveedoresController::class, 'store']);
@@ -129,4 +125,11 @@ Route::middleware(['auth:api', 'cors'])->group(function()
     Route::post('/ocs/reject/{id}', [OcsController::class, 'reject']);
     Route::put('/ocs/{id}/partes', [OcsController::class, 'updateParte']);
     Route::post('/ocs/start/{id}', [OcsController::class, 'start']);
+
+    // Recepciones
+    Route::get('/compradores/{id}/recepciones', [CompradoresController::class, 'indexRecepciones']);
+    Route::get('/compradores/{comprador_id}/proveedores/{proveedor_id}/queuepartes', [CompradoresController::class, 'queuePartes_recepcion']);
+    Route::post('/compradores/{id}/recepciones', [CompradoresController::class, 'storeRecepcion']);
+    Route::get('/compradores/{comprador_id}/recepciones/{id}', [CompradoresController::class, 'showRecepcion']);
+    Route::get('/compradores/{comprador_id}/queuepartes', [CompradoresController::class, 'queuePartes_despacho']);
 });

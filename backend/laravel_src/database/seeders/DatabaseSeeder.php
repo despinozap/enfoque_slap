@@ -99,6 +99,9 @@ class DatabaseSeeder extends Seeder
             'compradores recepciones_index',
             'compradores recepciones_store',
             'compradores recepciones_show',
+            'compradores despachos_index',
+            'compradores despachos_store',
+            'compradores despachos_show',
             //Proveedores
             'proveedores index',
             'proveedores store',
@@ -185,6 +188,9 @@ class DatabaseSeeder extends Seeder
                 'compradores recepciones_index',
                 'compradores recepciones_store',
                 'compradores recepciones_show',
+                'compradores despachos_index',
+                'compradores despachos_store',
+                'compradores despachos_show',
                 //Proveedores
                 'proveedores index',
                 'proveedores store',

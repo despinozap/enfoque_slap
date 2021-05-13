@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateOcparteRecepcionTable extends Migration
+class CreateDespachoOcparteTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,15 +13,15 @@ class CreateOcparteRecepcionTable extends Migration
      */
     public function up()
     {
-        Schema::create('ocparte_recepcion', function (Blueprint $table) {
+        Schema::create('despacho_ocparte', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('ocparte_id')->unsigned();
-            $table->bigInteger('recepcion_id')->unsigned();
+            $table->bigInteger('despacho_id')->unsigned();
             $table->integer('cantidad');
             $table->timestamps();
 
             $table->foreign('ocparte_id')->references('id')->on('oc_parte')->onDelete('cascade');
-            $table->foreign('recepcion_id')->references('id')->on('recepciones')->onDelete('cascade');
+            $table->foreign('despacho_id')->references('id')->on('despachos')->onDelete('cascade');
         });
     }
 
@@ -32,6 +32,6 @@ class CreateOcparteRecepcionTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('ocparte_recepcion');
+        Schema::dropIfExists('despacho_ocparte');
     }
 }

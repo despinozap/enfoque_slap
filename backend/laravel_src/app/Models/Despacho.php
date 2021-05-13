@@ -5,21 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Recepcion extends Model
+class Despacho extends Model
 {
     use HasFactory;
 
-    protected $table = 'recepciones';
+    protected $table = 'despachos';
     public $appends = ['partes_total'];
 
-    public function recepcionable()
+    public function despachable()
     {
         return $this->morphTo();
     }
 
     public function ocpartes()
     {
-        return $this->belongsToMany(OcParte::class, 'ocparte_recepcion', 'recepcion_id', 'ocparte_id')->withPivot(['cantidad'])->using(OcParteRecepcion::class)->withTimestamps();
+        return $this->belongsToMany(OcParte::class, 'despacho_ocparte', 'despacho_id', 'ocparte_id')->withPivot(['cantidad'])->using(OcParteDespacho::class)->withTimestamps();
     }
 
     public function getPartesTotalAttribute()
@@ -36,9 +36,9 @@ class Recepcion extends Model
         return $quantity;
     }
 
-    public function proveedorrecepcion()
+    public function faenadespacho()
     {
-        // If it's a recepcion from Proveedor
-        return $this->hasOne(Proveedorrecepcion::class);
+        // If it's a despacho to Faena
+        return null;
     }
 }
