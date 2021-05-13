@@ -8,6 +8,7 @@ use Auth;
 
 use App\Models\Comprador;
 use App\Models\Proveedor;
+use App\Models\Recepcion;
 
 class ProveedoresController extends Controller
 {
@@ -466,9 +467,14 @@ class ProveedoresController extends Controller
             {
                 if($proveedor = Proveedor::find($id))
                 {
-                    // VALIDATE HERE PROVEEDOR HAS NOT COMPRADORRECEPCIONES
-                    //if($proveedor->recepciones->count() > 0)
-                    if(false)
+                    if(
+                        Recepcion::select('recepciones.*')
+                        ->join('proveedor_recepcion', 'proveedor_recepcion.recepcion_id', '=', 'recepciones.id')
+                        ->where('recepcionable_type', '=', get_class(new Comprador()))
+                        ->where('proveedor_recepcion.proveedor_id', '=', $id)
+                        ->get()
+                        ->count() > 0
+                    )
                     {
                         $response = HelpController::buildResponse(
                             409,
