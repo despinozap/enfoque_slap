@@ -136,4 +136,5 @@ Route::middleware(['auth:api', 'cors'])->group(function()
 
     // Despachos
     Route::get('/compradores/{comprador_id}/queuepartes', [DespachosController::class, 'queuePartes_comprador']);
+    Route::post('/compradores/{id}/despachos', [DespachosController::class, 'store_comprador']);
 });

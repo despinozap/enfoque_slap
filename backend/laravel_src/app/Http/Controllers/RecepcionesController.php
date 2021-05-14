@@ -333,7 +333,6 @@ class RecepcionesController extends Controller
 
                         if($recepcion->save())
                         {
-                            $data = array();
                             $success = true;
 
                             $cantidades = array_reduce($request->partes, function($carry, $parte)
