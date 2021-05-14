@@ -405,7 +405,7 @@ class DatabaseSeeder extends Seeder
         *   Solicitudes
         */
         {
-            for($i = 0; $i <= 5; $i++)
+            for($i = 0; $i <= 10; $i++)
             {
                 $solicitud = new Solicitud();
                 $solicitud->faena_id = 1;
@@ -418,10 +418,10 @@ class DatabaseSeeder extends Seeder
 
                 $solicitud->partes()->attach([ 
                     1 => [
-                        'cantidad' => 10 * $i
+                        'cantidad' => rand(1, 100)
                     ],
                     2 => [
-                        'cantidad' => 85 * $i
+                        'cantidad' => rand(1, 100)
                     ]
                 ]);
             } 
@@ -466,7 +466,7 @@ class DatabaseSeeder extends Seeder
             $success = true;
 
             DB::beginTransaction();
-            foreach(Solicitud::whereIn('solicitudes.id', [2, 3, 4])->get() as $solicitud)
+            foreach(Solicitud::where('solicitudes.id', '>=', 2)->get() as $solicitud)
             {
                 $solicitud->estadosolicitud_id = 3; // Cerrada
                 if($solicitud->save())
@@ -602,7 +602,8 @@ class DatabaseSeeder extends Seeder
         *   OCs
         */
         {
-            foreach(Cotizacion::whereIn('cotizaciones.id', [3, 4])->get() as $cotizacion)
+            // Create
+            foreach(Cotizacion::where('cotizaciones.id', '>=', 4)->get() as $cotizacion)
             {
                 DB::beginTransaction();
 
@@ -666,6 +667,15 @@ class DatabaseSeeder extends Seeder
                 }
             }
 
+            // Set as "En proceso"
+            foreach(Oc::where('ocs.id', '>=', 4)->get() as $oc)
+            {
+                $oc->estadooc_id = 2; // En proceso
+                $oc->proveedor_id = 1; // Set proveedor
+                $oc->motivobaja_id = null; // Removes Motivorechazo if it had
+                
+                $oc->save();
+            }
         }
 
         /*

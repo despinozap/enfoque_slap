@@ -247,6 +247,7 @@ class CompradoresController extends Controller
                             ]);
 
                             $ocparte->pivot->makeHidden([
+                                'ocparte_id',
                                 'recepcion_id',
                                 'oc_parte_id',
                                 'created_at',
@@ -548,42 +549,50 @@ class CompradoresController extends Controller
                                         {
                                             foreach($ocParteList as $ocParte)
                                             {
-                                                if($cantidades[$parteId] >= $ocParte->cantidad_pendiente)
+                                                if($cantidades[$parteId] > 0)
                                                 {
-                                                    // If is receiving more or equal than required for this OcParte, fill the OcParte
-                                                    $cantidad = $ocParte->cantidad_pendiente;
-
-                                                    $ocParte->estadoocparte_id = 2; // All the partes were received, so change status to 'Process'
-                                                    if(!$ocParte->save())
+                                                    if($cantidades[$parteId] >= $ocParte->cantidad_pendiente)
                                                     {
-                                                        // If fails on updating OcParte status
-                                                        $response = HelpController::buildResponse(
-                                                            500,
-                                                            'Error al actualizar el estado de una parte recibida',
-                                                            null
-                                                        );
-                    
-                                                        $success = false;
-                    
-                                                        break;
+                                                        // If is receiving more or equal than required for this OcParte, fill the OcParte
+                                                        $cantidad = $ocParte->cantidad_pendiente;
+
+                                                        $ocParte->estadoocparte_id = 2; // All the partes were received, so change status to 'Process'
+                                                        if(!$ocParte->save())
+                                                        {
+                                                            // If fails on updating OcParte status
+                                                            $response = HelpController::buildResponse(
+                                                                500,
+                                                                'Error al actualizar el estado de una parte recibida',
+                                                                null
+                                                            );
+                        
+                                                            $success = false;
+                        
+                                                            break;
+                                                        }
                                                     }
+                                                    else
+                                                    {
+                                                        // If receiving less than required to fill the OcParte, it continues with Estadoocparte 'Pendiente'
+                                                        $cantidad = $cantidades[$parteId];
+                                                    }
+                                                    
+                                                    // Attach the OcParte to Recepcion with defined Cantidad
+                                                    $recepcion->ocpartes()->attach(
+                                                        array(
+                                                            $ocParte->id => array(
+                                                                "cantidad" => $cantidad
+                                                            )
+                                                        )
+                                                    );
+
+                                                    // Updates the cantidad left
+                                                    $cantidades[$parteId] = $cantidades[$parteId] - $cantidad;
                                                 }
                                                 else
                                                 {
-                                                    // If receiving less than required to fill the OcParte, it continues with Estadoocparte 'Pendiente'
-                                                    $cantidad = $cantidades[$parteId];
-                                                }
-
-                                                // Updates the cantidad left
-                                                $cantidades[$parteId] = $cantidades[$parteId] - $cantidad;
-                                                
-                                                $recepcion->ocpartes()->attach(
-                                                    array(
-                                                        $parteId => array(
-                                                            "cantidad" => $cantidad
-                                                        )
-                                                    )
-                                                );
+                                                    break;
+                                                } 
                                             }
 
                                             if($cantidades[$parteId] > 0)
@@ -643,13 +652,12 @@ class CompradoresController extends Controller
 
                                 if($proveedorRecepcion->save())
                                 {
-                                    //REPLACE THIS BY commit()
                                     DB::commit();
                                     
                                     $response = HelpController::buildResponse(
                                         201,
                                         'Recepcion creada',
-                                        $data
+                                        null
                                     );
                                 }
                                 else
