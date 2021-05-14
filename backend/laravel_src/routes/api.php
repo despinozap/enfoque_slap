@@ -15,6 +15,8 @@ use App\Http\Controllers\CotizacionesController;
 use App\Http\Controllers\OcsController;
 use App\Http\Controllers\CompradoresController;
 use App\Http\Controllers\ProveedoresController;
+use App\Http\Controllers\RecepcionesController;
+use App\Http\Controllers\DespachosController;
 
 /*
 |--------------------------------------------------------------------------
@@ -127,9 +129,11 @@ Route::middleware(['auth:api', 'cors'])->group(function()
     Route::post('/ocs/start/{id}', [OcsController::class, 'start']);
 
     // Recepciones
-    Route::get('/compradores/{id}/recepciones', [CompradoresController::class, 'indexRecepciones']);
-    Route::get('/compradores/{comprador_id}/proveedores/{proveedor_id}/queuepartes', [CompradoresController::class, 'queuePartes_recepcion']);
-    Route::post('/compradores/{id}/recepciones', [CompradoresController::class, 'storeRecepcion']);
-    Route::get('/compradores/{comprador_id}/recepciones/{id}', [CompradoresController::class, 'showRecepcion']);
-    Route::get('/compradores/{comprador_id}/queuepartes', [CompradoresController::class, 'queuePartes_despacho']);
+    Route::get('/compradores/{id}/recepciones', [RecepcionesController::class, 'index_comprador']);
+    Route::get('/compradores/{comprador_id}/proveedores/{proveedor_id}/queuepartes', [RecepcionesController::class, 'queuePartes_comprador']);
+    Route::post('/compradores/{id}/recepciones', [RecepcionesController::class, 'store_comprador']);
+    Route::get('/compradores/{comprador_id}/recepciones/{id}', [RecepcionesController::class, 'show_comprador']);
+
+    // Despachos
+    Route::get('/compradores/{comprador_id}/queuepartes', [DespachosController::class, 'queuePartes_comprador']);
 });
