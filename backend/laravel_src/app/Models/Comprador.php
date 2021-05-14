@@ -23,4 +23,9 @@ class Comprador extends Model
     {
         return $this->morphMany(Recepcion::class, 'recepcionable');
     }
+
+    public function despachos()
+    {
+        return $this->morphMany(Despacho::class, 'despachable');
+    }
 }

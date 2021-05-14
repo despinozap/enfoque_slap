@@ -14,6 +14,124 @@ use App\Models\Despacho;
 class DespachosController extends Controller
 {
 
+    public function index_comprador($id)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('compradores despachos_index'))
+            {
+                if($comprador = Comprador::find($id))
+                {
+                    $comprador->makeHidden([
+                        'created_at', 
+                        'updated_at'
+                    ]);
+
+                    $comprador->despachos;
+                    $comprador->despachos = $comprador->despachos->filter(function($despacho)
+                    {
+                        $despacho->partes_total;
+                        
+                        $despacho->makeHidden([
+                            'despachable_id', 
+                            'despachable_type', 
+                            'created_at', 
+                            'updated_at'
+                        ]);
+                        
+                        $despacho->ocpartes;
+                        $despacho->ocpartes = $despacho->ocpartes->filter(function($ocparte)
+                        {
+                            $ocparte->makeHidden([
+                                'oc_id',
+                                'parte_id',
+                                'tiempoentrega',
+                                'estadoocparte_id',
+                                'created_at',
+                                'updated_at',
+                                'cantidad_pendiente',
+                                'cantidad_compradorrecepcionado',
+                                'cantidad_compradordespachado',
+                                'cantidad_centrodistribucionrecepcionado',
+                                'cantidad_centrodistribuciondespachado',
+                                'cantidad_sucursalrecepcionado',
+                                'cantidad_sucursaldespachado',
+                            ]);
+
+                            $ocparte->pivot->makeHidden([
+                                'ocparte_id',
+                                'despacho_id',
+                                'oc_parte_id',
+                                'created_at',
+                                'updated_at',
+                            ]);
+
+                            $ocparte->oc;
+                            $ocparte->oc->makeHidden([
+                                'cotizacion_id',
+                                'proveedor_id',
+                                'filedata_id',
+                                'estadooc_id',
+                                'noccliente',
+                                'motivobaja_id',
+                                'usdvalue',
+                                'partes_total',
+                                'dias',
+                                'partes',
+                                'created_at', 
+                                'updated_at'
+                            ]);
+
+                            $ocparte->parte;
+                            $ocparte->parte->makeHidden(['marca_id', 'created_at', 'updated_at']);
+
+                            $ocparte->parte->marca;
+                            $ocparte->parte->marca->makeHidden(['created_at', 'updated_at']);
+
+                            return $ocparte;
+                        });
+
+                        return $despacho;
+                    });
+
+                    $response = HelpController::buildResponse(
+                        200,
+                        null,
+                        $comprador->despachos
+                    );
+                }   
+                else     
+                {
+                    $response = HelpController::buildResponse(
+                        412,
+                        'El comprador no existe',
+                        null
+                    );
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a visualizar despachos de compradores',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al obtener los despachos del comprador [!]',
+                null
+            );
+        }
+            
+        return $response;
+    }
+
+
     public function queuePartes_comprador($id)
     {
         try
