@@ -751,7 +751,7 @@ class RecepcionesController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al obtener la recepcion [!]' . $e,
+                'Error al obtener la recepcion [!]',
                 null
             );
         }

@@ -223,6 +223,7 @@ class DespachosController extends Controller
         return $response;
     }
 
+    
     public function store_comprador(Request $request, $id)
     {
         try
@@ -470,4 +471,204 @@ class DespachosController extends Controller
         return $response;
     }
 
+
+    public function show_comprador($comprador_id, $id)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('compradores despachos_show'))
+            {
+                $validatorInput = ['despacho_id' => $id];
+            
+                $validatorRules = [
+                    'despacho_id' => 'required|exists:despachos,id,despachable_id,' . $comprador_id . ',despachable_type,' . get_class(new Comprador()), // Try to add recepcionable_type
+                ];
+        
+                $validatorMessages = [
+                    'despacho_id.required' => 'Debes ingresar el despacho',
+                    'despacho_id.exists' => 'El despacho ingresado no existe para el comprador',                    
+                ];
+        
+                $validator = Validator::make(
+                    $validatorInput,
+                    $validatorRules,
+                    $validatorMessages
+                );
+        
+                if ($validator->fails()) 
+                {
+                    $response = HelpController::buildResponse(
+                        400,
+                        $validator->errors(),
+                        null
+                    );
+                }
+                else        
+                {
+                    if($comprador = Comprador::find($comprador_id))
+                    {
+                        if($despacho = Despacho::find($id))
+                        {
+                            $despacho->makeHidden([
+                                'despachable_id',
+                                'despachable_type',
+                                'proveedor_id',
+                                'partes_total',
+                                'updated_at',
+                            ]);
+
+                            $despacho->despachable;
+                            $despacho->despachable->makeHidden([
+                                'rut',
+                                'address',
+                                'city',
+                                'contact',
+                                'phone',
+                                'created_at', 
+                                'updated_at'
+                            ]);
+
+                            $despacho->ocpartes;
+                            foreach($despacho->ocpartes as $ocparte)
+                            {
+                                $ocparte->makeHidden([
+                                    'oc_id',
+                                    'parte_id',
+                                    'estadoocparte_id',
+                                    'tiempoentrega',
+                                    'cantidad_pendiente',
+                                    'cantidad_compradorrecepcionado',
+                                    'cantidad_compradordespachado',
+                                    'cantidad_centrodistribucionrecepcionado',
+                                    'cantidad_centrodistribuciondespachado',
+                                    'cantidad_sucursalrecepcionado',
+                                    'cantidad_sucursaldespachado',
+                                    'created_at',
+                                    'updated_at',
+                                ]);
+
+                                $ocparte->pivot->makeHidden([
+                                    'despacho_id',
+                                    'ocparte_id',
+                                    'created_at',
+                                    'updated_at',
+                                ]);
+
+                                $ocparte->oc;
+                                $ocparte->oc->makeHidden([
+                                    'cotizacion_id',
+                                    'proveedor_id',
+                                    'filedata_id',
+                                    'estadooc_id',
+                                    'noccliente',
+                                    'motivobaja_id',
+                                    'usdvalue',
+                                    'partes_total',
+                                    'dias',
+                                    'partes',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+                                
+                                $ocparte->oc->cotizacion;
+                                $ocparte->oc->cotizacion->makeHidden([
+                                    'solicitud_id',
+                                    'motivorechazo_id',
+                                    'estadocotizacion_id',
+                                    'usdvalue',
+                                    'partes_total',
+                                    'dias',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+
+                                $ocparte->oc->cotizacion->solicitud;
+                                $ocparte->oc->cotizacion->solicitud->makeHidden([
+                                    'faena_id',
+                                    'marca_id',
+                                    'comprador_id',
+                                    'estadosolicitud_id',
+                                    'comentario',
+                                    'partes_total',
+                                    'user_id',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+
+                                $ocparte->oc->cotizacion->solicitud->faena;
+                                $ocparte->oc->cotizacion->solicitud->faena->makeHidden([
+                                    'cliente_id',
+                                    'rut',
+                                    'address',
+                                    'city',
+                                    'contact',
+                                    'phone',
+                                    'created_at',
+                                    'updated_at'
+                                ]);
+            
+                                $ocparte->oc->cotizacion->solicitud->faena->cliente;
+                                $ocparte->oc->cotizacion->solicitud->faena->cliente->makeHidden([
+                                    'sucursal_id', 
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+                                
+                                $ocparte->parte;
+                                $ocparte->parte->makeHidden([
+                                    'marca_id',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+
+                                $ocparte->parte->marca;
+                                $ocparte->parte->marca->makeHidden(['created_at', 'updated_at']);
+                            }
+                            
+                            $response = HelpController::buildResponse(
+                                200,
+                                null,
+                                $despacho
+                            );
+                        }   
+                        else     
+                        {
+                            $response = HelpController::buildResponse(
+                                400,
+                                'El despacho no existe',
+                                null
+                            );
+                        }                        
+                    }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            400,
+                            'El comprador no existe',
+                            null
+                        );
+                    }
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a visualizar despachos de comprador',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al obtener el despacho [!]',
+                null
+            );
+        }
+        
+        return $response;
+    }
 }
