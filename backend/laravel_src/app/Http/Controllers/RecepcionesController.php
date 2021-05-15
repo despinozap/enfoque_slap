@@ -769,10 +769,9 @@ class RecepcionesController extends Controller
             $user = Auth::user();
             if($user->role->hasRoutepermission('compradores recepciones_store'))
             {
-                $validatorInput = $request->only('proveedor_id', 'fecha', 'ndocumento', 'responsable', 'comentario', 'partes');
+                $validatorInput = $request->only('fecha', 'ndocumento', 'responsable', 'comentario', 'partes');
             
                 $validatorRules = [
-                    'proveedor_id' => 'required|exists:proveedores,id,comprador_id,' . $comprador_id,
                     'fecha' => 'required|date_format:Y-m-d|before:tomorrow', // it includes today
                     'ndocumento' => 'nullable|min:1',
                     'responsable' => 'required|min:1',
@@ -784,8 +783,6 @@ class RecepcionesController extends Controller
                 ];
         
                 $validatorMessages = [
-                    'proveedor_id.required' => 'Debes ingresar el proveedor',
-                    'proveedor_id.exists' => 'El proveedor ingresado no existe para el comprador',
                     'fecha.required' => 'Debes ingresar la fecha de recepcion',
                     'fecha.date_format' => 'El formato de fecha de recepcion es invalido',
                     'fecha.before' => 'La fecha debe ser igual o anterior a hoy',
@@ -1121,12 +1118,12 @@ class RecepcionesController extends Controller
                                         else if($diffCantidades[$parteId] > 0)
                                         {
 
-                                            // For each parte sent, gets the OcParte list where Estadoocparte is 'Pendiente' for the selected Proveedor
+                                            // For each parte sent, gets the OcParte list where Estadoocparte is 'Pendiente' for the Proveedor
                                             if($ocParteList = OcParte::select('oc_parte.*')
                                                             ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
                                                             ->where('oc_parte.parte_id', '=', $parteId)
                                                             ->where('oc_parte.estadoocparte_id', '=', 1) // Estadoocparte = 'Pendiente'
-                                                            ->where('ocs.proveedor_id', '=', $request->proveedor_id)
+                                                            ->where('ocs.proveedor_id', '=', $recepcion->proveedor_id)
                                                             ->where('ocs.estadooc_id', '=', 2) // Estadooc = 'En proceso'
                                                             ->orderBy('ocs.created_at', 'ASC')
                                                             ->get()
@@ -1242,34 +1239,23 @@ class RecepcionesController extends Controller
 
                                     if($success === true)
                                     {
-                                        $proveedorRecepcion = $recepcion->proveedorrecepcion;
-                                        $proveedorRecepcion->proveedor_id = $request->proveedor_id;
-
-                                        if($proveedorRecepcion->save())
-                                        {
-                                            // REPLACE BY COMMIT
-                                            DB::commit();
-                                            
-                                            $response = HelpController::buildResponse(
-                                                201,
-                                                'Recepcion actualizada',
-                                                $data
-                                            );
-                                        }
-                                        else
-                                        {
-                                            DB::rollback();
-
-                                            $response = HelpController::buildResponse(
-                                                500,
-                                                'Error al actualizar la recepcion',
-                                                null
-                                            );
-                                        }
+                                        DB::commit();
+                                        
+                                        $response = HelpController::buildResponse(
+                                            201,
+                                            'Recepcion actualizada',
+                                            $data
+                                        );
                                     }
                                     else
                                     {
                                         DB::rollback();
+
+                                        $response = HelpController::buildResponse(
+                                            500,
+                                            'Error al actualizar la recepcion',
+                                            null
+                                        );
                                     }
                                 }
                                 else
