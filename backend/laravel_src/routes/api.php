@@ -131,8 +131,9 @@ Route::middleware(['auth:api', 'cors'])->group(function()
     // Recepciones
     Route::get('/compradores/{id}/recepciones', [RecepcionesController::class, 'index_comprador']);
     Route::get('/compradores/{comprador_id}/proveedores/{proveedor_id}/queuepartes', [RecepcionesController::class, 'queuePartes_comprador']);
-    Route::post('/compradores/{id}/recepciones', [RecepcionesController::class, 'store_comprador']);
+    Route::post('/compradores/{comprador_id}/recepciones', [RecepcionesController::class, 'store_comprador']);
     Route::get('/compradores/{comprador_id}/recepciones/{id}', [RecepcionesController::class, 'show_comprador']);
+    Route::put('/compradores/{comprador_id}/recepciones/{id}', [RecepcionesController::class, 'update_comprador']);
 
     // Despachos
     Route::get('/compradores/{id}/despachos', [DespachosController::class, 'index_comprador']);

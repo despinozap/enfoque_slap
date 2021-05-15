@@ -10,4 +10,9 @@ class OcParteRecepcion extends Pivot
     use HasFactory;
 
     protected $table = 'ocparte_recepcion';
+
+    public function ocparte()
+    {
+        return $this->belongsTo(OcParte::class);
+    }
 }

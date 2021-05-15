@@ -224,7 +224,7 @@ class DespachosController extends Controller
     }
 
     
-    public function store_comprador(Request $request, $id)
+    public function store_comprador(Request $request, $comprador_id)
     {
         try
         {
@@ -277,7 +277,7 @@ class DespachosController extends Controller
                 }
                 else        
                 {
-                    if($comprador = Comprador::find($id))
+                    if($comprador = Comprador::find($comprador_id))
                     {
                         DB::beginTransaction();
 
