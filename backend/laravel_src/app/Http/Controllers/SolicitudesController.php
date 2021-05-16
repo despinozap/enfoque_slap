@@ -173,7 +173,7 @@ class SolicitudesController extends Controller
      * selecting data and storing a new Solicitud
      * 
      */
-    public function prepare()
+    public function store_prepare()
     {
         try
         {
