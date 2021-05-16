@@ -10,6 +10,31 @@ export class RecepcionesService {
 
   constructor(private httpClient: HttpClient) { }
 
+  public updateRecepcion_comprador(comprador_id: number, recepcion_id: number, recepcion: any): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/compradores/${comprador_id}/recepciones/${recepcion_id}`;
+
+    let httpOptions = { 
+      method: 'PUT',
+      headers:
+      {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET,POST,OPTIONS,DELETE,PUT'
+      }
+    };
+    
+    return this.httpClient.put(endpoint, recepcion, httpOptions);
+  }
+
+  public prepareRecepcion_comprador(comprador_id: number, recepcion_id: number): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/compradores/${comprador_id}/recepciones/${recepcion_id}/prepare`;
+    
+    return this.httpClient.get(endpoint);
+  }
+
   public getRecepcion_comprador(comprador_id: number, recepcion_id: number): Observable<any>
   {
     let endpoint: string = `${environment.ENDPOINT_BASE}/compradores/${comprador_id}/recepciones/${recepcion_id}`;

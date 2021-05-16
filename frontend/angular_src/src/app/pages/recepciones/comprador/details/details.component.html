@@ -90,6 +90,7 @@
                   <th>OC Interna</th>
                   <th>Cliente</th>
                   <th>Cantidad</th>
+                  <th>Total en OC</th>
                 </tr>
               </thead>
               <tbody>
@@ -99,7 +100,8 @@
                   <td align="center">{{ ocparte.marca_name !== null ? ocparte.marca_name : "" }}</td>
                   <td align="center">{{ ocparte.oc_id !== null ? ocparte.oc_id : "" }}</td>
                   <td align="right">{{ ocparte.cliente_name !== null ? ocparte.cliente_name : "" }}</td>
-                  <td align="right">{{ ocparte.cantidad !== null ? ocparte.cantidad : "" }}/{{ ocparte.oc_cantidad !== null ? ocparte.oc_cantidad : "" }}</td>                 
+                  <td align="right">{{ ocparte.cantidad !== null ? ocparte.cantidad : "" }}</td> 
+                  <td align="right">{{ ocparte.oc_cantidad !== null ? ocparte.oc_cantidad : "" }}</td>                 
                 </tr>
               </tbody>
             </table>

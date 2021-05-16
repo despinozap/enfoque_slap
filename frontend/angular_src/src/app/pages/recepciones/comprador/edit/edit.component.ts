@@ -1,21 +1,18 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { Location } from '@angular/common';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
-import { Proveedor } from 'src/app/interfaces/proveedor';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { RecepcionesService } from 'src/app/services/recepciones.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
-import { ProveedoresService } from 'src/app/services/proveedores.service';
+import { RecepcionesService } from 'src/app/services/recepciones.service';
 import { UtilsService } from 'src/app/services/utils.service';
-import { Router } from '@angular/router';
 
 @Component({
-  selector: 'app-create',
-  templateUrl: './create.component.html',
-  styleUrls: ['./create.component.css']
+  selector: 'app-edit',
+  templateUrl: './edit.component.html',
+  styleUrls: ['./edit.component.css']
 })
-export class RecepcionesCompradorCreateComponent implements OnInit {
+export class RecepcionesCompradorEditComponent implements OnInit {
 
   @ViewChild(DataTableDirective, {static: false})
   datatableElement_partes: DataTableDirective = null as any;
@@ -31,30 +28,38 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
   
   dtTrigger: Subject<any> = new Subject<any>();
 
-  proveedores: Array<Proveedor> = null as any;
+  recepcion: any = {
+    id: -1,
+    proveedor_id: -1,
+    proveedor_name: null,
+  };
+
   partes: any[] = [];
   loading: boolean = false;
   responseErrors: any = [];
 
   recepcionForm: FormGroup = new FormGroup({
-    proveedor: new FormControl('', [Validators.required]),
     fecha: new FormControl('', [Validators.required, Validators.minLength(1)]),
     documento: new FormControl(''),
     responsable: new FormControl('', [Validators.required, Validators.minLength(2)]),
     comentario: new FormControl(''),
   });
 
+  private sub: any;
   comprador_id: number = 1;
-
+  
+  
   constructor(
-    private location: Location,
     private router: Router,
-    private _proveedoresService: ProveedoresService,
+    private route: ActivatedRoute,
     private _recepcionesService: RecepcionesService,
-    private _utilsService: UtilsService
+    private _utilsService: UtilsService,
   ) { }
 
   ngOnInit(): void {
+    this.sub = this.route.params.subscribe(params => {
+      this.recepcion.id = params['id'];
+    });
   }
 
   ngAfterViewInit(): void {
@@ -62,40 +67,124 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
 
     //Prevents throwing an error for var status changed while initialization
     setTimeout(() => {
-        this.loadProveedores();
-
-        this.recepcionForm.controls.fecha.setValue(this.getDateToday());
-      },
-      100
-    );
+      this.loadRecepcion();
+    },
+    100);
   }
 
-  ngOnDestroy(): void {
+  ngOnDestroy() {
+    this.sub.unsubscribe();
     this.dtTrigger.unsubscribe();
   }
-  
-  private renderDataTable(dataTableElement: DataTableDirective, trigger: Subject<any>): void {
+
+  private renderDataTable(dataTableElement: DataTableDirective): void {
     dataTableElement.dtInstance.then((dtInstance: DataTables.Api) => {
       // Destroy the table first
       dtInstance.destroy();
-      // Call the trigger to rerender again
-      trigger.next();
+      // Call the dtTrigger to rerender again
+      this.dtTrigger.next();
     });
   }
-  
-  public loadProveedores(): void {
+
+  private loadFormData(recepcionData: any)
+  {
+    if(recepcionData.recepcion['ocpartes'].length > 0)
+    {
+      // Load Recepcion data
+      this.recepcion.id = recepcionData.recepcion.id;
+      this.recepcion.proveedor_id = recepcionData.recepcion.proveedorrecepcion.proveedor.id;
+      this.recepcion.proveedor_name = recepcionData.recepcion.proveedorrecepcion.proveedor.name;
+
+      this.recepcionForm.controls.fecha.setValue(this.dateStringFormat(recepcionData.recepcion.fecha));
+      if(recepcionData.recepcion.ndocumento !== null)
+      {
+        this.recepcionForm.controls.documento.setValue(recepcionData.recepcion.ndocumento);
+      }
+      this.recepcionForm.controls.responsable.setValue(recepcionData.recepcion.responsable);
+      if(recepcionData.recepcion.comentario !== null)
+      {
+        this.recepcionForm.controls.comentario.setValue(recepcionData.recepcion.comentario);
+      }
+
+      // Load partes list from queue_partes
+      this.partes = recepcionData.queue_partes.reduce((carry: any[], parte: any) => {
+          carry.push({
+            id: parte.id,
+            nparte: parte.nparte,
+            marca: parte.marca,
+            cantidad_max: parte.cantidad_pendiente,
+            cantidad_despachos: parte.cantidad_despachos,
+            checked: false,
+            cantidad: 0,
+          });
+
+          return carry;
+        },
+        [] // Empty array
+      );
+
+      let index: number;
+      let parte: any;
+
+      // Update values with partes list in recepcion 
+      recepcionData.recepcion.ocpartes.forEach((op: any) => {
+
+        index = this.partes.findIndex((p) => {
+          return (op.parte.id === p.id);
+        });
+
+        if(index >= 0)
+        {
+          this.partes[index].cantidad_max += op.pivot.cantidad;
+          this.partes[index].checked = true;
+          this.partes[index].cantidad += op.pivot.cantidad;
+        }
+        else
+        {
+          parte = {
+            id: op.parte.id,
+            nparte: op.parte.nparte,
+            marca: op.parte.marca.name,
+            cantidad_max: op.cantidad,
+            cantidad_despachos: 0,
+            checked: true,
+            cantidad: op.pivot.cantidad,
+          };
+
+          this.partes.push(parte);
+        }
+
+      });
+
+      this.partes = this.partes.sort((p1, p2) => {
+        return p2.cantidad - p1.cantidad;
+      });
+
+      this.renderDataTable(this.datatableElement_partes);
+    }
+    else
+    {
+      NotificationsService.showToast(
+        'Error al intentar cargar la lista de partes',
+        NotificationsService.messageType.error
+      );
+
+      this.loading = false;
+      this.goTo_recepcionesList();
+    }
+  }
+
+  public loadRecepcion(): void {
     
     this.loading = true;
-    this.recepcionForm.disable();
 
-    this._proveedoresService.getProveedores(this.comprador_id)
+    this._recepcionesService.prepareRecepcion_comprador(this.comprador_id, this.recepcion.id)
     .subscribe(
       //Success request
       (response: any) => {
 
-        this.proveedores = response.data;
         this.loading = false;
-        this.recepcionForm.enable();
+        this.loadFormData(response.data);
       },
       //Error request
       (errorResponse: any) => {
@@ -136,7 +225,7 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
           default: //Unhandled error
           {
             NotificationsService.showToast(
-              'Error al cargar los datos de los proveedores',
+              'Error al cargar los datos de la recepcion',
               NotificationsService.messageType.error
             );
   
@@ -146,94 +235,12 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
         }
 
         this.loading = false;
-        this.goTo_back();
+        this.goTo_recepcionesList();
       }
     );
   }
 
-  public loadQueuePartes(): void {
-    this.loading = true;
-    this.recepcionForm.disable();
-
-    this._recepcionesService.getQueuePartes_comprador(this.comprador_id, this.recepcionForm.value.proveedor)
-    .subscribe(
-      //Success request
-      (response: any) => {
-        this.partes = response.data.reduce((carry: any[], parte: any) => {
-            carry.push({
-              id: parte.id,
-              nparte: parte.nparte,
-              marca: parte.marca,
-              cantidad_pendiente: parte.cantidad_pendiente,
-              checked: false,
-              cantidad: parte.cantidad_pendiente,
-            });
-
-            return carry;
-          },
-          [] // Empty array
-        );
-
-        this.renderDataTable(this.datatableElement_partes, this.dtTrigger);
-
-        this.loading = false;
-        this.recepcionForm.enable();
-      },
-      //Error request
-      (errorResponse: any) => {
-
-        switch(errorResponse.status)
-        {
-        
-          case 405: //Permission denied
-          {
-            NotificationsService.showToast(
-              errorResponse.error.message,
-              NotificationsService.messageType.error
-            );
-
-            break;
-          }
-
-          case 412: //Object not found
-          {
-            NotificationsService.showToast(
-              errorResponse.error.message,
-              NotificationsService.messageType.warning
-            );
-
-            break;
-          }
-
-          case 500: //Internal server
-          {
-            NotificationsService.showToast(
-              errorResponse.error.message,
-              NotificationsService.messageType.error
-            );
-
-            break;
-          }
-        
-          default: //Unhandled error
-          {
-            NotificationsService.showToast(
-              'Error al cargar los datos de partes',
-              NotificationsService.messageType.error
-            );
-  
-            break;
-
-          }
-        }
-
-        this.loading = false;
-        this.goTo_back();
-      }
-    );
-  }
-
-  public storeRecepcion(): void {
+  public updateRecepcion(): void {
     this.recepcionForm.disable();
     this.loading = true;
     this.responseErrors = [];
@@ -256,14 +263,14 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
     );
 
     let recepcion: any = {
-      proveedor_id: this.recepcionForm.value.proveedor,
       fecha: this.recepcionForm.value.fecha,
+      ndocumento: this.recepcionForm.value.documento,
       responsable: this.recepcionForm.value.responsable,
       comentario: this.recepcionForm.value.comentario,
       partes: receivedPartes
     };
 
-    this._recepcionesService.storeRecepcion_comprador(this.comprador_id, recepcion)
+    this._recepcionesService.updateRecepcion_comprador(this.comprador_id, this.recepcion.id, recepcion)
       .subscribe(
         //Success request
         (response: any) => {
@@ -277,6 +284,8 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
         },
         //Error request
         (errorResponse: any) => {
+
+          console.log(errorResponse);
           switch (errorResponse.status) 
           {
             case 400: //Invalid request parameters
@@ -329,7 +338,7 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
             default: //Unhandled error
               {
                 NotificationsService.showAlert(
-                  'Error al intentar guardar la solicitud',
+                  'Error al intentar actualizar la recepcion',
                   NotificationsService.messageType.error
                 );
 
@@ -344,13 +353,17 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
   }
 
   public updateParte_cantidad(parte: any, evt: any): void {
-    if((isNaN(evt.target.value) === false) && (parseInt(evt.target.value) > 0) && (parseInt(evt.target.value) <= parte.cantidad_pendiente))
+    if(
+        (isNaN(evt.target.value) === false) && 
+        (parseInt(evt.target.value) > 0) && 
+        (parseInt(evt.target.value) <= parte.cantidad_max) && 
+        (parseInt(evt.target.value) >= parte.cantidad_despachos))
     {
         parte.cantidad = parseInt(evt.target.value);
     }
     else
     {
-      evt.target.value = parte.cantidad_pendiente;
+      evt.target.value = parte.cantidad;
     }
   }
 
@@ -395,7 +408,7 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
 
     return index >= 0 ? true : false;
   }
-  
+
   public getDateToday(): string {
     let dt = new Date();
 
@@ -410,7 +423,4 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
     this.router.navigate(['/panel/recepciones/comprador']);
   }
 
-  public goTo_back(): void {
-    this.location.back();
-  }
 }
