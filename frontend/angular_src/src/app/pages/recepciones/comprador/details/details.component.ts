@@ -95,7 +95,7 @@ export class RecepcionesCompradorDetailsComponent implements OnInit {
       this.recepcion.comentario = recepcionData.comentario;
       this.recepcion.created_at = recepcionData.created_at;
       this.recepcion.comprador_name = recepcionData.recepcionable.name;
-      this.recepcion.proveedor_name = recepcionData.proveedorrecepcion.proveedor.name;
+      this.recepcion.proveedor_name = recepcionData.sourceable.name;
       
       this.ocpartes = [];
       recepcionData.ocpartes.forEach((op: any) => {

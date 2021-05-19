@@ -50,7 +50,7 @@
             <tr *ngFor="let recepcion of recepciones">
               <td align="center">{{ recepcion.id }}</td>
               <td>{{ dateStringFormat(recepcion.fecha) }}</td>
-              <td align="center">{{ recepcion.proveedorrecepcion.proveedor.name }}</td>
+              <td align="center">{{ recepcion.sourceable.name }}</td>
               <td align="center">{{ recepcion.ndocumento !== null ? recepcion.ndocumento : '' }}</td>
               <td align="right">{{ recepcion.partes_total }}</td>
               <td align="center">{{ recepcion.responsable }}</td>

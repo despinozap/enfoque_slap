@@ -92,8 +92,8 @@ export class RecepcionesCompradorEditComponent implements OnInit {
     {
       // Load Recepcion data
       this.recepcion.id = recepcionData.recepcion.id;
-      this.recepcion.proveedor_id = recepcionData.recepcion.proveedorrecepcion.proveedor.id;
-      this.recepcion.proveedor_name = recepcionData.recepcion.proveedorrecepcion.proveedor.name;
+      this.recepcion.proveedor_id = recepcionData.recepcion.sourceable.id;
+      this.recepcion.proveedor_name = recepcionData.recepcion.sourceable.name;
 
       this.recepcionForm.controls.fecha.setValue(this.dateStringFormat(recepcionData.recepcion.fecha));
       if(recepcionData.recepcion.ndocumento !== null)
