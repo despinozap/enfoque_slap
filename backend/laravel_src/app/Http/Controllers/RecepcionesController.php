@@ -99,6 +99,7 @@ class RecepcionesController extends Controller
                             'city',
                             'contact',
                             'phone',
+                            'country',
                             'created_at', 
                             'updated_at'
                         ]);
@@ -575,6 +576,7 @@ class RecepcionesController extends Controller
                                 'city',
                                 'contact',
                                 'phone',
+                                'country',
                                 'created_at', 
                                 'updated_at'
                             ]);
@@ -587,6 +589,7 @@ class RecepcionesController extends Controller
                                 'city',
                                 'contact',
                                 'phone',
+                                'country',
                                 'created_at', 
                                 'updated_at'
                             ]);
