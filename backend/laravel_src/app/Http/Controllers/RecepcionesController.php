@@ -12,7 +12,7 @@ use App\Models\Comprador;
 use App\Models\OcParte;
 use App\Models\Recepcion;
 use App\Models\OcParteRecepcion;
-use App\Models\Proveedorrecepcion;
+use App\Models\Proveedor;
 use App\Models\OcParteDespacho;
 
 class RecepcionesController extends Controller
@@ -38,6 +38,8 @@ class RecepcionesController extends Controller
                         $recepcion->partes_total;
                         
                         $recepcion->makeHidden([
+                            'sourceable_id', 
+                            'sourceable_type',
                             'recepcionable_id', 
                             'recepcionable_type', 
                             'created_at', 
@@ -96,28 +98,17 @@ class RecepcionesController extends Controller
                             return $ocparte;
                         });
 
-                        $recepcion->proveedorrecepcion;
-                        if($recepcion->proveedorrecepcion !== null)
-                        {
-                            $recepcion->proveedorrecepcion->makeHidden([
-                                'recepcion_id',
-                                'proveedor_id',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-
-                            $recepcion->proveedorrecepcion->proveedor;
-                            $recepcion->proveedorrecepcion->proveedor->makeHidden([
-                                'comprador_id',
-                                'rut',
-                                'address',
-                                'city',
-                                'contact',
-                                'phone',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-                        }
+                        $recepcion->sourceable;
+                        $recepcion->sourceable->makeHidden([
+                            'comprador_id',
+                            'rut',
+                            'address',
+                            'city',
+                            'contact',
+                            'phone',
+                            'created_at', 
+                            'updated_at'
+                        ]);
 
                         return $recepcion;
                     });
@@ -321,156 +312,155 @@ class RecepcionesController extends Controller
                 {
                     if($comprador = Comprador::find($comprador_id))
                     {
-                        DB::beginTransaction();
-
-                        $recepcion = new Recepcion();
-                        // Set the morph for Recepcion as Comprador
-                        $recepcion->recepcionable_id = $comprador->id;
-                        $recepcion->recepcionable_type = get_class($comprador);
-                        // Fill the data
-                        $recepcion->fecha = $request->fecha;
-                        $recepcion->ndocumento = $request->ndocumento;
-                        $recepcion->responsable = $request->responsable;
-                        $recepcion->comentario = $request->comentario;
-
-                        if($recepcion->save())
+                        if($proveedor = Proveedor::where('id', '=', $request->proveedor_id)->where('comprador_id', '=', $comprador_id)->first())
                         {
-                            $success = true;
+                            DB::beginTransaction();
 
-                            $cantidades = array_reduce($request->partes, function($carry, $parte)
-                                {
-                                    $carry[$parte['id']] = $parte['cantidad'];
+                            $recepcion = new Recepcion();
+                            // Set the morph source for Recepcion as Proveedor
+                            $recepcion->sourceable_id = $proveedor->id;
+                            $recepcion->sourceable_type = get_class($proveedor);
+                            // Set the morph for Recepcion as Comprador
+                            $recepcion->recepcionable_id = $comprador->id;
+                            $recepcion->recepcionable_type = get_class($comprador);
+                            // Fill the data
+                            $recepcion->fecha = $request->fecha;
+                            $recepcion->ndocumento = $request->ndocumento;
+                            $recepcion->responsable = $request->responsable;
+                            $recepcion->comentario = $request->comentario;
 
-                                    return $carry;
-                                },
-                                array()
-                            );
-
-                            foreach(array_keys($cantidades) as $parteId)
+                            if($recepcion->save())
                             {
-                                // For each parte sent, gets the OcParte list where Estadoocparte is 'Pendiente' for the selected Proveedor
-                                if($ocParteList = OcParte::select('oc_parte.*')
-                                                ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
-                                                ->where('oc_parte.parte_id', '=', $parteId)
-                                                ->where('oc_parte.estadoocparte_id', '=', 1) // Estadoocparte = 'Pendiente'
-                                                ->where('ocs.proveedor_id', '=', $request->proveedor_id)
-                                                ->where('ocs.estadooc_id', '=', 2) // Estadooc = 'En proceso'
-                                                ->orderBy('ocs.created_at', 'ASC')
-                                                ->get()
-                                )
-                                {
-                                    if($ocParteList->count() > 0)
-                                    {
-                                        if($success === true)
-                                        {
-                                            foreach($ocParteList as $ocParte)
-                                            {
-                                                if($cantidades[$parteId] > 0)
-                                                {
-                                                    if($cantidades[$parteId] >= $ocParte->cantidad_pendiente)
-                                                    {
-                                                        // If is receiving more or equal than required for this OcParte, fill the OcParte
-                                                        $cantidad = $ocParte->cantidad_pendiente;
+                                $success = true;
 
-                                                        $ocParte->estadoocparte_id = 2; // All the partes were received, so change status to 'Process'
-                                                        if(!$ocParte->save())
+                                $cantidades = array_reduce($request->partes, function($carry, $parte)
+                                    {
+                                        $carry[$parte['id']] = $parte['cantidad'];
+
+                                        return $carry;
+                                    },
+                                    array()
+                                );
+
+                                foreach(array_keys($cantidades) as $parteId)
+                                {
+                                    // For each parte sent, gets the OcParte list where Estadoocparte is 'Pendiente' for the selected Proveedor
+                                    if($ocParteList = OcParte::select('oc_parte.*')
+                                                    ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                                    ->where('oc_parte.parte_id', '=', $parteId)
+                                                    ->where('oc_parte.estadoocparte_id', '=', 1) // Estadoocparte = 'Pendiente'
+                                                    ->where('ocs.proveedor_id', '=', $request->proveedor_id)
+                                                    ->where('ocs.estadooc_id', '=', 2) // Estadooc = 'En proceso'
+                                                    ->orderBy('ocs.created_at', 'ASC')
+                                                    ->get()
+                                    )
+                                    {
+                                        if($ocParteList->count() > 0)
+                                        {
+                                            if($success === true)
+                                            {
+                                                foreach($ocParteList as $ocParte)
+                                                {
+                                                    if($cantidades[$parteId] > 0)
+                                                    {
+                                                        if($cantidades[$parteId] >= $ocParte->cantidad_pendiente)
                                                         {
-                                                            // If fails on updating OcParte status
-                                                            $response = HelpController::buildResponse(
-                                                                500,
-                                                                'Error al actualizar el estado de una parte recibida',
-                                                                null
-                                                            );
-                        
-                                                            $success = false;
-                        
-                                                            break;
+                                                            // If is receiving more or equal than required for this OcParte, fill the OcParte
+                                                            $cantidad = $ocParte->cantidad_pendiente;
+
+                                                            $ocParte->estadoocparte_id = 2; // All the partes were received, so change status to 'Process'
+                                                            if(!$ocParte->save())
+                                                            {
+                                                                // If fails on updating OcParte status
+                                                                $response = HelpController::buildResponse(
+                                                                    500,
+                                                                    'Error al actualizar el estado de una parte recibida',
+                                                                    null
+                                                                );
+                            
+                                                                $success = false;
+                            
+                                                                break;
+                                                            }
                                                         }
+                                                        else
+                                                        {
+                                                            // If receiving less than required to fill the OcParte, it continues with Estadoocparte 'Pendiente'
+                                                            $cantidad = $cantidades[$parteId];
+                                                        }
+                                                        
+                                                        // Attach the OcParte to Recepcion with defined Cantidad
+                                                        $recepcion->ocpartes()->attach(
+                                                            array(
+                                                                $ocParte->id => array(
+                                                                    "cantidad" => $cantidad
+                                                                )
+                                                            )
+                                                        );
+
+                                                        // Updates the cantidad left
+                                                        $cantidades[$parteId] = $cantidades[$parteId] - $cantidad;
                                                     }
                                                     else
                                                     {
-                                                        // If receiving less than required to fill the OcParte, it continues with Estadoocparte 'Pendiente'
-                                                        $cantidad = $cantidades[$parteId];
-                                                    }
-                                                    
-                                                    // Attach the OcParte to Recepcion with defined Cantidad
-                                                    $recepcion->ocpartes()->attach(
-                                                        array(
-                                                            $ocParte->id => array(
-                                                                "cantidad" => $cantidad
-                                                            )
-                                                        )
-                                                    );
-
-                                                    // Updates the cantidad left
-                                                    $cantidades[$parteId] = $cantidades[$parteId] - $cantidad;
+                                                        break;
+                                                    } 
                                                 }
-                                                else
-                                                {
-                                                    break;
-                                                } 
-                                            }
 
-                                            if($cantidades[$parteId] > 0)
+                                                if($cantidades[$parteId] > 0)
+                                                {
+                                                    // If the received parts are more than waiting in queue
+                                                    $response = HelpController::buildResponse(
+                                                        409,
+                                                        'La cantidad de partes recepcionadas es mayor a la cantidad de partes pendientes de recepcion',
+                                                        null
+                                                    );
+                
+                                                    $success = false;
+                
+                                                    break;
+                                                }
+                                            }
+                                            else
                                             {
-                                                // If the received parts are more than waiting in queue
-                                                $response = HelpController::buildResponse(
-                                                    409,
-                                                    'La cantidad de partes recepcionadas es mayor a la cantidad de partes pendientes de recepcion',
-                                                    null
-                                                );
-            
-                                                $success = false;
-            
+                                                // If it failed during the partes iteration, then break the higher loop
                                                 break;
                                             }
+                                            
                                         }
                                         else
                                         {
-                                            // If it failed during the partes iteration, then break the higher loop
+                                            // If there aren't OcParte waiting for the entered Parte
+                                            $response = HelpController::buildResponse(
+                                                409,
+                                                'La parte ingresada no tiene partes pendientes de recepcion',
+                                                null
+                                            );
+        
+                                            $success = false;
+        
                                             break;
                                         }
-                                        
                                     }
                                     else
                                     {
-                                        // If there aren't OcParte waiting for the entered Parte
                                         $response = HelpController::buildResponse(
-                                            409,
-                                            'La parte ingresada no tiene partes pendientes de recepcion',
+                                            500,
+                                            'Error al obtener las partes pendiente de recepcion',
                                             null
                                         );
-    
+
                                         $success = false;
-    
+
                                         break;
                                     }
                                 }
-                                else
-                                {
-                                    $response = HelpController::buildResponse(
-                                        500,
-                                        'Error al obtener las partes pendiente de recepcion',
-                                        null
-                                    );
-
-                                    $success = false;
-
-                                    break;
-                                }
-                            }
 
 
-                            if($success === true)
-                            {
-                                $proveedorRecepcion = new Proveedorrecepcion();
-                                $proveedorRecepcion->proveedor_id = $request->proveedor_id;
-                                $proveedorRecepcion->recepcion_id = $recepcion->id;
-
-                                if($proveedorRecepcion->save())
+                                if($success === true)
                                 {
                                     DB::commit();
-                                    
+                                        
                                     $response = HelpController::buildResponse(
                                         201,
                                         'Recepcion creada',
@@ -480,31 +470,28 @@ class RecepcionesController extends Controller
                                 else
                                 {
                                     DB::rollback();
-
-                                    $response = HelpController::buildResponse(
-                                        500,
-                                        'Error al crear la recepcion',
-                                        null
-                                    );
                                 }
+
                             }
                             else
                             {
                                 DB::rollback();
-                            }
 
+                                $response = HelpController::buildResponse(
+                                    500,
+                                    'Error al crear la recepcion',
+                                    null
+                                );
+                            }
                         }
                         else
                         {
-                            DB::rollback();
-
                             $response = HelpController::buildResponse(
-                                500,
-                                'Error al crear la recepcion',
+                                400,
+                                'El proveedor no existe para el comprador',
                                 null
                             );
-                        }
-                        
+                        }                      
                     }
                     else
                     {
@@ -577,6 +564,8 @@ class RecepcionesController extends Controller
                         if($recepcion = Recepcion::find($id))
                         {
                             $recepcion->makeHidden([
+                                'sourceable_id',
+                                'sourceable_type',
                                 'recepcionable_id',
                                 'recepcionable_type',
                                 'proveedor_id',
@@ -595,28 +584,17 @@ class RecepcionesController extends Controller
                                 'updated_at'
                             ]);
 
-                            if($recepcion->proveedorrecepcion)
-                            {
-                                $recepcion->proveedorrecepcion->makeHidden([
-                                    'id',
-                                    'proveedor_id',
-                                    'recepcion_id',
-                                    'created_at', 
-                                    'updated_at'
-                                ]);
-
-                                $recepcion->proveedorrecepcion->proveedor;
-                                $recepcion->proveedorrecepcion->proveedor->makeHidden([
-                                    'comprador_id',
-                                    'rut',
-                                    'address',
-                                    'city',
-                                    'contact',
-                                    'phone',
-                                    'created_at', 
-                                    'updated_at'
-                                ]);
-                            }
+                            $recepcion->sourceable;
+                            $recepcion->sourceable->makeHidden([
+                                'comprador_id',
+                                'rut',
+                                'address',
+                                'city',
+                                'contact',
+                                'phone',
+                                'created_at', 
+                                'updated_at'
+                            ]);
 
                             $recepcion->ocpartes;
                             foreach($recepcion->ocpartes as $ocparte)
@@ -824,28 +802,17 @@ class RecepcionesController extends Controller
                                 'updated_at'
                             ]);
 
-                            if($recepcion->proveedorrecepcion)
-                            {
-                                $recepcion->proveedorrecepcion->makeHidden([
-                                    'id',
-                                    'proveedor_id',
-                                    'recepcion_id',
-                                    'created_at', 
-                                    'updated_at'
-                                ]);
-
-                                $recepcion->proveedorrecepcion->proveedor;
-                                $recepcion->proveedorrecepcion->proveedor->makeHidden([
-                                    'comprador_id',
-                                    'rut',
-                                    'address',
-                                    'city',
-                                    'contact',
-                                    'phone',
-                                    'created_at', 
-                                    'updated_at'
-                                ]);
-                            }
+                            $recepcion->sourceable;
+                            $recepcion->sourceable->makeHidden([
+                                'comprador_id',
+                                'rut',
+                                'address',
+                                'city',
+                                'contact',
+                                'phone',
+                                'created_at', 
+                                'updated_at'
+                            ]);
 
                             $recepcion->ocpartes;
                             foreach($recepcion->ocpartes as $ocparte)
@@ -944,11 +911,11 @@ class RecepcionesController extends Controller
                                 $ocparte->parte->marca->makeHidden(['created_at', 'updated_at']);
                             }
 
-                            if($recepcion->proveedorrecepcion)
+                            if(get_class($recepcion->sourceable) === get_class(new Proveedor()))
                             {
                                 $ocParteList = OcParte::select('oc_parte.*')
                                         ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
-                                        ->where('ocs.proveedor_id', $recepcion->proveedorrecepcion->proveedor_id)
+                                        ->where('ocs.proveedor_id', $recepcion->sourceable->id)
                                         ->where('ocs.estadooc_id', '=', 2) // Estadooc = 'En proceso'
                                         ->where('oc_parte.estadoocparte_id', '=', '1') // Estadoocparte = 'Pendiente'
                                         ->get();
@@ -1120,7 +1087,7 @@ class RecepcionesController extends Controller
                     {
                         if($recepcion = Recepcion::find($id))
                         {
-                            if($recepcion->proveedorrecepcion)
+                            if(get_class($recepcion->sourceable) === get_class(new Proveedor()))
                             {
                                 DB::beginTransaction();
 
@@ -1209,7 +1176,7 @@ class RecepcionesController extends Controller
                                                                         ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
                                                                         ->where('recepciones.recepcionable_type', '=', get_class($comprador))
                                                                         ->where('recepciones.recepcionable_id', '=', $comprador->id)
-                                                                        ->where('ocs.proveedor_id', '=', $recepcion->proveedorrecepcion->proveedor_id)
+                                                                        ->where('ocs.proveedor_id', '=', $recepcion->sourceable->id)
                                                                         ->where('oc_parte.parte_id', '=', $parteId)
                                                                         ->get()
                                                 )
@@ -1259,7 +1226,7 @@ class RecepcionesController extends Controller
                                                                         ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
                                                                         ->where('despachos.despachable_type', '=', get_class($comprador))
                                                                         ->where('despachos.despachable_id', '=', $comprador->id)
-                                                                        ->where('ocs.proveedor_id', '=', $recepcion->proveedorrecepcion->proveedor_id)
+                                                                        ->where('ocs.proveedor_id', '=', $recepcion->sourceable->id)
                                                                         ->where('oc_parte.parte_id', '=', $parteId)
                                                                         ->get()
                                                 )
@@ -1482,7 +1449,7 @@ class RecepcionesController extends Controller
                                                                     ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
                                                                     ->where('oc_parte.parte_id', '=', $parteId)
                                                                     ->where('oc_parte.estadoocparte_id', '<>', 3) // Estadoocparte != 'Entregado'
-                                                                    ->where('ocs.proveedor_id', '=', $recepcion->proveedorrecepcion->proveedor_id)
+                                                                    ->where('ocs.proveedor_id', '=', $recepcion->sourceable->id)
                                                                     ->where('ocs.estadooc_id', '=', 2) // Estadooc = 'En proceso'
                                                                     ->get()
                                                     )

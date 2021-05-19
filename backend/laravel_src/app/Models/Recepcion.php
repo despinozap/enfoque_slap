@@ -12,6 +12,19 @@ class Recepcion extends Model
     protected $table = 'recepciones';
     public $appends = ['partes_total'];
 
+    /*
+     *  The Recepcion's source.
+     *  Sourceable models: Proveedor, Comprador, Centrodistribucion
+     */
+    public function sourceable()
+    {
+        return $this->morphTo();
+    }
+
+    /*
+     * The Recepcion's destination. 
+     * Recepcionable models: Comprador, Centrodistribucion, Sucursal
+     */
     public function recepcionable()
     {
         return $this->morphTo();
@@ -34,11 +47,5 @@ class Recepcion extends Model
         $this->attributes['partes_total'] = $quantity;
         
         return $quantity;
-    }
-
-    public function proveedorrecepcion()
-    {
-        // If it's a recepcion from Proveedor
-        return $this->hasOne(Proveedorrecepcion::class);
     }
 }

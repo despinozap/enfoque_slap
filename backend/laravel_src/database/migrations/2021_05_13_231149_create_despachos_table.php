@@ -17,6 +17,8 @@ class CreateDespachosTable extends Migration
             $table->id();
             $table->integer('despachable_id');
             $table->string('despachable_type');
+            $table->integer('destinable_id');
+            $table->string('destinable_type');
             $table->timestamp('fecha');
             $table->string('ndocumento')->nullable();
             $table->string('responsable');

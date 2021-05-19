@@ -12,7 +12,20 @@ class Despacho extends Model
     protected $table = 'despachos';
     public $appends = ['partes_total'];
 
+    /*
+     * The Despacho's source. 
+     * Despachable models: Comprador, Centrodistribucion, Sucursal
+     */
     public function despachable()
+    {
+        return $this->morphTo();
+    }
+
+    /*
+     *  The Despacho's destination.
+     *  Destinable models: Centrodistribucion, Sucursal, Faena
+     */
+    public function destinable()
     {
         return $this->morphTo();
     }
@@ -34,11 +47,5 @@ class Despacho extends Model
         $this->attributes['partes_total'] = $quantity;
         
         return $quantity;
-    }
-
-    public function faenadespacho()
-    {
-        // If it's a despacho to Faena
-        return null;
     }
 }

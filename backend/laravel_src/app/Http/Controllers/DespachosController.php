@@ -131,7 +131,7 @@ class DespachosController extends Controller
         return $response;
     }
 
-
+    // TO REVIEW
     public function queuePartes_comprador($id)
     {
         try
@@ -223,7 +223,7 @@ class DespachosController extends Controller
         return $response;
     }
 
-    
+    // TO REVIEW
     public function store_comprador(Request $request, $comprador_id)
     {
         try
@@ -414,7 +414,7 @@ class DespachosController extends Controller
                             if($success === true)
                             {
 
-                                DB::commit();
+                                DB::rollback();
                                     
                                 $response = HelpController::buildResponse(
                                     201,
