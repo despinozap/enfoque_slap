@@ -83,7 +83,6 @@ export class RecepcionesCompradorDetailsComponent implements OnInit {
     });
   }
 
-
   private loadFormData(recepcionData: any)
   { 
     if(recepcionData['ocpartes'].length > 0)

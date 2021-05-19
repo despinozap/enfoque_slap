@@ -55,6 +55,8 @@ import { RecepcionesCompradorListComponent } from './pages/recepciones/comprador
 import { RecepcionesCompradorCreateComponent } from './pages/recepciones/comprador/create/create.component';
 import { RecepcionesCompradorDetailsComponent } from './pages/recepciones/comprador/details/details.component';
 import { RecepcionesCompradorEditComponent } from './pages/recepciones/comprador/edit/edit.component';
+import { DespachosCompradorListComponent } from './pages/despachos/comprador/list/list.component';
+import { DespachosCompradorCreateComponent } from './pages/despachos/comprador/create/create.component';
 
 
 /* Routes */
@@ -102,6 +104,8 @@ const routes: Routes = [
       { path: 'recepciones/comprador/create', component: RecepcionesCompradorCreateComponent },
       { path: 'recepciones/comprador/details/:id', component: RecepcionesCompradorDetailsComponent },
       { path: 'recepciones/comprador/edit/:id', component: RecepcionesCompradorEditComponent },
+      { path: 'despachos/comprador', component: DespachosCompradorListComponent },
+      { path: 'despachos/comprador/create', component: DespachosCompradorCreateComponent },
     ]
   },
   { path: '**', redirectTo: 'login', pathMatch: 'full' } //any other page, redirects to base path
@@ -150,6 +154,8 @@ const routes: Routes = [
     RecepcionesCompradorCreateComponent,
     RecepcionesCompradorDetailsComponent,
     RecepcionesCompradorEditComponent,
+    DespachosCompradorListComponent,
+    DespachosCompradorCreateComponent,
   ],
   imports: [
     BrowserModule,
