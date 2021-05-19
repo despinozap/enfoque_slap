@@ -56,19 +56,21 @@ class Oc extends Model
     
     public function getPartesTotalAttribute()
     {
-        $quantity = 0;
+        $quantity = $this->partes->reduce(function($carry, $parte)
+            {
+                return $carry + $parte->pivot->cantidad; 
+            }, 
+            0
+        );
 
-        foreach($this->partes as $parte)
-        {
-            $quantity += $parte->pivot->cantidad;
-        }
-
+        $this->attributes['partes_total'] = $quantity;
+        
         return $quantity;
     }
     
     public function partes()
     {
-        return $this->belongsToMany(Parte::class, 'oc_parte', 'oc_id', 'parte_id')->withPivot(['descripcion', 'estadoocparte_id', 'cantidad', 'tiempoentrega', 'backorder'])->using(OcParte::class)->withTimestamps();
+        return $this->belongsToMany(Parte::class, 'oc_parte', 'oc_id', 'parte_id')->withPivot(['id', 'descripcion', 'estadoocparte_id', 'cantidad', 'tiempoentrega', 'backorder'])->using(OcParte::class)->withTimestamps();
     }
 
     public function estadooc()

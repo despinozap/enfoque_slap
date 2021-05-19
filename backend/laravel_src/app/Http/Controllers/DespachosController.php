@@ -50,13 +50,6 @@ class DespachosController extends Controller
                                 'estadoocparte_id',
                                 'created_at',
                                 'updated_at',
-                                'cantidad_pendiente',
-                                'cantidad_compradorrecepcionado',
-                                'cantidad_compradordespachado',
-                                'cantidad_centrodistribucionrecepcionado',
-                                'cantidad_centrodistribuciondespachado',
-                                'cantidad_sucursalrecepcionado',
-                                'cantidad_sucursaldespachado',
                             ]);
 
                             $ocparte->pivot->makeHidden([
@@ -131,6 +124,7 @@ class DespachosController extends Controller
         return $response;
     }
 
+
     // TO REVIEW
     public function queuePartes_comprador($id)
     {
@@ -152,7 +146,7 @@ class DespachosController extends Controller
                     $queuePartesData = $ocParteList->reduce(function($carry, $ocParte)
                         {
                             // Get how many partes have been received but not dispatched yet in Comprador
-                            $cantidad_stock = $ocParte->cantidad_compradorrecepcionado - $ocParte->cantidad_compradordespachado;
+                            $cantidad_stock = $ocParte->getCantidadCompradorRecepcionado(2) - $ocParte->cantidad_compradordespachado;
                             if($cantidad_stock > 0)
                             {
                                 if(isset($carry[$ocParte->parte->id]))
@@ -222,6 +216,7 @@ class DespachosController extends Controller
             
         return $response;
     }
+
 
     // TO REVIEW
     public function store_comprador(Request $request, $comprador_id)
@@ -537,13 +532,6 @@ class DespachosController extends Controller
                                     'parte_id',
                                     'estadoocparte_id',
                                     'tiempoentrega',
-                                    'cantidad_pendiente',
-                                    'cantidad_compradorrecepcionado',
-                                    'cantidad_compradordespachado',
-                                    'cantidad_centrodistribucionrecepcionado',
-                                    'cantidad_centrodistribuciondespachado',
-                                    'cantidad_sucursalrecepcionado',
-                                    'cantidad_sucursaldespachado',
                                     'created_at',
                                     'updated_at',
                                 ]);

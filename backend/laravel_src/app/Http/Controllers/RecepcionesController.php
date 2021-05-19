@@ -56,13 +56,6 @@ class RecepcionesController extends Controller
                                 'estadoocparte_id',
                                 'created_at',
                                 'updated_at',
-                                'cantidad_pendiente',
-                                'cantidad_compradorrecepcionado',
-                                'cantidad_compradordespachado',
-                                'cantidad_centrodistribucionrecepcionado',
-                                'cantidad_centrodistribuciondespachado',
-                                'cantidad_sucursalrecepcionado',
-                                'cantidad_sucursaldespachado',
                             ]);
 
                             $ocparte->pivot->makeHidden([
@@ -173,12 +166,13 @@ class RecepcionesController extends Controller
                         // Retrieves the partes list with cantidad_pendiente (total) for proveedor
                         $queuePartesData = $ocParteList->reduce(function($carry, $ocParte)
                             {
-                                if($ocParte->cantidad_pendiente > 0)
+                                $cantidadPendiente = $ocParte->getCantidadPendiente(); 
+                                if($cantidadPendiente > 0)
                                 {
                                     if(isset($carry[$ocParte->parte->id]))
                                     {
                                         // If parte is already in the list, adds the cantidad_pendiente to the total
-                                        $carry[$ocParte->parte->id]['cantidad_pendiente'] += $ocParte->cantidad_pendiente;
+                                        $carry[$ocParte->parte->id]['cantidad_pendiente'] += $cantidadPendiente;
                                     }
                                     else
                                     {
@@ -187,7 +181,7 @@ class RecepcionesController extends Controller
                                             "id" => $ocParte->parte->id,
                                             "nparte" => $ocParte->parte->nparte,
                                             "marca" => $ocParte->parte->marca->makeHidden(['created_at', 'updated_at']),
-                                            "cantidad_pendiente" => $ocParte->cantidad_pendiente,
+                                            "cantidad_pendiente" => $cantidadPendiente,
                                         ];
 
                                         $carry[$parte['id']] = $parte;
@@ -363,10 +357,11 @@ class RecepcionesController extends Controller
                                                 {
                                                     if($cantidades[$parteId] > 0)
                                                     {
-                                                        if($cantidades[$parteId] >= $ocParte->cantidad_pendiente)
+                                                        $cantidadPendiente = $ocParte->getCantidadPendiente();
+                                                        if($cantidades[$parteId] >= $cantidadPendiente)
                                                         {
                                                             // If is receiving more or equal than required for this OcParte, fill the OcParte
-                                                            $cantidad = $ocParte->cantidad_pendiente;
+                                                            $cantidad = $cantidadPendiente;
 
                                                             $ocParte->estadoocparte_id = 2; // All the partes were received, so change status to 'Process'
                                                             if(!$ocParte->save())
@@ -604,13 +599,6 @@ class RecepcionesController extends Controller
                                     'parte_id',
                                     'estadoocparte_id',
                                     'tiempoentrega',
-                                    'cantidad_pendiente',
-                                    'cantidad_compradorrecepcionado',
-                                    'cantidad_compradordespachado',
-                                    'cantidad_centrodistribucionrecepcionado',
-                                    'cantidad_centrodistribuciondespachado',
-                                    'cantidad_sucursalrecepcionado',
-                                    'cantidad_sucursaldespachado',
                                     'created_at',
                                     'updated_at',
                                 ]);
@@ -731,7 +719,7 @@ class RecepcionesController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al obtener la recepcion [!]',
+                'Error al obtener la recepcion [!]' . $e,
                 null
             );
         }
@@ -822,13 +810,6 @@ class RecepcionesController extends Controller
                                     'parte_id',
                                     'estadoocparte_id',
                                     'tiempoentrega',
-                                    'cantidad_pendiente',
-                                    'cantidad_compradorrecepcionado',
-                                    'cantidad_compradordespachado',
-                                    'cantidad_centrodistribucionrecepcionado',
-                                    'cantidad_centrodistribuciondespachado',
-                                    'cantidad_sucursalrecepcionado',
-                                    'cantidad_sucursaldespachado',
                                     'created_at',
                                     'updated_at',
                                 ]);
@@ -923,14 +904,15 @@ class RecepcionesController extends Controller
                                 if($ocParteList !== null)
                                 {
                                     // Retrieves the partes list with cantidad_pendiente (total) for proveedor
-                                    $queuePartesData = $ocParteList->reduce(function($carry, $ocParte)
+                                    $queuePartesData = $ocParteList->reduce(function($carry, $ocParte) use($comprador)
                                         {
-                                            if($ocParte->cantidad_pendiente > 0)
+                                            $cantidadPendiente = $ocParte->getCantidadPendiente();
+                                            if($cantidadPendiente > 0)
                                             {
                                                 if(isset($carry[$ocParte->parte->id]))
                                                 {
                                                     // If parte is already in the list, adds the cantidad_pendiente to the total
-                                                    $carry[$ocParte->parte->id]['cantidad_pendiente'] += $ocParte->cantidad_pendiente;
+                                                    $carry[$ocParte->parte->id]['cantidad_pendiente'] += $cantidadPendiente;
                                                 }
                                                 else
                                                 {
@@ -939,8 +921,8 @@ class RecepcionesController extends Controller
                                                         "id" => $ocParte->parte->id,
                                                         "nparte" => $ocParte->parte->nparte,
                                                         "marca" => $ocParte->parte->marca->makeHidden(['created_at', 'updated_at']),
-                                                        "cantidad_pendiente" => $ocParte->cantidad_pendiente,
-                                                        "cantidad_despachos" => $ocParte->cantidad_compradordespachado
+                                                        "cantidad_pendiente" => $cantidadPendiente,
+                                                        "cantidad_despachos" => $ocParte->getCantidadDespachado($comprador)
                                                     ];
 
                                                     $carry[$parte['id']] = $parte;
@@ -1388,12 +1370,13 @@ class RecepcionesController extends Controller
                                                 {
                                                     if($diffCantidades[$parteId] > 0)
                                                     {
-                                                        if($filteredOcParte->cantidad_pendiente > 0)
+                                                        $cantidadPendiente = $filteredOcParte->getCantidadPendiente();
+                                                        if($cantidadPendiente > 0)
                                                         {
-                                                            if($diffCantidades[$parteId] >= $filteredOcParte->cantidad_pendiente)
+                                                            if($diffCantidades[$parteId] >= $cantidadPendiente)
                                                             {
                                                                 // If is receiving more or equal than required for this OcParte, fill the OcParte
-                                                                $cantidad = $filteredOcParte->cantidad_pendiente;
+                                                                $cantidad = $cantidadPendiente;
         
                                                                 $filteredOcParte->estadoocparte_id = 2; // All the partes were received, so change status to 'Process'
                                                                 if(!$filteredOcParte->save())
@@ -1469,12 +1452,13 @@ class RecepcionesController extends Controller
                                                                 {
                                                                     if($diffCantidades[$parteId] > 0)
                                                                     {
-                                                                        if($ocParte->cantidad_pendiente > 0)
+                                                                        $cantidadPendiente = $ocParte->getCantidadPendiente();
+                                                                        if($cantidadPendiente > 0)
                                                                         {
-                                                                            if($diffCantidades[$parteId] >= $ocParte->cantidad_pendiente)
+                                                                            if($diffCantidades[$parteId] >= $cantidadPendiente)
                                                                             {
                                                                                 // If is receiving more or equal than required for this OcParte, fill the OcParte
-                                                                                $cantidad = $ocParte->cantidad_pendiente;
+                                                                                $cantidad = $cantidadPendiente;
     
                                                                                 $ocParte->estadoocparte_id = 2; // All the partes were received, so change status to 'Process'
                                                                                 if(!$ocParte->save())
@@ -1583,9 +1567,9 @@ class RecepcionesController extends Controller
                                         DB::commit();
                                         
                                         $response = HelpController::buildResponse(
-                                            201,
+                                            200,
                                             'Recepcion actualizada',
-                                            $diffCantidades_bck
+                                            null
                                         );
                                     }
                                     else

@@ -268,7 +268,7 @@ class OcsController extends Controller
                             'partes_total',
                             'dias',
                             'created_at', 
-                            'updated_at'
+                            'updated_at',
                         ]);
 
                         $oc->cotizacion->solicitud;
@@ -329,14 +329,18 @@ class OcsController extends Controller
                                 'updated_at'
                             ]);
                             
-                            // Get quantities
-                            $parte->pivot->cantidad_pendiente;
-                            $parte->pivot->cantidad_compradorrecepcionado;
-                            $parte->pivot->cantidad_compradordespachado;
-                            $parte->pivot->cantidad_centrodistribucionrecepcionado;
-                            $parte->pivot->cantidad_centrodistribuciondespachado;
-                            $parte->pivot->cantidad_sucursalrecepcionado;
-                            $parte->pivot->cantidad_sucursaldespachado;
+                            // Get counters
+                            $parte->counters = [
+                                'cantidad_pendiente' => $parte->pivot->getCantidadPendiente(),
+                                'cantidad_compradorrecepcionado' => $parte->pivot->getCantidadRecepcionado($oc->cotizacion->solicitud->comprador),
+                                'cantidad_compradordespachado' => $parte->pivot->getCantidadDespachado($oc->cotizacion->solicitud->comprador),
+                                'cantidad_centrodistribucionrecepcionado' => $parte->pivot->getCantidadRecepcionado($oc->cotizacion->solicitud->faena->cliente->sucursal->centrodistribucion),
+                                'cantidad_centrodistribuciondespachado' => $parte->pivot->getCantidadDespachado($oc->cotizacion->solicitud->faena->cliente->sucursal->centrodistribucion),
+                                'cantidad_sucursalrecepcionado' => $parte->pivot->getCantidadRecepcionado($oc->cotizacion->solicitud->faena->cliente->sucursal),
+                                'cantidad_sucursaldespachado' => $parte->pivot->getCantidadDespachado($oc->cotizacion->solicitud->faena->cliente->sucursal),
+                            ];
+
+                            $parte->pivot->makeHidden(['oc']);
     
                             $parte->pivot->estadoocparte;
                             $parte->pivot->estadoocparte->makeHidden([

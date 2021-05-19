@@ -37,12 +37,12 @@ class Recepcion extends Model
 
     public function getPartesTotalAttribute()
     {
-        $quantity = 0;
-
-        foreach($this->ocpartes as $ocparte)
-        {
-            $quantity += $ocparte->pivot->cantidad;
-        }
+        $quantity = $this->ocpartes->reduce(function($carry, $ocparte)
+            {
+                return $carry + $ocparte->pivot->cantidad; 
+            }, 
+            0
+        );
 
         $this->attributes['partes_total'] = $quantity;
         
