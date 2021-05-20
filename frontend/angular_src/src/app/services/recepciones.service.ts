@@ -28,7 +28,7 @@ export class RecepcionesService {
     return this.httpClient.put(endpoint, recepcion, httpOptions);
   }
 
-  public prepareRecepcion_comprador(comprador_id: number, recepcion_id: number): Observable<any>
+  public prepareUpdateRecepcion_comprador(comprador_id: number, recepcion_id: number): Observable<any>
   {
     let endpoint: string = `${environment.ENDPOINT_BASE}/compradores/${comprador_id}/recepciones/${recepcion_id}/prepare`;
     

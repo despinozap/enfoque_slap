@@ -57,6 +57,7 @@ import { RecepcionesCompradorDetailsComponent } from './pages/recepciones/compra
 import { RecepcionesCompradorEditComponent } from './pages/recepciones/comprador/edit/edit.component';
 import { DespachosCompradorListComponent } from './pages/despachos/comprador/list/list.component';
 import { DespachosCompradorCreateComponent } from './pages/despachos/comprador/create/create.component';
+import { DetailsComponent } from './pages/despachos/comprador/details/details.component';
 
 
 /* Routes */
@@ -156,6 +157,7 @@ const routes: Routes = [
     RecepcionesCompradorEditComponent,
     DespachosCompradorListComponent,
     DespachosCompradorCreateComponent,
+    DetailsComponent,
   ],
   imports: [
     BrowserModule,

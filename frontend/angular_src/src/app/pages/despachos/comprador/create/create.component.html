@@ -1,1 +1,194 @@
-<p>create works!</p>
+<!-- start page title -->
+<div class="row">
+  <div class="col-12">
+    <div class="page-title-box d-flex align-items-center justify-content-between">
+      <h4 class="mb-0 font-size-18">Nuevo decpacho</h4>
+
+      <div class="page-title-right">
+        <ol class="breadcrumb m-0">
+          <li class="breadcrumb-item">Despachos</li>
+          <li class="breadcrumb-item">Comprador</li>
+          <li class="breadcrumb-item active">Nuevo despacho</li>
+        </ol>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- end page title -->
+
+<div class="row">
+
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body">
+
+        <h4 class="card-title">Despacho</h4>
+        <p class="card-title-desc">Completa los siguientes campos para registrar un nuevo despacho</p>
+
+        <!-- Estado comercial - Aprobar -->
+        <form [formGroup]="despachoForm" (ngSubmit)="storeDespacho()" action="#">
+            
+          <div class="row">
+            <div class="col-4">
+              <div class="form-group">
+                <label class="control-label">Centro de distribucion</label>
+                <!-- Backend errors -->
+                <div class="alert alert-danger" *ngIf="(responseErrors.proveedor_id)">
+                  <div *ngFor="let errorMessage of responseErrors.proveedor_id">{{ errorMessage }}</div>
+                </div>
+                <select class="form-control" name="centrodistribucion" id="centrodistribucion" formControlName="centrodistribucion" >
+                  <option *ngFor="let centrodistribucion of centrosdistribucion" [value]="centrodistribucion.id">{{ centrodistribucion.name }}</option>
+                </select>
+                <!-- Frontend errors -->
+                <div
+                    *ngIf="(despachoForm.controls.centrodistribucion.errors) && (despachoForm.controls.centrodistribucion.touched) && (despachoForm.controls.centrodistribucion.dirty)">
+                  <div class="error-response" *ngIf="despachoForm.controls.centrodistribucion.errors.required === true">Debes
+                    seleccionar el proveedor
+                  </div>
+                  <div class="error-response" *ngIf="despachoForm.controls.centrodistribucion.errors.minlength !== null">El centro de distribucion debe ser valido</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-4">
+							<div class="form-group">
+								<label class="control-label" for="name">Fecha de despacho</label>
+								<!-- Backend errors -->
+								<div class="alert alert-danger" *ngIf="(responseErrors.fecha)">
+									<div *ngFor="let errorMessage of responseErrors.fecha">{{ errorMessage }}</div>
+								</div>
+								<input type="date" class="form-control valid-control" name="fecha" id="despacho_fecha" max="{{ getDateToday() }}"
+									formControlName="fecha">
+								<!-- Frontend errors -->
+								<div
+									*ngIf="(despachoForm.controls.fecha.errors) && (despachoForm.controls.fecha.touched) && (despachoForm.controls.fecha.dirty)">
+									<div class="error-response" *ngIf="despachoForm.controls.fecha.errors.required === true">
+										La fecha es obligatoria
+									</div>
+								</div>
+							</div>
+						</div>
+            <div class="col-4">
+							<div class="form-group">
+								<label class="control-label" for="documento">N° Guia despacho</label>
+								<!-- Backend errors -->
+								<div class="alert alert-danger" *ngIf="(responseErrors.documento)">
+									<div *ngFor="let errorMessage of responseErrors.documento">{{ errorMessage }}</div>
+								</div>
+								<input type="text" class="form-control valid-control" name="documento" id="documento"
+									formControlName="documento">
+								<!-- Frontend errors -->
+								<div
+									*ngIf="(despachoForm.controls.documento.errors) && (despachoForm.controls.documento.touched) && (despachoForm.controls.documento.dirty)">
+									<div class="error-response" *ngIf="despachoForm.controls.documento.errors.required === true">
+										El documento es obligatorio
+									</div>
+								</div>
+							</div>
+						</div>
+            <div class="col-4">
+							<div class="form-group">
+								<label class="control-label" for="responsable">Despachado por</label>
+								<!-- Backend errors -->
+								<div class="alert alert-danger" *ngIf="(responseErrors.responsable)">
+									<div *ngFor="let errorMessage of responseErrors.responsable">{{ errorMessage }}</div>
+								</div>
+								<input type="text" class="form-control valid-control" name="responsable" id="responsable"
+									formControlName="responsable">
+								<!-- Frontend errors -->
+								<div
+									*ngIf="(despachoForm.controls.responsable.errors) && (despachoForm.controls.responsable.touched) && (despachoForm.controls.responsable.dirty)">
+									<div class="error-response" *ngIf="despachoForm.controls.responsable.errors.required === true">
+										El responsable es obligatorio
+									</div>
+									<div class="error-response"
+										*ngIf="despachoForm.controls.responsable.errors.minlength !== null">El nombre del responsable debe tener al
+										menos 2 caracteres</div>
+								</div>
+							</div>
+						</div>
+            <div class="col-8">
+              <div class="form-group">
+                <label class="control-label" for="name">Comentario</label>
+                <input type="text" class="form-control valid-control" name="comentario" id="comentario"
+									formControlName="comentario">
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+
+            <div class="col-12">
+
+              <!-- Partes list -->
+              <label class="control-label">Lista de partes pendientes de despacho</label>
+              <p class="card-title-desc">Completa las cantidades para las partes que se despachan</p>
+
+              <div class="table-responsive">
+
+                <table datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger" class="table table-hover table-bordered mb-2">
+                  <thead>
+                    <tr>
+                      <th>
+                        <div class="custom-header-checkbox custom-checkbox custom-checkbox-outline custom-checkbox-primary">
+                          <input type="checkbox" class="custom-control-input" id="chkParte-header" (change)="checkPartesList($event)" [checked]="isCheckedItem(partes) ? (isUncheckedItem(partes) ? false : true) : false">
+                          <label class="custom-control-label" for="chkParte-header">Todos</label>
+                        </div>
+                      </th>
+                      <th>N° Parte</th>
+                      <th>Cantidad</th>
+                      <th>Marca</th>
+                    </tr>
+                  </thead>
+                  <tbody *ngIf="(loading === true)">
+                    <tr>
+                      <td colspan="4" style="text-align: center;"><i
+                            class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</td>
+                    </tr>
+                  </tbody>
+                  <tbody [hidden]="(loading === true)">
+                    <tr *ngFor="let parte of partes; index as i">
+                      <td align="center">
+                        <div class="custom-control custom-checkbox custom-checkbox-outline custom-checkbox-primary mb-3">
+                          <input type="checkbox" class="custom-control-input" id="chkParte-{{ i }}" [checked]="parte.checked" (change)="checkParteItem(parte, $event)" [disabled]="(loading === true)">
+                          <label class="custom-control-label" for="chkParte-{{ i }}"></label>
+                        </div>
+                      </td>
+                      <td align="left">{{ parte.nparte !== null ? parte.nparte : '' }}</td>
+                      <td align="center">
+                        <input class="form-control" type="number" name="" id="txtParte-{{ i }}-cantidad" min="1" max="parte.cantidad_stock" value="{{ parte.cantidad_stock !== null ? parte.cantidad_stock : '' }}" (change)="updateParte_cantidad(parte, $event)" [disabled]="loading === true ? true : (parte.checked ? false : true)">
+                      </td>
+                      <td align="left">{{ parte.marca.name !== null ? parte.marca.name : '' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          
+          </div>
+
+          <div class="row">
+            <div class="col-12">
+              <div class="form-buttons mt-2">
+                <button class="btn btn-primary mr-2" (click)="storeDespacho()"
+                    [disabled]="(despachoForm.invalid) || (loading === true) || (isCheckedItem(partes) === false)">
+                  <span *ngIf="loading === true"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
+                  <span *ngIf="loading === false">Guardar</span>
+                </button>
+                <button [disabled]="(loading === true)" class="btn btn-light" (click)="goTo_despachosList()">
+                  <span>Cancelar</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          
+        </form>
+
+      </div>
+    </div>
+    <!-- end card -->
+
+  </div>
+
+</div>
+<!-- end row -->

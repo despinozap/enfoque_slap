@@ -178,7 +178,7 @@ export class RecepcionesCompradorEditComponent implements OnInit {
     
     this.loading = true;
 
-    this._recepcionesService.prepareRecepcion_comprador(this.comprador_id, this.recepcion.id)
+    this._recepcionesService.prepareUpdateRecepcion_comprador(this.comprador_id, this.recepcion.id)
     .subscribe(
       //Success request
       (response: any) => {

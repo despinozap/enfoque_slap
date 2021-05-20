@@ -329,7 +329,7 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
             default: //Unhandled error
               {
                 NotificationsService.showAlert(
-                  'Error al intentar guardar la solicitud',
+                  'Error al intentar guardar la recepcion',
                   NotificationsService.messageType.error
                 );
 
