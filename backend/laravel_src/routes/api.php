@@ -15,6 +15,7 @@ use App\Http\Controllers\CotizacionesController;
 use App\Http\Controllers\OcsController;
 use App\Http\Controllers\CompradoresController;
 use App\Http\Controllers\ProveedoresController;
+use App\Http\Controllers\CentrosdistribucionController;
 use App\Http\Controllers\RecepcionesController;
 use App\Http\Controllers\DespachosController;
 
@@ -138,7 +139,7 @@ Route::middleware(['auth:api', 'cors'])->group(function()
 
     // Despachos
     Route::get('/compradores/{id}/despachos', [DespachosController::class, 'index_comprador']);
-    Route::get('/compradores/{comprador_id}/queuepartes', [DespachosController::class, 'queuePartes_comprador']);
+    Route::get('/compradores/{comprador_id}/despachos/prepare', [DespachosController::class, 'store_prepare_comprador']);
     Route::post('/compradores/{id}/despachos', [DespachosController::class, 'store_comprador']);
     Route::get('/compradores/{comprador_id}/despachos/{id}', [DespachosController::class, 'show_comprador']);
 });

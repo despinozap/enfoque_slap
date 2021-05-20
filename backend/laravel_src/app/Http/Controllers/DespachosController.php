@@ -140,70 +140,99 @@ class DespachosController extends Controller
     }
 
 
-    public function queuePartes_comprador($id)
+    public function store_prepare_comprador($comprador_id)
     {
         try
         {
             $user = Auth::user();
             if($user->role->hasRoutepermission('compradores despachos_store'))
             {
-                if($comprador = Comprador::find($id))
+                if($comprador = Comprador::find($comprador_id))
                 {
-                        
-                    $ocParteList = OcParte::select('oc_parte.*')
-                                ->join('ocparte_recepcion', 'ocparte_recepcion.ocparte_id', '=', 'oc_parte.id')
-                                ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
-                                ->join('recepciones', 'recepciones.id', '=', 'ocparte_recepcion.recepcion_id')
-                                ->where('oc_parte.estadoocparte_id', '<>', 3) // Estadoocparte != 'Entregado'
-                                ->where('recepciones.recepcionable_type', '=', get_class($comprador)) // Are in recepciones belonging to Comprador
-                                ->where('recepciones.recepcionable_id', '=', $comprador->id) // Belong to the specified Comprador
-                                ->where('ocs.estadooc_id', '=', 2) // Estadooc = 'En proceso'
-                                ->orderBy('ocs.created_at', 'ASC')
-                                ->get();
-
-                    // Retrieves the partes list with cantidad_stock for dispatching
-                    $queuePartesData = $ocParteList->reduce(function($carry, $ocParte) use ($comprador)
-                        {
-                            // Get how many partes have been received but not dispatched yet in Comprador
-                            $cantidadStock = $ocParte->getCantidadRecepcionado($comprador) - $ocParte->getCantidadDespachado($comprador);
-                            if($cantidadStock > 0)
-                            {
-                                if(isset($carry[$ocParte->parte->id]))
-                                {
-                                    // If parte is already in the list, adds the cantidad_pendiente to the total
-                                    $carry[$ocParte->parte->id]['cantidad_stock'] += $cantidadStock;
-                                }
-                                else
-                                {
-                                    // If parte is not in the list, inserts the parte to the list
-                                    $parte = [
-                                        "id" => $ocParte->parte->id,
-                                        "nparte" => $ocParte->parte->nparte,
-                                        "marca" => $ocParte->parte->marca->makeHidden(['created_at', 'updated_at']),
-                                        "cantidad_stock" => $cantidadStock,
-                                    ];
-
-                                    $carry[$parte['id']] = $parte;
-                                }
-                                
-                            }
-
-                            return $carry;
-                        },
-                        array()
-                    );
-
-                    // Transform the queuePartesData key-value array into a list
-                    $queuePartes = array();
-                    foreach(array_keys($queuePartesData) as $key)
+                    // Centrosditribucion
                     {
-                        array_push($queuePartes, $queuePartesData[$key]);
+                        $centrosdistribucion = Centrodistribucion::select('centrosdistribucion.*')
+                                            ->join('sucursales', 'sucursales.centrodistribucion_id', '=', 'centrosdistribucion.id')
+                                            ->join('clientes', 'clientes.sucursal_id', '=', 'sucursales.id')
+                                            ->join('faenas', 'faenas.cliente_id', '=', 'clientes.id')
+                                            ->join('solicitudes', 'solicitudes.faena_id', '=', 'faenas.id')
+                                            ->where('solicitudes.comprador_id', '=', $comprador->id)
+                                            ->groupBy('centrosdistribucion.id')
+                                            ->get();
+    
+                        $centrosdistribucion = $centrosdistribucion->filter(function($centrodistribucion)
+                        {
+                            $centrodistribucion->makeHidden([
+                                'created_at',
+                                'updated_at'
+                            ]);
+    
+                            return $centrodistribucion;
+                        });
                     }
+
+                    // QueuePartes
+                    {
+                        $ocParteList = OcParte::select('oc_parte.*')
+                                    ->join('ocparte_recepcion', 'ocparte_recepcion.ocparte_id', '=', 'oc_parte.id')
+                                    ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                    ->join('recepciones', 'recepciones.id', '=', 'ocparte_recepcion.recepcion_id')
+                                    ->where('oc_parte.estadoocparte_id', '<>', 3) // Estadoocparte != 'Entregado'
+                                    ->where('recepciones.recepcionable_type', '=', get_class($comprador)) // Are in recepciones belonging to Comprador
+                                    ->where('recepciones.recepcionable_id', '=', $comprador->id) // Belong to the specified Comprador
+                                    ->where('ocs.estadooc_id', '=', 2) // Estadooc = 'En proceso'
+                                    ->orderBy('ocs.created_at', 'ASC')
+                                    ->get();
+    
+                        // Retrieves the partes list with cantidad_stock for dispatching
+                        $queuePartesData = $ocParteList->reduce(function($carry, $ocParte) use ($comprador)
+                            {
+                                // Get how many partes have been received but not dispatched yet in Comprador
+                                $cantidadStock = $ocParte->getCantidadRecepcionado($comprador) - $ocParte->getCantidadDespachado($comprador);
+                                if($cantidadStock > 0)
+                                {
+                                    if(isset($carry[$ocParte->parte->id]))
+                                    {
+                                        // If parte is already in the list, adds the cantidad_pendiente to the total
+                                        $carry[$ocParte->parte->id]['cantidad_stock'] += $cantidadStock;
+                                    }
+                                    else
+                                    {
+                                        // If parte is not in the list, inserts the parte to the list
+                                        $parte = [
+                                            "id" => $ocParte->parte->id,
+                                            "nparte" => $ocParte->parte->nparte,
+                                            "marca" => $ocParte->parte->marca->makeHidden(['created_at', 'updated_at']),
+                                            "cantidad_stock" => $cantidadStock,
+                                        ];
+    
+                                        $carry[$parte['id']] = $parte;
+                                    }
+                                    
+                                }
+    
+                                return $carry;
+                            },
+                            array()
+                        );
+    
+                        // Transform the queuePartesData key-value array into a list
+                        $queuePartes = array();
+                        foreach(array_keys($queuePartesData) as $key)
+                        {
+                            array_push($queuePartes, $queuePartesData[$key]);
+                        }
+                    }
+
+                    $data = [
+                        'centrosdistribucion' => $centrosdistribucion,
+                        'queue_partes' => $queuePartes
+                    ];
 
                     $response = HelpController::buildResponse(
                         200,
                         null,
-                        $queuePartes
+                        $data
                     );
                 }   
                 else     
@@ -236,7 +265,7 @@ class DespachosController extends Controller
         return $response;
     }
 
-
+    
     public function store_comprador(Request $request, $comprador_id)
     {
         try
