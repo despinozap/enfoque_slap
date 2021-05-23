@@ -281,8 +281,8 @@ class CotizacionesController extends Controller
                             $cotizacion->solicitud->faena->cliente;
                             $cotizacion->solicitud->faena->cliente->makeHidden(['sucursal_id', 'created_at', 'updated_at']);
 
-                            $cotizacion->solicitud->faena->cliente->sucursal;
-                            $cotizacion->solicitud->faena->cliente->sucursal->makeHidden([
+                            $cotizacion->solicitud->sucursal;
+                            $cotizacion->solicitud->sucursal->makeHidden([
                                 'created_at',
                                 'updated_at'
                             ]);

@@ -125,7 +125,7 @@ class ProveedoresController extends Controller
                 $validatorInput = $request->only('rut', 'name', 'address', 'city', 'contact', 'phone');
             
                 $validatorRules = [
-                    'rut' => 'required|unique:proveedores,rut|min:1',
+                    'rut' => 'required|min:1',
                     'name' => 'required|min:4',
                     'address' => 'required|min:1',
                     'city' => 'required|min:1',
@@ -136,7 +136,6 @@ class ProveedoresController extends Controller
                 $validatorMessages = [
                     'rut.required' => 'Debes ingresar el RUT',
                     'rut.min' => 'El RUT debe tener al menos 1 caracter',
-                    'rut.unique' => 'Otra faena ya tiene asociado el RUT ingresado',
                     'name.required' => 'Debes ingresar el nombre',
                     'name.min' => 'El nombre debe tener al menos 4 caracteres',
                     'address.required' => 'Debes ingresar la direccion',
@@ -175,7 +174,23 @@ class ProveedoresController extends Controller
                 {
                     $response = HelpController::buildResponse(
                         409,
-                        'Ya existe un proveedor con el nombre ingresado para el comprador seleccionado',
+                        [
+                            'name' => [
+                                'Ya existe un proveedor con el nombre ingresado para el comprador seleccionado'
+                            ]
+                        ],
+                        null
+                    );
+                }
+                else if(Comprador::find($comprador_id)->proveedores->where('rut', $request->rut)->first())
+                {
+                    $response = HelpController::buildResponse(
+                        409,
+                        [
+                            'rut' => [
+                                'Ya existe un proveedor con el RUT ingresado para el comprador seleccionado'
+                            ]
+                        ],
                         null
                     );
                 }
@@ -249,6 +264,7 @@ class ProveedoresController extends Controller
 
                         $proveedor->comprador;
                         $proveedor->comprador->makeHidden([
+                            'country_id',
                             'created_at', 
                             'updated_at'
                         ]);
@@ -384,19 +400,19 @@ class ProveedoresController extends Controller
                         null
                     );
                 }  
-                else if(Proveedor::where('rut', $request->rut)->where('id', '<>', $id)->first())
+                else if($comprador->proveedores->where('rut', $request->rut)->where('id', '<>', $id)->first())
                 {
                     
                     $response = HelpController::buildResponse(
                         409,
                         [
                             'rut' => [
-                                'Ya existe otro proveedor con el con el RUT ingresado'
+                                'Ya existe un proveedor con el RUT ingresado para el comprador seleccionado'
                             ]
                         ],
                         null
                     );
-                }   
+                }    
                 else     
                 {
                     if($proveedor = Proveedor::find($id))
@@ -467,14 +483,7 @@ class ProveedoresController extends Controller
             {
                 if($proveedor = Proveedor::find($id))
                 {
-                    if(
-                        Recepcion::select('recepciones.*')
-                        ->join('proveedor_recepcion', 'proveedor_recepcion.recepcion_id', '=', 'recepciones.id')
-                        ->where('recepcionable_type', '=', get_class(new Comprador()))
-                        ->where('proveedor_recepcion.proveedor_id', '=', $id)
-                        ->get()
-                        ->count() > 0
-                    )
+                    if($proveedor->recepciones->count() > 0)
                     {
                         $response = HelpController::buildResponse(
                             409,

@@ -26,15 +26,22 @@ class ClientesController extends Controller
                     $clientes = $clientes->filter(function($cliente)
                     {
                         $cliente->makeHidden([
+                            'country_id',
+                            'created_at', 
+                            'updated_at'
+                        ]);
+
+                        $cliente->country;
+                        $cliente->country->makeHidden([
                             'created_at', 
                             'updated_at'
                         ]);
 
                         $cliente->faenas;
-                        $cliente->faenas->makeHidden([
-                            'created_at', 
-                            'updated_at'
-                        ]);
+                        $cliente->faenas = $cliente->faenas->filter(function($faena)
+                        {
+                            return $faena->makeHidden(['cliente_id', 'created_at', 'updated_at']);
+                        });
 
                         return $cliente;
                     });
@@ -98,16 +105,19 @@ class ClientesController extends Controller
             $user = Auth::user();
             if($user->role->hasRoutepermission('clientes store'))
             {
-                $validatorInput = $request->only('name');
+                $validatorInput = $request->only('name', 'country_id');
             
                 $validatorRules = [
-                    'name' => 'required|min:2|unique:clientes,name'
+                    'name' => 'required|min:2|unique:clientes,name',
+                    'country_id' => 'required|exists:countries,id'
                 ];
 
                 $validatorMessages = [
                     'name.required' => 'Debes ingresar el nombre',
                     'name.min' => 'El nombre debe tener al menos 2 caracteres',
                     'name.unique' => 'Ya existe un cliente con el nombre ingresado',
+                    'country_id.required' => 'Debes ingresar el pais',
+                    'country_id.exists' => 'El pais no existe',
                 ];
 
                 $validator = Validator::make(
@@ -128,7 +138,6 @@ class ClientesController extends Controller
                 {
                     $cliente = new Cliente();
                     $cliente->fill($request->all());
-                    $cliente->sucursal_id = 1; // Sucursal Chile by default
                     
                     if($cliente->save())
                     {
@@ -185,10 +194,14 @@ class ClientesController extends Controller
                 if($cliente = Cliente::find($id))
                 {
                     $cliente->makeHidden([
+                        'country_id',
                         'created_at', 
                         'updated_at'
                     ]);
 
+                    $cliente->country;
+                    $cliente->country->makeHidden(['created_at', 'updated_at']);
+                    
                     $cliente->faenas;
                     $cliente->faenas = $cliente->faenas->filter(function($faena)
                     {

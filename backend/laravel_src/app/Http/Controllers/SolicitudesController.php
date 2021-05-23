@@ -37,7 +37,14 @@ class SolicitudesController extends Controller
                             {
                                 foreach($solicitudes as $solicitud)
                                 {
-                                    $solicitud->makeHidden(['cliente_id', 'marca_id', 'user_id', 'estadosolicitud_id']);
+                                    $solicitud->makeHidden([
+                                        'sucursal_id',
+                                        'faena_id',
+                                        'marca_id',
+                                        'comprador_id',
+                                        'user_id', 
+                                        'estadosolicitud_id'
+                                    ]);
 
                                     foreach($solicitud->partes as $parte)
                                     {   
@@ -52,15 +59,15 @@ class SolicitudesController extends Controller
 
                                     $solicitud->partes_total;
                                     $solicitud->faena;
-                                    $solicitud->faena->makeHidden(['created_at', 'updated_at']);
+                                    $solicitud->faena->makeHidden(['cliente_id', 'created_at', 'updated_at']);
                                     $solicitud->faena->cliente;
-                                    $solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
+                                    $solicitud->faena->cliente->makeHidden(['country_id', 'created_at', 'updated_at']);
                                     $solicitud->marca;
                                     $solicitud->marca->makeHidden(['created_at', 'updated_at']);
                                     $solicitud->comprador;
-                                    $solicitud->comprador->makeHidden(['created_at', 'updated_at']);
+                                    $solicitud->comprador->makeHidden(['country_id', 'created_at', 'updated_at']);
                                     $solicitud->user;
-                                    $solicitud->user->makeHidden(['email', 'phone', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
+                                    $solicitud->user->makeHidden(['email', 'phone', 'country_id', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
                                     $solicitud->estadosolicitud;
                                     $solicitud->estadosolicitud->makeHidden(['created_at', 'updated_at']);
                                 }
@@ -89,7 +96,14 @@ class SolicitudesController extends Controller
                         {
                             foreach($solicitudes as $solicitud)
                             {
-                                $solicitud->makeHidden(['cliente_id', 'marca_id', 'user_id', 'estadosolicitud_id']);
+                                $solicitud->makeHidden([
+                                    'sucursal_id',
+                                    'faena_id',
+                                    'marca_id',
+                                    'comprador_id',
+                                    'user_id', 
+                                    'estadosolicitud_id'
+                                ]);
 
                                 foreach($solicitud->partes as $parte)
                                 {   
@@ -104,15 +118,15 @@ class SolicitudesController extends Controller
 
                                 $solicitud->partes_total;
                                 $solicitud->faena;
-                                $solicitud->faena->makeHidden(['created_at', 'updated_at']);
+                                $solicitud->faena->makeHidden(['cliente_id', 'created_at', 'updated_at']);
                                 $solicitud->faena->cliente;
-                                $solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
+                                $solicitud->faena->cliente->makeHidden(['country_id', 'created_at', 'updated_at']);
                                 $solicitud->marca;
                                 $solicitud->marca->makeHidden(['created_at', 'updated_at']);
                                 $solicitud->comprador;
-                                $solicitud->comprador->makeHidden(['created_at', 'updated_at']);
+                                $solicitud->comprador->makeHidden(['country_id', 'created_at', 'updated_at']);
                                 $solicitud->user;
-                                $solicitud->user->makeHidden(['email', 'phone', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
+                                $solicitud->user->makeHidden(['email', 'phone', 'country_id', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
                                 $solicitud->estadosolicitud;
                                 $solicitud->estadosolicitud->makeHidden(['created_at', 'updated_at']);
                             }
@@ -217,6 +231,7 @@ class SolicitudesController extends Controller
 
                         $faena->cliente;
                         $faena->cliente->makeHidden([
+                            'country_id',
                             'created_at',
                             'updated_at'
                         ]);
@@ -237,13 +252,7 @@ class SolicitudesController extends Controller
                     $compradores = $compradores->filter(function($comprador)
                     {
                         $comprador->makeHidden([
-                            'created_at', 
-                            'updated_at'
-                        ]);
-
-                        $comprador->proveedores;
-                        $comprador->proveedores->makeHidden([
-                            'comprador_id',
+                            'country_id',
                             'created_at', 
                             'updated_at'
                         ]);
@@ -301,6 +310,7 @@ class SolicitudesController extends Controller
             if($user->role->hasRoutepermission('solicitudes store'))
             {
                 $validatorInput = $request->only(
+                    'sucursal_id',
                     'faena_id',
                     'marca_id',
                     'comprador_id',
@@ -309,6 +319,7 @@ class SolicitudesController extends Controller
                 );
                 
                 $validatorRules = [
+                    'sucursal_id' => 'required|exists:sucursales,id',
                     'faena_id' => 'required|exists:faenas,id',
                     'marca_id' => 'required|exists:marcas,id',
                     'comprador_id' => 'required|exists:compradores,id',
@@ -318,6 +329,8 @@ class SolicitudesController extends Controller
                 ];
         
                 $validatorMessages = [
+                    'sucursal_id.required' => 'Debes seleccionar una sucursal',
+                    'sucursal_id.exists' => 'La sucursal no existe',
                     'faena_id.required' => 'Debes seleccionar una faena',
                     'faena_id.exists' => 'La faena no existe',
                     'marca_id.required' => 'Debes seleccionar una marca',
@@ -478,6 +491,9 @@ class SolicitudesController extends Controller
                         if($usdToClp = Parameter::all()->where('name', 'usd_to_clp')->first())
                         {
                             $solicitud->makeHidden([
+                                'sucursal_id',
+                                'comprador_id',
+                                'user_id',
                                 'faena_id',
                                 'marca_id',
                                 'estadosolicitud_id',
@@ -486,16 +502,16 @@ class SolicitudesController extends Controller
                             ]);
         
                             $solicitud->faena;
-                            $solicitud->faena->makeHidden(['created_at', 'updated_at']);
+                            $solicitud->faena->makeHidden(['cliente_id', 'created_at', 'updated_at']);
         
                             $solicitud->faena->cliente;
-                            $solicitud->faena->cliente->makeHidden(['cliente_id', 'created_at', 'updated_at']);
+                            $solicitud->faena->cliente->makeHidden(['country_id', 'created_at', 'updated_at']);
                             
                             $solicitud->marca;
                             $solicitud->marca->makeHidden(['created_at', 'updated_at']);
 
                             $solicitud->comprador;
-                            $solicitud->comprador->makeHidden(['created_at', 'updated_at']);
+                            $solicitud->comprador->makeHidden(['country_id', 'created_at', 'updated_at']);
         
                             $solicitud->estadosolicitud;
                             $solicitud->estadosolicitud->makeHidden(['created_at', 'updated_at']);
@@ -687,6 +703,15 @@ class SolicitudesController extends Controller
                                 null
                             );
                         }
+                        else if($solicitud->estadosolicitud_id === 3)
+                        {
+                            // If solicitud is already 'Cerrada'
+                            $response = HelpController::buildResponse(
+                                405,
+                                'No puedes editar una solicitud cerrada',
+                                null
+                            );
+                        }
                         else
                         {
                             $solicitud->fill($request->all());
@@ -806,7 +831,7 @@ class SolicitudesController extends Controller
                 $validatorRules = [
                     'partes' => 'required|array|min:1',
                     'partes.*.nparte'  => 'required',
-                    'partes.*.description'  => 'nullable',
+                    'partes.*.descripcion'  => 'nullable',
                     'partes.*.cantidad'  => 'required|numeric|min:1',
                     'partes.*.costo'  => 'nullable|numeric|min:0',
                     'partes.*.margen'  => 'nullable|numeric|min:0',
@@ -869,14 +894,14 @@ class SolicitudesController extends Controller
                             if($p = $solicitud->partes->where('nparte', $parte['nparte'])->first())
                             {
                                 $syncData[$p->id] =  array(
-                                    'descripcion' => $parte['descripcion'],
+                                    'descripcion' => isset($parte['descripcion']) ? $parte['descripcion'] : null,
                                     'cantidad' => $parte['cantidad'],
-                                    'costo' => $parte['costo'],
-                                    'margen' => $parte['margen'],
-                                    'tiempoentrega' => $parte['tiempoentrega'],
-                                    'peso' => $parte['peso'],
-                                    'flete' => $parte['flete'],
-                                    'monto' => $parte['monto'],
+                                    'costo' => isset($parte['costo']) ? $parte['costo'] : null,
+                                    'margen' => isset($parte['margen']) ? $parte['margen'] : null,
+                                    'tiempoentrega' => isset($parte['tiempoentrega']) ? $parte['tiempoentrega'] : null,
+                                    'peso' => isset($parte['peso']) ? $parte['peso'] : null,
+                                    'flete' => isset($parte['flete']) ? $parte['flete'] : null,
+                                    'monto' => isset($parte['monto']) ? $parte['monto'] : null,
                                     'backorder' => $parte['backorder'],
                                 );
                             }
@@ -991,7 +1016,7 @@ class SolicitudesController extends Controller
 
             $response = HelpController::buildResponse(
                 500,
-                'Error al completar la solicitud [!]',
+                'Error al completar la solicitud [!]' . $e,
                 null
             );
         }

@@ -15,6 +15,7 @@ class CreateSolicitudesTable extends Migration
     {
         Schema::create('solicitudes', function (Blueprint $table) {
             $table->id();
+            $table->bigInteger('sucursal_id')->unsigned();
             $table->bigInteger('faena_id')->unsigned();
             $table->bigInteger('marca_id')->unsigned();
             $table->bigInteger('comprador_id')->unsigned();
@@ -23,6 +24,7 @@ class CreateSolicitudesTable extends Migration
             $table->longText('comentario')->nullable();
             $table->timestamps();
 
+            $table->foreign('sucursal_id')->references('id')->on('sucursales')->onDelete('cascade');
             $table->foreign('faena_id')->references('id')->on('faenas')->onDelete('cascade');
             $table->foreign('marca_id')->references('id')->on('marcas')->onDelete('cascade');
             $table->foreign('comprador_id')->references('id')->on('compradores')->onDelete('cascade');

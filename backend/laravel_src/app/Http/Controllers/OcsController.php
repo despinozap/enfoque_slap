@@ -27,8 +27,7 @@ class OcsController extends Controller
                 
                 if($ocs = ($user->role->id === 2) ? // By role
                     // If Vendedor filters only the belonging data
-                    //Oc::select('cotizaciones.*')->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')->where('solicitudes.user_id', '=', $user->id)->get() :
-                    Oc::all() :
+                    Oc::select('cotizaciones.*')->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')->where('solicitudes.user_id', '=', $user->id)->get() :
                     // For any other role
                     Oc::all()
                 )
@@ -49,9 +48,11 @@ class OcsController extends Controller
                             $oc->monto = $oc->usd_monto;
                         }
                         
-
                         $oc->makeHidden([
-                            'cotizacion_id', 
+                            'cotizacion_id',
+                            'proveedor_id',
+                            'filedata_id',
+                            'motivobaja_id',
                             'estadooc_id', 
                             'created_at', 
                             //'updated_at'
@@ -72,15 +73,15 @@ class OcsController extends Controller
                         $oc->cotizacion;
                         $oc->cotizacion->makeHidden(['partes', 'estadocotizacion_id', 'created_at', 'updated_at']);
                         $oc->cotizacion->solicitud;
-                        $oc->cotizacion->solicitud->makeHidden(['partes', 'faena_id', 'marca_id', 'user_id', 'estadosolicitud_id', 'marca_id', 'created_at', 'updated_at']);
+                        $oc->cotizacion->solicitud->makeHidden(['partes', 'sucursal_id', 'faena_id', 'comprador_id', 'marca_id', 'user_id', 'estadosolicitud_id', 'marca_id', 'created_at', 'updated_at']);
                         $oc->cotizacion->solicitud->faena;
                         $oc->cotizacion->solicitud->faena->makeHidden(['cliente_id', 'created_at', 'updated_at']);
                         $oc->cotizacion->solicitud->faena->cliente;
-                        $oc->cotizacion->solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
+                        $oc->cotizacion->solicitud->faena->cliente->makeHidden(['country_id', 'created_at', 'updated_at']);
                         $oc->cotizacion->solicitud->marca;
                         $oc->cotizacion->solicitud->marca->makeHidden(['created_at', 'updated_at']);
                         $oc->cotizacion->solicitud->user;
-                        $oc->cotizacion->solicitud->user->makeHidden(['email', 'phone', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
+                        $oc->cotizacion->solicitud->user->makeHidden(['email', 'phone', 'role_id', 'email_verified_at', 'country_id', 'created_at', 'updated_at']);
 
                         $oc->estadooc;
                         $oc->estadooc->makeHidden(['created_at', 'updated_at']);
@@ -228,6 +229,7 @@ class OcsController extends Controller
                             'cotizacion_id',
                             'filedata_id',
                             'proveedor_id',
+                            'motivobaja_id',
                             'estadooc_id',
                             'partes_total',
                             'updated_at'
@@ -273,6 +275,7 @@ class OcsController extends Controller
 
                         $oc->cotizacion->solicitud;
                         $oc->cotizacion->solicitud->makeHidden([
+                            'sucursal_id',
                             'faena_id',
                             'marca_id',
                             'comprador_id',
@@ -298,7 +301,7 @@ class OcsController extends Controller
     
                         $oc->cotizacion->solicitud->faena->cliente;
                         $oc->cotizacion->solicitud->faena->cliente->makeHidden([
-                            'sucursal_id', 
+                            'country_id', 
                             'created_at', 
                             'updated_at'
                         ]);
@@ -313,6 +316,7 @@ class OcsController extends Controller
                             'city',
                             'contact',
                             'phone',
+                            'country_id',
                             'created_at', 
                             'updated_at'
                         ]);
@@ -328,17 +332,6 @@ class OcsController extends Controller
                                 'created_at', 
                                 'updated_at'
                             ]);
-                            
-                            // Get counters
-                            $parte->counters = [
-                                'cantidad_pendiente' => $parte->pivot->getCantidadPendiente(),
-                                'cantidad_compradorrecepcionado' => $parte->pivot->getCantidadRecepcionado($oc->cotizacion->solicitud->comprador),
-                                'cantidad_compradordespachado' => $parte->pivot->getCantidadDespachado($oc->cotizacion->solicitud->comprador),
-                                'cantidad_centrodistribucionrecepcionado' => $parte->pivot->getCantidadRecepcionado($oc->cotizacion->solicitud->faena->cliente->sucursal->centrodistribucion),
-                                'cantidad_centrodistribuciondespachado' => $parte->pivot->getCantidadDespachado($oc->cotizacion->solicitud->faena->cliente->sucursal->centrodistribucion),
-                                'cantidad_sucursalrecepcionado' => $parte->pivot->getCantidadRecepcionado($oc->cotizacion->solicitud->faena->cliente->sucursal),
-                                'cantidad_sucursaldespachado' => $parte->pivot->getCantidadDespachado($oc->cotizacion->solicitud->faena->cliente->sucursal),
-                            ];
 
                             $parte->pivot->makeHidden(['oc']);
     
@@ -511,44 +504,29 @@ class OcsController extends Controller
                 {
                     if($parte = $oc->partes->where('nparte', $request->nparte)->first())
                     {
-                        if($request->cantidad >= $parte->pivot->cantidad_recepcionadocomprador)
-                        {
-                            $parte->pivot->cantidad = $request->cantidad;
-                            $parte->pivot->tiempoentrega = $request->tiempoentrega;
-                            $parte->pivot->backorder = $request->backorder;
+                        $parte->pivot->cantidad = $request->cantidad;
+                        $parte->pivot->tiempoentrega = $request->tiempoentrega;
+                        $parte->pivot->backorder = $request->backorder;
 
-                            //If all of them (cantidad) were delivered
-                            if($parte->pivot->cantidad_sucursaldespachado === $request->cantidad)
-                            {
-                                $parte->pivot->estadoocparte_id = 3; //Entregado
-                            }
-                        
-                            if($parte->pivot->save())
-                            {
-                                $response = HelpController::buildResponse(
-                                    200,
-                                    'Parte actualizada',
-                                    null
-                                );
-                            }
-                            else
-                            {
-                                $response = HelpController::buildResponse(
-                                    500,
-                                    'Error al actualizar la parte en la OC',
-                                    null
-                                );
-                            }
+                        //If all of them (cantidad) were delivered
+                        // if(false)
+                        // {
+                        //     $parte->pivot->estadoocparte_id = 3; //Entregado
+                        // }
+                    
+                        if($parte->pivot->save())
+                        {
+                            $response = HelpController::buildResponse(
+                                200,
+                                'Parte actualizada',
+                                null
+                            );
                         }
                         else
                         {
                             $response = HelpController::buildResponse(
-                                409,
-                                [
-                                    'cantidad' => [
-                                        'La cantidad debe ser mayor o igual a la de partes ya asignadas'
-                                    ]
-                                ],
+                                500,
+                                'Error al actualizar la parte en la OC',
                                 null
                             );
                         }

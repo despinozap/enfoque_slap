@@ -18,7 +18,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'phone', 'password', 'role_id',
+        'name', 'email', 'phone', 'password', 'role_id', 'country_id',
     ];
 
     /**
@@ -39,8 +39,13 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
+    public function country()
+    {
+        return $this->belongsTo(Country::class)->withDefault();
+    }
+
     public function role()
     {
-        return $this->belongsTo('App\Models\Role')->withDefault();
+        return $this->belongsTo(Role::class)->withDefault();
     }
 }

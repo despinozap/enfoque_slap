@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Support\Facades\DB;
 
 use Illuminate\Database\Seeder;
-use App\Models\Centrodistribucion;
+use App\Models\Country;
 use App\Models\Sucursal;
 use App\Models\Role;
 use App\Models\Routepermission;
@@ -265,28 +265,15 @@ class DatabaseSeeder extends Seeder
 
 
         /*
-        *   CentrosDistribucion
+        *   Countries
         */
-        $centrodistribucion = new Centrodistribucion();
-        $centrodistribucion->rut = '76.790.684-6';
-        $centrodistribucion->name = 'American Parts SPA (Central)';
-        $centrodistribucion->address = 'Av. La Dehesa 181 Of. 1313';
-        $centrodistribucion->city = 'Santiago';
-        $centrodistribucion->country = 'Chile';
-        $centrodistribucion->save();
-
-
-        /*
-        *   Sucursales
-        */
-        $sucursal = new Sucursal();
-        $sucursal->rut = '76.790.684-6';
-        $sucursal->name = 'American Parts SPA (Antofagasta)';
-        $sucursal->address = 'Coquimbo 712 Of. 401';
-        $sucursal->city = 'Antofagasta';
-        $sucursal->centrodistribucion_id = $centrodistribucion->id;
-        $sucursal->save();
-
+        $country = new Country();
+        $country->name = 'Chile';
+        $country->save();
+        $country = new Country();
+        $country->name = 'USA';
+        $country->save();
+        
 
         /*
         *   Users
@@ -297,6 +284,7 @@ class DatabaseSeeder extends Seeder
         $user->phone = '9012345678';
         $user->password = bcrypt('admin');
         $user->role_id = 1; // Administrador
+        $user->country_id = 1; // Chile
         $user->save();
 
         $user = new User();
@@ -305,6 +293,7 @@ class DatabaseSeeder extends Seeder
         $user->phone = '9012345678';
         $user->password = bcrypt('seller');
         $user->role_id = 2; // Vendedor
+        $user->country_id = 1; // Chile
         $user->save();
 
 
@@ -319,15 +308,37 @@ class DatabaseSeeder extends Seeder
 
         
         /*
+        *   Sucursales
+        */
+        $sucursal = new Sucursal();
+        $sucursal->type = 'centro';
+        $sucursal->rut = '76.790.684-6';
+        $sucursal->name = 'American Parts SPA (Central)';
+        $sucursal->address = 'Av. La Dehesa 181 Of. 1313';
+        $sucursal->city = 'Santiago';
+        $sucursal->country_id = 1; // Chile
+        $sucursal->save();
+
+        $sucursal = new Sucursal();
+        $sucursal->type = 'sucursal';
+        $sucursal->rut = '76.790.684-6';
+        $sucursal->name = 'American Parts SPA (Antofagasta)';
+        $sucursal->address = 'Coquimbo 712 Of. 401';
+        $sucursal->city = 'Antofagasta';
+        $sucursal->country_id = 1; // Chile
+        $sucursal->save();
+
+
+        /*
         *   Clientes
         */
         $cliente = new Cliente();
         $cliente->name = 'ClienteTest01';
-        $cliente->sucursal_id = 1;
+        $cliente->country_id = 1; // Chile
         $cliente->save();
         $cliente = new Cliente();
         $cliente->name = 'Codelco';
-        $cliente->sucursal_id = 1;
+        $cliente->country_id = 1; // Chile
         $cliente->save();
 
 
@@ -386,6 +397,7 @@ class DatabaseSeeder extends Seeder
         $comprador->name = 'American Parts Miami';
         $comprador->address = 'CompradorDireccionTest01';
         $comprador->city = 'Miami';
+        $comprador->country_id = 2; // Chile
         $comprador->contact = 'John Doe';
         $comprador->phone = '+12345678901';
         $comprador->save();
@@ -412,6 +424,7 @@ class DatabaseSeeder extends Seeder
             for($i = 0; $i <= 10; $i++)
             {
                 $solicitud = new Solicitud();
+                $solicitud->sucursal_id = $sucursal->id;
                 $solicitud->faena_id = 1;
                 $solicitud->marca_id = 1;
                 $solicitud->comprador_id = 1;
@@ -685,84 +698,84 @@ class DatabaseSeeder extends Seeder
         /*
          *  Solicitud American Parts, OC Interna: 228.SG
          */
-        {
-            // Partes
-            $partes = array();
-            $parte = new Parte();
-            $parte->marca_id = 2;
-            $parte->nparte = '1987251121';
-            $item = [
-                'parte' => $parte,
-                'cantidad' => 2,
-                'descripcion' => 'BRACKET'
-            ];
-            array_push($partes, $item);
-            $parte = new Parte();
-            $parte->marca_id = 2;
-            $parte->nparte = '1986111250';
-            $item = [
-                'parte' => $parte,
-                'cantidad' => 2,
-                'descripcion' => 'BOLT'
-            ];
-            array_push($partes, $item);
-            $parte = new Parte();
-            $parte->marca_id = 2;
-            $parte->nparte = '5610782712';
-            $item = [
-                'parte' => $parte,
-                'cantidad' => 2,
-                'descripcion' => 'COVER'
-            ];
-            array_push($partes, $item);
-            $parte = new Parte();
-            $parte->marca_id = 2;
-            $parte->nparte = '5610782790';
-            $item = [
-                'parte' => $parte,
-                'cantidad' => 2,
-                'descripcion' => 'SCREW'
-            ];
-            array_push($partes, $item);
-            $parte = new Parte();
-            $parte->marca_id = 2;
-            $parte->nparte = '5615485771';
-            $item = [
-                'parte' => $parte,
-                'cantidad' => 1,
-                'descripcion' => 'MAT'
-            ];
-            array_push($partes, $item);
-            $parte = new Parte();
-            $parte->marca_id = 2;
-            $parte->nparte = '5615485780';
-            $item = [
-                'parte' => $parte,
-                'cantidad' => 1,
-                'descripcion' => 'MAT'
-            ];
-            array_push($partes, $item);
+        // {
+        //     // Partes
+        //     $partes = array();
+        //     $parte = new Parte();
+        //     $parte->marca_id = 2;
+        //     $parte->nparte = '1987251121';
+        //     $item = [
+        //         'parte' => $parte,
+        //         'cantidad' => 2,
+        //         'descripcion' => 'BRACKET'
+        //     ];
+        //     array_push($partes, $item);
+        //     $parte = new Parte();
+        //     $parte->marca_id = 2;
+        //     $parte->nparte = '1986111250';
+        //     $item = [
+        //         'parte' => $parte,
+        //         'cantidad' => 2,
+        //         'descripcion' => 'BOLT'
+        //     ];
+        //     array_push($partes, $item);
+        //     $parte = new Parte();
+        //     $parte->marca_id = 2;
+        //     $parte->nparte = '5610782712';
+        //     $item = [
+        //         'parte' => $parte,
+        //         'cantidad' => 2,
+        //         'descripcion' => 'COVER'
+        //     ];
+        //     array_push($partes, $item);
+        //     $parte = new Parte();
+        //     $parte->marca_id = 2;
+        //     $parte->nparte = '5610782790';
+        //     $item = [
+        //         'parte' => $parte,
+        //         'cantidad' => 2,
+        //         'descripcion' => 'SCREW'
+        //     ];
+        //     array_push($partes, $item);
+        //     $parte = new Parte();
+        //     $parte->marca_id = 2;
+        //     $parte->nparte = '5615485771';
+        //     $item = [
+        //         'parte' => $parte,
+        //         'cantidad' => 1,
+        //         'descripcion' => 'MAT'
+        //     ];
+        //     array_push($partes, $item);
+        //     $parte = new Parte();
+        //     $parte->marca_id = 2;
+        //     $parte->nparte = '5615485780';
+        //     $item = [
+        //         'parte' => $parte,
+        //         'cantidad' => 1,
+        //         'descripcion' => 'MAT'
+        //     ];
+        //     array_push($partes, $item);
 
-            $solicitud = new Solicitud();
-            $solicitud->faena_id = 2;
-            $solicitud->marca_id = 2;
-            $solicitud->comprador_id = 1;
-            $solicitud->user_id = 2;
-            $solicitud->estadosolicitud_id = 1;
-            $solicitud->comentario = 'Esta es una solicitud que se ha creado para pruebas, basado en el caso real OC Interna: 228.SG';
-            $solicitud->save();
+        //     $solicitud = new Solicitud();
+        //     $solicitud->faena_id = 2;
+        //     $solicitud->marca_id = 2;
+        //     $solicitud->comprador_id = 1;
+        //     $solicitud->user_id = 2;
+        //     $solicitud->estadosolicitud_id = 1;
+        //     $solicitud->comentario = 'Esta es una solicitud que se ha creado para pruebas, basado en el caso real OC Interna: 228.SG';
+        //     $solicitud->save();
 
-            foreach($partes as $item)
-            {
-                $item['parte']->save();
+        //     foreach($partes as $item)
+        //     {
+        //         $item['parte']->save();
 
-                $solicitud->partes()->attach([
-                    $item['parte']->id => [
-                        'cantidad' => $item['cantidad'],
-                        'descripcion' => $item['descripcion']
-                    ]
-                ]);
-            }
-        }
+        //         $solicitud->partes()->attach([
+        //             $item['parte']->id => [
+        //                 'cantidad' => $item['cantidad'],
+        //                 'descripcion' => $item['descripcion']
+        //             ]
+        //         ]);
+        //     }
+        // }
     }
 }

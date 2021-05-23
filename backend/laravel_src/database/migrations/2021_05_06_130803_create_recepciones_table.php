@@ -15,10 +15,10 @@ class CreateRecepcionesTable extends Migration
     {
         Schema::create('recepciones', function (Blueprint $table) {
             $table->id();
-            $table->integer('sourceable_id');
-            $table->string('sourceable_type');
             $table->integer('recepcionable_id');
             $table->string('recepcionable_type');
+            $table->integer('sourceable_id');
+            $table->string('sourceable_type');
             $table->timestamp('fecha');
             $table->string('ndocumento')->nullable();
             $table->string('responsable');

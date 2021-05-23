@@ -10,12 +10,12 @@ class Cliente extends Model
     use HasFactory;
 
     protected $fillable = [
-        'sucursal_id', 'name',
+        'country_id', 'name',
     ];
 
-    public function sucursal()
+    public function country()
     {
-        return $this->belongsTo(Sucursal::class);
+        return $this->belongsTo(Country::class);
     }
 
     public function faenas()

@@ -15,11 +15,11 @@ class CreateClientesTable extends Migration
     {
         Schema::create('clientes', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('sucursal_id')->unsigned();
             $table->string('name');
+            $table->bigInteger('country_id')->unsigned();
             $table->timestamps();
 
-            $table->foreign('sucursal_id')->references('id')->on('sucursales')->onDelete('cascade');
+            $table->foreign('country_id')->references('id')->on('countries')->onDelete('cascade');
         });
     }
 

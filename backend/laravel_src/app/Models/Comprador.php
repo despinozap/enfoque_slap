@@ -11,9 +11,14 @@ class Comprador extends Model
 
     protected $table = 'compradores';
     protected $fillable = [
-        'rut', 'name', 'address', 'city', 'contact', 'phone' 
+        'rut', 'name', 'address', 'city', 'contact', 'phone', 'country_id', 
     ];
 
+    public function country()
+    {
+        return $this->belongsTo(Country::class);
+    }
+    
     public function proveedores()
     {
         return $this->hasMany(Proveedor::class);

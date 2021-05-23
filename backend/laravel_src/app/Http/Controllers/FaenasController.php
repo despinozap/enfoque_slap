@@ -16,7 +16,7 @@ class FaenasController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request, $cliente_id)
+    public function index($cliente_id)
     {
         try
         {
@@ -98,68 +98,6 @@ class FaenasController extends Controller
         return $response;
     }
 
-    public function indexFull()
-    {
-        try
-        {
-            $user = Auth::user();
-            if($user->role->hasRoutepermission('faenas index_full'))
-            {
-                if($faenas = Faena::all())
-                {
-                    $faenas = $faenas->filter(function($faena)
-                    {
-                        $faena->makeHidden([
-                            'cliente_id',
-                            'created_at',
-                            'updated_at'
-                        ]);
-
-                        $faena->cliente;
-                        $faena->cliente->makeHidden([
-                            'created_at',
-                            'updated_at'
-                        ]);
-
-                        return $faena;
-                    });
-
-                    $response = HelpController::buildResponse(
-                        200,
-                        null,
-                        $faenas
-                    );
-                }
-                else
-                {
-                    $response = HelpController::buildResponse(
-                        500,
-                        'Error al obtener la lista de faenas',
-                        null
-                    );
-                }
-            }
-            else
-            {
-                $response = HelpController::buildResponse(
-                    405,
-                    'No tienes acceso a listar faenas',
-                    null
-                );
-            }
-        }
-        catch(\Exception $e)
-        {
-            $response = HelpController::buildResponse(
-                500,
-                'Error al obtener la lista de faenas [!]',
-                null
-            );
-        }
-        
-        return $response;
-    }
-
     /**
      * Show the form for creating a new resource.
      *
@@ -186,7 +124,7 @@ class FaenasController extends Controller
                 $validatorInput = $request->only('rut', 'name', 'address', 'city', 'contact', 'phone');
             
                 $validatorRules = [
-                    'rut' => 'required|unique:faenas,rut|min:1',
+                    'rut' => 'required|min:1',
                     'name' => 'required|min:4',
                     'address' => 'required|min:1',
                     'city' => 'required|min:1',
@@ -197,7 +135,6 @@ class FaenasController extends Controller
                 $validatorMessages = [
                     'rut.required' => 'Debes ingresar el RUT',
                     'rut.min' => 'El RUT debe tener al menos 1 caracter',
-                    'rut.unique' => 'Otra faena ya tiene asociado el RUT ingresado',
                     'name.required' => 'Debes ingresar el nombre',
                     'name.min' => 'El nombre debe tener al menos 4 caracteres',
                     'address.required' => 'Debes ingresar la direccion',
@@ -236,10 +173,26 @@ class FaenasController extends Controller
                 {
                     $response = HelpController::buildResponse(
                         409,
-                        'Ya existe una faena con el nombre ingresado para el cliente seleccionado',
+                        [
+                            'name' => [
+                                'Ya existe una faena con el nombre ingresado para el cliente seleccionado'
+                            ]
+                        ],
                         null
                     );
                 }
+                else if(Cliente::find($cliente_id)->faenas->where('rut', $request->rut)->first())
+                {
+                    $response = HelpController::buildResponse(
+                        409,
+                        [
+                            'rut' => [
+                                'Ya existe una faena con el RUT ingresado para el cliente seleccionado'
+                            ]
+                        ],
+                        null
+                    );
+                } 
                 else       
                 {
                     $faena = new Faena();
@@ -310,6 +263,7 @@ class FaenasController extends Controller
 
                         $faena->cliente;
                         $faena->cliente->makeHidden([
+                            'country_id',
                             'created_at', 
                             'updated_at'
                         ]);
@@ -436,7 +390,6 @@ class FaenasController extends Controller
                 }
                 else if($cliente->faenas->where('name', $request->name)->where('id', '<>', $id)->first())
                 {
-                    
                     $response = HelpController::buildResponse(
                         409,
                         [
@@ -447,14 +400,14 @@ class FaenasController extends Controller
                         null
                     );
                 }  
-                else if(Faena::where('rut', $request->rut)->where('id', '<>', $id)->first())
+                else if($cliente->faenas->where('rut', $request->name)->where('id', '<>', $id)->first())
                 {
                     
                     $response = HelpController::buildResponse(
                         409,
                         [
                             'rut' => [
-                                'Ya existe otra faena con el con el RUT ingresado'
+                                'Ya existe una faena con el RUT ingresado para el cliente seleccionado'
                             ]
                         ],
                         null

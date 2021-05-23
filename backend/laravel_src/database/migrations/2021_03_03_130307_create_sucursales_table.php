@@ -15,14 +15,15 @@ class CreateSucursalesTable extends Migration
     {
         Schema::create('sucursales', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('centrodistribucion_id')->unsigned();
+            $table->enum('type', ['sucursal', 'centro']); // It might be 'Centro de distribucion' or 'Sucursal'
             $table->string('rut');
             $table->string('name');
             $table->string('address');
             $table->string('city');
+            $table->bigInteger('country_id')->unsigned();
             $table->timestamps();
 
-            $table->foreign('centrodistribucion_id')->references('id')->on('centrosdistribucion')->onDelete('cascade');
+            $table->foreign('country_id')->references('id')->on('countries')->onDelete('cascade');
         });
     }
 

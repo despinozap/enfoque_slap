@@ -21,7 +21,10 @@ class CreateCompradoresTable extends Migration
             $table->string('city');
             $table->string('contact');
             $table->string('phone');
+            $table->bigInteger('country_id')->unsigned();
             $table->timestamps();
+
+            $table->foreign('country_id')->references('id')->on('countries')->onDelete('cascade');
         });
     }
 

@@ -117,16 +117,19 @@ class UsersController extends Controller
                 {
                     $users = $users->filter(function($user)
                     {
-                        $user->role;
-
                         $user->makeHidden([
                             'email_verified_at',
+                            'country_id',
                             'role_id',
                             'created_at', 
                             'updated_at'
                         ]);
 
+                        $user->role;
                         $user->role->makeHidden(['created_at', 'updated_at']);
+                        
+                        $user->country;
+                        $user->country->makeHidden(['created_at', 'updated_at']);
 
                         return $user;
                     });
@@ -180,13 +183,14 @@ class UsersController extends Controller
             $user = Auth::user();
             if($user->role->hasRoutepermission('users store'))
             {
-                $validatorInput = $request->only('name', 'email', 'phone', 'role_id');
+                $validatorInput = $request->only('name', 'email', 'phone', 'role_id', 'country_id');
             
                 $validatorRules = [
                     'name' => 'required|min:4',
                     'email' => 'required|email|unique:users',
                     'phone' => 'digits:10',
-                    'role_id' => 'required|exists:roles,id'
+                    'role_id' => 'required|exists:roles,id',
+                    'country_id' => 'required|exists:countries,id',
                 ];
 
                 $validatorMessages = [
@@ -197,7 +201,9 @@ class UsersController extends Controller
                     'email.unique' => 'El email ya esta asociado a otro usuario',
                     'phone.digits' => 'El telefono debe tener 10 digitos',
                     'role_id.required' => 'Debes seleccionar el rol',
-                    'role_id.exists' => 'El rol ingresado no existe'
+                    'role_id.exists' => 'El rol ingresado no existe',
+                    'country_id.required' => 'Debes seleccionar el pais',
+                    'country_id.exists' => 'El pais ingresado no existe',
                 ];
 
                 $validator = Validator::make(
@@ -274,17 +280,19 @@ class UsersController extends Controller
             {
                 if($user = User::find($id))
                 {
-                    $user->role;
-
                     $user->makeHidden([
                         'email_verified_at',
                         'role_id',
+                        'country_id',
                         'created_at', 
                         'updated_at'
                     ]);
 
+                    $user->role;
                     $user->role->makeHidden(['created_at', 'updated_at']);
 
+                    $user->country;
+                    $user->country->makeHidden(['created_at', 'updated_at']);
                     
                     $response = HelpController::buildResponse(
                         200,

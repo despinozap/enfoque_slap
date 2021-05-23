@@ -26,6 +26,7 @@ class CompradoresController extends Controller
                     $compradores = $compradores->filter(function($comprador)
                     {
                         $comprador->makeHidden([
+                            'country_id',
                             'created_at', 
                             'updated_at'
                         ]);
@@ -113,9 +114,13 @@ class CompradoresController extends Controller
                 if($comprador = Comprador::find($id))
                 {
                     $comprador->makeHidden([
+                        'country_id',
                         'created_at', 
                         'updated_at'
                     ]);
+
+                    $comprador->country;
+                    $comprador->country->makeHidden(['created_at', 'updated_at']);
 
                     $comprador->proveedores;
                     $comprador->proveedores = $comprador->proveedores->filter(function($proveedor)

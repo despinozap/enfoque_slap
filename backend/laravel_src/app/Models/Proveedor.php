@@ -23,4 +23,10 @@ class Proveedor extends Model
     {
         return $this->hasMany(Oc::class);
     }
+
+    public function recepciones()
+    {
+        // Retrieves all the Recepcion where the Proveedor was a source
+        return $this->morphMany(Recepcion::class, 'sourceable');
+    }
 }
