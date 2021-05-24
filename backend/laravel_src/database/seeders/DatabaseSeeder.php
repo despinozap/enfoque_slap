@@ -607,7 +607,7 @@ class DatabaseSeeder extends Seeder
         $estadoocparte->name = 'Pendiente';
         $estadoocparte->save();
         $estadoocparte = new Estadoocparte();
-        $estadoocparte->name = 'En proceso';
+        $estadoocparte->name = 'Parcial';
         $estadoocparte->save();
         $estadoocparte = new Estadoocparte();
         $estadoocparte->name = 'Entregado';

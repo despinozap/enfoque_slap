@@ -5,14 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class OcParteRecepcion extends Pivot
+class ParteRecepcion extends Pivot
 {
     use HasFactory;
 
-    protected $table = 'ocparte_recepcion';
+    protected $table = 'parte_recepcion';
 
-    public function ocparte()
+    public function parte()
     {
-        return $this->belongsTo(OcParte::class);
+        return $this->belongsTo(Parte::class);
     }
 }

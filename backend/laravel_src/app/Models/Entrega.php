@@ -5,34 +5,34 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Recepcion extends Model
+class Entrega extends Model
 {
     use HasFactory;
 
-    protected $table = 'recepciones';
+    protected $table = 'entregas';
     public $appends = ['partes_total'];
 
     /*
-     *  The Recepcion's source.
-     *  Sourceable models: Proveedor, Comprador, Centrodistribucion
+     * The Despacho's source. 
+     * Despachable models: Comprador, Centrodistribucion, Sucursal
      */
-    public function sourceable()
+    public function sucursal()
     {
-        return $this->morphTo();
+        return $this->belongsTo(Sucursal::class);
     }
 
     /*
-     * The Recepcion's destination. 
-     * Recepcionable models: Comprador, Centrodistribucion, Sucursal
+     *  The Despacho's destination.
+     *  Destinable models: Centrodistribucion, Sucursal, Faena
      */
-    public function recepcionable()
+    public function faena()
     {
-        return $this->morphTo();
+        return $this->belongsTo(Faena::class);
     }
 
     public function partes()
     {
-        return $this->belongsToMany(Parte::class, 'parte_recepcion', 'recepcion_id', 'parte_id')->withPivot(['cantidad'])->using(ParteRecepcion::class)->withTimestamps();
+        return $this->belongsToMany(OcParte::class, 'entrega_ocparte', 'entrega_id', 'ocparte_id')->withPivot(['cantidad'])->using(OcParteEntrega::class)->withTimestamps();
     }
 
     public function getPartesTotalAttribute()

@@ -8,9 +8,9 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 
 use App\Models\Comprador;
-use App\Models\OcParte;
+use App\Models\Parte;
 use App\Models\Despacho;
-use App\Models\Centrodistribucion;
+use App\Models\Sucursal;
 
 class DespachosController extends Controller
 {
@@ -42,63 +42,39 @@ class DespachosController extends Controller
                             'created_at', 
                             'updated_at'
                         ]);
+                        
+                        $despacho->partes;
+                        $despacho->partes = $despacho->partes->filter(function($parte)
+                        {
+                            $parte->makeHidden([
+                                'marca_id',
+                                'created_at',
+                                'updated_at',
+                            ]);
+
+                            $parte->pivot->makeHidden([
+                                'parte_id',
+                                'despacho_id',
+                                'created_at',
+                                'updated_at',
+                            ]);
+
+                            $parte->marca;
+                            $parte->marca->makeHidden(['created_at', 'updated_at']);
+
+                            return $parte;
+                        });
 
                         $despacho->destinable;
                         $despacho->destinable->makeHidden([
+                            'type',
                             'rut',
                             'address',
                             'city',
-                            'contact',
-                            'phone',
-                            'country',
+                            'country_id',
                             'created_at', 
                             'updated_at'
                         ]);
-                        
-                        $despacho->ocpartes;
-                        $despacho->ocpartes = $despacho->ocpartes->filter(function($ocparte)
-                        {
-                            $ocparte->makeHidden([
-                                'oc_id',
-                                'parte_id',
-                                'tiempoentrega',
-                                'estadoocparte_id',
-                                'created_at',
-                                'updated_at',
-                            ]);
-
-                            $ocparte->pivot->makeHidden([
-                                'ocparte_id',
-                                'despacho_id',
-                                'oc_parte_id',
-                                'created_at',
-                                'updated_at',
-                            ]);
-
-                            $ocparte->oc;
-                            $ocparte->oc->makeHidden([
-                                'cotizacion_id',
-                                'proveedor_id',
-                                'filedata_id',
-                                'estadooc_id',
-                                'noccliente',
-                                'motivobaja_id',
-                                'usdvalue',
-                                'partes_total',
-                                'dias',
-                                'partes',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-
-                            $ocparte->parte;
-                            $ocparte->parte->makeHidden(['marca_id', 'created_at', 'updated_at']);
-
-                            $ocparte->parte->marca;
-                            $ocparte->parte->marca->makeHidden(['created_at', 'updated_at']);
-
-                            return $ocparte;
-                        });
 
                         return $despacho;
                     });
@@ -151,15 +127,7 @@ class DespachosController extends Controller
                 {
                     // Centrosditribucion
                     {
-                        $centrosdistribucion = Centrodistribucion::select('centrosdistribucion.*')
-                                            ->join('sucursales', 'sucursales.centrodistribucion_id', '=', 'centrosdistribucion.id')
-                                            ->join('clientes', 'clientes.sucursal_id', '=', 'sucursales.id')
-                                            ->join('faenas', 'faenas.cliente_id', '=', 'clientes.id')
-                                            ->join('solicitudes', 'solicitudes.faena_id', '=', 'faenas.id')
-                                            ->where('solicitudes.comprador_id', '=', $comprador->id)
-                                            ->groupBy('centrosdistribucion.id')
-                                            ->get();
-    
+                        $centrosdistribucion = Sucursal::where('type', '=', 'centro')->get();
                         $centrosdistribucion = $centrosdistribucion->filter(function($centrodistribucion)
                         {
                             $centrodistribucion->makeHidden([
@@ -173,55 +141,36 @@ class DespachosController extends Controller
 
                     // QueuePartes
                     {
-                        $ocParteList = OcParte::select('oc_parte.*')
-                                    ->join('ocparte_recepcion', 'ocparte_recepcion.ocparte_id', '=', 'oc_parte.id')
-                                    ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
-                                    ->join('recepciones', 'recepciones.id', '=', 'ocparte_recepcion.recepcion_id')
-                                    ->where('oc_parte.estadoocparte_id', '<>', 3) // Estadoocparte != 'Entregado'
-                                    ->where('recepciones.recepcionable_type', '=', get_class($comprador)) // Are in recepciones belonging to Comprador
-                                    ->where('recepciones.recepcionable_id', '=', $comprador->id) // Belong to the specified Comprador
-                                    ->where('ocs.estadooc_id', '=', 2) // Estadooc = 'En proceso'
-                                    ->orderBy('ocs.created_at', 'ASC')
+                        // Get all the Partes in Recepciones for Comprador
+                        $parteList = Parte::select('partes.*')
+                                    ->join('parte_recepcion', 'parte_recepcion.parte_id', '=', 'partes.id')
+                                    ->join('recepciones', 'recepciones.id', '=', 'parte_recepcion.recepcion_id')
+                                    ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                    ->where('recepciones.recepcionable_id', '=', $comprador->id)
+                                    ->groupBy('partes.id')
                                     ->get();
     
                         // Retrieves the partes list with cantidad_stock for dispatching
-                        $queuePartesData = $ocParteList->reduce(function($carry, $ocParte) use ($comprador)
+                        $queuePartes = $parteList->reduce(function($carry, $parte) use ($comprador)
                             {
                                 // Get how many partes have been received but not dispatched yet in Comprador
-                                $cantidadStock = $ocParte->getCantidadRecepcionado($comprador) - $ocParte->getCantidadDespachado($comprador);
+                                $cantidadStock = $parte->getCantidadRecepcionado($comprador) - $parte->getCantidadDespachado($comprador);
                                 if($cantidadStock > 0)
                                 {
-                                    if(isset($carry[$ocParte->parte->id]))
-                                    {
-                                        // If parte is already in the list, adds the cantidad_pendiente to the total
-                                        $carry[$ocParte->parte->id]['cantidad_stock'] += $cantidadStock;
-                                    }
-                                    else
-                                    {
-                                        // If parte is not in the list, inserts the parte to the list
-                                        $parte = [
-                                            "id" => $ocParte->parte->id,
-                                            "nparte" => $ocParte->parte->nparte,
-                                            "marca" => $ocParte->parte->marca->makeHidden(['created_at', 'updated_at']),
-                                            "cantidad_stock" => $cantidadStock,
-                                        ];
-    
-                                        $carry[$parte['id']] = $parte;
-                                    }
+                                    $parteData = [
+                                        "id" => $parte->id,
+                                        "nparte" => $parte->nparte,
+                                        "marca" => $parte->marca->makeHidden(['created_at', 'updated_at']),
+                                        "cantidad_stock" => $cantidadStock,
+                                    ];
                                     
+                                    array_push($carry, $parteData);
                                 }
     
                                 return $carry;
                             },
                             array()
                         );
-    
-                        // Transform the queuePartesData key-value array into a list
-                        $queuePartes = array();
-                        foreach(array_keys($queuePartesData) as $key)
-                        {
-                            array_push($queuePartes, $queuePartesData[$key]);
-                        }
                     }
 
                     $data = [
@@ -273,10 +222,10 @@ class DespachosController extends Controller
             $user = Auth::user();
             if($user->role->hasRoutepermission('compradores despachos_store'))
             {
-                $validatorInput = $request->only('centrodistribucion_id', 'fecha', 'ndocumento', 'responsable', 'comentario', 'partes');
+                $validatorInput = $request->only('sucursal_id', 'fecha', 'ndocumento', 'responsable', 'comentario', 'partes');
             
                 $validatorRules = [
-                    'centrodistribucion_id' => 'required|exists:centrosdistribucion,id',
+                    'sucursal_id' => 'required|exists:sucursales,id,type,"centro"',
                     'fecha' => 'required|date_format:Y-m-d|before:tomorrow', // it includes today
                     'ndocumento' => 'nullable|min:1',
                     'responsable' => 'required|min:1',
@@ -288,8 +237,8 @@ class DespachosController extends Controller
                 ];
         
                 $validatorMessages = [
-                    'centrodistribucion_id.required' => 'Debes ingresar el centro de distribucion',
-                    'centrodistribucion_id.exists' => 'El centro de distribucion ingresado no existe',
+                    'sucursal_id.required' => 'Debes ingresar el centro de distribucion',
+                    'sucursal_id.exists' => 'El centro de distribucion ingresado no existe',
                     'fecha.required' => 'Debes ingresar la fecha de recepcion',
                     'fecha.date_format' => 'El formato de fecha de recepcion es invalido',
                     'fecha.before' => 'La fecha debe ser igual o anterior a hoy',
@@ -325,7 +274,7 @@ class DespachosController extends Controller
                 {
                     if($comprador = Comprador::find($comprador_id))
                     {
-                        if($centrodistribucion = Centrodistribucion::find(1))
+                        if($centrodistribucion = Sucursal::where('id', '=', $request->sucursal_id)->where('type', '=', 'centro')->first())
                         {
                             DB::beginTransaction();
 
@@ -355,67 +304,72 @@ class DespachosController extends Controller
                                     array()
                                 );
 
-                                foreach(array_keys($cantidades) as $parteId)
+                                // Get all the Partes in Recepciones for Comprador
+                                if(
+                                    $parteList = Parte::select('partes.*')
+                                                ->join('parte_recepcion', 'parte_recepcion.parte_id', '=', 'partes.id')
+                                                ->join('recepciones', 'recepciones.id', '=', 'parte_recepcion.recepcion_id')
+                                                ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                                ->where('recepciones.recepcionable_id', '=', $comprador->id)
+                                                ->groupBy('partes.id')
+                                                ->get()
+                                )
                                 {
-                                    // For each parte sent, gets the OcParte list where are in stock in Comprador and Estadoocparte is different than 'Entregado'
-                                    if($ocParteList = OcParte::select('oc_parte.*')
-                                                    ->join('ocparte_recepcion', 'ocparte_recepcion.ocparte_id', '=', 'oc_parte.id')
-                                                    ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
-                                                    ->join('recepciones', 'recepciones.id', '=', 'ocparte_recepcion.recepcion_id')
-                                                    ->where('oc_parte.parte_id', '=', $parteId) // For this Parte
-                                                    ->where('oc_parte.estadoocparte_id', '<>', 3) // Estadoocparte != 'Entregado'
-                                                    ->where('recepciones.recepcionable_type', '=', 'App\\Models\\Comprador') // Are in recepciones belonging to Comprador
-                                                    ->where('recepciones.recepcionable_id', '=', $comprador->id) // Belong to the specified Comprador
-                                                    ->where('ocs.estadooc_id', '=', 2) // Estadooc = 'En proceso'
-                                                    ->orderBy('ocs.created_at', 'ASC')
-                                                    ->get()
-                                    )
+                                    if($parteList->count() > 0)
                                     {
-                                        if($ocParteList->count() > 0)
-                                        {
-                                            if($success === true)
+                                        // Retrieves the partes list with cantidad_stock for dispatching
+                                        $stockCantidades = $parteList->reduce(function($carry, $parte) use ($comprador)
                                             {
-                                                foreach($ocParteList as $ocParte)
+                                                // Get how many partes have been received but not dispatched yet in Comprador
+                                                $cantidadStock = $parte->getCantidadRecepcionado($comprador) - $parte->getCantidadDespachado($comprador);
+                                                if($cantidadStock > 0)
                                                 {
-                                                    if($cantidades[$parteId] > 0)
+                                                    $carry[$parte->id] = $cantidadStock;
+                                                }
+
+                                                return $carry;
+                                            },
+                                            array()
+                                        );
+
+                                        foreach(array_keys($cantidades) as $parteId)
+                                        {
+                                            if($parte = Parte::find($parteId))
+                                            {
+                                                // If the Parte has stock in Comprador
+                                                if(isset($stockCantidades[$parteId]))
+                                                {
+                                                    // If cantidad is less or equal to stock
+                                                    if($cantidades[$parteId] <= $stockCantidades[$parteId])
                                                     {
-                                                        // Getting the current cantidad_stock in Comprador
-                                                        $cantidadStock = $ocParte->getCantidadRecepcionado($comprador) - $ocParte->getCantidadDespachado($comprador);
-                                                        if($cantidades[$parteId] >= $cantidadStock)
-                                                        {
-                                                            // If is dispatching more or equal than in stock for the OcParte, fill the OcParte
-                                                            $cantidad = $cantidadStock;
-                                                        }
-                                                        else
-                                                        {
-                                                            // If dispatching less than in stock for the OcParte
-                                                            $cantidad = $cantidades[$parteId];
-                                                        }
-                                                        
-                                                        // Attach the OcParte to Recepcion with defined Cantidad
-                                                        $despacho->ocpartes()->attach(
+                                                        $despacho->partes()->attach(
                                                             array(
-                                                                $ocParte->id => array(
-                                                                    "cantidad" => $cantidad
+                                                                $parte->id => array(
+                                                                    "cantidad" => $cantidades[$parte->id]
                                                                 )
                                                             )
                                                         );
-
-                                                        // Updates the cantidad left
-                                                        $cantidades[$parteId] = $cantidades[$parteId] - $cantidad;
                                                     }
                                                     else
                                                     {
+                                                        // If the received parts are more than waiting in queue
+                                                        $response = HelpController::buildResponse(
+                                                            409,
+                                                            'La cantidad ingresada para la parte "' . $parte->nparte . '" es mayor a la cantidad de pendiente de despacho',
+                                                            null
+                                                        );
+                    
+                                                        $success = false;
+                    
                                                         break;
-                                                    } 
+                                                    }
                                                 }
-
-                                                if($cantidades[$parteId] > 0)
+                                                else
                                                 {
-                                                    // If the dispatched parts are more than in Comprador's stock
+                                                    // If the entered parte isn't in queue
                                                     $response = HelpController::buildResponse(
                                                         409,
-                                                        'La cantidad de partes despachadas es mayor a la cantidad de partes pendientes de despacho',
+                                                        'La parte "' . $parte->nparte . '" no tiene partes pendiente de despacho',
                                                         null
                                                     );
                 
@@ -426,38 +380,41 @@ class DespachosController extends Controller
                                             }
                                             else
                                             {
-                                                // If it failed during the partes iteration, then break the higher loop
+                                                $response = HelpController::buildResponse(
+                                                    500,
+                                                    'Error al obtener una de las partes pendientes de recepcion',
+                                                    null
+                                                );
+                
+                                                $success = false;
+                                                
                                                 break;
                                             }
-                                            
-                                        }
-                                        else
-                                        {
-                                            // If there aren't OcParte waiting for the entered Parte
-                                            $response = HelpController::buildResponse(
-                                                409,
-                                                'La parte ingresada no tiene partes pendientes de despacho',
-                                                null
-                                            );
-        
-                                            $success = false;
-        
-                                            break;
                                         }
                                     }
                                     else
                                     {
+                                        // If there aren't OcParte waiting for the entered Parte
                                         $response = HelpController::buildResponse(
-                                            500,
-                                            'Error al obtener las partes pendiente de despacho',
+                                            409,
+                                            'No se han encontrado partes recepcionadas',
                                             null
                                         );
-
+    
                                         $success = false;
-
-                                        break;
                                     }
                                 }
+                                else
+                                {
+                                    $response = HelpController::buildResponse(
+                                        500,
+                                        'Error al obtener las partes pendiente de despacho',
+                                        null
+                                    );
+
+                                    $success = false;
+                                }
+                                
 
                                 if($success === true)
                                 {
@@ -520,7 +477,7 @@ class DespachosController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al crear el despacho [!]' . $e,
+                'Error al crear el despacho [!]',
                 null
             );
         }
@@ -567,129 +524,50 @@ class DespachosController extends Controller
                     {
                         if($despacho = Despacho::find($id))
                         {
+                            $despacho->partes_total;
+                        
                             $despacho->makeHidden([
-                                'destinable_id',
-                                'destinable_type',
-                                'despachable_id',
+                                'despachable_id', 
                                 'despachable_type',
-                                'proveedor_id',
-                                'partes_total',
-                                'updated_at',
-                            ]);
-
-                            $despacho->despachable;
-                            $despacho->despachable->makeHidden([
-                                'rut',
-                                'address',
-                                'city',
-                                'contact',
-                                'phone',
-                                'country',
+                                'destinable_id', 
+                                'destinable_type', 
                                 'created_at', 
                                 'updated_at'
                             ]);
+                            
+                            $despacho->partes;
+                            $despacho->partes = $despacho->partes->filter(function($parte)
+                            {
+                                $parte->makeHidden([
+                                    'marca_id',
+                                    'created_at',
+                                    'updated_at',
+                                ]);
+
+                                $parte->pivot->makeHidden([
+                                    'parte_id',
+                                    'despacho_id',
+                                    'created_at',
+                                    'updated_at',
+                                ]);
+
+                                $parte->marca;
+                                $parte->marca->makeHidden(['created_at', 'updated_at']);
+
+                                return $parte;
+                            });
 
                             $despacho->destinable;
                             $despacho->destinable->makeHidden([
+                                'type',
                                 'rut',
                                 'address',
                                 'city',
-                                'contact',
-                                'phone',
-                                'country',
+                                'country_id',
                                 'created_at', 
                                 'updated_at'
                             ]);
 
-                            $despacho->ocpartes;
-                            foreach($despacho->ocpartes as $ocparte)
-                            {
-                                $ocparte->makeHidden([
-                                    'oc_id',
-                                    'parte_id',
-                                    'estadoocparte_id',
-                                    'tiempoentrega',
-                                    'created_at',
-                                    'updated_at',
-                                ]);
-
-                                $ocparte->pivot->makeHidden([
-                                    'despacho_id',
-                                    'ocparte_id',
-                                    'created_at',
-                                    'updated_at',
-                                ]);
-
-                                $ocparte->oc;
-                                $ocparte->oc->makeHidden([
-                                    'cotizacion_id',
-                                    'proveedor_id',
-                                    'filedata_id',
-                                    'estadooc_id',
-                                    'noccliente',
-                                    'motivobaja_id',
-                                    'usdvalue',
-                                    'partes_total',
-                                    'dias',
-                                    'partes',
-                                    'created_at', 
-                                    'updated_at'
-                                ]);
-                                
-                                $ocparte->oc->cotizacion;
-                                $ocparte->oc->cotizacion->makeHidden([
-                                    'solicitud_id',
-                                    'motivorechazo_id',
-                                    'estadocotizacion_id',
-                                    'usdvalue',
-                                    'partes_total',
-                                    'dias',
-                                    'created_at', 
-                                    'updated_at'
-                                ]);
-
-                                $ocparte->oc->cotizacion->solicitud;
-                                $ocparte->oc->cotizacion->solicitud->makeHidden([
-                                    'faena_id',
-                                    'marca_id',
-                                    'comprador_id',
-                                    'estadosolicitud_id',
-                                    'comentario',
-                                    'partes_total',
-                                    'user_id',
-                                    'created_at', 
-                                    'updated_at'
-                                ]);
-
-                                $ocparte->oc->cotizacion->solicitud->faena;
-                                $ocparte->oc->cotizacion->solicitud->faena->makeHidden([
-                                    'cliente_id',
-                                    'rut',
-                                    'address',
-                                    'city',
-                                    'contact',
-                                    'phone',
-                                    'created_at',
-                                    'updated_at'
-                                ]);
-            
-                                $ocparte->oc->cotizacion->solicitud->faena->cliente;
-                                $ocparte->oc->cotizacion->solicitud->faena->cliente->makeHidden([
-                                    'sucursal_id', 
-                                    'created_at', 
-                                    'updated_at'
-                                ]);
-                                
-                                $ocparte->parte;
-                                $ocparte->parte->makeHidden([
-                                    'marca_id',
-                                    'created_at', 
-                                    'updated_at'
-                                ]);
-
-                                $ocparte->parte->marca;
-                                $ocparte->parte->marca->makeHidden(['created_at', 'updated_at']);
-                            }
                             
                             $response = HelpController::buildResponse(
                                 200,
@@ -729,7 +607,7 @@ class DespachosController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al obtener el despacho [!]',
+                'Error al obtener el despacho [!]' . $e,
                 null
             );
         }

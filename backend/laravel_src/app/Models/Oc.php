@@ -98,4 +98,9 @@ class Oc extends Model
     {
         return $this->belongsTo(Proveedor::class);
     }
+
+    public function despachos()
+    {
+        return $this->belongsToMany(Despacho::class, 'despacho_oc', 'oc_id', 'despacho_id')->withTimestamps();
+    }
 }
