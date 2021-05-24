@@ -172,6 +172,7 @@ class RecepcionesController extends Controller
                                         "nparte" => $parte->nparte,
                                         "marca" => $parte->marca->makeHidden(['created_at', 'updated_at']),
                                         "cantidad_pendiente" => $cantidadPendiente,
+                                        "cantidad_despachos" => $parte->getCantidadDespachado($comprador)
                                     ];
 
                                     array_push($queuePartes, $parteData);
@@ -802,11 +803,14 @@ class RecepcionesController extends Controller
                                         {
                                             // Get cantidad total in Recepciones at Comprador from Proveedor
                                             $cantidadPendiente = $cantidadesOc[$parteId] - $parte->getCantidadRecepcionado_sourceable($comprador, $recepcion->sourceable);
+                                            $cantidadDespachos = 0;
 
-                                            // If the Parte is already in the Recepcion, then add the cantidad to queue
+                                            // If the Parte is already in the Recepcion, then add the cantidad to queue calc in Despachos if already taken
                                             if($p = $recepcion->partes->find($parte->id))
                                             {
                                                 $cantidadPendiente = $cantidadPendiente + $p->pivot->cantidad;
+                                                $cantidadDespachos = $parte->getCantidadDespachado($comprador) - ($parte->getCantidadRecepcionado($comprador) - $p->pivot->cantidad);
+                                                $cantidadDespachos = $cantidadDespachos >= 0 ? $cantidadDespachos : 0;
                                             }
 
                                             if($cantidadPendiente > 0)
@@ -816,6 +820,7 @@ class RecepcionesController extends Controller
                                                     "nparte" => $parte->nparte,
                                                     "marca" => $parte->marca->makeHidden(['created_at', 'updated_at']),
                                                     "cantidad_pendiente" => $cantidadPendiente,
+                                                    "cantidad_despachos" => $cantidadDespachos
                                                 ];
     
                                                 array_push($queuePartes, $parteData);
@@ -1436,12 +1441,7 @@ class RecepcionesController extends Controller
             {
                 if($comprador = Comprador::find($comprador_id))
                 {
-                    if($recepcion = Recepcion::join('compradores', 'recepciones.recepcionable_id', '=', 'compradores.id')
-                                ->where('recepciones.recepcionable_type', '=', get_class($comprador))
-                                ->where('recepciones.id', '=', $id)
-                                ->get()
-                                ->first()
-                    )
+                    if($recepcion = $comprador->recepciones->find($id))
                     {
                         // Check if Recepcion was sourceable by a Proveedor
                         if(get_class($recepcion->sourceable) === get_class(new Proveedor()))
