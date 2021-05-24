@@ -82,7 +82,7 @@ class UsersController extends Controller
                 else
                 {
                     $response = HelpController::buildResponse(
-                        400,
+                        412,
                         'El usuario no existe',
                         null
                     );
@@ -113,7 +113,7 @@ class UsersController extends Controller
             $user = Auth::user();
             if($user->role->hasRoutepermission('users index'))
             {
-                if($users = User::all()->where('id', '<>', $user->id))
+                if($users = User::where('id', '<>', $user->id)->get())
                 {
                     $users = $users->filter(function($user)
                     {
@@ -224,6 +224,7 @@ class UsersController extends Controller
                 {
                     $user = new User();
                     $user->fill($request->all());
+                    $user->country_id = 1; // Overwrite country for Chile
                     $user->password = bcrypt($request->email);
                     
                     if($user->save())
@@ -303,7 +304,7 @@ class UsersController extends Controller
                 else     
                 {
                     $response = HelpController::buildResponse(
-                    400,
+                    412,
                         'El usuario no existe',
                         null
                     );
@@ -424,7 +425,7 @@ class UsersController extends Controller
                     else
                     {
                         $response = HelpController::buildResponse(
-                            400,
+                            412,
                             'El usuario no existe',
                             null
                         );
@@ -469,19 +470,30 @@ class UsersController extends Controller
                 {
                     if($user = User::find($id))
                     {
-                        if($user->delete())
+                        if($user->solicitudes->count() === 0)
                         {
-                            $response = HelpController::buildResponse(
-                                200,
-                                'Usuario eliminado',
-                                null
-                            );
+                            if($user->delete())
+                            {
+                                $response = HelpController::buildResponse(
+                                    200,
+                                    'Usuario eliminado',
+                                    null
+                                );
+                            }
+                            else
+                            {
+                                $response = HelpController::buildResponse(
+                                    500,
+                                    'Error al eliminar el usuario',
+                                    null
+                                );
+                            }
                         }
                         else
                         {
                             $response = HelpController::buildResponse(
                                 500,
-                                'Error al eliminar el usuario',
+                                'No se puede eliminar un usuario con solicitudes asociadas',
                                 null
                             );
                         }
@@ -489,7 +501,7 @@ class UsersController extends Controller
                     else     
                     {
                         $response = HelpController::buildResponse(
-                            400,
+                            412,
                             'El usuario no existe',
                             null
                         );

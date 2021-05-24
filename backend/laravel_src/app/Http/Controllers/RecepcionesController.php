@@ -491,7 +491,7 @@ class RecepcionesController extends Controller
                         else
                         {
                             $response = HelpController::buildResponse(
-                                400,
+                                412,
                                 'El proveedor no existe para el comprador',
                                 null
                             );
@@ -500,7 +500,7 @@ class RecepcionesController extends Controller
                     else
                     {
                         $response = HelpController::buildResponse(
-                            400,
+                            412,
                             'El comprador no existe',
                             null
                         );
@@ -631,7 +631,7 @@ class RecepcionesController extends Controller
                         else     
                         {
                             $response = HelpController::buildResponse(
-                                400,
+                                412,
                                 'La recepcion no existe',
                                 null
                             );
@@ -640,7 +640,7 @@ class RecepcionesController extends Controller
                     else
                     {
                         $response = HelpController::buildResponse(
-                            400,
+                            412,
                             'El comprador no existe',
                             null
                         );
@@ -878,7 +878,7 @@ class RecepcionesController extends Controller
                         else     
                         {
                             $response = HelpController::buildResponse(
-                                400,
+                                412,
                                 'La recepcion no existe',
                                 null
                             );
@@ -887,7 +887,7 @@ class RecepcionesController extends Controller
                     else
                     {
                         $response = HelpController::buildResponse(
-                            400,
+                            412,
                             'El comprador no existe',
                             null
                         );
@@ -1388,7 +1388,7 @@ class RecepcionesController extends Controller
                         else
                         {
                             $response = HelpController::buildResponse(
-                                400,
+                                412,
                                 'La recepcion no existe',
                                 null
                             );
@@ -1398,7 +1398,7 @@ class RecepcionesController extends Controller
                     else
                     {
                         $response = HelpController::buildResponse(
-                            400,
+                            412,
                             'El comprador no existe',
                             null
                         );
@@ -1526,7 +1526,7 @@ class RecepcionesController extends Controller
                     else
                     {
                         $response = HelpController::buildResponse(
-                            400,
+                            412,
                             'La recepcion no existe',
                             null
                         );
@@ -1536,7 +1536,7 @@ class RecepcionesController extends Controller
                 else
                 {
                     $response = HelpController::buildResponse(
-                        400,
+                        412,
                         'El comprador no existe',
                         null
                     );

@@ -448,7 +448,7 @@ class DespachosController extends Controller
                         else
                         {
                             $response = HelpController::buildResponse(
-                                400,
+                                412,
                                 'El centro de distribucion no existe',
                                 null
                             );
@@ -457,7 +457,7 @@ class DespachosController extends Controller
                     else
                     {
                         $response = HelpController::buildResponse(
-                            400,
+                            412,
                             'El comprador no existe',
                             null
                         );
@@ -578,7 +578,7 @@ class DespachosController extends Controller
                         else     
                         {
                             $response = HelpController::buildResponse(
-                                400,
+                                412,
                                 'El despacho no existe',
                                 null
                             );
@@ -587,7 +587,7 @@ class DespachosController extends Controller
                     else
                     {
                         $response = HelpController::buildResponse(
-                            400,
+                            412,
                             'El comprador no existe',
                             null
                         );

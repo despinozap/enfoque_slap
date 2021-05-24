@@ -31,6 +31,9 @@ class CompradoresController extends Controller
                             'updated_at'
                         ]);
 
+                        $comprador->country;
+                        $comprador->country->makeHidden(['created_at', 'updated_at']);
+
                         $comprador->proveedores;
                         $comprador->proveedores->makeHidden([
                             'comprador_id',

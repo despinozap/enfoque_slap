@@ -99,7 +99,7 @@ class ParametersController extends Controller
                 else     
                 {
                     $response = HelpController::buildResponse(
-                        400,
+                        412,
                         'El parametro no existe',
                         null
                     );
@@ -220,7 +220,7 @@ class ParametersController extends Controller
                     else
                     {
                         $response = HelpController::buildResponse(
-                            400,
+                            412,
                             'El parametro no existe',
                             null
                         );

@@ -590,7 +590,7 @@ class SolicitudesController extends Controller
                 else     
                 {
                     $response = HelpController::buildResponse(
-                        400,
+                        412,
                         'La solicitud no existe',
                         null
                     );
@@ -786,7 +786,7 @@ class SolicitudesController extends Controller
                     else
                     {
                         $response = HelpController::buildResponse(
-                            400,
+                            412,
                             'La solicitud no existe',
                             null
                         );
@@ -994,7 +994,7 @@ class SolicitudesController extends Controller
                     else
                     {
                         $response = HelpController::buildResponse(
-                            400,
+                            412,
                             'La solicitud no existe',
                             null
                         );
@@ -1144,7 +1144,7 @@ class SolicitudesController extends Controller
                 else
                 {
                     $response = HelpController::buildResponse(
-                        400,
+                        412,
                         'La solicitud no existe',
                         null
                     );
@@ -1229,7 +1229,7 @@ class SolicitudesController extends Controller
                 else
                 {
                     $response = HelpController::buildResponse(
-                        400,
+                        412,
                         'La solicitud no existe',
                         null
                     );

@@ -19,7 +19,7 @@ class HelpController extends Controller
             405 Method Not Allowed
             409 Conflict
             411 Length Required
-            412 Precondition Failed
+            412 Precondition Failed (Object not found)
             422 Invalid parameters
             429 Too Many Requests
             500 Internal Server Error

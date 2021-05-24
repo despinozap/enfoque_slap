@@ -392,7 +392,7 @@ class OcsController extends Controller
                 else     
                 {
                     $response = HelpController::buildResponse(
-                        400,
+                        412,
                         'La OC no existe',
                         null
                     );
@@ -495,7 +495,7 @@ class OcsController extends Controller
                 {
                     //If Cerrada or Baja
                     $response = HelpController::buildResponse(
-                        400,
+                        409,
                         'No puedes editar una OC que ya esta cerrada o de baja',
                         null
                     );
@@ -613,7 +613,7 @@ class OcsController extends Controller
                         {
                             //If Cerrada or Baja
                             $response = HelpController::buildResponse(
-                                400,
+                                409,
                                 'No puedes dar de baja una OC que ya esta en proceso, cerrada o de baja',
                                 null
                             );
@@ -645,7 +645,7 @@ class OcsController extends Controller
                     else
                     {
                         $response = HelpController::buildResponse(
-                            400,
+                            412,
                             'La OC no existe',
                             null
                         );
@@ -724,7 +724,7 @@ class OcsController extends Controller
                         {
                             //If not Pendiente
                             $response = HelpController::buildResponse(
-                                400,
+                                409,
                                 'Solo puedes procesar OCs que estan pendiente',
                                 null
                             );
@@ -756,7 +756,7 @@ class OcsController extends Controller
                     else
                     {
                         $response = HelpController::buildResponse(
-                            400,
+                            412,
                             'La OC no existe',
                             null
                         );

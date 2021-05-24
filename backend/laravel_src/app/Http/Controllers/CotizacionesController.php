@@ -468,7 +468,7 @@ class CotizacionesController extends Controller
                         {
                             //If Aprobada or Rechazada
                             $response = HelpController::buildResponse(
-                                400,
+                                409,
                                 'No puedes aprobar una cotizacion con estado comercial ya definido',
                                 null
                             );
@@ -635,7 +635,7 @@ class CotizacionesController extends Controller
                     else
                     {
                         $response = HelpController::buildResponse(
-                            400,
+                            412,
                             'La cotizacion no existe',
                             null
                         );
@@ -714,7 +714,7 @@ class CotizacionesController extends Controller
                         {
                             //If Aprobada or Rechazada
                             $response = HelpController::buildResponse(
-                                400,
+                                409,
                                 'No puedes rechazar una cotizacion con estado comercial ya definido',
                                 null
                             );
@@ -746,7 +746,7 @@ class CotizacionesController extends Controller
                     else
                     {
                         $response = HelpController::buildResponse(
-                            400,
+                            412,
                             'La cotizacion no existe',
                             null
                         );

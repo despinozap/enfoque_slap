@@ -132,7 +132,7 @@ class PartesController extends Controller
                 else     
                 {
                     $response = HelpController::buildResponse(
-                        400,
+                        412,
                         'La parte no existe',
                         null
                     );
@@ -285,7 +285,7 @@ class PartesController extends Controller
                     else
                     {
                         $response = HelpController::buildResponse(
-                            400,
+                            412,
                             'La parte no existe',
                             null
                         );
@@ -360,7 +360,7 @@ class PartesController extends Controller
                 else
                 {
                     $response = HelpController::buildResponse(
-                        400,
+                        412,
                         'La parte no existe',
                         null
                     );
