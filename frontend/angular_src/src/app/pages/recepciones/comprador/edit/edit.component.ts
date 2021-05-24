@@ -88,7 +88,7 @@ export class RecepcionesCompradorEditComponent implements OnInit {
 
   private loadFormData(recepcionData: any)
   {
-    if(recepcionData.recepcion['ocpartes'].length > 0)
+    if(recepcionData.recepcion['partes'].length > 0)
     {
       // Load Recepcion data
       this.recepcion.id = recepcionData.recepcion.id;
@@ -127,31 +127,16 @@ export class RecepcionesCompradorEditComponent implements OnInit {
       let parte: any;
 
       // Update values with partes list in recepcion 
-      recepcionData.recepcion.ocpartes.forEach((op: any) => {
+      recepcionData.recepcion.partes.forEach((parteR: any) => {
 
-        index = this.partes.findIndex((p) => {
-          return (op.parte.id === p.id);
+        index = this.partes.findIndex((parteQ) => {
+          return (parteR.id === parteQ.id);
         });
 
         if(index >= 0)
         {
-          this.partes[index].cantidad_max += op.pivot.cantidad;
           this.partes[index].checked = true;
-          this.partes[index].cantidad += op.pivot.cantidad;
-        }
-        else
-        {
-          parte = {
-            id: op.parte.id,
-            nparte: op.parte.nparte,
-            marca: op.parte.marca.name,
-            cantidad_max: op.cantidad,
-            cantidad_despachos: 0,
-            checked: true,
-            cantidad: op.pivot.cantidad,
-          };
-
-          this.partes.push(parte);
+          this.partes[index].cantidad = parteR.pivot.cantidad;
         }
 
       });

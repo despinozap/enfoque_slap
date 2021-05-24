@@ -258,6 +258,7 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
     let recepcion: any = {
       proveedor_id: this.recepcionForm.value.proveedor,
       fecha: this.recepcionForm.value.fecha,
+      ndocumento: this.recepcionForm.value.documento,
       responsable: this.recepcionForm.value.responsable,
       comentario: this.recepcionForm.value.comentario,
       partes: receivedPartes

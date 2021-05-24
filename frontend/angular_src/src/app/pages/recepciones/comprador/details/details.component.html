@@ -85,23 +85,15 @@
               <thead>
                 <tr>
                   <th>N° Parte</th>
-                  <th>Descripcion</th>
                   <th>Marca</th>
-                  <th>OC Interna</th>
-                  <th>Cliente</th>
                   <th>Cantidad</th>
-                  <th>Total en OC</th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let ocparte of ocpartes; index as i">
-                  <td align="left"><i class="bx bx-timer icon-table" *ngIf="(ocparte.backorder === true)"></i>{{ ocparte.nparte !== null ? ocparte.nparte : "" }}</td>
-                  <td align="right">{{ ocparte.descripcion !== null ? ocparte.descripcion : "" }}</td>
-                  <td align="center">{{ ocparte.marca_name !== null ? ocparte.marca_name : "" }}</td>
-                  <td align="center">{{ ocparte.oc_id !== null ? ocparte.oc_id : "" }}</td>
-                  <td align="right">{{ ocparte.cliente_name !== null ? ocparte.cliente_name : "" }}</td>
-                  <td align="right">{{ ocparte.cantidad !== null ? ocparte.cantidad : "" }}</td> 
-                  <td align="right">{{ ocparte.oc_cantidad !== null ? ocparte.oc_cantidad : "" }}</td>                 
+                <tr *ngFor="let parte of partes; index as i">
+                  <td align="left">{{ parte.nparte !== null ? parte.nparte : "" }}</td>
+                  <td align="center">{{ parte.marca_name !== null ? parte.marca_name : "" }}</td>
+                  <td align="right">{{ parte.cantidad !== null ? parte.cantidad : "" }}</td>               
                 </tr>
               </tbody>
             </table>

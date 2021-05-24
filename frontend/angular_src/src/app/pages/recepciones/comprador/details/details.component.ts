@@ -40,7 +40,7 @@ export class RecepcionesCompradorDetailsComponent implements OnInit {
     proveedor_name: null,
   };
   
-  ocpartes: any[] = [];
+  partes: any[] = [];
   loading: boolean = false;
   responseErrors: any = [];
 
@@ -85,7 +85,7 @@ export class RecepcionesCompradorDetailsComponent implements OnInit {
 
   private loadFormData(recepcionData: any)
   { 
-    if(recepcionData['ocpartes'].length > 0)
+    if(recepcionData['partes'].length > 0)
     {
       this.recepcion.id = recepcionData.id;
       this.recepcion.fecha = recepcionData.fecha;
@@ -96,18 +96,14 @@ export class RecepcionesCompradorDetailsComponent implements OnInit {
       this.recepcion.comprador_name = recepcionData.recepcionable.name;
       this.recepcion.proveedor_name = recepcionData.sourceable.name;
       
-      this.ocpartes = [];
-      recepcionData.ocpartes.forEach((op: any) => {
-        this.ocpartes.push(
+      this.partes = [];
+      recepcionData.partes.forEach((parte: any) => {
+        this.partes.push(
           {
-            'nparte': op.parte.nparte,
-            'descripcion': op.descripcion,
-            'backorder': op.backorder,
-            'marca_name': op.parte.marca.name,
-            'cliente_name': op.oc.cotizacion.solicitud.faena.cliente.name,
-            'oc_id': op.oc.id,
-            'oc_cantidad': op.cantidad,
-            'cantidad': op.pivot.cantidad
+            'id': parte.id,
+            'nparte': parte.nparte,
+            'marca_name': parte.marca.name,
+            'cantidad': parte.pivot.cantidad
           }
         )
       });

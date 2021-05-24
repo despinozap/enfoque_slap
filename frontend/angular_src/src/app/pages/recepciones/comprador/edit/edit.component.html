@@ -59,8 +59,8 @@
 							<div class="form-group">
 								<label class="control-label" for="documento">N° Guia despacho</label>
 								<!-- Backend errors -->
-								<div class="alert alert-danger" *ngIf="(responseErrors.documento)">
-									<div *ngFor="let errorMessage of responseErrors.documento">{{ errorMessage }}</div>
+								<div class="alert alert-danger" *ngIf="(responseErrors.ndocumento)">
+									<div *ngFor="let errorMessage of responseErrors.ndocumento">{{ errorMessage }}</div>
 								</div>
 								<input type="text" class="form-control valid-control" name="documento" id="documento"
 									formControlName="documento">
@@ -143,7 +143,7 @@
                       </td>
                       <td align="left">{{ parte.nparte !== null ? parte.nparte : '' }}</td>
                       <td align="center">
-                        <input class="form-control" type="number" name="" id="txtParte-{{ i }}-cantidad" min="parte.cantidad_despachos" max="parte.cantidad_max" value="{{ ((parte.checked === true) && (parte.cantidad !== null)) ? parte.cantidad : '' }}" (change)="updateParte_cantidad(parte, $event)" [disabled]="loading === true ? true : (parte.checked ? false : true)">
+                        <input class="form-control" type="number" name="" id="txtParte-{{ i }}-cantidad" min="{{parte.cantidad_despachos}}" max="{{parte.cantidad_max}}" value="{{ ((parte.checked === true) && (parte.cantidad !== null)) ? parte.cantidad : '' }}" (change)="updateParte_cantidad(parte, $event)" [disabled]="loading === true ? true : (parte.checked ? false : true)">
                       </td>
                       <td align="left">{{ parte.marca.name !== null ? parte.marca.name : '' }}</td>
                     </tr>

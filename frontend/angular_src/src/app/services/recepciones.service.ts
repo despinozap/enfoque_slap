@@ -10,6 +10,22 @@ export class RecepcionesService {
 
   constructor(private httpClient: HttpClient) { }
 
+  public removeRecepcion_comprador(comprador_id: number, recepcion_id: number): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/compradores/${comprador_id}/recepciones/${recepcion_id}`;
+
+    let httpOptions = { 
+      method: 'DELETE',
+      headers:
+      {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    };
+    
+    return this.httpClient.delete(endpoint, httpOptions);
+  }
+
   public updateRecepcion_comprador(comprador_id: number, recepcion_id: number, recepcion: any): Observable<any>
   {
     let endpoint: string = `${environment.ENDPOINT_BASE}/compradores/${comprador_id}/recepciones/${recepcion_id}`;

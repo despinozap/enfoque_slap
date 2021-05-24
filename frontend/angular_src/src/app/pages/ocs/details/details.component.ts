@@ -70,15 +70,14 @@ export class OcsDetailsComponent implements OnInit {
   * 
   *       0: Partes list
   *       1: Parte edit
-  *       2: Parte tracking
-  *       3: Reject (dar baja)
-  *       4: Start OC
+  *       2: Reject (dar baja)
+  *       3: Start OC
   */
   DISPLAYING_FORM: number = 0;
 
   parteForm: FormGroup = new FormGroup({
-    cantidad: new FormControl(''),
-    tiempoentrega: new FormControl('', [Validators.min(0)]),
+    cantidad: new FormControl('', [Validators.required, Validators.min(1)]),
+    tiempoentrega: new FormControl('', [Validators.required, Validators.min(0)]),
     backorder: new FormControl(''),
   });
 
@@ -184,13 +183,6 @@ export class OcsDetailsComponent implements OnInit {
             'nparte': p.nparte,
             'descripcion': p.pivot.descripcion,
             'cantidad': p.pivot.cantidad,
-            'cantidad_pendiente': p.counters.cantidad_pendiente,
-            'cantidad_compradorrecepcionado': p.counters.cantidad_compradorrecepcionado,
-            'cantidad_compradordespachado': p.counters.cantidad_compradordespachado,
-            'cantidad_centrodistribucionrecepcionado': p.counters.cantidad_centrodistribucionrecepcionado,
-            'cantidad_centrodistribuciondespachado': p.counters.cantidad_centrodistribuciondespachado,
-            'cantidad_sucursalrecepcionado': p.counters.cantidad_sucursalrecepcionado,
-            'cantidad_sucursaldespachado': p.counters.cantidad_sucursaldespachado,
             'tiempoentrega': p.pivot.tiempoentrega,
             'backorder': p.pivot.backorder === 1 ? true : false,
             'updated_at': p.pivot.updated_at,
@@ -278,21 +270,6 @@ export class OcsDetailsComponent implements OnInit {
         this.goTo_back();
       }
     );
-  }
-
-  public validator_minCantidadAsignado(min: number): ValidatorFn {
-    return (control: AbstractControl): { [key: string]: boolean } | null => {
-
-      if((control.value !== undefined) && (!isNaN(control.value)))
-      {
-        if(control.value >= min)
-        {
-          return null;
-        }
-      }
-
-      return { 'mincantidadasignado': true };
-    }
   }
 
   private loadMotivosBaja() {
@@ -610,14 +587,14 @@ export class OcsDetailsComponent implements OnInit {
     this.motivosBaja = null as any;
     this.loadMotivosBaja();
 
-    this.DISPLAYING_FORM = 3;
+    this.DISPLAYING_FORM = 2;
   }
 
   public goTo_startOC(): void {
     this.proveedores = null as any;
     this.loadProveedores();
 
-    this.DISPLAYING_FORM = 4;
+    this.DISPLAYING_FORM = 3;
   }
 
   public updateParte(): void {
@@ -733,25 +710,12 @@ export class OcsDetailsComponent implements OnInit {
   public goTo_updateParte(index: number): void {
 
     this.parte_index = index;
-    this.parte_min = this.partes[this.parte_index].cantidadasignado;
 
     this.parteForm.controls.cantidad.setValue(this.partes[this.parte_index].cantidad);
     this.parteForm.controls.tiempoentrega.setValue(this.partes[this.parte_index].tiempoentrega);
     this.parteForm.controls.backorder.setValue(this.partes[this.parte_index].backorder);
 
-    this.parteForm.controls.cantidad.clearValidators();
-    this.parteForm.controls.cantidad.setValidators([
-      Validators.required,
-      this.validator_minCantidadAsignado(this.parte_min) // Validates 'min' against cantidadasignado
-    ]);
-
     this.DISPLAYING_FORM = 1;
-  }
-
-  public goTo_parteTracking(parte: any):void {
-    this.parteTrack = parte;
-
-    this.DISPLAYING_FORM = 2;
   }
 
   public goTo_partesList(): void {

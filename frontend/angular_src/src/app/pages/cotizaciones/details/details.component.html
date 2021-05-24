@@ -26,7 +26,7 @@
         <div>
           <span class="card-title">Cotizacion {{ cotizacion.id !== null ? "#" + cotizacion.id : '' }}</span>
           <div class="btn-group mr-1 mt-2 btn-right dropleft">
-            <button [hidden]="(cotizacion.solicitud_id <= 0)" type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="mdi mdi-chevron-left"></i> Referencias</button>
+            <button [hidden]="(cotizacion.solicitud_id <= 0)" [disabled]="(loading === true)" type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="mdi mdi-chevron-left"></i> Referencias</button>
             <div class="dropdown-menu">
                 <a class="dropdown-item" [hidden]="(loggedUser.role_id !== 1)" [routerLink]="['/panel/solicitudes/details/administrator', cotizacion.solicitud_id]">Ver Solicitud</a>
                 <a class="dropdown-item" [hidden]="(loggedUser.role_id !== 2)" [routerLink]="['/panel/solicitudes/details/seller', cotizacion.solicitud_id]">Ver Solicitud</a>

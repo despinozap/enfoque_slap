@@ -28,7 +28,7 @@
         <div>
           <span class="card-title">OC {{ oc.id !== null ? "#" + oc.id : '' }}</span>
           <div class="btn-group mr-1 mt-2 btn-right dropleft">
-            <button [hidden]="(oc.cotizacion_id <= 0) || (oc.solicitud_id <= 0)" type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="mdi mdi-chevron-left"></i> Referencias</button>
+            <button [hidden]="(oc.cotizacion_id <= 0) || (oc.solicitud_id <= 0)" [disabled]="(loading === true)" type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="mdi mdi-chevron-left"></i> Referencias</button>
             <div class="dropdown-menu">
                 <a class="dropdown-item" [routerLink]="['/panel/cotizaciones/details', oc.cotizacion_id]">Ver Cotizacion</a>
                 <a class="dropdown-item" [hidden]="(loggedUser.role_id !== 1)" [routerLink]="['/panel/solicitudes/details/administrator', oc.solicitud_id]">Ver Solicitud</a>
@@ -126,7 +126,6 @@
                   <td align="right">{{ parte.estadoocparte_name !== null ? parte.estadoocparte_name : "" }}</td>
                   <td align="center">
                     <button (click)="goTo_updateParte(i)" [hidden]="(oc.estadooc_id !== 1) && (oc.estadooc_id !== 2)" class="btn-table btn btn-secondary" title="Editar"><i class="bx bx-edit-alt"></i></button>
-                    <button (click)="goTo_parteTracking(parte)" class="btn-table btn btn-secondary" title="Seguimiento"><i class="bx bx-file-find"></i></button>
                   </td>                  
                 </tr>
               </tbody>
@@ -218,87 +217,8 @@
           </form>
         </div>
 
-        <!-- Parte tracking -->
-        <div [hidden]="(DISPLAYING_FORM !== 2)">
-          <h4 class="card-title">Seguimiento parte {{ parteTrack !== null ? '#' + parteTrack.nparte : ''}} </h4>
-          <p class="card-title-desc">Detalle de cantidades y estados de partes</p>
-          <span>Estado general parte: </span><span class="badge" [class.badge-warning]="(oc.estadooc_id === 1)"
-            [class.badge-primary]="(oc.estadooc_id === 2)"
-            [class.badge-success]="(oc.estadooc_id === 3)"
-            *ngIf="(oc.estadooc_name !== null)">{{ oc.estadooc_name }}</span>
-          <p class="card-title-desc">Ultima actualizacion: <label>{{ parteTrack !== null ? (dateStringFormat(parteTrack.updated_at) + ((parteTrack.statusdays >= 0) ? ((parteTrack.statusdays == 1) ? ' (hace 1 dia)' : ((parteTrack.statusdays > 1) ? ' (hace ' + parteTrack.statusdays + ' dias)' : ' (hoy)')) : '')) : '' }}</label></p>
-          <div class="row">
-            <div class="col-6">
-              <div class="form-group">
-                <label class="control-label">Total de partes</label>
-                <br>
-                <label>{{ parteTrack !== null ? parteTrack.cantidad : '' }}</label>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="form-group">
-                <label class="control-label">Pendiente de recepcion por comprador</label>
-                <br>
-                <label>{{ parteTrack !== null ? parteTrack.cantidad_pendiente + '/' + parteTrack.cantidad : '' }}</label>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="form-group">
-                <label class="control-label">Recibido por comprador (en stock)</label>
-                <br>
-                <label>{{ parteTrack !== null ? parteTrack.cantidad_compradorrecepcionado + '/' + parteTrack.cantidad : '' }}</label>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="form-group">
-                <label class="control-label">Despachado a centro de distribucion (en trayecto)</label>
-                <br>
-                <label>{{ parteTrack !== null ? parteTrack.cantidad_compradordespachado + '/' + parteTrack.cantidad : '' }}</label>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="form-group">
-                <label class="control-label">Recibido en centro de distribucion (en stock)</label>
-                <br>
-                <label>{{ parteTrack !== null ? parteTrack.cantidad_centrodistribucionrecepcionado + '/' + parteTrack.cantidad : '' }}</label>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="form-group">
-                <label class="control-label">Despachado a sucursal (en trayecto)</label>
-                <br>
-                <label>{{ parteTrack !== null ? parteTrack.cantidad_centrodistribuciondespachado + '/' + parteTrack.cantidad : '' }}</label>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="form-group">
-                <label class="control-label">Recibido en sucursal (en stock)</label>
-                <br>
-                <label>{{ parteTrack !== null ? parteTrack.cantidad_sucursalrecepcionado + '/' + parteTrack.cantidad : '' }}</label>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="form-group">
-                <label class="control-label">Entregado a cliente</label>
-                <br>
-                <label>{{ parteTrack !== null ? parteTrack.cantidad_sucursaldespachado + '/' + parteTrack.cantidad : '' }}</label>
-              </div>
-            </div>
-          </div>
-          
-          <div class="row">
-            <div class="col-12">
-              <div class="form-buttons mt-2">
-                <button [disabled]="(loading === true)" class="btn btn-light" (click)="goTo_partesList()">
-                  <span>Volver</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <!-- Reject OC (dar baja) -->
-        <div [hidden]="(DISPLAYING_FORM !== 3)">
+        <div [hidden]="(DISPLAYING_FORM !== 2)">
           <h4 class="card-title">Dar de OC de baja</h4>
           <p class="card-title-desc">Completa los siguientes campos para dar de baja la OC</p>
 
@@ -347,7 +267,7 @@
         </div>
 
         <!-- Start OC -->
-        <div [hidden]="(DISPLAYING_FORM !== 4)">
+        <div [hidden]="(DISPLAYING_FORM !== 3)">
           <h4 class="card-title">Procesar OC</h4>
           <p class="card-title-desc">Completa los siguientes campos para procesar la OC</p>
 
