@@ -1106,7 +1106,7 @@ class SolicitudesController extends Controller
 
             $response = HelpController::buildResponse(
                 500,
-                'Error al completar la solicitud [!]' . $e,
+                'Error al completar la solicitud [!]',
                 null
             );
         }

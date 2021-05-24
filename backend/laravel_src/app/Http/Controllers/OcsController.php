@@ -169,7 +169,7 @@ class OcsController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al obtener la lista de motivos de baja [!]' .$e,
+                'Error al obtener la lista de motivos de baja [!]',
                 null
             );
         }

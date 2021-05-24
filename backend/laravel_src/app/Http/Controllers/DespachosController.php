@@ -607,7 +607,7 @@ class DespachosController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al obtener el despacho [!]' . $e,
+                'Error al obtener el despacho [!]',
                 null
             );
         }

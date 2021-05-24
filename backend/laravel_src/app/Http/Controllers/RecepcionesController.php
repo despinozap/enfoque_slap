@@ -135,7 +135,7 @@ class RecepcionesController extends Controller
                         $ocParteList = OcParte::select('oc_parte.*')
                                         ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
                                         ->where('ocs.proveedor_id', $proveedor->id)
-                                        ->where('ocs.estadooc_id', '<', 4) // Estadooc = 'Pendiente' (1) or 'En proceso' (2) or 'Cerrada' (3)
+                                        ->whereIn('ocs.estadooc_id', [2, 3]) // Estadooc = 'En proceso' (2) or 'Cerrada' (3)
                                         ->get();
 
 
@@ -336,7 +336,7 @@ class RecepcionesController extends Controller
                                 if($ocParteList = OcParte::select('oc_parte.*')
                                                 ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
                                                 ->where('ocs.proveedor_id', $proveedor->id)
-                                                ->where('ocs.estadooc_id', '<', 4) // Estadooc = 'Pendiente' (1) or 'En proceso' (2) or 'Cerrada' (3)
+                                                ->whereIn('ocs.estadooc_id', [2, 3]) // Estadooc = 'En proceso' (2) or 'Cerrada' (3)
                                                 ->get()
                                 )
                                 {
@@ -772,7 +772,7 @@ class RecepcionesController extends Controller
                                 $ocParteList = OcParte::select('oc_parte.*')
                                         ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
                                         ->where('ocs.proveedor_id', $recepcion->sourceable->id) // For Proveedor
-                                        ->where('ocs.estadooc_id', '<', 4) // Estadooc = 'Pendiente' (1) or 'En proceso' (2) or 'Cerrada' (3)
+                                        ->whereIn('ocs.estadooc_id', [2, 3]) // Estadooc = 'En proceso' (2) or 'Cerrada' (3)
                                         ->get();
 
                                 if($ocParteList !== null)
@@ -989,7 +989,7 @@ class RecepcionesController extends Controller
                                     if($ocParteList = OcParte::select('oc_parte.*')
                                                     ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
                                                     ->where('ocs.proveedor_id', $recepcion->sourceable->id)
-                                                    ->where('ocs.estadooc_id', '<', 4) // Estadooc = 'Pendiente' (1) or 'En proceso' (2) or 'Cerrada' (3)
+                                                    ->whereIn('ocs.estadooc_id', [2, 3]) // Estadooc = 'En proceso' (2) or 'Cerrada' (3)
                                                     ->get()
                                     )
                                     {
