@@ -36,6 +36,7 @@ export class ClientesCreateComponent implements OnInit {
 
     let cliente: any = {
       name: this.clienteForm.value.name,
+      country_id: 1 // Chile
     } as Cliente;
 
     this._clientesService.storeCliente(cliente)

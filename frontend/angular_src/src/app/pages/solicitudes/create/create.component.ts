@@ -377,6 +377,7 @@ export class SolicitudesCreateComponent implements OnInit {
     this.responseErrors = [];
 
     let solicitud: any = {
+      sucursal_id: 2, // American Parte Antofagasta as Default
       faena_id: this.solicitudForm.value.faena,
       marca_id: this.solicitudForm.value.marca,
       comprador_id: this.solicitudForm.value.comprador,

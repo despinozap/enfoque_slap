@@ -72,8 +72,8 @@
 							<div class="form-group">
 								<label class="control-label">Rol</label>
 								<!-- Backend errors -->
-								<div class="alert alert-danger" *ngIf="(responseErrors.role)">
-									<div *ngFor="let errorMessage of responseErrors.role">{{ errorMessage }}</div>
+								<div class="alert alert-danger" *ngIf="(responseErrors.role_id)">
+									<div *ngFor="let errorMessage of responseErrors.role_id">{{ errorMessage }}</div>
 								</div>
 								<select class="form-control" name="role" id="role" formControlName="role">
 									<option *ngFor="let role of roles" [value]="role.id">{{ role.name }}</option>

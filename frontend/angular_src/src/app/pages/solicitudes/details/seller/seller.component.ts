@@ -33,6 +33,7 @@ export class SolicitudesDetailsSellerComponent implements OnInit {
   
   solicitud: any = {
     id: -1,
+    sucursal_name: null,
     faena_name: null,
     cliente_name: null,
     marca_name: null,
@@ -93,6 +94,7 @@ export class SolicitudesDetailsSellerComponent implements OnInit {
     if(solicitudData['partes'].length > 0)
     {
       this.solicitud.id = solicitudData.id;
+      this.solicitud.sucursal_name = solicitudData.sucursal.name;
       this.solicitud.faena_name = solicitudData.faena.name;
       this.solicitud.cliente_name = solicitudData.faena.cliente.name;
       this.solicitud.marca_name = solicitudData.marca.name;

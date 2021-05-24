@@ -36,6 +36,7 @@
                 </div>
               </th>
               <th>Solicitud</th>
+              <th>Sucursal</th>
               <th>Faena</th>
               <th>Marca</th>
               <th>Comprador</th>
@@ -47,7 +48,7 @@
           </thead>
           <tbody *ngIf="(loading === true)">
             <tr>
-              <td colspan="9" style="text-align: center;"><i
+              <td colspan="10" style="text-align: center;"><i
                     class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</td>
             </tr>
           </tbody>
@@ -60,6 +61,7 @@
                 </div>
               </td>
               <td align="center">{{ solicitud.id }}</td>
+              <td>{{ solicitud.sucursal.name }}</td>
               <td>{{ solicitud.faena.name }}</td>
               <td>{{ solicitud.marca.name }}</td>
               <td>{{ solicitud.comprador.name }}</td>
@@ -84,7 +86,7 @@
           </tbody>
           <tfoot>
             <tr>
-              <td colspan="4" align="left">
+              <td colspan="5" align="left">
                 <button type="button" class="btn btn-outline-primary mr-2" (click)="goTo_newSolicitud()" [disabled]="(loading === true)">
                   <i class="bx bx-notepad font-size-16 align-middle"></i> Nueva solicitud
                 </button>

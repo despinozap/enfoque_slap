@@ -46,7 +46,8 @@ export class UsuariosCreateComponent implements OnInit {
       name: this.userForm.value.name,
       email: this.userForm.value.email,
       phone: this.userForm.value.phone,
-      role_id: this.userForm.value.role
+      role_id: this.userForm.value.role,
+      country_id: 1 // Chile
     } as User;
 
     this._usersService.storeUser(user)
@@ -63,7 +64,6 @@ export class UsuariosCreateComponent implements OnInit {
       },
       //Error request
       (errorResponse: any) => {
-
         switch(errorResponse.status)
         {
           case 400: //Invalid request parameters
