@@ -276,15 +276,15 @@ export class CotizacionesListComponent implements OnInit, AfterViewInit {
         motivorechazo_name: null,
         // Report
         solicitud_id: -1,
+        sucursal_rut: null,
+        sucursal_name: null,
+        sucursal_address: null,
+        sucursal_city: null,
         faena_rut: null,
         faena_address: null,
         faena_city: null,
         faena_contact: null,
         faena_phone: null,
-        sucursal_rut: null,
-        sucursal_name: null,
-        sucursal_address: null,
-        sucursal_city: null,
         user_name: null,
         user_email: null,
         user_phone: null,
@@ -312,15 +312,15 @@ export class CotizacionesListComponent implements OnInit, AfterViewInit {
         let today = new Date();
         cotizacion.currentdate = `${today.getFullYear()}-${(today.getMonth() + 1) < 10 ? '0' + (today.getMonth() + 1) : (today.getMonth() + 1)}-${today.getDate() < 10 ? '0' + today.getDate() : today.getDate()}`;
         cotizacion.solicitud_id = cotizacionData.solicitud.id;
+        cotizacion.sucursal_rut = cotizacionData.solicitud.sucursal.rut;
+        cotizacion.sucursal_name = cotizacionData.solicitud.sucursal.name;
+        cotizacion.sucursal_address = cotizacionData.solicitud.sucursal.address;
+        cotizacion.sucursal_city = cotizacionData.solicitud.sucursal.city;
         cotizacion.faena_rut = cotizacionData.solicitud.faena.rut;
         cotizacion.faena_address = cotizacionData.solicitud.faena.address;
         cotizacion.faena_city = cotizacionData.solicitud.faena.city;
         cotizacion.faena_contact = cotizacionData.solicitud.faena.contact;
         cotizacion.faena_phone = cotizacionData.solicitud.faena.phone;
-        cotizacion.sucursal_rut = cotizacionData.solicitud.faena.cliente.sucursal.rut;
-        cotizacion.sucursal_name = cotizacionData.solicitud.faena.cliente.sucursal.name;
-        cotizacion.sucursal_address = cotizacionData.solicitud.faena.cliente.sucursal.address;
-        cotizacion.sucursal_city = cotizacionData.solicitud.faena.cliente.sucursal.city;
         cotizacion.user_name = cotizacionData.solicitud.user.name;
         cotizacion.user_email = cotizacionData.solicitud.user.email;
         cotizacion.user_phone = cotizacionData.solicitud.user.phone;

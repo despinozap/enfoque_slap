@@ -65,15 +65,15 @@ export class CotizacionesDetailsComponent implements OnInit {
     motivorechazo_name: null,
     // Report
     solicitud_id: -1,
+    sucursal_rut: null,
+    sucursal_name: null,
+    sucursal_address: null,
+    sucursal_city: null,
     faena_rut: null,
     faena_address: null,
     faena_city: null,
     faena_contact: null,
     faena_phone: null,
-    sucursal_rut: null,
-    sucursal_name: null,
-    sucursal_address: null,
-    sucursal_city: null,
     user_name: null,
     user_email: null,
     user_phone: null
@@ -195,15 +195,15 @@ export class CotizacionesDetailsComponent implements OnInit {
       let today = new Date();
       this.cotizacion.currentdate = `${today.getFullYear()}-${(today.getMonth() + 1) < 10 ? '0' + (today.getMonth() + 1) : (today.getMonth() + 1)}-${today.getDate() < 10 ? '0' + today.getDate() : today.getDate()}`;
       this.cotizacion.solicitud_id = cotizacionData.solicitud.id;
+      this.cotizacion.sucursal_rut = cotizacionData.solicitud.sucursal.rut;
+      this.cotizacion.sucursal_name = cotizacionData.solicitud.sucursal.name;
+      this.cotizacion.sucursal_address = cotizacionData.solicitud.sucursal.address;
+      this.cotizacion.sucursal_city = cotizacionData.solicitud.sucursal.city;
       this.cotizacion.faena_rut = cotizacionData.solicitud.faena.rut;
       this.cotizacion.faena_address = cotizacionData.solicitud.faena.address;
       this.cotizacion.faena_city = cotizacionData.solicitud.faena.city;
       this.cotizacion.faena_contact = cotizacionData.solicitud.faena.contact;
       this.cotizacion.faena_phone = cotizacionData.solicitud.faena.phone;
-      this.cotizacion.sucursal_rut = cotizacionData.solicitud.faena.cliente.sucursal.rut;
-      this.cotizacion.sucursal_name = cotizacionData.solicitud.faena.cliente.sucursal.name;
-      this.cotizacion.sucursal_address = cotizacionData.solicitud.faena.cliente.sucursal.address;
-      this.cotizacion.sucursal_city = cotizacionData.solicitud.faena.cliente.sucursal.city;
       this.cotizacion.user_name = cotizacionData.solicitud.user.name;
       this.cotizacion.user_email = cotizacionData.solicitud.user.email;
       this.cotizacion.user_phone = cotizacionData.solicitud.user.phone;
