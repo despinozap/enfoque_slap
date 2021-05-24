@@ -72,11 +72,34 @@ class CotizacionesController extends Controller
                         }
 
                         $cotizacion->solicitud;
-                        $cotizacion->solicitud->makeHidden(['partes', 'faena_id', 'marca_id', 'user_id', 'estadosolicitud_id', 'marca_id', 'created_at', 'updated_at']);
+                        $cotizacion->solicitud->makeHidden([
+                            'partes',
+                            'sucursal_id',
+                            'faena_id',
+                            'marca_id',
+                            'user_id',
+                            'estadosolicitud_id',
+                            'marca_id',
+                            'created_at',
+                            'updated_at'
+                        ]);
                         $cotizacion->solicitud->faena;
-                        $cotizacion->solicitud->faena->makeHidden(['cliente_id', 'created_at', 'updated_at']);
+                        $cotizacion->solicitud->faena->makeHidden([
+                            'rut',
+                            'address',
+                            'city',
+                            'contact',
+                            'phone',
+                            'cliente_id', 
+                            'created_at', 
+                            'updated_at'
+                        ]);
                         $cotizacion->solicitud->faena->cliente;
-                        $cotizacion->solicitud->faena->cliente->makeHidden(['created_at', 'updated_at']);
+                        $cotizacion->solicitud->faena->cliente->makeHidden([
+                            'country_id',
+                            'created_at', 
+                            'updated_at'
+                        ]);
                         $cotizacion->solicitud->marca;
                         $cotizacion->solicitud->marca->makeHidden(['created_at', 'updated_at']);
                         $cotizacion->solicitud->user;
