@@ -58,14 +58,42 @@ class SolicitudesController extends Controller
                                     }
 
                                     $solicitud->partes_total;
+                                    $solicitud->sucursal;
+                                    $solicitud->sucursal->makeHidden([
+                                        'type',
+                                        'rut',
+                                        'address',
+                                        'city',
+                                        'country_id',
+                                        'created_at', 
+                                        'updated_at'
+                                    ]);
                                     $solicitud->faena;
-                                    $solicitud->faena->makeHidden(['cliente_id', 'created_at', 'updated_at']);
+                                    $solicitud->faena->makeHidden([
+                                        'rut',
+                                        'address',
+                                        'city',
+                                        'contact',
+                                        'phone',
+                                        'cliente_id', 
+                                        'created_at', 
+                                        'updated_at'
+                                    ]);
                                     $solicitud->faena->cliente;
                                     $solicitud->faena->cliente->makeHidden(['country_id', 'created_at', 'updated_at']);
                                     $solicitud->marca;
                                     $solicitud->marca->makeHidden(['created_at', 'updated_at']);
                                     $solicitud->comprador;
-                                    $solicitud->comprador->makeHidden(['country_id', 'created_at', 'updated_at']);
+                                    $solicitud->comprador->makeHidden([
+                                        'rut',
+                                        'address',
+                                        'city',
+                                        'contact',
+                                        'phone',
+                                        'country_id', 
+                                        'created_at', 
+                                        'updated_at'
+                                    ]);
                                     $solicitud->user;
                                     $solicitud->user->makeHidden(['email', 'phone', 'country_id', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
                                     $solicitud->estadosolicitud;
@@ -117,14 +145,42 @@ class SolicitudesController extends Controller
                                 }
 
                                 $solicitud->partes_total;
+                                $solicitud->sucursal;
+                                $solicitud->sucursal->makeHidden([
+                                    'type',
+                                    'rut',
+                                    'address',
+                                    'city',
+                                    'country_id',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
                                 $solicitud->faena;
-                                $solicitud->faena->makeHidden(['cliente_id', 'created_at', 'updated_at']);
+                                $solicitud->faena->makeHidden([
+                                    'rut',
+                                    'address',
+                                    'city',
+                                    'contact',
+                                    'phone',
+                                    'cliente_id', 
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
                                 $solicitud->faena->cliente;
                                 $solicitud->faena->cliente->makeHidden(['country_id', 'created_at', 'updated_at']);
                                 $solicitud->marca;
                                 $solicitud->marca->makeHidden(['created_at', 'updated_at']);
                                 $solicitud->comprador;
-                                $solicitud->comprador->makeHidden(['country_id', 'created_at', 'updated_at']);
+                                $solicitud->comprador->makeHidden([
+                                    'rut',
+                                    'address',
+                                    'city',
+                                    'contact',
+                                    'phone',
+                                    'country_id', 
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
                                 $solicitud->user;
                                 $solicitud->user->makeHidden(['email', 'phone', 'country_id', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
                                 $solicitud->estadosolicitud;
@@ -501,18 +557,52 @@ class SolicitudesController extends Controller
                                 'updated_at'
                             ]);
         
+                            $solicitud->partes_total;
+                                    
+                            $solicitud->sucursal;
+                            $solicitud->sucursal->makeHidden([
+                                'type',
+                                'rut',
+                                'address',
+                                'city',
+                                'country_id',
+                                'created_at', 
+                                'updated_at'
+                            ]);
+                            
                             $solicitud->faena;
-                            $solicitud->faena->makeHidden(['cliente_id', 'created_at', 'updated_at']);
-        
+                            $solicitud->faena->makeHidden([
+                                'rut',
+                                'address',
+                                'city',
+                                'contact',
+                                'phone',
+                                'cliente_id', 
+                                'created_at', 
+                                'updated_at'
+                            ]);
+                            
                             $solicitud->faena->cliente;
                             $solicitud->faena->cliente->makeHidden(['country_id', 'created_at', 'updated_at']);
                             
                             $solicitud->marca;
                             $solicitud->marca->makeHidden(['created_at', 'updated_at']);
-
+                            
                             $solicitud->comprador;
-                            $solicitud->comprador->makeHidden(['country_id', 'created_at', 'updated_at']);
-        
+                            $solicitud->comprador->makeHidden([
+                                'rut',
+                                'address',
+                                'city',
+                                'contact',
+                                'phone',
+                                'country_id', 
+                                'created_at', 
+                                'updated_at'
+                            ]);
+                            
+                            $solicitud->user;
+                            $solicitud->user->makeHidden(['email', 'phone', 'country_id', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
+                            
                             $solicitud->estadosolicitud;
                             $solicitud->estadosolicitud->makeHidden(['created_at', 'updated_at']);
         
