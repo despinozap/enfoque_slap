@@ -23,6 +23,26 @@ class Parte extends Model
         return $this->belongsToMany(Solicitud::class, 'parte_solicitud');
     }
 
+    public function cotizaciones()
+    {
+        return $this->belongsToMany(Cotizacion::class, 'cotizacion_parte');
+    }
+
+    public function ocs()
+    {
+        return $this->belongsToMany(Oc::class, 'oc_parte');
+    }
+
+    public function recepciones()
+    {
+        return $this->belongsToMany(Recepcion::class, 'parte_recepcion');
+    }
+
+    public function despachos()
+    {
+        return $this->belongsToMany(Despacho::class, 'despacho_parte');
+    }
+
     public function getCantidadRecepcionado($recepcionable)
     {
         $parteRecepcionList = ParteRecepcion::join('recepciones', 'recepciones.id', '=', 'parte_recepcion.recepcion_id')

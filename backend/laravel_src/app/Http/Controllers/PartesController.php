@@ -329,7 +329,47 @@ class PartesController extends Controller
             {
                 if($parte = Parte::find($id))
                 {
-                    if($parte->solicitudes->count() === 0)
+                    if($parte->solicitudes->count() > 0)
+                    {
+                        $response = HelpController::buildResponse(
+                            409,
+                            'No puedes eliminar una parte asociada a solicitudes',
+                            null
+                        );
+                    }
+                    else if($parte->cotizaciones->count() > 0)
+                    {
+                        $response = HelpController::buildResponse(
+                            409,
+                            'No puedes eliminar una parte asociada a cotizaciones',
+                            null
+                        );
+                    }
+                    else if($parte->ocs->count() > 0)
+                    {
+                        $response = HelpController::buildResponse(
+                            409,
+                            'No puedes eliminar una parte asociada a OCs',
+                            null
+                        );
+                    }
+                    else if($parte->recepciones->count() > 0)
+                    {
+                        $response = HelpController::buildResponse(
+                            409,
+                            'No puedes eliminar una parte asociada a recepciones',
+                            null
+                        );
+                    }
+                    else if($parte->despachos->count() > 0)
+                    {
+                        $response = HelpController::buildResponse(
+                            409,
+                            'No puedes eliminar una parte asociada a despachos',
+                            null
+                        );
+                    }
+                    else
                     {
                         if($parte->delete())
                         {
@@ -347,14 +387,6 @@ class PartesController extends Controller
                                 null
                             );
                         }
-                    }
-                    else
-                    {
-                        $response = HelpController::buildResponse(
-                            409,
-                            'No puedes eliminar una parte asociada a solicitudes',
-                            null
-                        );
                     }
                 }
                 else
