@@ -65,6 +65,19 @@ class DespachosController extends Controller
                             return $parte;
                         });
 
+                        $despacho->despachable;
+                        $despacho->despachable->makeHidden([
+                            'comprador_id',
+                            'rut',
+                            'address',
+                            'city',
+                            'contact',
+                            'phone',
+                            'country_id',
+                            'created_at', 
+                            'updated_at'
+                        ]);
+
                         $despacho->destinable;
                         $despacho->destinable->makeHidden([
                             'type',
@@ -153,7 +166,7 @@ class DespachosController extends Controller
                         // Retrieves the partes list with cantidad_stock for dispatching
                         $queuePartes = $parteList->reduce(function($carry, $parte) use ($comprador)
                             {
-                                // Get how many partes have been received but not dispatched yet in Comprador
+                                // Get the stock cantidad in Comprador and skip the ones with no stock
                                 $cantidadStock = $parte->getCantidadRecepcionado($comprador) - $parte->getCantidadDespachado($comprador);
                                 if($cantidadStock > 0)
                                 {
@@ -233,26 +246,25 @@ class DespachosController extends Controller
                     'partes' => 'required|array|min:1',
                     'partes.*.id'  => 'required|exists:partes,id',
                     'partes.*.cantidad'  => 'required|numeric|min:1',
-                    'partes.*.comentario'  => 'sometimes|nullable'
                 ];
         
                 $validatorMessages = [
                     'sucursal_id.required' => 'Debes ingresar el centro de distribucion',
                     'sucursal_id.exists' => 'El centro de distribucion ingresado no existe',
-                    'fecha.required' => 'Debes ingresar la fecha de recepcion',
-                    'fecha.date_format' => 'El formato de fecha de recepcion es invalido',
+                    'fecha.required' => 'Debes ingresar la fecha de despacho',
+                    'fecha.date_format' => 'El formato de fecha de despacho es invalido',
                     'fecha.before' => 'La fecha debe ser igual o anterior a hoy',
                     'ndocumento.min' => 'El numero de documento debe tener al menos un digito',
-                    'responsable.required' => 'Debes ingresar el nombre de la persona que recibe',
-                    'responsable.min' => 'El nombre de la persona que recibe debe tener al menos un digito',
-                    'partes.required' => 'Debes seleccionar las partes recepcionadas',
-                    'partes.array' => 'Lista de partes recepcionadas invalida',
-                    'partes.min' => 'La recepcion debe contener al menos 1 parte recepcionada',
-                    'partes.*.id.required' => 'La lista de partes recepcionadas es invalida',
-                    'partes.*.id.exists' => 'La parte recepcionada ingresada no existe',
-                    'partes.*.cantidad.required' => 'Debes ingresar la cantidad para la parte recepcionada',
-                    'partes.*.cantidad.numeric' => 'La cantidad para la parte recepcionada debe ser numerica',
-                    'partes.*.cantidad.min' => 'La cantidad para la parte recepcionada debe ser mayor a 0',
+                    'responsable.required' => 'Debes ingresar el nombre de la persona que despacha',
+                    'responsable.min' => 'El nombre de la persona que despacha debe tener al menos un digito',
+                    'partes.required' => 'Debes seleccionar las partes despachadas',
+                    'partes.array' => 'Lista de partes despachadas invalida',
+                    'partes.min' => 'El despacho debe contener al menos 1 parte despachada',
+                    'partes.*.id.required' => 'La lista de partes despachadas es invalida',
+                    'partes.*.id.exists' => 'La parte despachada ingresada no existe',
+                    'partes.*.cantidad.required' => 'Debes ingresar la cantidad para la parte despachada',
+                    'partes.*.cantidad.numeric' => 'La cantidad para la parte despachada debe ser numerica',
+                    'partes.*.cantidad.min' => 'La cantidad para la parte despachada debe ser mayor a 0',
                     
                 ];
         
@@ -522,7 +534,7 @@ class DespachosController extends Controller
                 {
                     if($comprador = Comprador::find($comprador_id))
                     {
-                        if($despacho = Despacho::find($id))
+                        if($despacho = $comprador->despachos->find($id))
                         {
                             $despacho->partes_total;
                         
@@ -556,6 +568,19 @@ class DespachosController extends Controller
 
                                 return $parte;
                             });
+
+                            $despacho->despachable;
+                            $despacho->despachable->makeHidden([
+                                'comprador_id',
+                                'rut',
+                                'address',
+                                'city',
+                                'contact',
+                                'phone',
+                                'country_id',
+                                'created_at', 
+                                'updated_at'
+                            ]);
 
                             $despacho->destinable;
                             $despacho->destinable->makeHidden([
@@ -608,6 +633,515 @@ class DespachosController extends Controller
             $response = HelpController::buildResponse(
                 500,
                 'Error al obtener el despacho [!]',
+                null
+            );
+        }
+        
+        return $response;
+    }
+
+
+    /**
+     * It retrieves all the required info for
+     * selecting data and updating a Despacho for Comprador
+     * 
+     */
+    public function update_prepare_comprador($comprador_id, $id)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('compradores despachos_update'))
+            {
+                $validatorInput = ['despacho_id' => $id];
+            
+                $validatorRules = [
+                    'despacho_id' => 'required|exists:despachos,id,despachable_id,' . $comprador_id . ',despachable_type,' . get_class(new Comprador()), // Try to add recepcionable_type
+                ];
+        
+                $validatorMessages = [
+                    'despacho_id.required' => 'Debes ingresar el despacho',
+                    'despacho_id.exists' => 'El despacho ingresado no existe para el comprador',                    
+                ];
+        
+                $validator = Validator::make(
+                    $validatorInput,
+                    $validatorRules,
+                    $validatorMessages
+                );
+        
+                if ($validator->fails()) 
+                {
+                    $response = HelpController::buildResponse(
+                        400,
+                        $validator->errors(),
+                        null
+                    );
+                }
+                else        
+                {
+                    if($comprador = Comprador::find($comprador_id))
+                    {
+                        if($despacho = $comprador->despachos->find($id))
+                        {
+                            $despacho->makeHidden([
+                                'despachable_id',
+                                'despachable_type',
+                                'destinable_id',
+                                'destinable_type',
+                                'partes_total',
+                                'updated_at',
+                            ]);
+
+                            $despacho->despachable;
+                            $despacho->despachable->makeHidden([
+                                'rut',
+                                'address',
+                                'city',
+                                'contact',
+                                'phone',
+                                'country_id',
+                                'created_at', 
+                                'updated_at'
+                            ]);
+
+                            $despacho->destinable;
+                            $despacho->destinable->makeHidden([
+                                'type',
+                                'rut',
+                                'address',
+                                'city',
+                                'country_id',
+                                'created_at', 
+                                'updated_at'
+                            ]);
+
+                            $despacho->partes;
+                            foreach($despacho->partes as $parte)
+                            {                                
+                                $parte->makeHidden([
+                                    'marca_id',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+
+                                $parte->pivot->makeHidden([
+                                    'despacho_id',
+                                    'parte_id',
+                                    'created_at',
+                                    'updated_at',
+                                ]);
+
+                                $parte->marca;
+                                $parte->marca->makeHidden(['created_at', 'updated_at']);
+                            }
+
+
+                            // Centrosditribucion
+                            {
+                                $centrosdistribucion = Sucursal::where('type', '=', 'centro')->get();
+                                $centrosdistribucion = $centrosdistribucion->filter(function($centrodistribucion)
+                                {
+                                    $centrodistribucion->makeHidden([
+                                        'type',
+                                        'rut',
+                                        'address',
+                                        'city',
+                                        'country_id',
+                                        'created_at',
+                                        'updated_at'
+                                    ]);
+            
+                                    return $centrodistribucion;
+                                });
+                            }
+
+                            // QueuePartes
+                            {
+                                // Get all the Partes in Recepciones for Comprador
+                                $parteList = Parte::select('partes.*')
+                                            ->join('parte_recepcion', 'parte_recepcion.parte_id', '=', 'partes.id')
+                                            ->join('recepciones', 'recepciones.id', '=', 'parte_recepcion.recepcion_id')
+                                            ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                            ->where('recepciones.recepcionable_id', '=', $comprador->id)
+                                            ->groupBy('partes.id')
+                                            ->get();
+            
+                                // Retrieves the partes list with cantidad_stock for dispatching
+                                $queuePartes = $parteList->reduce(function($carry, $parte) use ($comprador, $despacho)
+                                    {
+                                        // Get the stock cantidad in Comprador and skip the ones with no stock
+                                        $cantidadStock = $parte->getCantidadRecepcionado($comprador) - $parte->getCantidadDespachado($comprador);
+
+                                        // If the Parte is already in the Recepcion, then add the cantidad to queue calc in Despachos if already taken
+                                        if($p = $despacho->partes->find($parte->id))
+                                        {
+                                            $cantidadStock = $cantidadStock + $p->pivot->cantidad;
+                                        }
+
+                                        if($cantidadStock > 0)
+                                        {
+                                            $parteData = [
+                                                "id" => $parte->id,
+                                                "nparte" => $parte->nparte,
+                                                "marca" => $parte->marca->makeHidden(['created_at', 'updated_at']),
+                                                "cantidad_stock" => $cantidadStock, // Maximum despachable for the Parte
+                                            ];
+                                            
+                                            array_push($carry, $parteData);
+                                        }
+            
+                                        return $carry;
+                                    },
+                                    array()
+                                );
+                            }
+
+                            $data = [
+                                'despacho' => $despacho,
+                                'centrosdistribucion' => $centrosdistribucion,
+                                'queue_partes' => $queuePartes
+                            ];
+
+                            $response = HelpController::buildResponse(
+                                200,
+                                null,
+                                $data
+                            );
+                        }   
+                        else     
+                        {
+                            $response = HelpController::buildResponse(
+                                412,
+                                'El despacho no existe',
+                                null
+                            );
+                        }                        
+                    }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            412,
+                            'El comprador no existe',
+                            null
+                        );
+                    }
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a actualizar despachos de comprador',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al obtener el despacho [!]' . $e,
+                null
+            );
+        }
+        
+        return $response;
+    }
+
+
+    public function update_comprador(Request $request, $comprador_id, $id)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('compradores despachos_update'))
+            {
+                $validatorInput = $request->only('fecha', 'ndocumento', 'responsable', 'comentario', 'partes');
+            
+                $validatorRules = [
+                    'fecha' => 'required|date_format:Y-m-d|before:tomorrow', // it includes today
+                    'ndocumento' => 'nullable|min:1',
+                    'responsable' => 'required|min:1',
+                    'comentario' => 'sometimes|nullable',
+                    'partes' => 'required|array|min:1',
+                    'partes.*.id'  => 'required|exists:partes,id',
+                    'partes.*.cantidad'  => 'required|numeric|min:1',
+                    'partes.*.comentario'  => 'sometimes|nullable'
+                ];
+        
+                $validatorMessages = [
+                    'fecha.required' => 'Debes ingresar la fecha de despacho',
+                    'fecha.date_format' => 'El formato de fecha de despacho es invalido',
+                    'fecha.before' => 'La fecha debe ser igual o anterior a hoy',
+                    'ndocumento.min' => 'El numero de documento debe tener al menos un digito',
+                    'responsable.required' => 'Debes ingresar el nombre de la persona que despacha',
+                    'responsable.min' => 'El nombre de la persona que despacha debe tener al menos un digito',
+                    'partes.required' => 'Debes seleccionar las partes despachadas',
+                    'partes.array' => 'Lista de partes despachadas invalida',
+                    'partes.min' => 'El despacho debe contener al menos 1 parte despachada',
+                    'partes.*.id.required' => 'La lista de partes despachadas es invalida',
+                    'partes.*.id.exists' => 'La parte despachada ingresada no existe',
+                    'partes.*.cantidad.required' => 'Debes ingresar la cantidad para la parte despachada',
+                    'partes.*.cantidad.numeric' => 'La cantidad para la parte despachada debe ser numerica',
+                    'partes.*.cantidad.min' => 'La cantidad para la parte despachada debe ser mayor a 0',
+                ];
+        
+                $validator = Validator::make(
+                    $validatorInput,
+                    $validatorRules,
+                    $validatorMessages
+                );
+        
+                if ($validator->fails()) 
+                {
+                    $response = HelpController::buildResponse(
+                        400,
+                        $validator->errors(),
+                        null
+                    );
+                }
+                else        
+                {
+                    if($comprador = Comprador::find($comprador_id))
+                    {
+                        if($despacho = $comprador->despachos->find($id))
+                        {
+                            DB::beginTransaction();
+
+                            // Fill the data
+                            $despacho->fecha = $request->fecha;
+                            $despacho->ndocumento = $request->ndocumento;
+                            $despacho->responsable = $request->responsable;
+                            $despacho->comentario = $request->comentario;
+
+                            if($despacho->save())
+                            {
+
+                                $success = true;
+
+                                //Attaching each Parte to the Despacho
+                                $syncData = [];
+                                foreach($request->partes as $parteRequest)
+                                {
+                                    if($parte = Parte::find($parteRequest['id']))
+                                    {
+                                        // If the Parte is kept in Despacho
+                                        if($parteDespacho = $despacho->partes->find($parte->id))
+                                        {
+                                            $cantidad_despachos = $parte->getCantidadDespachado($comprador) - $parteDespacho->pivot->cantidad + $parteRequest['cantidad'];
+                                            if($cantidad_despachos <= $parte->getCantidadRecepcionado($comprador))
+                                            {
+                                                $syncData[$parte->id] =  array(
+                                                    'cantidad' => $parteRequest['cantidad']
+                                                );
+                                            }
+                                            else
+                                            {
+                                                // If the received parts are more than waiting in queue
+                                                $response = HelpController::buildResponse(
+                                                    409,
+                                                    'La cantidad ingresada para la parte "' . $parte->nparte . '" es mayor a la cantidad pendiente de despacho',
+                                                    null
+                                                );
+            
+                                                $success = false;
+            
+                                                break;
+                                            }
+                                        }
+                                        // If it's a new Parte in Despacho
+                                        else
+                                        {
+                                            $cantidad_despachos = $parte->getCantidadDespachado($comprador) + $parteRequest['cantidad'];
+                                            if($cantidad_despachos <= $parte->getCantidadRecepcionado($comprador))
+                                            {
+                                                $syncData[$parte->id] =  array(
+                                                    'cantidad' => $parteRequest['cantidad']
+                                                );
+                                            }
+                                            else
+                                            {
+                                                // If the received parts are more than waiting in queue
+                                                $response = HelpController::buildResponse(
+                                                    409,
+                                                    'La cantidad ingresada para la parte "' . $parte->nparte . '" es mayor a la cantidad pendiente de despacho',
+                                                    null
+                                                );
+            
+                                                $success = false;
+            
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        $response = HelpController::buildResponse(
+                                            500,
+                                            'Error al obtener una de las partes pendientes de despacho',
+                                            null
+                                        );
+
+                                        $success = false;
+
+                                        break;
+                                    }
+                                }
+
+
+                                if($success === true)
+                                {
+                                    if($despacho->partes()->sync($syncData))
+                                    {
+                                        DB::commit();
+                                    
+                                        $response = HelpController::buildResponse(
+                                            200,
+                                            'Despacho actualizado',
+                                            null
+                                        );
+                                           
+                                    }
+                                    else
+                                    {
+                                        DB::rollback();
+
+                                        $response = HelpController::buildResponse(
+                                            500,
+                                            'Error al agregar las partes al despacho',
+                                            null
+                                        );
+    
+                                        $success = false;
+                                    }
+                                }
+                                else
+                                {
+                                    DB::rollback();
+
+                                    // The response error message was already set when success = false
+                                }
+
+                            }
+                            else
+                            {
+                                DB::rollback();
+
+                                $response = HelpController::buildResponse(
+                                    500,
+                                    'Error al actualizar el despacho',
+                                    null
+                                );
+                            }
+                        }
+                        else
+                        {
+                            $response = HelpController::buildResponse(
+                                412,
+                                'El despacho no existe',
+                                null
+                            );
+                        }
+                        
+                    }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            412,
+                            'El comprador no existe',
+                            null
+                        );
+                    }
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a actualizar despachos para comprador',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al actualizar el despacho [!]',
+                null
+            );
+        }
+        
+        return $response;
+    }
+
+    
+    public function destroy_comprador($comprador_id, $id)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('compradores despachos_destroy'))
+            {
+                if($comprador = Comprador::find($comprador_id))
+                {
+                    if($despacho = $comprador->despachos->find($id))
+                    {
+                        if($despacho->delete())
+                        {
+                            DB::commit();
+
+                            $response = HelpController::buildResponse(
+                                200,
+                                'Despacho eliminado',
+                                null
+                            );
+                        }
+                        else
+                        {
+                            DB::rollback();
+                            
+                            $response = HelpController::buildResponse(
+                                500,
+                                'Error al eliminar el despacho',
+                                null
+                            );
+                        }
+                    }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            412,
+                            'El despacho no existe',
+                            null
+                        );
+                    }
+                    
+                }
+                else
+                {
+                    $response = HelpController::buildResponse(
+                        412,
+                        'El comprador no existe',
+                        null
+                    );
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a eliminar despachos para comprador',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al eliminar el despacho [!]',
                 null
             );
         }

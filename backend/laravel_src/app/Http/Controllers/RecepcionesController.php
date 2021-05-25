@@ -566,7 +566,7 @@ class RecepcionesController extends Controller
                 {
                     if($comprador = Comprador::find($comprador_id))
                     {
-                        if($recepcion = Recepcion::find($id))
+                        if($recepcion = $comprador->recepciones->find($id))
                         {
                             $recepcion->makeHidden([
                                 'sourceable_id',
@@ -711,14 +711,13 @@ class RecepcionesController extends Controller
                 {
                     if($comprador = Comprador::find($comprador_id))
                     {
-                        if($recepcion = Recepcion::find($id))
+                        if($recepcion = $comprador->recepciones->find($id))
                         {
                             $recepcion->makeHidden([
                                 'recepcionable_id',
                                 'recepcionable_type',
                                 'sourceable_id',
                                 'sourceable_type',
-                                'proveedor_id',
                                 'partes_total',
                                 'updated_at',
                             ]);
@@ -926,7 +925,7 @@ class RecepcionesController extends Controller
         try
         {
             $user = Auth::user();
-            if($user->role->hasRoutepermission('compradores recepciones_update'))
+            if($user->role->hasRoutepermission('compradores despachos_update'))
             {
                 $validatorInput = $request->only('fecha', 'ndocumento', 'responsable', 'comentario', 'partes');
             
@@ -946,8 +945,8 @@ class RecepcionesController extends Controller
                     'fecha.date_format' => 'El formato de fecha de recepcion es invalido',
                     'fecha.before' => 'La fecha debe ser igual o anterior a hoy',
                     'ndocumento.min' => 'El numero de documento debe tener al menos un digito',
-                    'responsable.required' => 'Debes ingresar el nombre de la persona que recibe',
-                    'responsable.min' => 'El nombre de la persona que recibe debe tener al menos un digito',
+                    'responsable.required' => 'Debes ingresar el nombre de la persona que recepciona',
+                    'responsable.min' => 'El nombre de la persona que recepciona debe tener al menos un digito',
                     'partes.required' => 'Debes seleccionar las partes recepcionadas',
                     'partes.array' => 'Lista de partes recepcionadas invalida',
                     'partes.min' => 'La recepcion debe contener al menos 1 parte recepcionada',
@@ -976,114 +975,204 @@ class RecepcionesController extends Controller
                 {
                     if($comprador = Comprador::find($comprador_id))
                     {
-                        if($recepcion = Recepcion::find($id))
+                        if($recepcion = $comprador->recepciones->find($id))
                         {
-                            if(get_class($recepcion->sourceable) === get_class(new Proveedor()))
+                            DB::beginTransaction();
+
+                            // Fill the data
+                            $recepcion->fecha = $request->fecha;
+                            $recepcion->ndocumento = $request->ndocumento;
+                            $recepcion->responsable = $request->responsable;
+                            $recepcion->comentario = $request->comentario;
+
+                            if($recepcion->save())
                             {
-                                DB::beginTransaction();
-
-                                // Fill the data
-                                $recepcion->fecha = $request->fecha;
-                                $recepcion->ndocumento = $request->ndocumento;
-                                $recepcion->responsable = $request->responsable;
-                                $recepcion->comentario = $request->comentario;
-
-                                if($recepcion->save())
+                                // For each parte sent, gets the OcParte list for the Proveedor
+                                if($ocParteList = OcParte::select('oc_parte.*')
+                                                ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                                ->where('ocs.proveedor_id', $recepcion->sourceable->id)
+                                                ->whereIn('ocs.estadooc_id', [2, 3]) // Estadooc = 'En proceso' (2) or 'Cerrada' (3)
+                                                ->get()
+                                )
                                 {
-                                    // For each parte sent, gets the OcParte list for the Proveedor
-                                    if($ocParteList = OcParte::select('oc_parte.*')
-                                                    ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
-                                                    ->where('ocs.proveedor_id', $recepcion->sourceable->id)
-                                                    ->whereIn('ocs.estadooc_id', [2, 3]) // Estadooc = 'En proceso' (2) or 'Cerrada' (3)
-                                                    ->get()
-                                    )
+                                    if($ocParteList->count() > 0)
                                     {
-                                        if($ocParteList->count() > 0)
-                                        {
-                                            $ocsCantidades = $ocParteList->reduce(function($carry, $ocParte)
-                                                {
-                                                    if(isset($carry[$ocParte->parte->id]))
-                                                    {
-                                                        $carry[$ocParte->parte->id] += $ocParte->cantidad;
-                                                    }
-                                                    else
-                                                    {
-                                                        $carry[$ocParte->parte->id] = $ocParte->cantidad;
-                                                    }
-
-                                                    return $carry;
-                                                }, 
-                                                array()
-                                            );
-
-                                            // Get new cantidades array
-                                            $newCantidades = array_reduce($request->partes, function($carry, $parte)
-                                                {
-                                                    $carry[$parte['id']] = $parte['cantidad'];
-
-                                                    return $carry;
-                                                },
-                                                array()
-                                            );
-
-
-                                            // Get previous cantidades array
-                                            $previousCantidades = $recepcion->partes->reduce(function($carry, $parte)
-                                                {
-                                                    if(isset($carry[$parte->id]))
-                                                    {
-                                                        // If parte is already in the list, adds the cantidad in ParteRecepcion to the total
-                                                        $carry[$parte->id] += $parte->pivot->cantidad;
-                                                    }
-                                                    else
-                                                    {
-                                                        // If parte is not in the list, inserts the parte to the list
-                                                        $carry[$parte->id] = $parte->pivot->cantidad;
-                                                    }
-
-                                                    return $carry;
-                                                },
-                                                array()
-                                            );
-
-                                            // Define diff cantidades array between the previous and the new one
-                                            $diffCantidades = array();
-                                            // For all the previous partes
-                                            foreach(array_keys($previousCantidades) as $parteId)
+                                        $ocsCantidades = $ocParteList->reduce(function($carry, $ocParte)
                                             {
-                                                if(isset($newCantidades[$parteId]))
+                                                if(isset($carry[$ocParte->parte->id]))
                                                 {
-                                                    // If it comes in the new list, sets the new cantidad
-                                                    $diffCantidades[$parteId] = $newCantidades[$parteId] - $previousCantidades[$parteId];
+                                                    $carry[$ocParte->parte->id] += $ocParte->cantidad;
                                                 }
                                                 else
                                                 {
-                                                    // If it doesn't come, rest the previous cantidad as negative (the ParteRecepcion will be removed)
-                                                    $diffCantidades[$parteId] = $previousCantidades[$parteId] * -1;
+                                                    $carry[$ocParte->parte->id] = $ocParte->cantidad;
                                                 }
-                                            }
 
-                                            // If there are new partes weren't catched in previous list, then add them to the diff list
-                                            foreach(array_keys($newCantidades) as $parteId)
+                                                return $carry;
+                                            }, 
+                                            array()
+                                        );
+
+                                        // Get new cantidades array
+                                        $newCantidades = array_reduce($request->partes, function($carry, $parte)
                                             {
-                                                // If the new parte isn't in the diff list
-                                                if(!isset($diffCantidades[$parteId]))
+                                                $carry[$parte['id']] = $parte['cantidad'];
+
+                                                return $carry;
+                                            },
+                                            array()
+                                        );
+
+
+                                        // Get previous cantidades array
+                                        $previousCantidades = $recepcion->partes->reduce(function($carry, $parte)
+                                            {
+                                                if(isset($carry[$parte->id]))
                                                 {
-                                                    // Add the new parte to the diff list
-                                                    $diffCantidades[$parteId] = $newCantidades[$parteId];
+                                                    // If parte is already in the list, adds the cantidad in ParteRecepcion to the total
+                                                    $carry[$parte->id] += $parte->pivot->cantidad;
                                                 }
-                                            }
-
-                                            $success = true;
-
-                                            // For all the partes in diff list
-                                            foreach(array_keys($diffCantidades) as $parteId)
-                                            {
-                                                if(isset($ocsCantidades[$parteId]))
+                                                else
                                                 {
-                                                    // If we are removing parts from the recepcion
-                                                    if($diffCantidades[$parteId] < 0)
-                                                    {       
+                                                    // If parte is not in the list, inserts the parte to the list
+                                                    $carry[$parte->id] = $parte->pivot->cantidad;
+                                                }
+
+                                                return $carry;
+                                            },
+                                            array()
+                                        );
+
+                                        // Define diff cantidades array between the previous and the new one
+                                        $diffCantidades = array();
+                                        // For all the previous partes
+                                        foreach(array_keys($previousCantidades) as $parteId)
+                                        {
+                                            if(isset($newCantidades[$parteId]))
+                                            {
+                                                // If it comes in the new list, sets the new cantidad
+                                                $diffCantidades[$parteId] = $newCantidades[$parteId] - $previousCantidades[$parteId];
+                                            }
+                                            else
+                                            {
+                                                // If it doesn't come, rest the previous cantidad as negative (the ParteRecepcion will be removed)
+                                                $diffCantidades[$parteId] = $previousCantidades[$parteId] * -1;
+                                            }
+                                        }
+
+                                        // If there are new partes weren't catched in previous list, then add them to the diff list
+                                        foreach(array_keys($newCantidades) as $parteId)
+                                        {
+                                            // If the new parte isn't in the diff list
+                                            if(!isset($diffCantidades[$parteId]))
+                                            {
+                                                // Add the new parte to the diff list
+                                                $diffCantidades[$parteId] = $newCantidades[$parteId];
+                                            }
+                                        }
+
+                                        $success = true;
+
+                                        // For all the partes in diff list
+                                        foreach(array_keys($diffCantidades) as $parteId)
+                                        {
+                                            if(isset($ocsCantidades[$parteId]))
+                                            {
+                                                // If we are removing parts from the recepcion
+                                                if($diffCantidades[$parteId] < 0)
+                                                {       
+                                                    if($parte = $recepcion->partes->find($parteId))
+                                                    {
+                                                        // Calc pendiente using cantidad in OCs - cantidad in Recepciones for Proveedor - diff (negative sum)
+                                                        $cantidadPendiente = $ocsCantidades[$parteId] - $parte->getCantidadRecepcionado_sourceable($comprador, $recepcion->sourceable) + $diffCantidades[$parteId];
+                                                        if($cantidadPendiente >= 0)
+                                                        {
+                                                            // Calc stock using cantidad in Recepciones for Comprador - diff (negative sum) - cantidad in Despachos
+                                                            $cantidadStock = $parte->getCantidadRecepcionado($comprador) + $diffCantidades[$parteId] - $parte->getCantidadDespachado($comprador);                          
+                                                            if($cantidadStock >= 0)
+                                                            {
+                                                                // If cantidad the same than in previousCantidad, we're removing the ParteRecepcion
+                                                                if($previousCantidades[$parteId] === abs($diffCantidades[$parteId]))
+                                                                {
+                                                                    if(!$recepcion->partes()->detach($parteId))
+                                                                    {
+                                                                        $response = HelpController::buildResponse(
+                                                                            500,
+                                                                            'Error al eliminar una parte de la recepcion',
+                                                                            null
+                                                                        );
+                                    
+                                                                        $success = false;
+                                    
+                                                                        break;
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    // Set new cantidad adding the negative diff
+                                                                    $parte->pivot->cantidad = $parte->pivot->cantidad + $diffCantidades[$parteId];
+                                                                    if(!$parte->pivot->save())
+                                                                    {
+                                                                        $response = HelpController::buildResponse(
+                                                                            500,
+                                                                            'Error al actualizar una parte de la recepcion',
+                                                                            null
+                                                                        );
+                                    
+                                                                        $success = false;
+                                    
+                                                                        break;
+                                                                    }
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                // If the received parts are more than waiting in queue
+                                                                $response = HelpController::buildResponse(
+                                                                    409,
+                                                                    'La cantidad ingresada para la parte "' . $parte->nparte . '" es menor a la cantidad ya despachada',
+                                                                    null
+                                                                );
+                            
+                                                                $success = false;
+                            
+                                                                break;
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            // If the received parts are more than waiting in queue
+                                                            $response = HelpController::buildResponse(
+                                                                409,
+                                                                'La cantidad ingresada para la parte "' . $parte->nparte . '" es mayor a la cantidad pendiente de recepcion',
+                                                                null
+                                                            );
+                        
+                                                            $success = false;
+                        
+                                                            break;
+                                                        }
+                                                        
+                                                    }
+                                                    else
+                                                    {
+                                                        $response = HelpController::buildResponse(
+                                                            500,
+                                                            'Error al obtener una de las partes pendientes de recepcion',
+                                                            null
+                                                        );
+            
+                                                        $success = false;
+            
+                                                        break;
+                                                    }
+                                                }
+                                                // If we are adding more parts to the recepcion
+                                                else if($diffCantidades[$parteId] > 0)
+                                                {
+                                                    // If the Parte is kept in Recepcion
+                                                    if(isset($previousCantidades[$parteId]))
+                                                    {
                                                         if($parte = $recepcion->partes->find($parteId))
                                                         {
                                                             // Calc pendiente using cantidad in OCs - cantidad in Recepciones for Proveedor - diff (negative sum)
@@ -1094,38 +1183,19 @@ class RecepcionesController extends Controller
                                                                 $cantidadStock = $parte->getCantidadRecepcionado($comprador) + $diffCantidades[$parteId] - $parte->getCantidadDespachado($comprador);                          
                                                                 if($cantidadStock >= 0)
                                                                 {
-                                                                    // If cantidad the same than in previousCantidad, we're removing the ParteRecepcion
-                                                                    if($previousCantidades[$parteId] === abs($diffCantidades[$parteId]))
+                                                                    // Set new cantidad adding the negative diff
+                                                                    $parte->pivot->cantidad = $parte->pivot->cantidad + $diffCantidades[$parteId];
+                                                                    if(!$parte->pivot->save())
                                                                     {
-                                                                        if(!$recepcion->partes()->detach($parteId))
-                                                                        {
-                                                                            $response = HelpController::buildResponse(
-                                                                                500,
-                                                                                'Error al eliminar una parte de la recepcion',
-                                                                                null
-                                                                            );
-                                        
-                                                                            $success = false;
-                                        
-                                                                            break;
-                                                                        }
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        // Set new cantidad adding the negative diff
-                                                                        $parte->pivot->cantidad = $parte->pivot->cantidad + $diffCantidades[$parteId];
-                                                                        if(!$parte->pivot->save())
-                                                                        {
-                                                                            $response = HelpController::buildResponse(
-                                                                                500,
-                                                                                'Error al actualizar una parte de la recepcion',
-                                                                                null
-                                                                            );
-                                        
-                                                                            $success = false;
-                                        
-                                                                            break;
-                                                                        }
+                                                                        $response = HelpController::buildResponse(
+                                                                            500,
+                                                                            'Error al actualizar una parte de la recepcion',
+                                                                            null
+                                                                        );
+                                    
+                                                                        $success = false;
+                                    
+                                                                        break;
                                                                     }
                                                                 }
                                                                 else
@@ -1170,222 +1240,140 @@ class RecepcionesController extends Controller
                                                             break;
                                                         }
                                                     }
-                                                    // If we are adding more parts to the recepcion
-                                                    else if($diffCantidades[$parteId] > 0)
-                                                    {
-                                                        // If the Parte is kept in Recepcion
-                                                        if(isset($previousCantidades[$parteId]))
-                                                        {
-                                                            if($parte = $recepcion->partes->find($parteId))
-                                                            {
-                                                                // Calc pendiente using cantidad in OCs - cantidad in Recepciones for Proveedor - diff (negative sum)
-                                                                $cantidadPendiente = $ocsCantidades[$parteId] - $parte->getCantidadRecepcionado_sourceable($comprador, $recepcion->sourceable) + $diffCantidades[$parteId];
-                                                                if($cantidadPendiente >= 0)
-                                                                {
-                                                                    // Calc stock using cantidad in Recepciones for Comprador - diff (negative sum) - cantidad in Despachos
-                                                                    $cantidadStock = $parte->getCantidadRecepcionado($comprador) + $diffCantidades[$parteId] - $parte->getCantidadDespachado($comprador);                          
-                                                                    if($cantidadStock >= 0)
-                                                                    {
-                                                                        // Set new cantidad adding the negative diff
-                                                                        $parte->pivot->cantidad = $parte->pivot->cantidad + $diffCantidades[$parteId];
-                                                                        if(!$parte->pivot->save())
-                                                                        {
-                                                                            $response = HelpController::buildResponse(
-                                                                                500,
-                                                                                'Error al actualizar una parte de la recepcion',
-                                                                                null
-                                                                            );
-                                        
-                                                                            $success = false;
-                                        
-                                                                            break;
-                                                                        }
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        // If the received parts are more than waiting in queue
-                                                                        $response = HelpController::buildResponse(
-                                                                            409,
-                                                                            'La cantidad ingresada para la parte "' . $parte->nparte . '" es menor a la cantidad ya despachada',
-                                                                            null
-                                                                        );
-                                    
-                                                                        $success = false;
-                                    
-                                                                        break;
-                                                                    }
-                                                                }
-                                                                else
-                                                                {
-                                                                    // If the received parts are more than waiting in queue
-                                                                    $response = HelpController::buildResponse(
-                                                                        409,
-                                                                        'La cantidad ingresada para la parte "' . $parte->nparte . '" es mayor a la cantidad pendiente de recepcion',
-                                                                        null
-                                                                    );
-                                
-                                                                    $success = false;
-                                
-                                                                    break;
-                                                                }
-                                                                
-                                                            }
-                                                            else
-                                                            {
-                                                                $response = HelpController::buildResponse(
-                                                                    500,
-                                                                    'Error al obtener una de las partes pendientes de recepcion',
-                                                                    null
-                                                                );
-                    
-                                                                $success = false;
-                    
-                                                                break;
-                                                            }
-                                                        }
-                                                        // If is a new Parte in Recepcion
-                                                        else
-                                                        {
-                                                            if($parte = Parte::find($parteId))
-                                                            {
-                                                                // Calc pendiente using cantidad in OCs - cantidad in Recepciones for Proveedor - diff (negative sum)
-                                                                $cantidadPendiente = $ocsCantidades[$parteId] - $parte->getCantidadRecepcionado_sourceable($comprador, $recepcion->sourceable) + $diffCantidades[$parteId];
-                                                                if($cantidadPendiente >= 0)
-                                                                {
-                                                                    // Calc stock using cantidad in Recepciones for Comprador - diff (negative sum) - cantidad in Despachos
-                                                                    $cantidadStock = $parte->getCantidadRecepcionado($comprador) + $diffCantidades[$parteId] - $parte->getCantidadDespachado($comprador);                          
-                                                                    if($cantidadStock >= 0)
-                                                                    {
-                                                                        // Add the new Parte to Recepcion
-                                                                        $recepcion->partes()->attach(
-                                                                            array(
-                                                                                $parteId => array(
-                                                                                    "cantidad" => $diffCantidades[$parteId] // For a new Parte, diff contains the full cantidad
-                                                                                )
-                                                                            )
-                                                                        );
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        // If the received parts are more than waiting in queue
-                                                                        $response = HelpController::buildResponse(
-                                                                            409,
-                                                                            'La cantidad ingresada para la parte "' . $parte->nparte . '" es menor a la cantidad ya despachada',
-                                                                            null
-                                                                        );
-                                    
-                                                                        $success = false;
-                                    
-                                                                        break;
-                                                                    }
-                                                                }
-                                                                else
-                                                                {
-                                                                    // If the received parts are more than waiting in queue
-                                                                    $response = HelpController::buildResponse(
-                                                                        409,
-                                                                        'La cantidad ingresada para la parte "' . $parte->nparte . '" es mayor a la cantidad pendiente de recepcion',
-                                                                        null
-                                                                    );
-                                
-                                                                    $success = false;
-                                
-                                                                    break;
-                                                                }
-                                                                
-                                                            }
-                                                            else
-                                                            {
-                                                                $response = HelpController::buildResponse(
-                                                                    500,
-                                                                    'Error al obtener una de las partes pendientes de recepcion',
-                                                                    null
-                                                                );
-                    
-                                                                $success = false;
-                    
-                                                                break;
-                                                            }
-                                                        }
-                                                    }
-                                                    // If the have the same quantity, nothing changes (diff = 0)
+                                                    // If is a new Parte in Recepcion
                                                     else
                                                     {
-                                                        //Do nothing, continue the loop
+                                                        if($parte = Parte::find($parteId))
+                                                        {
+                                                            // Calc pendiente using cantidad in OCs - cantidad in Recepciones for Proveedor - diff (negative sum)
+                                                            $cantidadPendiente = $ocsCantidades[$parteId] - $parte->getCantidadRecepcionado_sourceable($comprador, $recepcion->sourceable) + $diffCantidades[$parteId];
+                                                            if($cantidadPendiente >= 0)
+                                                            {
+                                                                // Calc stock using cantidad in Recepciones for Comprador - diff (negative sum) - cantidad in Despachos
+                                                                $cantidadStock = $parte->getCantidadRecepcionado($comprador) + $diffCantidades[$parteId] - $parte->getCantidadDespachado($comprador);                          
+                                                                if($cantidadStock >= 0)
+                                                                {
+                                                                    // Add the new Parte to Recepcion
+                                                                    $recepcion->partes()->attach(
+                                                                        array(
+                                                                            $parteId => array(
+                                                                                "cantidad" => $diffCantidades[$parteId] // For a new Parte, diff contains the full cantidad
+                                                                            )
+                                                                        )
+                                                                    );
+                                                                }
+                                                                else
+                                                                {
+                                                                    // If the received parts are more than waiting in queue
+                                                                    $response = HelpController::buildResponse(
+                                                                        409,
+                                                                        'La cantidad ingresada para la parte "' . $parte->nparte . '" es menor a la cantidad ya despachada',
+                                                                        null
+                                                                    );
+                                
+                                                                    $success = false;
+                                
+                                                                    break;
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                // If the received parts are more than waiting in queue
+                                                                $response = HelpController::buildResponse(
+                                                                    409,
+                                                                    'La cantidad ingresada para la parte "' . $parte->nparte . '" es mayor a la cantidad pendiente de recepcion',
+                                                                    null
+                                                                );
+                            
+                                                                $success = false;
+                            
+                                                                break;
+                                                            }
+                                                            
+                                                        }
+                                                        else
+                                                        {
+                                                            $response = HelpController::buildResponse(
+                                                                500,
+                                                                'Error al obtener una de las partes pendientes de recepcion',
+                                                                null
+                                                            );
+                
+                                                            $success = false;
+                
+                                                            break;
+                                                        }
                                                     }
                                                 }
+                                                // If the have the same quantity, nothing changes (diff = 0)
                                                 else
                                                 {
-                                                    $response = HelpController::buildResponse(
-                                                        500,
-                                                        'Error al obtener una de las partes pendientes de recepcion',
-                                                        null
-                                                    );
-        
-                                                    $success = false;
-        
-                                                    break;
+                                                    //Do nothing, continue the loop
                                                 }
                                             }
-                                        }
-                                        else
-                                        {
-                                            // If there aren't OcParte waiting for the entered Parte
-                                            $response = HelpController::buildResponse(
-                                                409,
-                                                'No se han encontrado partes para recepcionar',
-                                                null
-                                            );
-
-                                            $success = false;
+                                            else
+                                            {
+                                                $response = HelpController::buildResponse(
+                                                    500,
+                                                    'Error al obtener una de las partes pendientes de recepcion',
+                                                    null
+                                                );
+    
+                                                $success = false;
+    
+                                                break;
+                                            }
                                         }
                                     }
                                     else
                                     {
+                                        // If there aren't OcParte waiting for the entered Parte
                                         $response = HelpController::buildResponse(
-                                            500,
-                                            'Error al obtener las partes pendiente de recepcion',
+                                            409,
+                                            'No se han encontrado partes para recepcionar',
                                             null
                                         );
 
                                         $success = false;
+                                    }
+                                }
+                                else
+                                {
+                                    $response = HelpController::buildResponse(
+                                        500,
+                                        'Error al obtener las partes pendiente de recepcion',
+                                        null
+                                    );
+
+                                    $success = false;
+                                
+                                }
+
+                                if($success === true)
+                                {
+                                    DB::commit();
                                     
-                                    }
-
-                                    if($success === true)
-                                    {
-                                        DB::commit();
-                                        
-                                        $response = HelpController::buildResponse(
-                                            200,
-                                            'Recepcion actualizada',
-                                            null
-                                        );
-                                    }
-                                    else
-                                    {
-                                        DB::rollback();
-
-                                        // The response error message was already set when success = false
-                                    }
-
+                                    $response = HelpController::buildResponse(
+                                        200,
+                                        'Recepcion actualizada',
+                                        null
+                                    );
                                 }
                                 else
                                 {
                                     DB::rollback();
 
-                                    $response = HelpController::buildResponse(
-                                        500,
-                                        'Error al actualizar la recepcion',
-                                        null
-                                    );
+                                    // The response error message was already set when success = false
                                 }
+
                             }
                             else
                             {
+                                DB::rollback();
+
                                 $response = HelpController::buildResponse(
                                     500,
-                                    'Error al obtener la recepcion',
+                                    'Error al actualizar la recepcion',
                                     null
                                 );
                             }
@@ -1489,7 +1477,7 @@ class RecepcionesController extends Controller
                                 if($recepcion->delete())
                                 {
                                     DB::commit();
-                                    
+
                                     $response = HelpController::buildResponse(
                                         200,
                                         'Recepcion eliminada',
