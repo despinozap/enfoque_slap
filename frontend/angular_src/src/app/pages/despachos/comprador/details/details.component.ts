@@ -40,7 +40,7 @@ export class DespachosCompradorDetailsComponent implements OnInit {
     centrodistribucion_name: null,
   };
   
-  ocpartes: any[] = [];
+  partes: any[] = [];
   loading: boolean = false;
   responseErrors: any = [];
 
@@ -85,7 +85,7 @@ export class DespachosCompradorDetailsComponent implements OnInit {
 
   private loadFormData(despachoData: any)
   { 
-    if(despachoData['ocpartes'].length > 0)
+    if(despachoData['partes'].length > 0)
     {
       this.despacho.id = despachoData.id;
       this.despacho.fecha = despachoData.fecha;
@@ -96,21 +96,18 @@ export class DespachosCompradorDetailsComponent implements OnInit {
       this.despacho.comprador_name = despachoData.despachable.name;
       this.despacho.centrodistribucion_name = despachoData.destinable.name;
       
-      this.ocpartes = [];
-      despachoData.ocpartes.forEach((op: any) => {
-        this.ocpartes.push(
+      this.partes = [];
+      despachoData.partes.forEach((parte: any) => {
+        this.partes.push(
           {
-            'nparte': op.parte.nparte,
-            'descripcion': op.descripcion,
-            'backorder': op.backorder,
-            'marca_name': op.parte.marca.name,
-            'cliente_name': op.oc.cotizacion.solicitud.faena.cliente.name,
-            'oc_id': op.oc.id,
-            'oc_cantidad': op.cantidad,
-            'cantidad': op.pivot.cantidad
+            'id': parte.id,
+            'nparte': parte.nparte,
+            'marca_name': parte.marca.name,
+            'cantidad': parte.pivot.cantidad
           }
         )
       });
+
     }
     else
     {

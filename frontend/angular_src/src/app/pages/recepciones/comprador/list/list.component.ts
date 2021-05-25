@@ -145,7 +145,7 @@ export class RecepcionesCompradorListComponent implements OnInit {
   {
     Swal.fire({
       title: 'Eliminar recepcion',
-      text: `¿Realmente quieres eliminar la recepcion "${ recepcion.sourceable.name }"?`,
+      text: `¿Realmente quieres eliminar la recepcion de "${ recepcion.sourceable.name }"?`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',

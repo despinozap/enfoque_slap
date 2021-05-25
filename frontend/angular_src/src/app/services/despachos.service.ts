@@ -10,30 +10,46 @@ export class DespachosService {
 
   constructor(private httpClient: HttpClient) { }
 
-  // public updateRecepcion_comprador(comprador_id: number, recepcion_id: number, recepcion: any): Observable<any>
-  // {
-  //   let endpoint: string = `${environment.ENDPOINT_BASE}/compradores/${comprador_id}/recepciones/${recepcion_id}`;
+  public removeDespacho_comprador(comprador_id: number, despacho_id: number): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/compradores/${comprador_id}/despachos/${despacho_id}`;
 
-  //   let httpOptions = { 
-  //     method: 'PUT',
-  //     headers:
-  //     {
-  //       'Accept': 'application/json',
-  //       'Content-Type': 'application/json',
-  //       'Access-Control-Allow-Origin': '*',
-  //       'Access-Control-Allow-Methods': 'GET,POST,OPTIONS,DELETE,PUT'
-  //     }
-  //   };
+    let httpOptions = { 
+      method: 'DELETE',
+      headers:
+      {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    };
     
-  //   return this.httpClient.put(endpoint, recepcion, httpOptions);
-  // }
+    return this.httpClient.delete(endpoint, httpOptions);
+  }
 
-  // public prepareRecepcion_comprador(comprador_id: number, recepcion_id: number): Observable<any>
-  // {
-  //   let endpoint: string = `${environment.ENDPOINT_BASE}/compradores/${comprador_id}/recepciones/${recepcion_id}/prepare`;
+  public updateDespacho_comprador(comprador_id: number, despacho_id: number, recepcion: any): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/compradores/${comprador_id}/despachos/${despacho_id}`;
+
+    let httpOptions = { 
+      method: 'PUT',
+      headers:
+      {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET,POST,OPTIONS,DELETE,PUT'
+      }
+    };
     
-  //   return this.httpClient.get(endpoint);
-  // }
+    return this.httpClient.put(endpoint, recepcion, httpOptions);
+  }
+
+  public prepareUpdateDespacho_comprador(comprador_id: number, despacho_id: number): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/compradores/${comprador_id}/despachos/${despacho_id}/prepare`;
+    
+    return this.httpClient.get(endpoint);
+  }
 
   public getDespacho_comprador(comprador_id: number, despacho_id: number): Observable<any>
   {

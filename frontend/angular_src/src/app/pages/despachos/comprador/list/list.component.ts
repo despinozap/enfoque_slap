@@ -5,6 +5,9 @@ import { DespachosService } from 'src/app/services/despachos.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { UtilsService } from 'src/app/services/utils.service';
 
+/* SweetAlert2 */
+const Swal = require('../../../../../assets/vendors/sweetalert2/sweetalert2.all.min.js');
+
 @Component({
   selector: 'app-list',
   templateUrl: './list.component.html',
@@ -136,6 +139,107 @@ export class DespachosCompradorListComponent implements OnInit {
         this.loading = false;
       }
     );
+  }
+
+  public removeDespacho(despacho: any)
+  {
+    Swal.fire({
+      title: 'Eliminar despacho',
+      text: `¿Realmente quieres eliminar el despacho a "${ despacho.destinable.name }"?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#555555',
+      confirmButtonText: 'Sí, continuar',
+      cancelButtonText: 'Cancelar',
+      allowOutsideClick: false
+    }).then((result: any) => {
+      if(result.isConfirmed)
+      {
+        Swal.queue([{
+          title: 'Eliminando..',
+          icon: 'warning',
+          showConfirmButton: false,
+          showCancelButton: false,
+          allowOutsideClick: false,
+          showLoaderOnConfirm: true,
+          preConfirm: () => {
+
+          }    
+        }]);
+
+        this._despachosService.removeDespacho_comprador(this.comprador_id, despacho.id)
+        .subscribe(
+          //Success request
+          (response: any) => {
+
+            this.loadDespachosList();
+            NotificationsService.showToast(
+              response.message,
+              NotificationsService.messageType.success
+            );
+
+          },
+          //Error request
+          (errorResponse: any) => {
+
+            switch(errorResponse.status)
+            {
+              case 400: //Object not found
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.warning
+                );
+
+                break;
+              }
+
+              case 405: //Permission denied
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+              case 409: //Conflict
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+              case 500: //Internal server
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+              default: //Unhandled error
+              {
+                NotificationsService.showAlert(
+                  'Error al intentar eliminar el despacho',
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+            }
+          }
+        );
+      }
+    });
+
   }
   
   public dateStringFormat(value: string): string {

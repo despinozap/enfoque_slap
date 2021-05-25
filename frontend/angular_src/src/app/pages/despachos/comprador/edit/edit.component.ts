@@ -1,20 +1,18 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { Location } from '@angular/common';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
-import { Centrodistribucion } from 'src/app/interfaces/centrodistribucion';
 import { DespachosService } from 'src/app/services/despachos.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { UtilsService } from 'src/app/services/utils.service';
 
 @Component({
-  selector: 'app-create',
-  templateUrl: './create.component.html',
-  styleUrls: ['./create.component.css']
+  selector: 'app-edit',
+  templateUrl: './edit.component.html',
+  styleUrls: ['./edit.component.css']
 })
-export class DespachosCompradorCreateComponent implements OnInit {
+export class DespachosCompradorEditComponent implements OnInit {
 
   @ViewChild(DataTableDirective, {static: false})
   datatableElement_partes: DataTableDirective = null as any;
@@ -25,34 +23,42 @@ export class DespachosCompradorCreateComponent implements OnInit {
       url: '//cdn.datatables.net/plug-ins/1.10.22/i18n/Spanish.json'
     },
     order: [[0, 'desc']]
-  };  
+  };
 
-  
   dtTrigger: Subject<any> = new Subject<any>();
 
-  centrosdistribucion: Array<Centrodistribucion> = null as any;
+  despacho: any = {
+    id: -1,
+    centrodistribucion_id: -1,
+    centrodistribucion_name: null,
+  };
+
   partes: any[] = [];
   loading: boolean = false;
   responseErrors: any = [];
 
   despachoForm: FormGroup = new FormGroup({
-    centrodistribucion: new FormControl('', [Validators.required]),
     fecha: new FormControl('', [Validators.required, Validators.minLength(1)]),
     documento: new FormControl(''),
     responsable: new FormControl('', [Validators.required, Validators.minLength(2)]),
     comentario: new FormControl(''),
   });
 
+  private sub: any;
   comprador_id: number = 1;
-
+  
+  
   constructor(
-    private location: Location,
     private router: Router,
+    private route: ActivatedRoute,
     private _despachosService: DespachosService,
-    private _utilsService: UtilsService
+    private _utilsService: UtilsService,
   ) { }
 
   ngOnInit(): void {
+    this.sub = this.route.params.subscribe(params => {
+      this.despacho.id = params['id'];
+    });
   }
 
   ngAfterViewInit(): void {
@@ -60,60 +66,107 @@ export class DespachosCompradorCreateComponent implements OnInit {
 
     //Prevents throwing an error for var status changed while initialization
     setTimeout(() => {
-        this.loadData();
-
-        this.despachoForm.controls.fecha.setValue(this.getDateToday());
-      },
-      100
-    );
+      this.loadDespacho();
+    },
+    100);
   }
 
-  ngOnDestroy(): void {
+  ngOnDestroy() {
+    this.sub.unsubscribe();
     this.dtTrigger.unsubscribe();
   }
-  
-  private renderDataTable(dataTableElement: DataTableDirective, trigger: Subject<any>): void {
+
+  private renderDataTable(dataTableElement: DataTableDirective): void {
     dataTableElement.dtInstance.then((dtInstance: DataTables.Api) => {
       // Destroy the table first
       dtInstance.destroy();
-      // Call the trigger to rerender again
-      trigger.next();
+      // Call the dtTrigger to rerender again
+      this.dtTrigger.next();
     });
   }
-  
-  public loadData(): void {
+
+  private loadFormData(despachoData: any)
+  {
+    if(despachoData.despacho['partes'].length > 0)
+    {
+      // Load Recepcion data
+      this.despacho.id = despachoData.despacho.id;
+      this.despacho.centrodistribucion_id = despachoData.despacho.destinable.id;
+      this.despacho.centrodistribucion_name = despachoData.despacho.destinable.name;
+
+      this.despachoForm.controls.fecha.setValue(this.dateStringFormat(despachoData.despacho.fecha));
+      if(despachoData.despacho.ndocumento !== null)
+      {
+        this.despachoForm.controls.documento.setValue(despachoData.despacho.ndocumento);
+      }
+      this.despachoForm.controls.responsable.setValue(despachoData.despacho.responsable);
+      if(despachoData.despacho.comentario !== null)
+      {
+        this.despachoForm.controls.comentario.setValue(despachoData.despacho.comentario);
+      }
+
+      // Load partes list from queue_partes
+      this.partes = despachoData.queue_partes.reduce((carry: any[], parte: any) => {
+          carry.push({
+            id: parte.id,
+            nparte: parte.nparte,
+            marca: parte.marca,
+            cantidad_stock: parte.cantidad_stock,
+            checked: false,
+            cantidad: 0,
+          });
+
+          return carry;
+        },
+        [] // Empty array
+      );
+
+      let index: number;
+
+      // Update values with partes list in recepcion 
+      despachoData.despacho.partes.forEach((parteD: any) => {
+
+        index = this.partes.findIndex((parteQ) => {
+          return (parteD.id === parteQ.id);
+        });
+
+        if(index >= 0)
+        {
+          this.partes[index].checked = true;
+          this.partes[index].cantidad = parteD.pivot.cantidad;
+        }
+
+      });
+
+      this.partes = this.partes.sort((p1, p2) => {
+        return p2.cantidad - p1.cantidad;
+      });
+
+      this.renderDataTable(this.datatableElement_partes);
+    }
+    else
+    {
+      NotificationsService.showToast(
+        'Error al intentar cargar la lista de partes',
+        NotificationsService.messageType.error
+      );
+
+      this.loading = false;
+      this.goTo_despachosList();
+    }
+  }
+
+  public loadDespacho(): void {
     
     this.loading = true;
-    this.despachoForm.disable();
 
-    this._despachosService.prepareStoreDespacho_comprador(this.comprador_id)
+    this._despachosService.prepareUpdateDespacho_comprador(this.comprador_id, this.despacho.id)
     .subscribe(
       //Success request
       (response: any) => {
 
-        // Centrosdistribucion
-        this.centrosdistribucion = response.data.centrosdistribucion;
-        
-        // Partes
-        this.partes = response.data.queue_partes.reduce((carry: any[], parte: any) => {
-            carry.push({
-              id: parte.id,
-              nparte: parte.nparte,
-              marca: parte.marca,
-              cantidad_stock: parte.cantidad_stock,
-              checked: false,
-              cantidad: parte.cantidad_stock,
-            });
-
-            return carry;
-          },
-          [] // Empty array
-        );
-
-        this.renderDataTable(this.datatableElement_partes, this.dtTrigger);
-
         this.loading = false;
-        this.despachoForm.enable();
+        this.loadFormData(response.data);
       },
       //Error request
       (errorResponse: any) => {
@@ -154,7 +207,7 @@ export class DespachosCompradorCreateComponent implements OnInit {
           default: //Unhandled error
           {
             NotificationsService.showToast(
-              'Error al cargar los datos de los centros de distribucion',
+              'Error al cargar los datos del despacho',
               NotificationsService.messageType.error
             );
   
@@ -164,12 +217,12 @@ export class DespachosCompradorCreateComponent implements OnInit {
         }
 
         this.loading = false;
-        this.goTo_back();
+        this.goTo_despachosList();
       }
     );
   }
 
-  public storeDespacho(): void {
+  public updateDespacho(): void {
     this.despachoForm.disable();
     this.loading = true;
     this.responseErrors = [];
@@ -192,14 +245,14 @@ export class DespachosCompradorCreateComponent implements OnInit {
     );
 
     let despacho: any = {
-      sucursal_id: this.despachoForm.value.centrodistribucion,
       fecha: this.despachoForm.value.fecha,
+      ndocumento: this.despachoForm.value.documento,
       responsable: this.despachoForm.value.responsable,
       comentario: this.despachoForm.value.comentario,
       partes: dispatchedPartes
     };
 
-    this._despachosService.storeDespacho_comprador(this.comprador_id, despacho)
+    this._despachosService.updateDespacho_comprador(this.comprador_id, this.despacho.id, despacho)
       .subscribe(
         //Success request
         (response: any) => {
@@ -214,6 +267,7 @@ export class DespachosCompradorCreateComponent implements OnInit {
         //Error request
         (errorResponse: any) => {
 
+          console.log(errorResponse);
           switch (errorResponse.status) 
           {
             case 400: //Invalid request parameters
@@ -266,7 +320,7 @@ export class DespachosCompradorCreateComponent implements OnInit {
             default: //Unhandled error
               {
                 NotificationsService.showAlert(
-                  'Error al intentar guardar el despacho',
+                  'Error al intentar actualizar el despacho',
                   NotificationsService.messageType.error
                 );
 
@@ -281,13 +335,17 @@ export class DespachosCompradorCreateComponent implements OnInit {
   }
 
   public updateParte_cantidad(parte: any, evt: any): void {
-    if((isNaN(evt.target.value) === false) && (parseInt(evt.target.value) > 0) && (parseInt(evt.target.value) <= parte.cantidad_stock))
+    if(
+        (isNaN(evt.target.value) === false) && 
+        (parseInt(evt.target.value) > 0) && 
+        (parseInt(evt.target.value) <= parte.cantidad_stock)
+    )
     {
-      parte.cantidad = parseInt(evt.target.value);
+        parte.cantidad = parseInt(evt.target.value);
     }
     else
     {
-      evt.target.value = parte.cantidad_stock;
+      evt.target.value = parte.cantidad;
     }
   }
 
@@ -332,7 +390,7 @@ export class DespachosCompradorCreateComponent implements OnInit {
 
     return index >= 0 ? true : false;
   }
-  
+
   public getDateToday(): string {
     let dt = new Date();
 
@@ -345,10 +403,6 @@ export class DespachosCompradorCreateComponent implements OnInit {
 
   public goTo_despachosList(): void {
     this.router.navigate(['/panel/despachos/comprador']);
-  }
-
-  public goTo_back(): void {
-    this.location.back();
   }
 
 }

@@ -58,6 +58,7 @@ import { RecepcionesCompradorEditComponent } from './pages/recepciones/comprador
 import { DespachosCompradorListComponent } from './pages/despachos/comprador/list/list.component';
 import { DespachosCompradorCreateComponent } from './pages/despachos/comprador/create/create.component';
 import { DespachosCompradorDetailsComponent } from './pages/despachos/comprador/details/details.component';
+import { DespachosCompradorEditComponent } from './pages/despachos/comprador/edit/edit.component';
 
 
 /* Routes */
@@ -108,6 +109,7 @@ const routes: Routes = [
       { path: 'despachos/comprador', component: DespachosCompradorListComponent },
       { path: 'despachos/comprador/create', component: DespachosCompradorCreateComponent },
       { path: 'despachos/comprador/details/:id', component: DespachosCompradorDetailsComponent },
+      { path: 'despachos/comprador/edit/:id', component: DespachosCompradorEditComponent },
     ]
   },
   { path: '**', redirectTo: 'login', pathMatch: 'full' } //any other page, redirects to base path
@@ -159,6 +161,7 @@ const routes: Routes = [
     DespachosCompradorListComponent,
     DespachosCompradorCreateComponent,
     DespachosCompradorDetailsComponent,
+    DespachosCompradorEditComponent,
   ],
   imports: [
     BrowserModule,
