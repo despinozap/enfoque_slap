@@ -199,12 +199,9 @@ export class UsuariosEditComponent implements OnInit {
 
         switch(errorResponse.status)
         {
-          case 400: //Bad request
+          case 400: //Invalid request parameters
           {
-            NotificationsService.showAlert(
-              errorResponse.error.message,
-              NotificationsService.messageType.error
-            );
+            this.responseErrors = errorResponse.error.message;
 
             break;
           }
@@ -237,13 +234,6 @@ export class UsuariosEditComponent implements OnInit {
             );
 
             this.goTo_usersList();
-
-            break;
-          }
-        
-          case 422: //Invalid request parameters
-          {
-            this.responseErrors = errorResponse.error;
 
             break;
           }

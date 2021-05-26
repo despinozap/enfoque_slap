@@ -165,10 +165,7 @@ export class ProveedoresEditComponent implements OnInit {
         {
           case 400: //Bad request
           {
-            NotificationsService.showAlert(
-              errorResponse.error.message,
-              NotificationsService.messageType.error
-            );
+            this.responseErrors = errorResponse.error.message;
 
             break;
           }
@@ -183,13 +180,6 @@ export class ProveedoresEditComponent implements OnInit {
             break;
           }
 
-          case 409: //Conflict
-          {
-            this.responseErrors = errorResponse.error.message;
-
-            break;
-          }
-
           case 412: //Object not found
           {
             NotificationsService.showToast(
@@ -198,13 +188,6 @@ export class ProveedoresEditComponent implements OnInit {
             );
 
             this.goTo_proveedoresList();
-
-            break;
-          }
-        
-          case 422: //Invalid request parameters
-          {
-            this.responseErrors = errorResponse.error;
 
             break;
           }

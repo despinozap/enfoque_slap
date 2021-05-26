@@ -73,13 +73,6 @@ export class ClientesCreateComponent implements OnInit {
             break;
           }
 
-          case 409: //Conflict
-          {
-            this.responseErrors = errorResponse.error.message;
-
-            break;
-          }
-
           case 500: //Internal server
           {
             NotificationsService.showAlert(

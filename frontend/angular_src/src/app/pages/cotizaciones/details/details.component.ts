@@ -274,7 +274,7 @@ export class CotizacionesDetailsComponent implements OnInit {
       },
       //Error request
       (errorResponse: any) => {
-        console.log(errorResponse);
+
         switch(errorResponse.status)
         {
         
@@ -293,16 +293,6 @@ export class CotizacionesDetailsComponent implements OnInit {
             NotificationsService.showToast(
               errorResponse.error.message,
               NotificationsService.messageType.error
-            );
-
-            break;
-          }
-
-          case 412: //Object not found
-          {
-            NotificationsService.showToast(
-              errorResponse.error.message,
-              NotificationsService.messageType.warning
             );
 
             break;
@@ -553,17 +543,27 @@ export class CotizacionesDetailsComponent implements OnInit {
                 break;
               }
 
-              case 405: //Permission denied
-                {
-                  NotificationsService.showAlert(
-                    errorResponse.error.message,
-                    NotificationsService.messageType.error
-                  );
+            case 405: //Permission denied
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
 
-                  break;
-                }
+                break;
+              }
 
-            case 422: //Invalid request parameters
+            case 409: //Conflict
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+            case 412: //Object not found
               {
                 NotificationsService.showAlert(
                   errorResponse.error.message,
@@ -635,17 +635,27 @@ export class CotizacionesDetailsComponent implements OnInit {
                 break;
               }
 
-              case 405: //Permission denied
-                {
-                  NotificationsService.showAlert(
-                    errorResponse.error.message,
-                    NotificationsService.messageType.error
-                  );
+            case 405: //Permission denied
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
 
-                  break;
-                }
+                break;
+              }
+            
+            case 409: //Conflict
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
 
-            case 422: //Invalid request parameters
+                break;
+              }
+
+            case 412: //Object not found
               {
                 NotificationsService.showAlert(
                   errorResponse.error.message,

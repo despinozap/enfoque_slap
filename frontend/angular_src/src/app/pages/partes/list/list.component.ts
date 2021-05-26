@@ -174,16 +174,6 @@ export class PartesListComponent implements OnInit {
 
             switch(errorResponse.status)
             {
-              case 400: //Object not found
-              {
-                NotificationsService.showAlert(
-                  errorResponse.error.message,
-                  NotificationsService.messageType.warning
-                );
-
-                break;
-              }
-
               case 405: //Permission denied
               {
                 NotificationsService.showAlert(
@@ -195,6 +185,16 @@ export class PartesListComponent implements OnInit {
               }
 
               case 409: //Conflict
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+              case 412: //Object not found
               {
                 NotificationsService.showAlert(
                   errorResponse.error.message,

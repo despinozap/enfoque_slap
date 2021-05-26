@@ -127,12 +127,9 @@ export class ClientesEditComponent implements OnInit {
 
         switch(errorResponse.status)
         {
-          case 400: //Bad request
+          case 400: //Invalid request parameters
           {
-            NotificationsService.showAlert(
-              errorResponse.error.message,
-              NotificationsService.messageType.error
-            );
+            this.responseErrors = errorResponse.error.message;
 
             break;
           }
@@ -165,13 +162,6 @@ export class ClientesEditComponent implements OnInit {
             );
 
             this.goTo_clientesList();
-
-            break;
-          }
-        
-          case 422: //Invalid request parameters
-          {
-            this.responseErrors = errorResponse.error;
 
             break;
           }

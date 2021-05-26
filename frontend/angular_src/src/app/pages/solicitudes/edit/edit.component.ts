@@ -391,17 +391,27 @@ export class SolicitudesEditComponent implements OnInit {
                 break;
               }
 
-              case 405: //Permission denied
-                {
-                  NotificationsService.showAlert(
-                    errorResponse.error.message,
-                    NotificationsService.messageType.error
-                  );
+            case 405: //Permission denied
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
 
-                  break;
-                }
+                break;
+              }
 
-            case 422: //Invalid request parameters
+            case 409: //Conflict
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+            case 412: //Object not found
               {
                 NotificationsService.showAlert(
                   errorResponse.error.message,

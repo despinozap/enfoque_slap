@@ -111,7 +111,7 @@ export class ResetComponent implements OnInit {
             default: //Unhandled error
               {
                 NotificationsService.showAlert(
-                  'Fail on resetting the password',
+                  'Error al resetear el password',
                   NotificationsService.messageType.error
                 );
 

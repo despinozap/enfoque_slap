@@ -111,13 +111,9 @@ export class ProfileEditComponent implements OnInit {
 
         switch(errorResponse.status)
         {
-       
-          case 405: //Permission denied
+          case 400: //Invalid request parameters
           {
-            NotificationsService.showAlert(
-              errorResponse.error.message,
-              NotificationsService.messageType.error
-            );
+            this.responseErrors = errorResponse.error.message;
 
             break;
           }
@@ -130,13 +126,6 @@ export class ProfileEditComponent implements OnInit {
             );
 
             this.goTo_profile();
-
-            break;
-          }
-        
-          case 422: //Invalid request parameters
-          {
-            this.responseErrors = errorResponse.error;
 
             break;
           }

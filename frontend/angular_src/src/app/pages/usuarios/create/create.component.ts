@@ -83,13 +83,6 @@ export class UsuariosCreateComponent implements OnInit {
             break;
           }
 
-          case 422: //Invalid request parameters
-          {
-            this.responseErrors = errorResponse.error.message;
-
-            break;
-          }
-
           case 500: //Internal server
           {
             NotificationsService.showAlert(

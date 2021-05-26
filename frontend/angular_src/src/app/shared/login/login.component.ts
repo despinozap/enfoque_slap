@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { connectableObservableDescriptor } from 'rxjs/internal/observable/ConnectableObservable';
 import { User } from 'src/app/interfaces/user';
 import { AuthService } from 'src/app/services/auth.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
@@ -145,17 +144,19 @@ export class LoginComponent implements OnInit {
 								break;
 							}
 
-						case 403: //Invalid request parameters (forbidden)
+						case 500: //Invalid request parameters (forbidden)
 							{
-								this.responseErrors = errorResponse.error.message;
-
+								NotificationsService.showAlert(
+									errorResponse.error.message,
+									NotificationsService.messageType.error
+								);
 								break;
 							}
 
 						default: //Unhandled error
 							{
 								NotificationsService.showAlert(
-									'Fail on requesting the password reset link',
+									'Error al solicitar el link de recuperacion',
 									NotificationsService.messageType.error
 								);
 

@@ -181,13 +181,6 @@ export class FaenasEditComponent implements OnInit {
             break;
           }
 
-          case 409: //Conflict
-          {
-            this.responseErrors = errorResponse.error.message;
-
-            break;
-          }
-
           case 412: //Object not found
           {
             NotificationsService.showToast(
@@ -196,13 +189,6 @@ export class FaenasEditComponent implements OnInit {
             );
 
             this.goTo_faenasList();
-
-            break;
-          }
-        
-          case 422: //Invalid request parameters
-          {
-            this.responseErrors = errorResponse.error;
 
             break;
           }

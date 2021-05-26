@@ -72,6 +72,16 @@ export class ParametersEditComponent implements OnInit {
 
               break;
             }
+
+            case 500: //Internal server
+            {
+              NotificationsService.showToast(
+                errorResponse.error.message,
+                NotificationsService.messageType.error
+              );
+
+              break;
+            }
           
             default: //Unhandled error
             {
@@ -129,25 +139,12 @@ export class ParametersEditComponent implements OnInit {
         {
           case 400: //Bad request
           {
-            NotificationsService.showAlert(
-              errorResponse.error.message,
-              NotificationsService.messageType.error
-            );
+            this.responseErrors = errorResponse.error.message;
 
             break;
           }
 
           case 405: //Permission denied
-          {
-            NotificationsService.showAlert(
-              errorResponse.error.message,
-              NotificationsService.messageType.error
-            );
-
-            break;
-          }
-
-          case 409: //Conflict
           {
             NotificationsService.showAlert(
               errorResponse.error.message,
@@ -165,13 +162,6 @@ export class ParametersEditComponent implements OnInit {
             );
 
             this.goTo_parametersList();
-
-            break;
-          }
-        
-          case 422: //Invalid request parameters
-          {
-            this.responseErrors = errorResponse.error;
 
             break;
           }

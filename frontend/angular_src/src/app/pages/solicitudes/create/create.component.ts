@@ -418,16 +418,6 @@ export class SolicitudesCreateComponent implements OnInit {
                 break;
               }
 
-            case 422: //Invalid request parameters
-              {
-                NotificationsService.showAlert(
-                  errorResponse.error.message,
-                  NotificationsService.messageType.error
-                );
-
-                break;
-              }
-
             case 500: //Internal server
               {
                 NotificationsService.showAlert(

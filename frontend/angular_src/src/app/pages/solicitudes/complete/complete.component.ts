@@ -500,7 +500,17 @@ export class SolicitudesCompleteComponent implements OnInit {
                 break;
               }
 
-            case 422: //Invalid request parameters
+            case 409: //Conflict
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+            case 412: //Object not found
               {
                 NotificationsService.showAlert(
                   errorResponse.error.message,

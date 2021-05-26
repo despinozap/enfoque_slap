@@ -102,6 +102,16 @@ export class FaenasListComponent implements OnInit {
         switch(errorResponse.status)
         {
         
+          case 400: ////Invalid request parameters
+          {
+            NotificationsService.showToast(
+              errorResponse.error.message,
+              NotificationsService.messageType.error
+            );
+
+            break;
+          }
+
           case 405: //Permission denied
           {
             NotificationsService.showToast(
@@ -195,16 +205,6 @@ export class FaenasListComponent implements OnInit {
 
             switch(errorResponse.status)
             {
-              case 400: //Object not found
-              {
-                NotificationsService.showAlert(
-                  errorResponse.error.message,
-                  NotificationsService.messageType.warning
-                );
-
-                break;
-              }
-
               case 405: //Permission denied
               {
                 NotificationsService.showAlert(

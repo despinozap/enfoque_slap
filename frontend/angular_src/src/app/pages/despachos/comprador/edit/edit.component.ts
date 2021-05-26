@@ -287,7 +287,7 @@ export class DespachosCompradorEditComponent implements OnInit {
                 break;
               }
 
-            case 409: //Permission denied
+            case 409: //Conflict
               {
                 NotificationsService.showAlert(
                   errorResponse.error.message,
@@ -297,7 +297,7 @@ export class DespachosCompradorEditComponent implements OnInit {
                 break;
               }
 
-            case 422: //Invalid request parameters
+            case 412: //Object not found
               {
                 NotificationsService.showAlert(
                   errorResponse.error.message,

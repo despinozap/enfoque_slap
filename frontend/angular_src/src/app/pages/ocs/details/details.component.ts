@@ -363,17 +363,27 @@ export class OcsDetailsComponent implements OnInit {
                 break;
               }
 
-              case 405: //Permission denied
-                {
-                  NotificationsService.showAlert(
-                    errorResponse.error.message,
-                    NotificationsService.messageType.error
-                  );
+            case 405: //Permission denied
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
 
-                  break;
-                }
+                break;
+              }
 
-            case 422: //Invalid request parameters
+            case 409: //Conflict
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+            case 412: //Object not found
               {
                 NotificationsService.showAlert(
                   errorResponse.error.message,
@@ -528,17 +538,27 @@ export class OcsDetailsComponent implements OnInit {
                 break;
               }
 
-              case 405: //Permission denied
-                {
-                  NotificationsService.showAlert(
-                    errorResponse.error.message,
-                    NotificationsService.messageType.error
-                  );
+            case 405: //Permission denied
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
 
-                  break;
-                }
+                break;
+              }
 
-            case 422: //Invalid request parameters
+            case 409: //Conflict
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+            case 412: //Object not found
               {
                 NotificationsService.showAlert(
                   errorResponse.error.message,
@@ -632,12 +652,9 @@ export class OcsDetailsComponent implements OnInit {
       (errorResponse: any) => {
         switch(errorResponse.status)
         {
-          case 400: //Bad request
+          case 400: //Invalid request parameters
           {
-            NotificationsService.showAlert(
-              errorResponse.error.message,
-              NotificationsService.messageType.error
-            );
+            this.responseErrors = errorResponse.error.message;
 
             break;
           }
@@ -654,7 +671,10 @@ export class OcsDetailsComponent implements OnInit {
 
           case 409: //Conflict
           {
-            this.responseErrors = errorResponse.error.message;
+            NotificationsService.showAlert(
+              errorResponse.error.message,
+              NotificationsService.messageType.error
+            );
 
             break;
           }
@@ -667,13 +687,6 @@ export class OcsDetailsComponent implements OnInit {
             );
 
             this.goTo_partesList();
-
-            break;
-          }
-        
-          case 422: //Invalid request parameters
-          {
-            this.responseErrors = errorResponse.error;
 
             break;
           }

@@ -208,6 +208,16 @@ export class ClientesListComponent implements OnInit {
                 break;
               }
 
+              case 412: //Object not found
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
               case 500: //Internal server
               {
                 NotificationsService.showAlert(
