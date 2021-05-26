@@ -805,6 +805,10 @@ class CotizacionesController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $response = HelpController::buildResponse(
+            500,
+            'Error al eliminar la cotizacion',
+            null
+        );
     }
 }

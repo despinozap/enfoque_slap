@@ -797,7 +797,7 @@ class SolicitudesController extends Controller
                         {
                             // If solicitud is already 'Cerrada'
                             $response = HelpController::buildResponse(
-                                405,
+                                409,
                                 'No puedes editar una solicitud cerrada',
                                 null
                             );
@@ -1000,7 +1000,7 @@ class SolicitudesController extends Controller
                                 $success = false;
 
                                 $response = HelpController::buildResponse(
-                                    422,
+                                    409,
                                     'La parte N:' . $parte['nparte'] . ' no existe en la solicitud seleccionada',
                                     null
                                 );

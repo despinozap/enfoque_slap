@@ -173,7 +173,7 @@ class ProveedoresController extends Controller
                 else if(Comprador::find($comprador_id)->proveedores->where('name', $request->name)->first())
                 {
                     $response = HelpController::buildResponse(
-                        409,
+                        400,
                         [
                             'name' => [
                                 'Ya existe un proveedor con el nombre ingresado para el comprador seleccionado'
@@ -185,7 +185,7 @@ class ProveedoresController extends Controller
                 else if(Comprador::find($comprador_id)->proveedores->where('rut', $request->rut)->first())
                 {
                     $response = HelpController::buildResponse(
-                        409,
+                        400,
                         [
                             'rut' => [
                                 'Ya existe un proveedor con el RUT ingresado para el comprador seleccionado'
@@ -391,7 +391,7 @@ class ProveedoresController extends Controller
                 {
                     
                     $response = HelpController::buildResponse(
-                        409,
+                        400,
                         [
                             'name' => [
                                 'Ya existe un proveedor con el nombre ingresado para el comprador seleccionado'
@@ -404,7 +404,7 @@ class ProveedoresController extends Controller
                 {
                     
                     $response = HelpController::buildResponse(
-                        409,
+                        400,
                         [
                             'rut' => [
                                 'Ya existe un proveedor con el RUT ingresado para el comprador seleccionado'

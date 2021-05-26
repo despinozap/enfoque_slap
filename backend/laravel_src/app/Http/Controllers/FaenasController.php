@@ -172,7 +172,7 @@ class FaenasController extends Controller
                 else if(Cliente::find($cliente_id)->faenas->where('name', $request->name)->first())
                 {
                     $response = HelpController::buildResponse(
-                        409,
+                        400,
                         [
                             'name' => [
                                 'Ya existe una faena con el nombre ingresado para el cliente seleccionado'
@@ -184,7 +184,7 @@ class FaenasController extends Controller
                 else if(Cliente::find($cliente_id)->faenas->where('rut', $request->rut)->first())
                 {
                     $response = HelpController::buildResponse(
-                        409,
+                        400,
                         [
                             'rut' => [
                                 'Ya existe una faena con el RUT ingresado para el cliente seleccionado'
@@ -391,7 +391,7 @@ class FaenasController extends Controller
                 else if($cliente->faenas->where('name', $request->name)->where('id', '<>', $id)->first())
                 {
                     $response = HelpController::buildResponse(
-                        409,
+                        400,
                         [
                             'name' => [
                                 'Ya existe una faena con el nombre ingresado para el cliente seleccionado'
@@ -404,7 +404,7 @@ class FaenasController extends Controller
                 {
                     
                     $response = HelpController::buildResponse(
-                        409,
+                        400,
                         [
                             'rut' => [
                                 'Ya existe una faena con el RUT ingresado para el cliente seleccionado'

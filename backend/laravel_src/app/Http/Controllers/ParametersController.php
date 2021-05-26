@@ -174,13 +174,31 @@ class ParametersController extends Controller
                         {
                             case 'usd_to_clp': {
 
-                                if($request->value < 1)
+                                if(!is_numeric($request->value))
                                 {
                                     $success = false;
 
                                     $response = HelpController::buildResponse(
-                                        409,
-                                        'El valor USD debe ser mayor a 0',
+                                        400,
+                                        [
+                                            'value' => [
+                                                'El valor USD debe ser un numero'
+                                            ]
+                                        ],
+                                        null
+                                    );
+                                }
+                                else if($request->value < 1)
+                                {
+                                    $success = false;
+
+                                    $response = HelpController::buildResponse(
+                                        400,
+                                        [
+                                            'value' => [
+                                                'El valor USD debe ser mayor a 0'
+                                            ]
+                                        ],
                                         null
                                     );
                                 }

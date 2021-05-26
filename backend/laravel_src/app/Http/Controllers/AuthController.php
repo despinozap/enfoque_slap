@@ -44,7 +44,7 @@ class AuthController extends Controller
 				{
 					$response = HelpController::buildResponse(
 						200,
-						'Password reset email sent successfully',
+						'Email de recuperacion enviado correctamente',
 						null
 					);
 				}
@@ -52,7 +52,7 @@ class AuthController extends Controller
 				{
 					$response = HelpController::buildResponse(
 						500,
-						'Fail on sending the reset password email',
+						'Error al enviar el email de recuperacion',
 						null
 					);
 				}  
@@ -60,10 +60,10 @@ class AuthController extends Controller
 		else
 		{
 			$response = HelpController::buildResponse(
-				403,
+				400,
 				[
 					'email' => [
-						'User not found'
+						'Usuario no encontrado'
 					]
 				],
 				null
@@ -198,15 +198,18 @@ class AuthController extends Controller
 
 				$user = Auth::user();
 
-				$user->role;
-
 				$user->makeHidden([
-						'email_verified_at',
-						'role_id',
-						'created_at', 
-						'updated_at'
+					'email_verified_at',
+					'country_id',
+					'role_id',
+					'created_at', 
+					'updated_at'
 				]);
 
+				$user->country;
+				$user->country->makeHidden(['created_at', 'updated_at']);
+
+				$user->role;
 				$user->role->makeHidden(['created_at', 'updated_at']);
 
 				$data = [
@@ -253,15 +256,18 @@ class AuthController extends Controller
 	{
 		$user = Auth::user();
 
-		$user->role;
-
 		$user->makeHidden([
-				'email_verified_at',
-				'role_id',
-				'created_at', 
-				'updated_at'
+			'email_verified_at',
+			'country_id',
+			'role_id',
+			'created_at', 
+			'updated_at'
 		]);
 
+		$user->country;
+		$user->country->makeHidden(['created_at', 'updated_at']);
+
+		$user->role;
 		$user->role->makeHidden(['created_at', 'updated_at']);
 
 		$response = HelpController::buildResponse(

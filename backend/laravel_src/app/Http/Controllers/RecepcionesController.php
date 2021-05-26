@@ -1461,7 +1461,7 @@ class RecepcionesController extends Controller
                                 else
                                 {
                                     $response = HelpController::buildResponse(
-                                        500,
+                                        409,
                                         'La parte "' . $parte->nparte . '" tiene cantidades que ya despachadas por el comprador',
                                         null
                                     );

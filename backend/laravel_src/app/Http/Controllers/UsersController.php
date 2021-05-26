@@ -390,7 +390,7 @@ class UsersController extends Controller
                 {
                     
                     $response = HelpController::buildResponse(
-                        409,
+                        400,
                         [
                             'email' => [
                                 'El email ya esta asociado a otro usuario'
