@@ -117,8 +117,8 @@ export class UtilsService {
 
       case 1: { // Administrador
 
-        let roleMenu = {
-          'title': 'Modulos',
+        let sectionMenu = {
+          'title': 'General',
           'groups': [
             {
               'title': 'Sistema',
@@ -210,6 +210,14 @@ export class UtilsService {
               'header': false,
               'route': '/panel/ocs'
             },
+          ]
+        };
+
+        menu.push(sectionMenu);
+
+        sectionMenu = {
+          'title': 'Comprador',
+          'groups': [
             {
               'title': 'Recepciones',
               'icon': 'bx-log-in-circle',
@@ -245,15 +253,15 @@ export class UtilsService {
           ]
         };
 
-        menu.push(roleMenu);
+        menu.push(sectionMenu);
 
         break;
       }
 
       case 2: { // Vendedor
 
-        let roleMenu = {
-          'title': 'Modulos',
+        let sectionMenu = {
+          'title': 'General',
           'groups': [
             {
               'title': 'Solicitudes',
@@ -292,7 +300,7 @@ export class UtilsService {
           ]
         };
 
-        menu.push(roleMenu);
+        menu.push(sectionMenu);
 
         break;
       }
