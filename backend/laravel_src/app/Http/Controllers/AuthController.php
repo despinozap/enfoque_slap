@@ -162,7 +162,7 @@ class AuthController extends Controller
 		return $response;
 	}
 		
-	public function login(Request $request)
+	public function logIn(Request $request)
 	{
 
 		$validatorInput = $request->only('email', 'password');
@@ -216,6 +216,12 @@ class AuthController extends Controller
 					'access_token' => $accessToken,
 					'user' => $user
 				];
+
+				// Log this action
+        LoggedactionsController::log(
+            Auth::user(),
+            'User logged in from IP:' . $request->ip()
+        );
 
 				$response = HelpController::buildResponse(
 					200,

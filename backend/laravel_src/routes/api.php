@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RolesController;
 use App\Http\Controllers\UsersController;
+use App\Http\Controllers\LoggedactionsController;
 use App\Http\Controllers\ParametersController;
 use App\Http\Controllers\PartesController;
 use App\Http\Controllers\ClientesController;
@@ -33,7 +34,7 @@ use App\Http\Controllers\DespachosController;
 /*  Login  */
 Route::prefix('auth')->middleware('cors')->group(function ()
 {
-    Route::post('login', [AuthController::class, 'login']);
+    Route::post('login', [AuthController::class, 'logIn']);
     Route::post('forgot', [AuthController::class, 'forgotPassword'])->name('password.email');
     Route::post('reset', [AuthController::class, 'resetPassword'])->name('password.reset');
 });

@@ -48,6 +48,9 @@ class DatabaseSeeder extends Seeder
             'users show',
             'users update',
             'users destroy',
+            //Loggedactions
+            'loggedactions index',
+            'loggedactions store',
             //Parameters
             'parameters index',
             'parameters show',
@@ -142,6 +145,9 @@ class DatabaseSeeder extends Seeder
                 'users show',
                 'users update',
                 'users destroy',
+                //Loggedactions
+                'loggedactions index',
+                'loggedactions store',
                 //Parameters
                 'parameters index',
                 'parameters show',
@@ -228,6 +234,9 @@ class DatabaseSeeder extends Seeder
 
             //Route permissions to for Role: Vendedor
             $routePermissionNames = [
+                //Loggedactions
+                'loggedactions index',
+                'loggedactions store',
                 //Faenas
                 'faenas index_full',
                 //Marcas
