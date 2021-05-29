@@ -12,8 +12,13 @@ class Sucursal extends Model
     protected $table = 'sucursales';
     protected $fillable = ['rut', 'name', 'address', 'city'];
 
-    public function centrodistribucion()
+    public function recepciones()
     {
-        return $this->belongsTo(Centrodistribucion::class);
+        return $this->morphMany(Recepcion::class, 'recepcionable');
+    }
+
+    public function despachos()
+    {
+        return $this->morphMany(Despacho::class, 'despachable');
     }
 }

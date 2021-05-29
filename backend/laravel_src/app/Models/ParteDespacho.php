@@ -15,4 +15,9 @@ class ParteDespacho extends Pivot
     {
         return $this->belongsTo(Parte::class);
     }
+
+    public function despacho()
+    {
+        return $this->belongsTo(Despacho::class);
+    }
 }
