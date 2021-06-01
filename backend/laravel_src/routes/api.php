@@ -141,7 +141,8 @@ Route::middleware(['auth:api', 'cors'])->group(function()
 
     // Recepciones (Sucursal [centro])
     Route::get('/centrosdistribucion/{id}/recepciones', [RecepcionesController::class, 'index_centrodistribucion']);
-    Route::get('/centrosdistribucion/{centrodistribucion_id}/recepciones/queuepartes', [RecepcionesController::class, 'queuePartes_centrodistribucion']);
+    //Route::get('/centrosdistribucion/{centrodistribucion_id}/recepciones/queuepartes', [RecepcionesController::class, 'queuePartes_centrodistribucion_full']);
+    Route::get('/centrosdistribucion/{centrodistribucion_id}/compradores/{comprador_id}/queuepartes', [RecepcionesController::class, 'queuePartes_centrodistribucion']);
     Route::post('/centrosdistribucion/{centrodistribucion_id}/recepciones', [RecepcionesController::class, 'store_centrodistribucion']);
     Route::get('/centrosdistribucion/{centrodistribucion_id}/recepciones/{id}', [RecepcionesController::class, 'show_centrodistribucion']);
     Route::get('/centrosdistribucion/{centrodistribucion_id}/recepciones/{id}/prepare', [RecepcionesController::class, 'update_prepare_centrodistribucion']);

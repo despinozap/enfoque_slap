@@ -1568,15 +1568,15 @@ class RecepcionesController extends Controller
             $user = Auth::user();
             if($user->role->hasRoutepermission('centrosdistribucion recepciones_index'))
             {
-                if($sucursal = Sucursal::find($id))
+                if($centrodistribucion = Sucursal::where('id', $id)->where('type', 'centro')->first())
                 {
-                    $sucursal->makeHidden([
+                    $centrodistribucion->makeHidden([
                         'created_at', 
                         'updated_at'
                     ]);
 
-                    $sucursal->recepciones;
-                    $sucursal->recepciones = $sucursal->recepciones->filter(function($recepcion)
+                    $centrodistribucion->recepciones;
+                    $centrodistribucion->recepciones = $centrodistribucion->recepciones->filter(function($recepcion)
                     {
                         $recepcion->partes_total;
                         
@@ -1633,14 +1633,14 @@ class RecepcionesController extends Controller
                     $response = HelpController::buildResponse(
                         200,
                         null,
-                        $sucursal->recepciones
+                        $centrodistribucion->recepciones
                     );
                 }   
                 else     
                 {
                     $response = HelpController::buildResponse(
                         412,
-                        'La sucursal no existe',
+                        'El centro de distribucion no existe',
                         null
                     );
                 }
@@ -1649,7 +1649,7 @@ class RecepcionesController extends Controller
             {
                 $response = HelpController::buildResponse(
                     405,
-                    'No tienes acceso a visualizar recepciones de sucursales',
+                    'No tienes acceso a visualizar recepciones de centro de distribucion',
                     null
                 );
             }
@@ -1658,7 +1658,135 @@ class RecepcionesController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al obtener las recepciones de la sucursal [!]',
+                'Error al obtener las recepciones del centro de distribucion [!]' . $e,
+                null
+            );
+        }
+            
+        return $response;
+    }
+
+
+    public function queuePartes_centrodistribucion($centrodistribucion_id, $comprador_id)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('centrosdistribucion recepciones_store'))
+            {
+                if($centrodistribucion = Sucursal::where('id', $centrodistribucion_id)->where('type', 'centro')->first())
+                {
+                    if($comprador = Comprador::find($comprador_id))
+                    {
+                        // Gets all the partes in Despacho to the Sucursal from a Comprador
+                        $parteDespachoList = ParteDespacho::select('despacho_parte.*')
+                                            ->join('despachos', 'despachos.id', '=', 'despacho_parte.despacho_id')
+                                            ->where('despachos.despachable_type', get_class($comprador))
+                                            ->where('despachos.despachable_id', $comprador->id) // From the Compador
+                                            ->where('despachos.destinable_type', get_class($centrodistribucion))
+                                            ->where('despachos.destinable_id', $centrodistribucion->id) // To the Sucursal
+                                            ->get();
+
+
+                        $cantidadesDespacho = $parteDespachoList->reduce(function($carry, $parteDespacho)
+                            {
+                                if(isset($carry[$parteDespacho->parte->id]))
+                                {
+                                    $carry[$parteDespacho->parte->id] += $parteDespacho->cantidad;
+                                }
+                                else
+                                {
+                                    $carry[$parteDespacho->parte->id] = $parteDespacho->cantidad;
+                                }
+
+                                return $carry;
+                            }, 
+                            array()
+                        );
+
+                        $success = true;
+                        $queuePartes = array();
+
+                        foreach(array_keys($cantidadesDespacho) as $parteId)
+                        {
+                            if($parte = Parte::find($parteId))
+                            {
+                                // Get cantidad total in Recepciones at Sucursal (centro) from Comprador
+                                $cantidadPendiente = $cantidadesDespacho[$parteId] - $parte->getCantidadRecepcionado_sourceable($centrodistribucion, $comprador);
+
+                                if($cantidadPendiente > 0)
+                                {
+                                    $parteData = [
+                                        "id" => $parte->id,
+                                        "nparte" => $parte->nparte,
+                                        "marca" => $parte->marca->makeHidden(['created_at', 'updated_at']),
+                                        "cantidad_pendiente" => $cantidadPendiente,
+                                        "cantidad_despachos" => $parte->getCantidadDespachado($centrodistribucion)
+                                    ];
+
+                                    array_push($queuePartes, $parteData);
+                                }
+                            }
+                            else
+                            {
+                                $response = HelpController::buildResponse(
+                                    500,
+                                    'Error al obtener una de las partes pendientes de recepcion',
+                                    null
+                                );
+
+                                $success = false;
+                                
+                                break;
+                            }
+                        }
+
+                        if($success === true)
+                        {
+                            $response = HelpController::buildResponse(
+                                200,
+                                null,
+                                $queuePartes
+                            );
+                        }
+                        else
+                        {
+                            // Response already given when success = false
+                        }
+                        
+                    }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            412,
+                            'El comprador no existe',
+                            null
+                        );
+                    }
+                }   
+                else     
+                {
+                    $response = HelpController::buildResponse(
+                        412,
+                        'El centro de distribucion no existe',
+                        null
+                    );
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a visualizar partes pendiente de recepcion',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al obtener partes pendiente de recepcion [!]',
                 null
             );
         }
@@ -1672,7 +1800,7 @@ class RecepcionesController extends Controller
      * selecting data and storing a Recepcion for Sucursal (centro)
      * 
      */
-    public function queuePartes_centrodistribucion($centrodistribucion_id)
+    public function queuePartes_centrodistribucion_full($centrodistribucion_id)
     {
         try
         {
