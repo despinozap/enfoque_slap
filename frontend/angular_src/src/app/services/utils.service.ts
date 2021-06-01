@@ -255,6 +255,46 @@ export class UtilsService {
 
         menu.push(sectionMenu);
 
+        sectionMenu = {
+          'title': 'Centro distribucion',
+          'groups': [
+            {
+              'title': 'Recepciones',
+              'icon': 'bx-log-in-circle',
+              'header': true,
+              'route': '',
+              'items': [
+                {
+                  'title': 'Nueva recepcion',
+                  'route': '/panel/recepciones/centrodistribucion/create'
+                },
+                {
+                  'title': 'Lista de recepciones',
+                  'route': '/panel/recepciones/centrodistribucion'
+                }
+              ]
+            },
+            // {
+            //   'title': 'Despachos',
+            //   'icon': 'bx-log-out-circle',
+            //   'header': true,
+            //   'route': '',
+            //   'items': [
+            //     {
+            //       'title': 'Nuevo despacho',
+            //       'route': '/panel/despachos/centrodistribucion/create'
+            //     },
+            //     {
+            //       'title': 'Lista de despachos',
+            //       'route': '/panel/despachos/centrodistribucion'
+            //     }
+            //   ]
+            // },
+          ]
+        };
+
+        menu.push(sectionMenu);
+
         break;
       }
 
