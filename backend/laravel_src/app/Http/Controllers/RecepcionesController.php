@@ -546,7 +546,7 @@ class RecepcionesController extends Controller
                 $validatorInput = ['recepcion_id' => $id];
             
                 $validatorRules = [
-                    'recepcion_id' => 'required|exists:recepciones,id,recepcionable_id,' . $comprador_id . ',recepcionable_type,' . get_class(new Comprador()), // Try to add recepcionable_type
+                    'recepcion_id' => 'required|exists:recepciones,id,recepcionable_id,' . $comprador_id . ',recepcionable_type,' . get_class(new Comprador()),
                 ];
         
                 $validatorMessages = [
@@ -691,7 +691,7 @@ class RecepcionesController extends Controller
                 $validatorInput = ['recepcion_id' => $id];
             
                 $validatorRules = [
-                    'recepcion_id' => 'required|exists:recepciones,id,recepcionable_id,' . $comprador_id . ',recepcionable_type,' . get_class(new Comprador()), // Try to add recepcionable_type
+                    'recepcion_id' => 'required|exists:recepciones,id,recepcionable_id,' . $comprador_id . ',recepcionable_type,' . get_class(new Comprador()),
                 ];
         
                 $validatorMessages = [
@@ -2037,7 +2037,7 @@ class RecepcionesController extends Controller
                             // Set the morph source for Recepcion as Comprador
                             $recepcion->sourceable_id = $comprador->id;
                             $recepcion->sourceable_type = get_class($comprador);
-                            // Set the morph for Recepcion as Sucursal
+                            // Set the morph for Recepcion as Sucursal (centro)
                             $recepcion->recepcionable_id = $centrodistribucion->id;
                             $recepcion->recepcionable_type = get_class($centrodistribucion);
                             // Fill the data
@@ -2418,7 +2418,7 @@ class RecepcionesController extends Controller
                 $validatorInput = ['recepcion_id' => $id];
             
                 $validatorRules = [
-                    'recepcion_id' => 'required|exists:recepciones,id,recepcionable_id,' . $centrodistribucion_id . ',recepcionable_type,' . get_class(new Sucursal()), // Try to add recepcionable_type
+                    'recepcion_id' => 'required|exists:recepciones,id,recepcionable_id,' . $centrodistribucion_id . ',recepcionable_type,' . get_class(new Sucursal()),
                 ];
         
                 $validatorMessages = [
