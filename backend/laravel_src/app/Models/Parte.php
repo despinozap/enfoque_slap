@@ -118,4 +118,43 @@ class Parte extends Model
 
         return $quantity;
     }
+
+    public function getCantidadEntregado($sucursal)
+    {
+        $ocParteEntregaList = OcParteEntrega::join('entregas', 'entregas.id', '=', 'entrega_ocparte.entrega_id')
+                            ->join('oc_parte', 'oc_parte.id', '=', 'entrega_ocparte.ocparte_id')
+                            ->join('partes', 'partes.id', '=', 'oc_parte.parte_id')
+                            ->where('entregas.sucursal_id', '=', $sucursal->id)
+                            ->where('partes.id', '=', $this->id)
+                            ->get();
+
+        $quantity = $ocParteEntregaList->reduce(function ($carry, $ocParteEntrega) 
+            {
+                return $carry + $ocParteEntrega->cantidad;
+            }, 
+            0
+        );
+
+        return $quantity;
+    }
+
+    public function getCantidadEntregado_destinable($sucursal, $faena)
+    {
+        $ocParteEntregaList = OcParteEntrega::join('entregas', 'entregas.id', '=', 'entrega_ocparte.entrega_id')
+                            ->join('oc_parte', 'oc_parte.id', '=', 'entrega_ocparte.ocparte_id')
+                            ->join('partes', 'partes.id', '=', 'oc_parte.parte_id')
+                            ->where('entregas.sucursal_id', '=', $sucursal->id)
+                            ->where('entregas.faena_id', '=', $faena->id)
+                            ->where('partes.id', '=', $this->id)
+                            ->get();
+
+        $quantity = $ocParteEntregaList->reduce(function ($carry, $ocParteEntrega) 
+            {
+                return $carry + $ocParteEntrega->cantidad;
+            }, 
+            0
+        );
+
+        return $quantity;
+    }
 }

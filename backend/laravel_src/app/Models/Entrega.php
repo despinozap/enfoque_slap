@@ -13,8 +13,8 @@ class Entrega extends Model
     public $appends = ['partes_total'];
 
     /*
-     * The Despacho's source. 
-     * Despachable models: Comprador, Centrodistribucion, Sucursal
+     * The Entrega's source. 
+     * Despachable models: Centrodistribucion, Sucursal
      */
     public function sucursal()
     {
@@ -22,8 +22,8 @@ class Entrega extends Model
     }
 
     /*
-     *  The Despacho's destination.
-     *  Destinable models: Centrodistribucion, Sucursal, Faena
+     *  The Entrega's destination.
+     *  Destinable models: Faena
      */
     public function faena()
     {
