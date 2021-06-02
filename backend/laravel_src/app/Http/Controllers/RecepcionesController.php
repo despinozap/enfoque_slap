@@ -1468,7 +1468,7 @@ class RecepcionesController extends Controller
                                 {
                                     $response = HelpController::buildResponse(
                                         409,
-                                        'La parte "' . $parte->nparte . '" tiene cantidades que ya despachadas por el comprador',
+                                        'La parte "' . $parte->nparte . '" tiene cantidades que ya fueron despachadas por el comprador',
                                         null
                                     );
 
@@ -2373,7 +2373,7 @@ class RecepcionesController extends Controller
                                             if($p = $recepcion->partes->find($parte->id))
                                             {
                                                 $cantidadPendiente = $cantidadPendiente + $p->pivot->cantidad;
-                                                $cantidadDespachos = $parte->getCantidadDespachado($centrodistribucion) - ($parte->getCantidadRecepcionado($centrodistribucion) - $p->pivot->cantidad);
+                                                $cantidadDespachos = $parte->getCantidadEntregado($centrodistribucion) + $parte->getCantidadDespachado($centrodistribucion) - ($parte->getCantidadRecepcionado($centrodistribucion) - $p->pivot->cantidad);
                                                 $cantidadDespachos = $cantidadDespachos >= 0 ? $cantidadDespachos : 0;
                                             }
 
@@ -2439,7 +2439,7 @@ class RecepcionesController extends Controller
                             {
                                 $response = HelpController::buildResponse(
                                     500,
-                                    'Error al obtener el proveedor de la recepcion',
+                                    'Error al obtener el comprador de la recepcion',
                                     null
                                 );
                             }
@@ -2552,7 +2552,7 @@ class RecepcionesController extends Controller
 
                             if($recepcion->save())
                             {
-                                // Gets all the partes in Despacho to the Sucursal from the Comprador
+                                // Gets all the partes in Despacho to the Sucursal (centro) from the Comprador
                                 if(
                                     $parteDespachoList = ParteDespacho::select('despacho_parte.*')
                                                         ->join('despachos', 'despachos.id', '=', 'despacho_parte.despacho_id')
@@ -2655,8 +2655,8 @@ class RecepcionesController extends Controller
                                                         $cantidadPendiente = $despachoCantidades[$parteId] - $parte->getCantidadRecepcionado_sourceable($centrodistribucion, $recepcion->sourceable) - $diffCantidades[$parteId];
                                                         if($cantidadPendiente >= 0)
                                                         {
-                                                            // Calc stock using cantidad in Recepciones for Sucursal (centro) - diff (negative sum)  - cantidad in Despachos
-                                                            $cantidadStock = $parte->getCantidadRecepcionado($centrodistribucion) + $diffCantidades[$parteId] - $parte->getCantidadDespachado($centrodistribucion);                          
+                                                            // Calc stock using cantidad in Recepciones for Sucursal (centro) - diff (negative sum)  - cantidad in Entregas - cantidad in Despachos
+                                                            $cantidadStock = $parte->getCantidadRecepcionado($centrodistribucion) + $diffCantidades[$parteId] - $parte->getCantidadEntregado($centrodistribucion) - $parte->getCantidadDespachado($centrodistribucion);                          
                                                             if($cantidadStock >= 0)
                                                             {
                                                                 // If cantidad the same than in previousCantidad, we're removing the ParteRecepcion
@@ -2743,12 +2743,12 @@ class RecepcionesController extends Controller
                                                     {
                                                         if($parte = $recepcion->partes->find($parteId))
                                                         {
-                                                            // Calc pendiente using cantidad in Despachos - cantidad in Recepciones for Comprador - diff
+                                                            // Calc pendiente using cantidad in Despachos - cantidad in Recepciones for Sucursal (centro) - diff
                                                             $cantidadPendiente = $despachoCantidades[$parteId] - $parte->getCantidadRecepcionado_sourceable($centrodistribucion, $recepcion->sourceable) - $diffCantidades[$parteId];
                                                             if($cantidadPendiente >= 0)
                                                             {
-                                                                // Calc stock using cantidad in Recepciones for Comprador + diff - cantidad in Despachos
-                                                                $cantidadStock = $parte->getCantidadRecepcionado($centrodistribucion) + $diffCantidades[$parteId] - $parte->getCantidadDespachado($centrodistribucion);                          
+                                                                // Calc stock using cantidad in Recepciones for Sucursal (centro) + diff - cantidad in Entregas - cantidad in Despachos
+                                                                $cantidadStock = $parte->getCantidadRecepcionado($centrodistribucion) + $diffCantidades[$parteId] - $parte->getCantidadEntregado($centrodistribucion) - $parte->getCantidadDespachado($centrodistribucion);                          
                                                                 if($cantidadStock >= 0)
                                                                 {
                                                                     // Set new cantidad adding the negative diff
@@ -2817,8 +2817,8 @@ class RecepcionesController extends Controller
                                                             $cantidadPendiente = $despachoCantidades[$parteId] - $parte->getCantidadRecepcionado_sourceable($centrodistribucion, $recepcion->sourceable) - $diffCantidades[$parteId];
                                                             if($cantidadPendiente >= 0)
                                                             {
-                                                                // Calc stock using cantidad in Recepciones for Sucursal (centro) + diff - cantidad in Despachos
-                                                                $cantidadStock = $parte->getCantidadRecepcionado($centrodistribucion) + $diffCantidades[$parteId] - $parte->getCantidadDespachado($centrodistribucion);                          
+                                                                // Calc stock using cantidad in Recepciones for Sucursal (centro) + diff - cantidad in Entregas - cantidad ni Despachos
+                                                                $cantidadStock = $parte->getCantidadRecepcionado($centrodistribucion) + $diffCantidades[$parteId] - $parte->getCantidadEntregado($centrodistribucion) - $parte->getCantidadDespachado($centrodistribucion);                          
                                                                 if($cantidadStock >= 0)
                                                                 {
                                                                     // Add the new Parte to Recepcion
@@ -2993,7 +2993,7 @@ class RecepcionesController extends Controller
         try
         {
             $user = Auth::user();
-            if($user->role->hasRoutepermission('compradores recepciones_destroy'))
+            if($user->role->hasRoutepermission('centrosdistribucion recepciones_destroy'))
             {
                 if($centrodistribucion = Sucursal::where('id', $centrodistribucion_id)->where('type', 'centro')->first())
                 {
@@ -3009,8 +3009,8 @@ class RecepcionesController extends Controller
                             // For all the partes in diff list
                             foreach($recepcion->partes as $parte)
                             {                                                                       
-                                // Calc stock using cantidad in Recepciones for Sucursal (centro) - cantidad in Recepcion - cantidad in Despachos
-                                $cantidadStock = $parte->getCantidadRecepcionado($centrodistribucion) - $parte->pivot->cantidad - $parte->getCantidadDespachado($centrodistribucion);                          
+                                // Calc stock using cantidad in Recepciones for Sucursal (centro) - cantidad in Recepcion - cantidad in Entregas - cantidad in Despachos
+                                $cantidadStock = $parte->getCantidadRecepcionado($centrodistribucion) - $parte->pivot->cantidad - $parte->getCantidadEntregado($centrodistribucion) - $parte->getCantidadDespachado($centrodistribucion);                          
                                 if($cantidadStock >= 0)
                                 {
                                     if(!$recepcion->partes()->detach($parte->id))
@@ -3030,7 +3030,7 @@ class RecepcionesController extends Controller
                                 {
                                     $response = HelpController::buildResponse(
                                         409,
-                                        'La parte "' . $parte->nparte . '" tiene cantidades que ya despachadas por el centro de distribucion',
+                                        'La parte "' . $parte->nparte . '" tiene cantidades que ya fueron despachadas por el centro de distribucion',
                                         null
                                     );
 
@@ -3804,17 +3804,17 @@ class RecepcionesController extends Controller
         try
         {
             $user = Auth::user();
-            if($user->role->hasRoutepermission('centrosdistribucion recepciones_update'))
+            if($user->role->hasRoutepermission('sucursales recepciones_update'))
             {
                 $validatorInput = ['recepcion_id' => $id];
             
                 $validatorRules = [
-                    'recepcion_id' => 'required|exists:recepciones,id,recepcionable_id,' . $centrodistribucion_id . ',recepcionable_type,' . get_class(new Sucursal()),
+                    'recepcion_id' => 'required|exists:recepciones,id,recepcionable_id,' . $sucursal_id . ',recepcionable_type,' . get_class(new Sucursal()),
                 ];
         
                 $validatorMessages = [
                     'recepcion_id.required' => 'Debes ingresar la recepcion',
-                    'recepcion_id.exists' => 'La recepcion ingresada no existe para el centro de distribucion',                    
+                    'recepcion_id.exists' => 'La recepcion ingresada no existe para la sucursal',                    
                 ];
         
                 $validator = Validator::make(
@@ -3833,9 +3833,9 @@ class RecepcionesController extends Controller
                 }
                 else        
                 {
-                    if($centrodistribucion = Sucursal::where('id', $centrodistribucion_id)->where('type', 'centro')->first())
+                    if($sucursal = Sucursal::where('id', $sucursal_id)->where('type', 'sucursal')->first())
                     {
-                        if($recepcion = $centrodistribucion->recepciones->find($id))
+                        if($recepcion = $sucursal->recepciones->find($id))
                         {
                             $recepcion->makeHidden([
                                 'recepcionable_id',
@@ -3848,6 +3848,7 @@ class RecepcionesController extends Controller
 
                             $recepcion->recepcionable;
                             $recepcion->recepcionable->makeHidden([
+                                'type',
                                 'rut',
                                 'address',
                                 'city',
@@ -3860,19 +3861,13 @@ class RecepcionesController extends Controller
 
                             $recepcion->sourceable;
                             $recepcion->sourceable->makeHidden([
-                                'comprador_id',
+                                'type',
                                 'rut',
                                 'address',
                                 'city',
                                 'contact',
                                 'phone',
                                 'country_id',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-
-                            $recepcion->sourceable->country;
-                            $recepcion->sourceable->country->makeHidden([
                                 'created_at', 
                                 'updated_at'
                             ]);
@@ -3897,15 +3892,15 @@ class RecepcionesController extends Controller
                                 $parte->marca->makeHidden(['created_at', 'updated_at']);
                             }
 
-                            if(get_class($recepcion->sourceable) === get_class(new Comprador()))
+                            if(get_class($recepcion->sourceable) === get_class(new Sucursal()))
                             {
-                                // Gets all the partes in Despacho to the Sucursal from the Comprador
+                                // Gets all the partes in Despacho to the Sucursal (centro) from the Sucursal
                                 $parteDespachoList = ParteDespacho::select('despacho_parte.*')
                                                     ->join('despachos', 'despachos.id', '=', 'despacho_parte.despacho_id')
                                                     ->where('despachos.despachable_type', get_class($recepcion->sourceable))
-                                                    ->where('despachos.despachable_id', $recepcion->sourceable->id) // From the Comprador
-                                                    ->where('despachos.destinable_type', get_class($centrodistribucion))
-                                                    ->where('despachos.destinable_id', $centrodistribucion->id) // To the Sucursal
+                                                    ->where('despachos.despachable_id', $recepcion->sourceable->id) // From the Sucursal (centro)
+                                                    ->where('despachos.destinable_type', get_class($sucursal))
+                                                    ->where('despachos.destinable_id', $sucursal->id) // To the Sucursal
                                                     ->get();
                                                     
 
@@ -3934,15 +3929,15 @@ class RecepcionesController extends Controller
                                     {
                                         if($parte = Parte::find($parteId))
                                         {
-                                            // Get cantidad total in Recepciones at Sucursal (centro) from Comprador
-                                            $cantidadPendiente = $cantidadesDespacho[$parteId] - $parte->getCantidadRecepcionado_sourceable($centrodistribucion, $recepcion->sourceable);
+                                            // Get cantidad total in Recepciones at Sucursal from Sucursal (centro)
+                                            $cantidadPendiente = $cantidadesDespacho[$parteId] - $parte->getCantidadRecepcionado_sourceable($sucursal, $recepcion->sourceable);
                                             $cantidadDespachos = 0;
 
-                                            // If the Parte is already in the Recepcion, then add the cantidad to queue calc in Despachos if already taken
+                                            // If the Parte is already in the Recepcion, then add the cantidad to queue calc in Entregas if already taken
                                             if($p = $recepcion->partes->find($parte->id))
                                             {
                                                 $cantidadPendiente = $cantidadPendiente + $p->pivot->cantidad;
-                                                $cantidadDespachos = $parte->getCantidadDespachado($centrodistribucion) - ($parte->getCantidadRecepcionado($centrodistribucion) - $p->pivot->cantidad);
+                                                $cantidadDespachos = $parte->getCantidadEntregado($sucursal) - ($parte->getCantidadRecepcionado($sucursal) - $p->pivot->cantidad);
                                                 $cantidadDespachos = $cantidadDespachos >= 0 ? $cantidadDespachos : 0;
                                             }
 
@@ -4008,7 +4003,7 @@ class RecepcionesController extends Controller
                             {
                                 $response = HelpController::buildResponse(
                                     500,
-                                    'Error al obtener el proveedor de la recepcion',
+                                    'Error al obtener el centro de distribucion de la recepcion',
                                     null
                                 );
                             }
@@ -4026,7 +4021,7 @@ class RecepcionesController extends Controller
                     {
                         $response = HelpController::buildResponse(
                             412,
-                            'El centro de distribucion no existe',
+                            'La sucursal no existe',
                             null
                         );
                     }
@@ -4036,7 +4031,7 @@ class RecepcionesController extends Controller
             {
                 $response = HelpController::buildResponse(
                     405,
-                    'No tienes acceso a actualizar recepciones de centro de distribucion',
+                    'No tienes acceso a actualizar recepciones de sucursal',
                     null
                 );
             }
@@ -4059,7 +4054,7 @@ class RecepcionesController extends Controller
         try
         {
             $user = Auth::user();
-            if($user->role->hasRoutepermission('centrosdistribucion recepciones_update'))
+            if($user->role->hasRoutepermission('sucursales recepciones_update'))
             {
                 $validatorInput = $request->only('fecha', 'ndocumento', 'responsable', 'comentario', 'partes');
             
@@ -4107,9 +4102,9 @@ class RecepcionesController extends Controller
                 }
                 else        
                 {
-                    if($centrodistribucion = Sucursal::where('id', $centrodistribucion_id)->where('type', 'centro')->first())
+                    if($sucursal = Sucursal::where('id', $sucursal_id)->where('type', 'sucursal')->first())
                     {
-                        if($recepcion = $centrodistribucion->recepciones->find($id))
+                        if($recepcion = $sucursal->recepciones->find($id))
                         {
                             DB::beginTransaction();
 
@@ -4121,14 +4116,14 @@ class RecepcionesController extends Controller
 
                             if($recepcion->save())
                             {
-                                // Gets all the partes in Despacho to the Sucursal from the Comprador
+                                // Gets all the partes in Despacho to the Sucursal from the Sucursal (centro)
                                 if(
                                     $parteDespachoList = ParteDespacho::select('despacho_parte.*')
                                                         ->join('despachos', 'despachos.id', '=', 'despacho_parte.despacho_id')
                                                         ->where('despachos.despachable_type', get_class($recepcion->sourceable))
-                                                        ->where('despachos.despachable_id', $recepcion->sourceable->id) // From the Comprador
-                                                        ->where('despachos.destinable_type', get_class($centrodistribucion))
-                                                        ->where('despachos.destinable_id', $centrodistribucion->id) // To the Sucursal
+                                                        ->where('despachos.despachable_id', $recepcion->sourceable->id) // From the Sucursal (centro)
+                                                        ->where('despachos.destinable_type', get_class($sucursal))
+                                                        ->where('despachos.destinable_id', $sucursal->id) // To the Sucursal
                                                         ->get()
                                 )
                                 {
@@ -4220,12 +4215,12 @@ class RecepcionesController extends Controller
                                                 {       
                                                     if($parte = $recepcion->partes->find($parteId))
                                                     {
-                                                        // Calc pendiente using cantidad in Despachos - cantidad in Recepciones for Sucursal (centro) - diff (negative sum)
-                                                        $cantidadPendiente = $despachoCantidades[$parteId] - $parte->getCantidadRecepcionado_sourceable($centrodistribucion, $recepcion->sourceable) - $diffCantidades[$parteId];
+                                                        // Calc pendiente using cantidad in Despachos - cantidad in Recepciones for Sucursal - diff (negative sum)
+                                                        $cantidadPendiente = $despachoCantidades[$parteId] - $parte->getCantidadRecepcionado_sourceable($sucursal, $recepcion->sourceable) - $diffCantidades[$parteId];
                                                         if($cantidadPendiente >= 0)
                                                         {
-                                                            // Calc stock using cantidad in Recepciones for Sucursal (centro) - diff (negative sum)  - cantidad in Despachos
-                                                            $cantidadStock = $parte->getCantidadRecepcionado($centrodistribucion) + $diffCantidades[$parteId] - $parte->getCantidadDespachado($centrodistribucion);                          
+                                                            // Calc stock using cantidad in Recepciones for Sucursal - diff (negative sum)  - cantidad in Entregas
+                                                            $cantidadStock = $parte->getCantidadRecepcionado($sucursal) + $diffCantidades[$parteId] - $parte->getCantidadEntregado($sucursal);                          
                                                             if($cantidadStock >= 0)
                                                             {
                                                                 // If cantidad the same than in previousCantidad, we're removing the ParteRecepcion
@@ -4312,12 +4307,12 @@ class RecepcionesController extends Controller
                                                     {
                                                         if($parte = $recepcion->partes->find($parteId))
                                                         {
-                                                            // Calc pendiente using cantidad in Despachos - cantidad in Recepciones for Comprador - diff
-                                                            $cantidadPendiente = $despachoCantidades[$parteId] - $parte->getCantidadRecepcionado_sourceable($centrodistribucion, $recepcion->sourceable) - $diffCantidades[$parteId];
+                                                            // Calc pendiente using cantidad in Despachos - cantidad in Recepciones for Sucursal - diff
+                                                            $cantidadPendiente = $despachoCantidades[$parteId] - $parte->getCantidadRecepcionado_sourceable($sucursal, $recepcion->sourceable) - $diffCantidades[$parteId];
                                                             if($cantidadPendiente >= 0)
                                                             {
-                                                                // Calc stock using cantidad in Recepciones for Comprador + diff - cantidad in Despachos
-                                                                $cantidadStock = $parte->getCantidadRecepcionado($centrodistribucion) + $diffCantidades[$parteId] - $parte->getCantidadDespachado($centrodistribucion);                          
+                                                                // Calc stock using cantidad in Recepciones for Sucursal + diff - cantidad in Entregas
+                                                                $cantidadStock = $parte->getCantidadRecepcionado($sucursal) + $diffCantidades[$parteId] - $parte->getCantidadEntregado($sucursal);                          
                                                                 if($cantidadStock >= 0)
                                                                 {
                                                                     // Set new cantidad adding the negative diff
@@ -4382,12 +4377,12 @@ class RecepcionesController extends Controller
                                                     {
                                                         if($parte = Parte::find($parteId))
                                                         {
-                                                            // Calc pendiente using cantidad in Despachos - cantidad in Recepciones from Comprador - diff
-                                                            $cantidadPendiente = $despachoCantidades[$parteId] - $parte->getCantidadRecepcionado_sourceable($centrodistribucion, $recepcion->sourceable) - $diffCantidades[$parteId];
+                                                            // Calc pendiente using cantidad in Despachos - cantidad in Recepciones from Sucursal (centro) - diff
+                                                            $cantidadPendiente = $despachoCantidades[$parteId] - $parte->getCantidadRecepcionado_sourceable($sucursal, $recepcion->sourceable) - $diffCantidades[$parteId];
                                                             if($cantidadPendiente >= 0)
                                                             {
-                                                                // Calc stock using cantidad in Recepciones for Sucursal (centro) + diff - cantidad in Despachos
-                                                                $cantidadStock = $parte->getCantidadRecepcionado($centrodistribucion) + $diffCantidades[$parteId] - $parte->getCantidadDespachado($centrodistribucion);                          
+                                                                // Calc stock using cantidad in Recepciones for Sucursal (centro) + diff - cantidad in Entregas
+                                                                $cantidadStock = $parte->getCantidadRecepcionado($sucursal) + $diffCantidades[$parteId] - $parte->getCantidadEntregado($sucursal);                          
                                                                 if($cantidadStock >= 0)
                                                                 {
                                                                     // Add the new Parte to Recepcion
@@ -4529,7 +4524,7 @@ class RecepcionesController extends Controller
                     {
                         $response = HelpController::buildResponse(
                             412,
-                            'El centro de distribucion no existe',
+                            'La sucursal no existe',
                             null
                         );
                     }
@@ -4539,7 +4534,7 @@ class RecepcionesController extends Controller
             {
                 $response = HelpController::buildResponse(
                     405,
-                    'No tienes acceso a actualizar recepciones para centro de distribucion',
+                    'No tienes acceso a actualizar recepciones para sucursal',
                     null
                 );
             }
@@ -4562,14 +4557,14 @@ class RecepcionesController extends Controller
         try
         {
             $user = Auth::user();
-            if($user->role->hasRoutepermission('compradores recepciones_destroy'))
+            if($user->role->hasRoutepermission('sucursales recepciones_destroy'))
             {
-                if($centrodistribucion = Sucursal::where('id', $centrodistribucion_id)->where('type', 'centro')->first())
+                if($sucursal = Sucursal::where('id', $sucursal_id)->where('type', 'sucursal')->first())
                 {
-                    if($recepcion = $centrodistribucion->recepciones->find($id))
+                    if($recepcion = $sucursal->recepciones->find($id))
                     {
-                        // Check if Recepcion was sourceable by a Comprador
-                        if(get_class($recepcion->sourceable) === get_class(new Comprador()))
+                        // Check if Recepcion was sourceable by a Sucursal (centro)
+                        if(get_class($recepcion->sourceable) === get_class(new Sucursal()))
                         {
                             DB::beginTransaction();
 
@@ -4578,8 +4573,8 @@ class RecepcionesController extends Controller
                             // For all the partes in diff list
                             foreach($recepcion->partes as $parte)
                             {                                                                       
-                                // Calc stock using cantidad in Recepciones for Sucursal (centro) - cantidad in Recepcion - cantidad in Despachos
-                                $cantidadStock = $parte->getCantidadRecepcionado($centrodistribucion) - $parte->pivot->cantidad - $parte->getCantidadDespachado($centrodistribucion);                          
+                                // Calc stock using cantidad in Recepciones for Sucursal - cantidad in Recepcion - cantidad in Entregas
+                                $cantidadStock = $parte->getCantidadRecepcionado($sucursal) - $parte->pivot->cantidad - $parte->getCantidadEntregado($sucursal);                          
                                 if($cantidadStock >= 0)
                                 {
                                     if(!$recepcion->partes()->detach($parte->id))
@@ -4599,7 +4594,7 @@ class RecepcionesController extends Controller
                                 {
                                     $response = HelpController::buildResponse(
                                         409,
-                                        'La parte "' . $parte->nparte . '" tiene cantidades que ya despachadas por el centro de distribucion',
+                                        'La parte "' . $parte->nparte . '" tiene cantidades que ya fueron despachadas por la sucursal',
                                         null
                                     );
 
@@ -4662,7 +4657,7 @@ class RecepcionesController extends Controller
                 {
                     $response = HelpController::buildResponse(
                         412,
-                        'El centro de distribucion no existe',
+                        'La sucursal no existe',
                         null
                     );
                 }
@@ -4671,7 +4666,7 @@ class RecepcionesController extends Controller
             {
                 $response = HelpController::buildResponse(
                     405,
-                    'No tienes acceso a eliminar recepciones para centro de distribucion',
+                    'No tienes acceso a eliminar recepciones para sucursal',
                     null
                 );
             }
@@ -4680,7 +4675,7 @@ class RecepcionesController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al eliminar la recepcion [!]' . $e,
+                'Error al eliminar la recepcion [!]',
                 null
             );
         }
