@@ -194,6 +194,7 @@ export class DespachosCompradorCreateComponent implements OnInit {
     let despacho: any = {
       sucursal_id: this.despachoForm.value.centrodistribucion,
       fecha: this.despachoForm.value.fecha,
+      ndocumento: this.despachoForm.value.documento,
       responsable: this.despachoForm.value.responsable,
       comentario: this.despachoForm.value.comentario,
       partes: dispatchedPartes

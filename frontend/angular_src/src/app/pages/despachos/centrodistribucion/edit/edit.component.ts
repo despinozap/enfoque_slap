@@ -12,7 +12,7 @@ import { UtilsService } from 'src/app/services/utils.service';
   templateUrl: './edit.component.html',
   styleUrls: ['./edit.component.css']
 })
-export class DespachosCompradorEditComponent implements OnInit {
+export class DespachosCentrodistribucionEditComponent implements OnInit {
 
   @ViewChild(DataTableDirective, {static: false})
   datatableElement_partes: DataTableDirective = null as any;
@@ -29,8 +29,8 @@ export class DespachosCompradorEditComponent implements OnInit {
 
   despacho: any = {
     id: -1,
-    centrodistribucion_id: -1,
-    centrodistribucion_name: null,
+    sucursal_id: -1,
+    sucursal_name: null,
   };
 
   partes: any[] = [];
@@ -45,7 +45,7 @@ export class DespachosCompradorEditComponent implements OnInit {
   });
 
   private sub: any;
-  comprador_id: number = 1;
+  centrodistribucion_id: number = 1;
   
   
   constructor(
@@ -91,8 +91,8 @@ export class DespachosCompradorEditComponent implements OnInit {
     {
       // Load Despacho data
       this.despacho.id = despachoData.despacho.id;
-      this.despacho.centrodistribucion_id = despachoData.despacho.destinable.id;
-      this.despacho.centrodistribucion_name = despachoData.despacho.destinable.name;
+      this.despacho.sucursal_id = despachoData.despacho.destinable.id;
+      this.despacho.sucursal_name = despachoData.despacho.destinable.name;
 
       this.despachoForm.controls.fecha.setValue(this.dateStringFormat(despachoData.despacho.fecha));
       if(despachoData.despacho.ndocumento !== null)
@@ -160,7 +160,7 @@ export class DespachosCompradorEditComponent implements OnInit {
     
     this.loading = true;
 
-    this._despachosService.prepareUpdateDespacho_comprador(this.comprador_id, this.despacho.id)
+    this._despachosService.prepareUpdateDespacho_centrodistribucion(this.centrodistribucion_id, this.despacho.id)
     .subscribe(
       //Success request
       (response: any) => {
@@ -252,7 +252,7 @@ export class DespachosCompradorEditComponent implements OnInit {
       partes: dispatchedPartes
     };
 
-    this._despachosService.updateDespacho_comprador(this.comprador_id, this.despacho.id, despacho)
+    this._despachosService.updateDespacho_centrodistribucion(this.centrodistribucion_id, this.despacho.id, despacho)
       .subscribe(
         //Success request
         (response: any) => {
@@ -402,7 +402,7 @@ export class DespachosCompradorEditComponent implements OnInit {
   }
 
   public goTo_despachosList(): void {
-    this.router.navigate(['/panel/despachos/comprador']);
+    this.router.navigate(['/panel/despachos/centrodistribucion']);
   }
 
 }

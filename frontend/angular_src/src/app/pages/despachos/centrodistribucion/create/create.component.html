@@ -2,13 +2,13 @@
 <div class="row">
   <div class="col-12">
     <div class="page-title-box d-flex align-items-center justify-content-between">
-      <h4 class="mb-0 font-size-18">Editar despacho</h4>
+      <h4 class="mb-0 font-size-18">Nuevo despacho</h4>
 
       <div class="page-title-right">
         <ol class="breadcrumb m-0">
           <li class="breadcrumb-item">Despachos</li>
-          <li class="breadcrumb-item">Comprador</li>
-          <li class="breadcrumb-item active">Editar despacho</li>
+          <li class="breadcrumb-item">Centro distribucion</li>
+          <li class="breadcrumb-item active">Nuevo despacho</li>
         </ol>
       </div>
 
@@ -23,18 +23,31 @@
     <div class="card">
       <div class="card-body">
 
-        <h4 class="card-title">Despacho {{ despacho.id >= 0 ? "#" + despacho.id : '' }}</h4>
-        <p class="card-title-desc">Modifica los siguientes campos para editar el despacho</p>
+        <h4 class="card-title">Despacho</h4>
+        <p class="card-title-desc">Completa los siguientes campos para registrar un nuevo despacho</p>
 
         <!-- Estado comercial - Aprobar -->
-        <form [formGroup]="despachoForm" (ngSubmit)="updateDespacho()" action="#">
+        <form [formGroup]="despachoForm" (ngSubmit)="storeDespacho()" action="#">
             
           <div class="row">
             <div class="col-4">
               <div class="form-group">
-                <label class="control-label">Centro de distribucion</label>
-                <br>
-                <label>{{ despacho.centrodistribucion_name !== null ? despacho.centrodistribucion_name : '' }}</label>
+                <label class="control-label">Sucursal</label>
+                <!-- Backend errors -->
+                <div class="alert alert-danger" *ngIf="(responseErrors.sucursal_id)">
+                  <div *ngFor="let errorMessage of responseErrors.sucursal_id">{{ errorMessage }}</div>
+                </div>
+                <select class="form-control" name="sucursal" id="sucursal" formControlName="sucursal" >
+                  <option *ngFor="let sucursal of sucursales" [value]="sucursal.id">{{ sucursal.name }}</option>
+                </select>
+                <!-- Frontend errors -->
+                <div
+                    *ngIf="(despachoForm.controls.sucursal.errors) && (despachoForm.controls.sucursal.touched) && (despachoForm.controls.sucursal.dirty)">
+                  <div class="error-response" *ngIf="despachoForm.controls.sucursal.errors.required === true">Debes
+                    seleccionar la sucursal
+                  </div>
+                  <div class="error-response" *ngIf="despachoForm.controls.sucursal.errors.minlength !== null">La sucursal debe ser valida</div>
+                </div>
               </div>
             </div>
             <div class="col-4">
@@ -143,7 +156,7 @@
                       </td>
                       <td align="left">{{ parte.nparte !== null ? parte.nparte : '' }}</td>
                       <td align="center">
-                        <input class="form-control" type="number" name="" id="txtParte-{{ i }}-cantidad" min="{{parte.cantidad_despachos}}" max="{{parte.cantidad_max}}" value="{{ ((parte.checked === true) && (parte.cantidad !== null)) ? parte.cantidad : '' }}" (change)="updateParte_cantidad(parte, $event)" [disabled]="loading === true ? true : (parte.checked ? false : true)">
+                        <input class="form-control" type="number" name="" id="txtParte-{{ i }}-cantidad" min="1" max="{{parte.cantidad_stock}}" value="{{ parte.cantidad_stock !== null ? parte.cantidad_stock : '' }}" (change)="updateParte_cantidad(parte, $event)" [disabled]="loading === true ? true : (parte.checked ? false : true)">
                       </td>
                       <td align="left">{{ parte.marca.name !== null ? parte.marca.name : '' }}</td>
                     </tr>
@@ -157,7 +170,7 @@
           <div class="row">
             <div class="col-12">
               <div class="form-buttons mt-2">
-                <button class="btn btn-primary mr-2" (click)="updateDespacho()"
+                <button class="btn btn-primary mr-2" (click)="storeDespacho()"
                     [disabled]="(despachoForm.invalid) || (loading === true) || (isCheckedItem(partes) === false)">
                   <span *ngIf="loading === true"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
                   <span *ngIf="loading === false">Guardar</span>

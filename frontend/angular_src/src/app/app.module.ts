@@ -63,6 +63,10 @@ import { RecepcionesCentrodistribucionListComponent } from './pages/recepciones/
 import { RecepcionesCentrodistribucionCreateComponent } from './pages/recepciones/centrodistribucion/create/create.component';
 import { RecepcionesCentrodistribucionEditComponent } from './pages/recepciones/centrodistribucion/edit/edit.component';
 import { RecepcionesCentrodistribucionDetailsComponent } from './pages/recepciones/centrodistribucion/details/details.component';
+import { DespachosCentrodistribucionListComponent } from './pages/despachos/centrodistribucion/list/list.component';
+import { DespachosCentrodistribucionCreateComponent } from './pages/despachos/centrodistribucion/create/create.component';
+import { DespachosCentrodistribucionDetailsComponent } from './pages/despachos/centrodistribucion/details/details.component';
+import { DespachosCentrodistribucionEditComponent } from './pages/despachos/centrodistribucion/edit/edit.component';
 
 
 /* Routes */
@@ -118,6 +122,10 @@ const routes: Routes = [
       { path: 'recepciones/centrodistribucion/create', component: RecepcionesCentrodistribucionCreateComponent },
       { path: 'recepciones/centrodistribucion/details/:id', component: RecepcionesCentrodistribucionDetailsComponent },
       { path: 'recepciones/centrodistribucion/edit/:id', component: RecepcionesCentrodistribucionEditComponent },
+      { path: 'despachos/centrodistribucion', component: DespachosCentrodistribucionListComponent },
+      { path: 'despachos/centrodistribucion/create', component: DespachosCentrodistribucionCreateComponent },
+      { path: 'despachos/centrodistribucion/details/:id', component: DespachosCentrodistribucionDetailsComponent },
+      { path: 'despachos/centrodistribucion/edit/:id', component: DespachosCentrodistribucionEditComponent },
     ]
   },
   { path: '**', redirectTo: 'login', pathMatch: 'full' } //any other page, redirects to base path
@@ -174,6 +182,10 @@ const routes: Routes = [
     RecepcionesCentrodistribucionCreateComponent,
     RecepcionesCentrodistribucionEditComponent,
     RecepcionesCentrodistribucionDetailsComponent,
+    DespachosCentrodistribucionListComponent,
+    DespachosCentrodistribucionCreateComponent,
+    DespachosCentrodistribucionDetailsComponent,
+    DespachosCentrodistribucionEditComponent,
   ],
   imports: [
     BrowserModule,

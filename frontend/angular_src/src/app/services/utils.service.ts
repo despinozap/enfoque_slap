@@ -274,22 +274,22 @@ export class UtilsService {
                 }
               ]
             },
-            // {
-            //   'title': 'Despachos',
-            //   'icon': 'bx-log-out-circle',
-            //   'header': true,
-            //   'route': '',
-            //   'items': [
-            //     {
-            //       'title': 'Nuevo despacho',
-            //       'route': '/panel/despachos/centrodistribucion/create'
-            //     },
-            //     {
-            //       'title': 'Lista de despachos',
-            //       'route': '/panel/despachos/centrodistribucion'
-            //     }
-            //   ]
-            // },
+            {
+              'title': 'Despachos',
+              'icon': 'bx-log-out-circle',
+              'header': true,
+              'route': '',
+              'items': [
+                {
+                  'title': 'Nuevo despacho',
+                  'route': '/panel/despachos/centrodistribucion/create'
+                },
+                {
+                  'title': 'Lista de despachos',
+                  'route': '/panel/despachos/centrodistribucion'
+                }
+              ]
+            },
           ]
         };
 
