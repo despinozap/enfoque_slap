@@ -295,6 +295,46 @@ export class UtilsService {
 
         menu.push(sectionMenu);
 
+        sectionMenu = {
+          'title': 'Sucursal',
+          'groups': [
+            {
+              'title': 'Recepciones',
+              'icon': 'bx-log-in-circle',
+              'header': true,
+              'route': '',
+              'items': [
+                {
+                  'title': 'Nueva recepcion',
+                  'route': '/panel/recepciones/sucursal/create'
+                },
+                {
+                  'title': 'Lista de recepciones',
+                  'route': '/panel/recepciones/sucursal'
+                }
+              ]
+            },
+            // {
+            //   'title': 'Despachos',
+            //   'icon': 'bx-log-out-circle',
+            //   'header': true,
+            //   'route': '',
+            //   'items': [
+            //     {
+            //       'title': 'Nuevo despacho',
+            //       'route': '/panel/despachos/centrodistribucion/create'
+            //     },
+            //     {
+            //       'title': 'Lista de despachos',
+            //       'route': '/panel/despachos/centrodistribucion'
+            //     }
+            //   ]
+            // },
+          ]
+        };
+
+        menu.push(sectionMenu);
+
         break;
       }
 

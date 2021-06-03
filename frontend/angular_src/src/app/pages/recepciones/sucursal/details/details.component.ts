@@ -12,7 +12,7 @@ import { UtilsService } from 'src/app/services/utils.service';
   templateUrl: './details.component.html',
   styleUrls: ['./details.component.css']
 })
-export class RecepcionesCentrodistribucionDetailsComponent implements OnInit {
+export class RecepcionesSucursalDetailsComponent implements OnInit {
 
   @ViewChild(DataTableDirective, {static: false})
   datatableElement_ocpartes: DataTableDirective = null as any;
@@ -28,7 +28,7 @@ export class RecepcionesCentrodistribucionDetailsComponent implements OnInit {
   
   dtTrigger: Subject<any> = new Subject<any>();
   
-  centrodistribucion_id: number = 1;
+  sucursal_id: number = 2;
   recepcion: any = {
     id: -1,
     fecha: null,
@@ -36,8 +36,8 @@ export class RecepcionesCentrodistribucionDetailsComponent implements OnInit {
     responsable: null,
     comentario: null,
     created_at: null,
+    sucursal_name: null,
     centrodistribucion_name: null,
-    comprador_name: null,
   };
   
   partes: any[] = [];
@@ -93,8 +93,8 @@ export class RecepcionesCentrodistribucionDetailsComponent implements OnInit {
       this.recepcion.responsable = recepcionData.responsable;
       this.recepcion.comentario = recepcionData.comentario;
       this.recepcion.created_at = recepcionData.created_at;
-      this.recepcion.centrodistribucion_name = recepcionData.recepcionable.name;
-      this.recepcion.comprador_name = recepcionData.sourceable.name;
+      this.recepcion.sucursal_name = recepcionData.recepcionable.name;
+      this.recepcion.centrodistribucion_name = recepcionData.sourceable.name;
       
       this.partes = [];
       recepcionData.partes.forEach((parte: any) => {
@@ -124,7 +124,7 @@ export class RecepcionesCentrodistribucionDetailsComponent implements OnInit {
     
     this.loading = true;
 
-    this._recepcionesService.getRecepcion_centrodistribucion(this.centrodistribucion_id, this.recepcion.id)
+    this._recepcionesService.getRecepcion_sucursal(this.sucursal_id, this.recepcion.id)
     .subscribe(
       //Success request
       (response: any) => {

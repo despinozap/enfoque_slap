@@ -67,6 +67,10 @@ import { DespachosCentrodistribucionListComponent } from './pages/despachos/cent
 import { DespachosCentrodistribucionCreateComponent } from './pages/despachos/centrodistribucion/create/create.component';
 import { DespachosCentrodistribucionDetailsComponent } from './pages/despachos/centrodistribucion/details/details.component';
 import { DespachosCentrodistribucionEditComponent } from './pages/despachos/centrodistribucion/edit/edit.component';
+import { RecepcionesSucursalListComponent } from './pages/recepciones/sucursal/list/list.component';
+import { RecepcionesSucursalEditComponent } from './pages/recepciones/sucursal/edit/edit.component';
+import { RecepcionesSucursalCreateComponent } from './pages/recepciones/sucursal/create/create.component';
+import { RecepcionesSucursalDetailsComponent } from './pages/recepciones/sucursal/details/details.component';
 
 
 /* Routes */
@@ -126,6 +130,10 @@ const routes: Routes = [
       { path: 'despachos/centrodistribucion/create', component: DespachosCentrodistribucionCreateComponent },
       { path: 'despachos/centrodistribucion/details/:id', component: DespachosCentrodistribucionDetailsComponent },
       { path: 'despachos/centrodistribucion/edit/:id', component: DespachosCentrodistribucionEditComponent },
+      { path: 'recepciones/sucursal', component: RecepcionesSucursalListComponent },
+      { path: 'recepciones/sucursal/create', component: RecepcionesSucursalCreateComponent },
+      { path: 'recepciones/sucursal/details/:id', component: RecepcionesSucursalDetailsComponent },
+      { path: 'recepciones/sucursal/edit/:id', component: RecepcionesSucursalEditComponent },
     ]
   },
   { path: '**', redirectTo: 'login', pathMatch: 'full' } //any other page, redirects to base path
@@ -186,6 +194,10 @@ const routes: Routes = [
     DespachosCentrodistribucionCreateComponent,
     DespachosCentrodistribucionDetailsComponent,
     DespachosCentrodistribucionEditComponent,
+    RecepcionesSucursalListComponent,
+    RecepcionesSucursalEditComponent,
+    RecepcionesSucursalCreateComponent,
+    RecepcionesSucursalDetailsComponent,
   ],
   imports: [
     BrowserModule,
