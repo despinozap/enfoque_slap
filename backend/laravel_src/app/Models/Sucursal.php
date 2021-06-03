@@ -21,4 +21,9 @@ class Sucursal extends Model
     {
         return $this->morphMany(Despacho::class, 'despachable');
     }
+
+    public function country()
+    {
+        return $this->belongsTo(Country::class);
+    }
 }

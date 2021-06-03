@@ -7,6 +7,7 @@ use App\Http\Controllers\RolesController;
 use App\Http\Controllers\UsersController;
 use App\Http\Controllers\LoggedactionsController;
 use App\Http\Controllers\ParametersController;
+use App\Http\Controllers\SucursalesController;
 use App\Http\Controllers\PartesController;
 use App\Http\Controllers\ClientesController;
 use App\Http\Controllers\FaenasController;
@@ -66,6 +67,10 @@ Route::middleware(['auth:api', 'cors'])->group(function()
     Route::get('/parameters', [ParametersController::class, 'index']);
     Route::get('/parameters/{id}', [ParametersController::class, 'show']);
     Route::put('/parameters/{id}', [ParametersController::class, 'update']);
+
+    // Sucursales
+    Route::get('/centrosdistribucion/countries/{country_id}', [SucursalesController::class, 'index_centrodistribucion']);
+    Route::get('/sucursales/countries/{country_id}', [SucursalesController::class, 'index_sucursal']);
 
     // Partes
     Route::get('/partes', [PartesController::class, 'index']);
