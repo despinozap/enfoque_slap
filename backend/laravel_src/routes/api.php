@@ -20,6 +20,7 @@ use App\Http\Controllers\ProveedoresController;
 use App\Http\Controllers\CentrosdistribucionController;
 use App\Http\Controllers\RecepcionesController;
 use App\Http\Controllers\DespachosController;
+use App\Http\Controllers\EntregasController;
 
 /*
 |--------------------------------------------------------------------------
@@ -179,4 +180,23 @@ Route::middleware(['auth:api', 'cors'])->group(function()
     Route::get('/centrosdistribucion/{centrodistribucion_id}/despachos/{id}/prepare', [DespachosController::class, 'update_prepare_centrodistribucion']);
     Route::put('/centrosdistribucion/{centrodistribucion_id}/despachos/{id}', [DespachosController::class, 'update_centrodistribucion']);
     Route::delete('/centrosdistribucion/{centrodistribucion_id}/despachos/{id}', [DespachosController::class, 'destroy_centrodistribucion']);
+
+    // Entregas (Sucursal [centro])
+    Route::get('/centrosdistribucion/{id}/entregas', [EntregasController::class, 'index_centrodistribucion']);
+    Route::get('/centrosdistribucion/{centrodistribucion_id}/entregas/prepare', [EntregasController::class, 'store_prepare_centrodistribucion']);
+    Route::post('/centrosdistribucion/{id}/entregas', [EntregasController::class, 'store_centrodistribucion']);
+    Route::get('/centrosdistribucion/{centrodistribucion_id}/entregas/{id}', [EntregasController::class, 'show_centrodistribucion']);
+    Route::get('/centrosdistribucion/{centrodistribucion_id}/entregas/{id}/prepare', [EntregasController::class, 'update_prepare_centrodistribucion']);
+    Route::put('/centrosdistribucion/{centrodistribucion_id}/entregas/{id}', [EntregasController::class, 'update_centrodistribucion']);
+    Route::delete('/centrosdistribucion/{centrodistribucion_id}/entregas/{id}', [EntregasController::class, 'destroy_centrodistribucion']);
+
+    // Entregas (Sucursal)
+    Route::get('/sucursales/{id}/entregas', [EntregasController::class, 'index_sucursal']);
+    Route::get('/sucursales/{sucursal_id}/entregas/prepare', [EntregasController::class, 'store_prepare_sucursal']);
+    Route::get('/sucursales/{sucursal_id}/entregas/prepare/ocs/{oc_id}', [EntregasController::class, 'store_prepare_oc_sucursal']);
+    Route::post('/sucursales/{sucursal_id}/entregas/ocs/{oc_id}', [EntregasController::class, 'store_sucursal']);
+    Route::get('/sucursales/{sucursal_id}/entregas/{id}', [EntregasController::class, 'show_sucursal']);
+    Route::get('/sucursales/{sucursal_id}/entregas/{id}/prepare', [EntregasController::class, 'update_prepare_sucursal']);
+    Route::put('/sucursales/{sucursal_id}/entregas/{id}', [EntregasController::class, 'update_sucursal']);
+    Route::delete('/sucursales/{sucursal_id}/entregas/{id}', [EntregasController::class, 'destroy_sucursal']);
 });

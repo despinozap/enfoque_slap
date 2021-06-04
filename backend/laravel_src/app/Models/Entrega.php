@@ -30,16 +30,16 @@ class Entrega extends Model
         return $this->belongsTo(Faena::class);
     }
 
-    public function partes()
+    public function ocpartes()
     {
         return $this->belongsToMany(OcParte::class, 'entrega_ocparte', 'entrega_id', 'ocparte_id')->withPivot(['cantidad'])->using(OcParteEntrega::class)->withTimestamps();
     }
 
     public function getPartesTotalAttribute()
     {
-        $quantity = $this->partes->reduce(function($carry, $parte)
+        $quantity = $this->ocpartes->reduce(function($carry, $ocParte)
             {
-                return $carry + $parte->pivot->cantidad; 
+                return $carry + $ocParte->pivot->cantidad; 
             }, 
             0
         );

@@ -1273,7 +1273,7 @@ class DespachosController extends Controller
         try
         {
             $user = Auth::user();
-            if($user->role->hasRoutepermission('compradores despachos_store'))
+            if($user->role->hasRoutepermission('centrosdistribucion despachos_store'))
             {
                 if($centrodistribucion = Sucursal::where('id', $centrodistribucion_id)->where('type', 'centro')->first())
                 {

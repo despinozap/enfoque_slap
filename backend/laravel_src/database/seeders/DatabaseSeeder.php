@@ -122,6 +122,11 @@ class DatabaseSeeder extends Seeder
             'centrosdistribucion despachos_show',
             'centrosdistribucion despachos_update',
             'centrosdistribucion despachos_destroy',
+            'centrosdistribucion entregas_index',
+            'centrosdistribucion entregas_store',
+            'centrosdistribucion entregas_show',
+            'centrosdistribucion entregas_update',
+            'centrosdistribucion entregas_destroy'
             //Sucurales (sucursal)
             'sucursales index',
             'sucursales show',
@@ -135,6 +140,11 @@ class DatabaseSeeder extends Seeder
             'sucursales despachos_show',
             'sucursales despachos_update',
             'sucursales despachos_destroy',
+            'sucursales entregas_index',
+            'sucursales entregas_store',
+            'sucursales entregas_show',
+            'sucursales entregas_update',
+            'sucursales entregas_destroy',
             //Proveedores
             'proveedores index',
             'proveedores store',
@@ -244,6 +254,11 @@ class DatabaseSeeder extends Seeder
                 'centrosdistribucion despachos_show',
                 'centrosdistribucion despachos_update',
                 'centrosdistribucion despachos_destroy',
+                'centrosdistribucion entregas_index',
+                'centrosdistribucion entregas_store',
+                'centrosdistribucion entregas_show',
+                'centrosdistribucion entregas_update',
+                'centrosdistribucion entregas_destroy'
                 //Sucurales (sucursal)
                 'sucursales index',
                 'sucursales show',
@@ -257,6 +272,11 @@ class DatabaseSeeder extends Seeder
                 'sucursales despachos_show',
                 'sucursales despachos_update',
                 'sucursales despachos_destroy',
+                'sucursales entregas_index',
+                'sucursales entregas_store',
+                'sucursales entregas_show',
+                'sucursales entregas_update',
+                'sucursales entregas_destroy',
                 //Proveedores
                 'proveedores index',
                 'proveedores store',

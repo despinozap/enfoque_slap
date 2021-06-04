@@ -27,17 +27,17 @@ class OcParte extends Pivot
         return $this->belongsTo(Estadoocparte::class);
     }
 
-    // public function getCantidadEntregado()
-    // {
-    //     $ocParteEntregaList = OcParteEntrega::where('entrega_ocparte.ocparte_id', '=', $this->id)->get();
+    public function getCantidadEntregado()
+    {
+        $ocParteEntregaList = OcParteEntrega::where('entrega_ocparte.ocparte_id', '=', $this->id)->get();
 
-    //     $quantity = $ocParteEntregaList->reduce(function($carry, $ocParteEntrega) 
-    //         {
-    //             return $carry + $ocParteEntrega->cantidad;
-    //         }, 
-    //         0
-    //     );
+        $quantity = $ocParteEntregaList->reduce(function($carry, $ocParteEntrega) 
+            {
+                return $carry + $ocParteEntrega->cantidad;
+            }, 
+            0
+        );
 
-    //     return $quantity;
-    // }
+        return $quantity;
+    }
 }
