@@ -16,7 +16,7 @@ class CreateEntregasTable extends Migration
         Schema::create('entregas', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('sucursal_id')->unsigned();
-            $table->bigInteger('faena_id')->unsigned();
+            $table->bigInteger('oc_id')->unsigned();
             $table->timestamp('fecha');
             $table->string('ndocumento')->nullable();
             $table->string('responsable');
@@ -24,7 +24,7 @@ class CreateEntregasTable extends Migration
             $table->timestamps();
 
             $table->foreign('sucursal_id')->references('id')->on('sucursales')->onDelete('cascade');
-            $table->foreign('faena_id')->references('id')->on('faenas')->onDelete('cascade');
+            $table->foreign('oc_id')->references('id')->on('ocs')->onDelete('cascade');
         });
     }
 

@@ -126,7 +126,7 @@ class DatabaseSeeder extends Seeder
             'centrosdistribucion entregas_store',
             'centrosdistribucion entregas_show',
             'centrosdistribucion entregas_update',
-            'centrosdistribucion entregas_destroy'
+            'centrosdistribucion entregas_destroy',
             //Sucurales (sucursal)
             'sucursales index',
             'sucursales show',
@@ -258,7 +258,7 @@ class DatabaseSeeder extends Seeder
                 'centrosdistribucion entregas_store',
                 'centrosdistribucion entregas_show',
                 'centrosdistribucion entregas_update',
-                'centrosdistribucion entregas_destroy'
+                'centrosdistribucion entregas_destroy',
                 //Sucurales (sucursal)
                 'sucursales index',
                 'sucursales show',
@@ -506,10 +506,10 @@ class DatabaseSeeder extends Seeder
         *   Solicitudes
         */
         {
-            for($i = 0; $i <= 10; $i++)
+            for($i = 0; $i <= 20; $i++)
             {
                 $solicitud = new Solicitud();
-                $solicitud->sucursal_id = $sucursal->id;
+                $solicitud->sucursal_id = rand(1, 2);
                 $solicitud->faena_id = 1;
                 $solicitud->marca_id = 1;
                 $solicitud->comprador_id = 1;
@@ -520,10 +520,10 @@ class DatabaseSeeder extends Seeder
 
                 $solicitud->partes()->attach([ 
                     1 => [
-                        'cantidad' => rand(1, 100)
+                        'cantidad' => rand(1, 300)
                     ],
                     2 => [
-                        'cantidad' => rand(1, 100)
+                        'cantidad' => rand(1, 300)
                     ]
                 ]);
             } 
@@ -568,7 +568,7 @@ class DatabaseSeeder extends Seeder
             $success = true;
 
             DB::beginTransaction();
-            foreach(Solicitud::where('solicitudes.id', '>=', 2)->get() as $solicitud)
+            foreach(Solicitud::where('solicitudes.id', '>=', 4)->get() as $solicitud)
             {
                 $solicitud->estadosolicitud_id = 3; // Cerrada
                 if($solicitud->save())
@@ -705,7 +705,7 @@ class DatabaseSeeder extends Seeder
         */
         {
             // Create
-            foreach(Cotizacion::where('cotizaciones.id', '>=', 4)->get() as $cotizacion)
+            foreach(Cotizacion::where('cotizaciones.id', '>=', 8)->get() as $cotizacion)
             {
                 DB::beginTransaction();
 
@@ -770,7 +770,7 @@ class DatabaseSeeder extends Seeder
             }
 
             // Set as "En proceso"
-            foreach(Oc::where('ocs.id', '>=', 4)->get() as $oc)
+            foreach(Oc::where('ocs.id', '>=', 10)->get() as $oc)
             {
                 $oc->estadooc_id = 2; // En proceso
                 $oc->proveedor_id = 1; // Set proveedor

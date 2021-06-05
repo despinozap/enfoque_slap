@@ -45,7 +45,8 @@ class Parte extends Model
 
     public function getCantidadRecepcionado($recepcionable)
     {
-        $parteRecepcionList = ParteRecepcion::join('recepciones', 'recepciones.id', '=', 'parte_recepcion.recepcion_id')
+        $parteRecepcionList = ParteRecepcion::select('parte_recepcion.*')
+                            ->join('recepciones', 'recepciones.id', '=', 'parte_recepcion.recepcion_id')
                             ->where('recepciones.recepcionable_type', '=', get_class($recepcionable))
                             ->where('recepciones.recepcionable_id', '=', $recepcionable->id)
                             ->where('parte_recepcion.parte_id', '=', $this->id)
@@ -63,7 +64,8 @@ class Parte extends Model
     
     public function getCantidadRecepcionado_sourceable($recepcionable, $sourceable)
     {
-        $parteRecepcionList = ParteRecepcion::join('recepciones', 'recepciones.id', '=', 'parte_recepcion.recepcion_id')
+        $parteRecepcionList = ParteRecepcion::select('parte_recepcion.*')
+                            ->join('recepciones', 'recepciones.id', '=', 'parte_recepcion.recepcion_id')
                             ->where('recepciones.recepcionable_type', '=', get_class($recepcionable))
                             ->where('recepciones.recepcionable_id', '=', $recepcionable->id)
                             ->where('recepciones.sourceable_type', '=', get_class($sourceable))
@@ -83,7 +85,8 @@ class Parte extends Model
 
     public function getCantidadDespachado($despachable)
     {
-        $parteDespachoList = ParteDespacho::join('despachos', 'despachos.id', '=', 'despacho_parte.despacho_id')
+        $parteDespachoList = ParteDespacho::select('despacho_parte.*')
+                            ->join('despachos', 'despachos.id', '=', 'despacho_parte.despacho_id')
                             ->where('despachos.despachable_type', '=', get_class($despachable))
                             ->where('despachos.despachable_id', '=', $despachable->id)
                             ->where('despacho_parte.parte_id', '=', $this->id)
@@ -101,7 +104,8 @@ class Parte extends Model
 
     public function getCantidadDespachado_destinable($despachable, $destinable)
     {
-        $parteDespachoList = ParteDespacho::join('despachos', 'despachos.id', '=', 'despacho_parte.despacho_id')
+        $parteDespachoList = ParteDespacho::select('despacho_parte.*')
+                            ->join('despachos', 'despachos.id', '=', 'despacho_parte.despacho_id')
                             ->where('despachos.despachable_type', '=', get_class($despachable))
                             ->where('despachos.despachable_id', '=', $despachable->id)
                             ->where('despachos.destinable_type', '=', get_class($destinable))
@@ -121,7 +125,8 @@ class Parte extends Model
 
     public function getCantidadEntregado($sucursal)
     {
-        $ocParteEntregaList = OcParteEntrega::join('entregas', 'entregas.id', '=', 'entrega_ocparte.entrega_id')
+        $ocParteEntregaList = OcParteEntrega::select('entrega_ocparte.*')
+                            ->join('entregas', 'entregas.id', '=', 'entrega_ocparte.entrega_id')
                             ->join('oc_parte', 'oc_parte.id', '=', 'entrega_ocparte.ocparte_id')
                             ->join('partes', 'partes.id', '=', 'oc_parte.parte_id')
                             ->where('entregas.sucursal_id', '=', $sucursal->id)
@@ -140,7 +145,8 @@ class Parte extends Model
 
     public function getCantidadEntregado_destinable($sucursal, $faena)
     {
-        $ocParteEntregaList = OcParteEntrega::join('entregas', 'entregas.id', '=', 'entrega_ocparte.entrega_id')
+        $ocParteEntregaList = OcParteEntrega::select('entrega_ocparte.*')
+                            ->join('entregas', 'entregas.id', '=', 'entrega_ocparte.entrega_id')
                             ->join('oc_parte', 'oc_parte.id', '=', 'entrega_ocparte.ocparte_id')
                             ->join('partes', 'partes.id', '=', 'oc_parte.parte_id')
                             ->where('entregas.sucursal_id', '=', $sucursal->id)

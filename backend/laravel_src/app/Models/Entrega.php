@@ -21,13 +21,9 @@ class Entrega extends Model
         return $this->belongsTo(Sucursal::class);
     }
 
-    /*
-     *  The Entrega's destination.
-     *  Destinable models: Faena
-     */
-    public function faena()
+    public function oc()
     {
-        return $this->belongsTo(Faena::class);
+        return $this->belongsTo(Oc::class);
     }
 
     public function ocpartes()

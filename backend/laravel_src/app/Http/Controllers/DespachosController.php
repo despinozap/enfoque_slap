@@ -367,10 +367,10 @@ class DespachosController extends Controller
                                                     }
                                                     else
                                                     {
-                                                        // If the received parts are more than waiting in queue
+                                                        // If the dispatched parts are more than waiting in queue
                                                         $response = HelpController::buildResponse(
                                                             409,
-                                                            'La cantidad ingresada para la parte "' . $parte->nparte . '" es mayor a la cantidad de pendiente de despacho',
+                                                            'La cantidad ingresada para la parte "' . $parte->nparte . '" es mayor al stock disponible para despacho',
                                                             null
                                                         );
                     
@@ -776,7 +776,7 @@ class DespachosController extends Controller
                                         // Get the stock cantidad in Comprador and skip the ones with no stock
                                         $cantidadStock = $parte->getCantidadRecepcionado($comprador) - $parte->getCantidadDespachado($comprador);
 
-                                        // If the Parte is already in the Recepcion, then add the cantidad to queue calc in Despachos if already taken
+                                        // If the Parte is already in the Despacho, then add the cantidad to queue calc in Despachos if already taken
                                         if($p = $despacho->partes->find($parte->id))
                                         {
                                             $cantidadStock = $cantidadStock + $p->pivot->cantidad;
@@ -929,6 +929,7 @@ class DespachosController extends Controller
                                 {
                                     if($parte = Parte::find($parteRequest['id']))
                                     {
+                                        // Note: Not included partes in request won't be added to the sync, and then removed from Despacho
                                         // If the Parte is kept in Despacho
                                         if($parteDespacho = $despacho->partes->find($parte->id))
                                         {
@@ -941,10 +942,10 @@ class DespachosController extends Controller
                                             }
                                             else
                                             {
-                                                // If the received parts are more than waiting in queue
+                                                // If the dispatched parts are more than waiting in queue
                                                 $response = HelpController::buildResponse(
                                                     409,
-                                                    'La cantidad ingresada para la parte "' . $parte->nparte . '" es mayor a la cantidad pendiente de despacho',
+                                                    'La cantidad ingresada para la parte "' . $parte->nparte . '" es mayor al stock disponible para despacho',
                                                     null
                                                 );
             
@@ -965,10 +966,10 @@ class DespachosController extends Controller
                                             }
                                             else
                                             {
-                                                // If the received parts are more than waiting in queue
+                                                // If the dispatched parts are more than waiting in queue
                                                 $response = HelpController::buildResponse(
                                                     409,
-                                                    'La cantidad ingresada para la parte "' . $parte->nparte . '" es mayor a la cantidad pendiente de despacho',
+                                                    'La cantidad ingresada para la parte "' . $parte->nparte . '" es mayor al stock disponible para despacho',
                                                     null
                                                 );
             
@@ -1503,10 +1504,10 @@ class DespachosController extends Controller
                                                     }
                                                     else
                                                     {
-                                                        // If the received parts are more than waiting in queue
+                                                        // If the dispatched parts are more than waiting in queue
                                                         $response = HelpController::buildResponse(
                                                             409,
-                                                            'La cantidad ingresada para la parte "' . $parte->nparte . '" es mayor a la cantidad de pendiente de despacho',
+                                                            'La cantidad ingresada para la parte "' . $parte->nparte . '" es mayor al stock disponible para despacho',
                                                             null
                                                         );
                     
@@ -1910,7 +1911,7 @@ class DespachosController extends Controller
                                         // Get the stock cantidad in Sucursal (centro) and skip the ones with no stock
                                         $cantidadStock = $parte->getCantidadRecepcionado($centrodistribucion) - $parte->getCantidadDespachado($centrodistribucion);
 
-                                        // If the Parte is already in the Recepcion, then add the cantidad to queue calc in Despachos if already taken
+                                        // If the Parte is already in the Despacho, then add the cantidad to queue calc in Despachos if already taken
                                         if($p = $despacho->partes->find($parte->id))
                                         {
                                             $cantidadStock = $cantidadStock + $p->pivot->cantidad;
@@ -2063,6 +2064,7 @@ class DespachosController extends Controller
                                 {
                                     if($parte = Parte::find($parteRequest['id']))
                                     {
+                                        // Note: Not included partes in request won't be added to the sync, and then removed from Despacho
                                         // If the Parte is kept in Despacho
                                         if($parteDespacho = $despacho->partes->find($parte->id))
                                         {
@@ -2075,10 +2077,10 @@ class DespachosController extends Controller
                                             }
                                             else
                                             {
-                                                // If the received parts are more than waiting in queue
+                                                // If the dispatched parts are more than waiting in queue
                                                 $response = HelpController::buildResponse(
                                                     409,
-                                                    'La cantidad ingresada para la parte "' . $parte->nparte . '" es mayor a la cantidad pendiente de despacho',
+                                                    'La cantidad ingresada para la parte "' . $parte->nparte . '" es mayor al stock disponible para despacho',
                                                     null
                                                 );
             
@@ -2099,10 +2101,10 @@ class DespachosController extends Controller
                                             }
                                             else
                                             {
-                                                // If the received parts are more than waiting in queue
+                                                // If the dispatched parts are more than waiting in queue
                                                 $response = HelpController::buildResponse(
                                                     409,
-                                                    'La cantidad ingresada para la parte "' . $parte->nparte . '" es mayor a la cantidad pendiente de despacho',
+                                                    'La cantidad ingresada para la parte "' . $parte->nparte . '" es mayor al stock disponible para despacho',
                                                     null
                                                 );
             
