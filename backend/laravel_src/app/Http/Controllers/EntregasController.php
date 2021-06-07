@@ -345,7 +345,7 @@ class EntregasController extends Controller
     }
 
 
-    public function store_prepare_sucursal($sucursal_id)
+    public function queueOcs_sucursal($sucursal_id)
     {
         try
         {
@@ -509,7 +509,7 @@ class EntregasController extends Controller
     }
 
 
-    public function store_prepare_oc_sucursal($sucursal_id, $oc_id)
+    public function store_prepare_sucursal($sucursal_id, $oc_id)
     {
         try
         {
@@ -608,16 +608,20 @@ class EntregasController extends Controller
                                 // Get the stock cantidad in Sucursal
                                 $cantidadStock = $parte->getCantidadRecepcionado($sucursal) - $parte->getCantidadEntregado($sucursal);
 
-                                $parteData = [
-                                    "id" => $parte->id,
-                                    "nparte" => $parte->nparte,
-                                    "marca" => $parte->marca->makeHidden(['created_at', 'updated_at']),
-                                    "cantidad_total" => $parte->pivot->cantidad,
-                                    "cantidad_entregado" => $parte->pivot->getCantidadEntregado(),
-                                    "cantidad_stock" => $cantidadStock
-                                ];
-                                
-                                array_push($carry, $parteData);
+                                // Add it to the queue only if there's stock in Sucursal
+                                if($cantidadStock > 0)
+                                {
+                                    $parteData = [
+                                        "id" => $parte->id,
+                                        "nparte" => $parte->nparte,
+                                        "marca" => $parte->marca->makeHidden(['created_at', 'updated_at']),
+                                        "cantidad_total" => $parte->pivot->cantidad,
+                                        "cantidad_entregado" => $parte->pivot->getCantidadEntregado(),
+                                        "cantidad_stock" => $cantidadStock
+                                    ];
+                                    
+                                    array_push($carry, $parteData);
+                                }
 
                                 return $carry;      
                             },
@@ -1249,16 +1253,20 @@ class EntregasController extends Controller
                                     $cantidadStock = $cantidadStock + $ocParteEntrega->cantidad; // Add the cantidad in Entrega to available for updating
                                 }
 
-                                $parteData = [
-                                    "id" => $parte->id,
-                                    "nparte" => $parte->nparte,
-                                    "marca" => $parte->marca->makeHidden(['created_at', 'updated_at']),
-                                    "cantidad_total" => $parte->pivot->cantidad,
-                                    "cantidad_entregado" => $parte->pivot->getCantidadEntregado(),
-                                    "cantidad_stock" => $cantidadStock
-                                ];
-                                
-                                array_push($carry, $parteData);
+                                // As stock includes cantidad in Entrega (if exists), then filter only partes with stock
+                                if($cantidadStock > 0)
+                                {
+                                    $parteData = [
+                                        "id" => $parte->id,
+                                        "nparte" => $parte->nparte,
+                                        "marca" => $parte->marca->makeHidden(['created_at', 'updated_at']),
+                                        "cantidad_total" => $parte->pivot->cantidad,
+                                        "cantidad_entregado" => $parte->pivot->getCantidadEntregado(),
+                                        "cantidad_stock" => $cantidadStock
+                                    ];
+                                    
+                                    array_push($carry, $parteData);
+                                }
 
                                 return $carry;      
                             },

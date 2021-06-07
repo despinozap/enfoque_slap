@@ -192,8 +192,8 @@ Route::middleware(['auth:api', 'cors'])->group(function()
 
     // Entregas (Sucursal)
     Route::get('/sucursales/{id}/entregas', [EntregasController::class, 'index_sucursal']);
-    Route::get('/sucursales/{sucursal_id}/entregas/prepare', [EntregasController::class, 'store_prepare_sucursal']);
-    Route::get('/sucursales/{sucursal_id}/entregas/prepare/ocs/{oc_id}', [EntregasController::class, 'store_prepare_oc_sucursal']);
+    Route::get('/sucursales/{sucursal_id}/entregas/queueocs', [EntregasController::class, 'queueOcs_sucursal']);
+    Route::get('/sucursales/{sucursal_id}/entregas/prepare/ocs/{oc_id}', [EntregasController::class, 'store_prepare_sucursal']);
     Route::post('/sucursales/{sucursal_id}/entregas/ocs/{oc_id}', [EntregasController::class, 'store_sucursal']);
     Route::get('/sucursales/{sucursal_id}/entregas/{id}', [EntregasController::class, 'show_sucursal']);
     Route::get('/sucursales/{sucursal_id}/entregas/{id}/prepare', [EntregasController::class, 'update_prepare_sucursal']);
