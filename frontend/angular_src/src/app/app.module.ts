@@ -75,6 +75,10 @@ import { EntregasSucursalListComponent } from './pages/entregas/sucursal/list/li
 import { EntregasSucursalCreateComponent } from './pages/entregas/sucursal/create/create.component';
 import { EntregasSucursalDetailsComponent } from './pages/entregas/sucursal/details/details.component';
 import { EntregasSucursalEditComponent } from './pages/entregas/sucursal/edit/edit.component';
+import { EntregasCentrodistribucionListComponent } from './pages/entregas/centrodistribucion/list/list.component';
+import { EntregasCentrodistribucionCreateComponent } from './pages/entregas/centrodistribucion/create/create.component';
+import { EntregasCentrodistribucionEditComponent } from './pages/entregas/centrodistribucion/edit/edit.component';
+import { EntregasCentrodistribucionDetailsComponent } from './pages/entregas/centrodistribucion/details/details.component';
 
 
 /* Routes */
@@ -134,6 +138,10 @@ const routes: Routes = [
       { path: 'despachos/centrodistribucion/create', component: DespachosCentrodistribucionCreateComponent },
       { path: 'despachos/centrodistribucion/details/:id', component: DespachosCentrodistribucionDetailsComponent },
       { path: 'despachos/centrodistribucion/edit/:id', component: DespachosCentrodistribucionEditComponent },
+      { path: 'entregas/centrodistribucion', component: EntregasCentrodistribucionListComponent },
+      { path: 'entregas/centrodistribucion/create', component: EntregasCentrodistribucionCreateComponent },
+      { path: 'entregas/centrodistribucion/details/:id', component: EntregasCentrodistribucionDetailsComponent },
+      { path: 'entregas/centrodistribucion/edit/:id', component: EntregasCentrodistribucionEditComponent },
       { path: 'recepciones/sucursal', component: RecepcionesSucursalListComponent },
       { path: 'recepciones/sucursal/create', component: RecepcionesSucursalCreateComponent },
       { path: 'recepciones/sucursal/details/:id', component: RecepcionesSucursalDetailsComponent },
@@ -210,6 +218,10 @@ const routes: Routes = [
     EntregasSucursalCreateComponent,
     EntregasSucursalDetailsComponent,
     EntregasSucursalEditComponent,
+    EntregasCentrodistribucionListComponent,
+    EntregasCentrodistribucionCreateComponent,
+    EntregasCentrodistribucionEditComponent,
+    EntregasCentrodistribucionDetailsComponent,
   ],
   imports: [
     BrowserModule,

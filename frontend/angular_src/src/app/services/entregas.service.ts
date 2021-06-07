@@ -97,5 +97,94 @@ export class EntregasService {
     
     return this.httpClient.get(endpoint);
   }
+
+
+  /*
+   *  Sucursal (centro)
+   */
+  public removeEntrega_centrodistribucion(centrodistribucion_id: number, entrega_id: number): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/centrosdistribucion/${centrodistribucion_id}/entregas/${entrega_id}`;
+
+    let httpOptions = { 
+      method: 'DELETE',
+      headers:
+      {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    };
+    
+    return this.httpClient.delete(endpoint, httpOptions);
+  }
+
+  public updateEntrega_centrodistribucion(centrodistribucion_id: number, entrega_id: number, entrega: any): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/centrosdistribucion/${centrodistribucion_id}/entregas/${entrega_id}`;
+
+    let httpOptions = { 
+      method: 'PUT',
+      headers:
+      {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET,POST,OPTIONS,DELETE,PUT'
+      }
+    };
+    
+    return this.httpClient.put(endpoint, entrega, httpOptions);
+  }
+
+  public prepareUpdateEntrega_centrodistribucion(centrodistribucion_id: number, entrega_id: number): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/centrosdistribucion/${centrodistribucion_id}/entregas/${entrega_id}/prepare`;
+    
+    return this.httpClient.get(endpoint);
+  }
+
+  public getEntrega_centrodistribucion(centrodistribucion_id: number, entrega_id: number): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/centrosdistribucion/${centrodistribucion_id}/entregas/${entrega_id}`;
+    
+    return this.httpClient.get(endpoint);
+  }
+
+  public storeEntrega_centrodistribucion(centrodistribucion_id: number, oc_id: number, entrega: any): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/centrosdistribucion/${centrodistribucion_id}/entregas/ocs/${oc_id}`;
+
+    let httpOptions = { 
+      method: 'POST',
+      headers:
+      {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    };
+
+    return this.httpClient.post(endpoint, entrega, httpOptions);
+  }
+
+  public prepareStoreEntrega_centrodistribucion(centrodistribucion_id: number, oc_id: number): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/centrosdistribucion/${centrodistribucion_id}/entregas/prepare/ocs/${oc_id}`;
+    
+    return this.httpClient.get(endpoint);
+  }
+
+  public getQueueOcs_centrodistribucion(centrodistribucion_id: number): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/centrosdistribucion/${centrodistribucion_id}/entregas/queueocs`;
+    
+    return this.httpClient.get(endpoint);
+  }
+
+  public getEntregas_centrodistribucion(centrodistribucion_id: number): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/centrosdistribucion/${centrodistribucion_id}/entregas`;
+    
+    return this.httpClient.get(endpoint);
+  }
   
 }

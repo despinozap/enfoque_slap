@@ -290,6 +290,22 @@ export class UtilsService {
                 }
               ]
             },
+            {
+              'title': 'Entregas',
+              'icon': 'bxs-truck',
+              'header': true,
+              'route': '',
+              'items': [
+                {
+                  'title': 'Nueva entrega',
+                  'route': '/panel/entregas/centrodistribucion/create'
+                },
+                {
+                  'title': 'Lista de entregas',
+                  'route': '/panel/entregas/centrodistribucion'
+                }
+              ]
+            }
           ]
         };
 

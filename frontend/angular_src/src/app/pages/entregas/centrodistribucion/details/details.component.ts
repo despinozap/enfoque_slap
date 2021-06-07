@@ -3,16 +3,16 @@ import { Location } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
+import { EntregasService } from 'src/app/services/entregas.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { UtilsService } from 'src/app/services/utils.service';
-import { EntregasService } from 'src/app/services/entregas.service';
 
 @Component({
   selector: 'app-details',
   templateUrl: './details.component.html',
   styleUrls: ['./details.component.css']
 })
-export class EntregasSucursalDetailsComponent implements OnInit {
+export class EntregasCentrodistribucionDetailsComponent implements OnInit {
 
   @ViewChild(DataTableDirective, {static: false})
   datatableElement_ocpartes: DataTableDirective = null as any;
@@ -28,7 +28,7 @@ export class EntregasSucursalDetailsComponent implements OnInit {
   
   dtTrigger: Subject<any> = new Subject<any>();
   
-  sucursal_id: number = 2;
+  centrodistribucion_id: number = 1;
   entrega: any = {
     id: -1,
     fecha: null,
@@ -36,7 +36,7 @@ export class EntregasSucursalDetailsComponent implements OnInit {
     responsable: null,
     comentario: null,
     created_at: null,
-    sucursal_name: null,
+    centrodistribucion_name: null,
     oc_id: null,
     noccliente: null,
     cliente_name: null,
@@ -96,7 +96,7 @@ export class EntregasSucursalDetailsComponent implements OnInit {
       this.entrega.responsable = entregaData.responsable;
       this.entrega.comentario = entregaData.comentario;
       this.entrega.created_at = entregaData.created_at;
-      this.entrega.sucursal_name = entregaData.oc.cotizacion.solicitud.sucursal.name;
+      this.entrega.centrodistribucion_name = entregaData.oc.cotizacion.solicitud.sucursal.name;
       this.entrega.oc_id = entregaData.oc.id;
       this.entrega.noccliente = entregaData.oc.noccliente;
       this.entrega.cliente_name = entregaData.oc.cotizacion.solicitud.faena.cliente.name;
@@ -131,7 +131,7 @@ export class EntregasSucursalDetailsComponent implements OnInit {
     
     this.loading = true;
 
-    this._entregasService.getEntrega_sucursal(this.sucursal_id, this.entrega.id)
+    this._entregasService.getEntrega_centrodistribucion(this.centrodistribucion_id, this.entrega.id)
     .subscribe(
       //Success request
       (response: any) => {

@@ -1,54 +1,76 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { Location } from '@angular/common';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
-import { DespachosService } from 'src/app/services/despachos.service';
+import { EntregasService } from 'src/app/services/entregas.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { UtilsService } from 'src/app/services/utils.service';
-import { Sucursal } from 'src/app/interfaces/sucursal';
 
 @Component({
   selector: 'app-create',
   templateUrl: './create.component.html',
   styleUrls: ['./create.component.css']
 })
-export class DespachosCentrodistribucionCreateComponent implements OnInit {
+export class EntregasCentrodistribucionCreateComponent implements OnInit {
 
-  @ViewChild(DataTableDirective, {static: false})
-  datatableElement_partes: DataTableDirective = null as any;
-  dtOptions: any = {
+  @ViewChildren(DataTableDirective)
+  datatableELements: QueryList<DataTableDirective> = null as any;
+  dtOptionsOcs: any = {
     pagingType: 'full_numbers',
     pageLength: 10,
     language: {
       url: '//cdn.datatables.net/plug-ins/1.10.22/i18n/Spanish.json'
     },
     order: [[0, 'desc']]
-  };  
-
+  };
+  dtOptionsPartes: any = {
+    pagingType: 'full_numbers',
+    pageLength: 10,
+    language: {
+      url: '//cdn.datatables.net/plug-ins/1.10.22/i18n/Spanish.json'
+    },
+    columnDefs: [
+      { 
+        targets: [0, 3],
+        orderable: false
+      }
+    ],
+    order: [[1, 'desc']]
+  };
   
-  dtTrigger: Subject<any> = new Subject<any>();
+  dtTriggerOcs: Subject<any> = new Subject<any>();
+  dtTriggerPartes: Subject<any> = new Subject<any>();
 
-  sucursales: Array<Sucursal> = null as any;
+  ocs: any[] = [];
   partes: any[] = [];
   loading: boolean = false;
   responseErrors: any = [];
 
-  despachoForm: FormGroup = new FormGroup({
-    sucursal: new FormControl('', [Validators.required]),
+  entregaForm: FormGroup = new FormGroup({
     fecha: new FormControl('', [Validators.required, Validators.minLength(1)]),
     documento: new FormControl(''),
     responsable: new FormControl('', [Validators.required, Validators.minLength(2)]),
     comentario: new FormControl(''),
   });
 
+  /*
+  *   Displayed form:
+  * 
+  *       0: OCs list
+  *       1: Entrega form
+  */
+   DISPLAYING_FORM: number = 0;
+
   centrodistribucion_id: number = 1;
+  oc: any = null;
+
 
   constructor(
     private location: Location,
     private router: Router,
-    private _despachosService: DespachosService,
+    private _entregasService: EntregasService,
     private _utilsService: UtilsService
   ) { }
 
@@ -56,22 +78,24 @@ export class DespachosCentrodistribucionCreateComponent implements OnInit {
   }
 
   ngAfterViewInit(): void {
-    this.dtTrigger.next();
+    this.dtTriggerOcs.next();
+    this.dtTriggerPartes.next();
 
     //Prevents throwing an error for var status changed while initialization
     setTimeout(() => {
-        this.loadData();
+        this.loadOcs();
 
-        this.despachoForm.controls.fecha.setValue(this.getDateToday());
+        this.entregaForm.controls.fecha.setValue(this.getDateToday());
       },
       100
     );
   }
 
   ngOnDestroy(): void {
-    this.dtTrigger.unsubscribe();
+    this.dtTriggerOcs.unsubscribe();
+    this.dtTriggerPartes.unsubscribe();
   }
-  
+
   private renderDataTable(dataTableElement: DataTableDirective, trigger: Subject<any>): void {
     dataTableElement.dtInstance.then((dtInstance: DataTables.Api) => {
       // Destroy the table first
@@ -81,39 +105,23 @@ export class DespachosCentrodistribucionCreateComponent implements OnInit {
     });
   }
   
-  public loadData(): void {
+  public loadOcs(): void {
     
     this.loading = true;
-    this.despachoForm.disable();
+    this.entregaForm.disable();
 
-    this._despachosService.prepareStoreDespacho_centrodistribucion(this.centrodistribucion_id)
+    this._entregasService.getQueueOcs_centrodistribucion(this.centrodistribucion_id)
     .subscribe(
       //Success request
       (response: any) => {
 
-        // Sucursales
-        this.sucursales = response.data.sucursales;
-        
-        // Partes
-        this.partes = response.data.queue_partes.reduce((carry: any[], parte: any) => {
-            carry.push({
-              id: parte.id,
-              nparte: parte.nparte,
-              marca: parte.marca,
-              cantidad_stock: parte.cantidad_stock,
-              checked: false,
-              cantidad: parte.cantidad_stock,
-            });
-
-            return carry;
-          },
-          [] // Empty array
-        );
-
-        this.renderDataTable(this.datatableElement_partes, this.dtTrigger);
+        // Ocs
+        this.ocs = response.data;
+        // Uses the first datatables instance
+        this.renderDataTable(this.datatableELements.first, this.dtTriggerOcs);
 
         this.loading = false;
-        this.despachoForm.enable();
+        this.entregaForm.enable();
       },
       //Error request
       (errorResponse: any) => {
@@ -154,7 +162,7 @@ export class DespachosCentrodistribucionCreateComponent implements OnInit {
           default: //Unhandled error
           {
             NotificationsService.showToast(
-              'Error al cargar los datos de las sucursales',
+              'Error al cargar los datos de las OCs',
               NotificationsService.messageType.error
             );
   
@@ -169,12 +177,110 @@ export class DespachosCentrodistribucionCreateComponent implements OnInit {
     );
   }
 
-  public storeDespacho(): void {
-    this.despachoForm.disable();
+  public loadData(): void {
+    
+    this.loading = true;
+    this.entregaForm.disable();
+
+    this._entregasService.prepareStoreEntrega_centrodistribucion(this.centrodistribucion_id, this.oc.id)
+    .subscribe(
+      //Success request
+      (response: any) => {
+
+        let cantidad_pendiente: number;
+        let cantidad_max: number;
+
+        // Partes
+        this.partes = response.data.queue_partes.reduce((carry: any[], parte: any) => {
+
+            cantidad_pendiente = parte.cantidad_total - parte.cantidad_entregado;
+            cantidad_max = cantidad_pendiente <= parte.cantidad_stock ? cantidad_pendiente : parte.cantidad_stock;
+
+            carry.push({
+              id: parte.id,
+              nparte: parte.nparte,
+              marca: parte.marca,
+              cantidad: cantidad_max,
+              cantidad_pendiente: cantidad_pendiente,
+              cantidad_stock: parte.cantidad_stock,
+              cantidad_max: cantidad_max,
+              checked: false,
+            });
+
+            return carry;
+          },
+          [] // Empty array
+        );
+
+        // Uses the second (and last) datatables instance
+        this.renderDataTable(this.datatableELements.last, this.dtTriggerPartes);
+
+        this.loading = false;
+        this.entregaForm.enable();
+      },
+      //Error request
+      (errorResponse: any) => {
+
+        switch(errorResponse.status)
+        {
+        
+          case 405: //Permission denied
+          {
+            NotificationsService.showToast(
+              errorResponse.error.message,
+              NotificationsService.messageType.error
+            );
+
+            break;
+          }
+
+          case 412: //Object not found
+          {
+            NotificationsService.showToast(
+              errorResponse.error.message,
+              NotificationsService.messageType.warning
+            );
+
+            break;
+          }
+
+          case 500: //Internal server
+          {
+            NotificationsService.showToast(
+              errorResponse.error.message,
+              NotificationsService.messageType.error
+            );
+
+            break;
+          }
+        
+          default: //Unhandled error
+          {
+            NotificationsService.showToast(
+              'Error al cargar los datos de la OC',
+              NotificationsService.messageType.error
+            );
+  
+            break;
+
+          }
+        }
+
+        // Uses the second (and last) datatables instance
+        this.renderDataTable(this.datatableELements.last, this.dtTriggerPartes);
+    
+        this.loading = false;
+        this.goTo_back();
+      }
+    );
+  }
+
+  public storeEntrega(): void {
+    this.entregaForm.disable();
     this.loading = true;
     this.responseErrors = [];
 
-    let dispatchedPartes = this.partes.reduce((carry, parte) => 
+    let deliveredPartes = this.partes.reduce((carry, parte) => 
       {
         if(parte.checked === true)
         {
@@ -191,16 +297,15 @@ export class DespachosCentrodistribucionCreateComponent implements OnInit {
       []
     );
 
-    let despacho: any = {
-      sucursal_id: this.despachoForm.value.sucursal,
-      fecha: this.despachoForm.value.fecha,
-      ndocumento: this.despachoForm.value.documento,
-      responsable: this.despachoForm.value.responsable,
-      comentario: this.despachoForm.value.comentario,
-      partes: dispatchedPartes
+    let entrega: any = {
+      fecha: this.entregaForm.value.fecha,
+      ndocumento: this.entregaForm.value.documento,
+      responsable: this.entregaForm.value.responsable,
+      comentario: this.entregaForm.value.comentario,
+      partes: deliveredPartes
     };
 
-    this._despachosService.storeDespacho_centrodistribucion(this.centrodistribucion_id, despacho)
+    this._entregasService.storeEntrega_centrodistribucion(this.centrodistribucion_id, this.oc.id, entrega)
       .subscribe(
         //Success request
         (response: any) => {
@@ -210,7 +315,7 @@ export class DespachosCentrodistribucionCreateComponent implements OnInit {
             NotificationsService.messageType.success
           );
 
-          this.goTo_despachosList();
+          this.goTo_entregasList();
         },
         //Error request
         (errorResponse: any) => {
@@ -267,7 +372,7 @@ export class DespachosCentrodistribucionCreateComponent implements OnInit {
             default: //Unhandled error
               {
                 NotificationsService.showAlert(
-                  'Error al intentar guardar el despacho',
+                  'Error al intentar guardar la entrega',
                   NotificationsService.messageType.error
                 );
 
@@ -275,14 +380,14 @@ export class DespachosCentrodistribucionCreateComponent implements OnInit {
               }
           }
 
-          this.despachoForm.enable();
+          this.entregaForm.enable();
           this.loading = false;
         }
       );
   }
 
   public updateParte_cantidad(parte: any, evt: any): void {
-    if((isNaN(evt.target.value) === false) && (parseInt(evt.target.value) > 0) && (parseInt(evt.target.value) <= parte.cantidad_stock))
+    if((isNaN(evt.target.value) === false) && (parseInt(evt.target.value) > 0) && (parseInt(evt.target.value) <= parte.cantidad_max))
     {
       parte.cantidad = parseInt(evt.target.value);
     }
@@ -344,8 +449,21 @@ export class DespachosCentrodistribucionCreateComponent implements OnInit {
     return this._utilsService.dateStringFormat(value);
   }
 
-  public goTo_despachosList(): void {
-    this.router.navigate(['/panel/despachos/centrodistribucion']);
+  public goTo_entregaForm(oc: any): void {
+    this.oc = oc;
+    this.loadData();
+
+    this.DISPLAYING_FORM = 1;
+  }
+
+  public goTo_ocsList(): void {
+    this.oc = null;
+    this.entregaForm.reset();
+    this.DISPLAYING_FORM = 0;
+  }
+
+  public goTo_entregasList(): void {
+    this.router.navigate(['/panel/entregas/centrodistribucion']);
   }
 
   public goTo_back(): void {

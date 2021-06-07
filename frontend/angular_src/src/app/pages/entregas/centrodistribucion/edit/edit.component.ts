@@ -1,23 +1,21 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { Location } from '@angular/common';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
-import { DespachosService } from 'src/app/services/despachos.service';
+import { EntregasService } from 'src/app/services/entregas.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { UtilsService } from 'src/app/services/utils.service';
-import { Sucursal } from 'src/app/interfaces/sucursal';
 
 @Component({
-  selector: 'app-create',
-  templateUrl: './create.component.html',
-  styleUrls: ['./create.component.css']
+  selector: 'app-edit',
+  templateUrl: './edit.component.html',
+  styleUrls: ['./edit.component.css']
 })
-export class DespachosCentrodistribucionCreateComponent implements OnInit {
+export class EntregasCentrodistribucionEditComponent implements OnInit {
 
   @ViewChild(DataTableDirective, {static: false})
-  datatableElement_partes: DataTableDirective = null as any;
+  datatableElement_ocpartes: DataTableDirective = null as any;
   dtOptions: any = {
     pagingType: 'full_numbers',
     pageLength: 10,
@@ -25,34 +23,46 @@ export class DespachosCentrodistribucionCreateComponent implements OnInit {
       url: '//cdn.datatables.net/plug-ins/1.10.22/i18n/Spanish.json'
     },
     order: [[0, 'desc']]
-  };  
+  };
 
-  
   dtTrigger: Subject<any> = new Subject<any>();
 
-  sucursales: Array<Sucursal> = null as any;
+  entrega: any = {
+    id: -1,
+    centrodistribucion_id: -1,
+    centrodistribucion_name: null,
+    oc_id: null,
+    noccliente: null,
+    cliente_name: null,
+    faena_name: null,
+  };
+
   partes: any[] = [];
   loading: boolean = false;
   responseErrors: any = [];
 
-  despachoForm: FormGroup = new FormGroup({
-    sucursal: new FormControl('', [Validators.required]),
+  entregaForm: FormGroup = new FormGroup({
     fecha: new FormControl('', [Validators.required, Validators.minLength(1)]),
     documento: new FormControl(''),
     responsable: new FormControl('', [Validators.required, Validators.minLength(2)]),
     comentario: new FormControl(''),
   });
 
+  private sub: any;
   centrodistribucion_id: number = 1;
-
+  
+  
   constructor(
-    private location: Location,
     private router: Router,
-    private _despachosService: DespachosService,
-    private _utilsService: UtilsService
+    private route: ActivatedRoute,
+    private _entregasService: EntregasService,
+    private _utilsService: UtilsService,
   ) { }
 
   ngOnInit(): void {
+    this.sub = this.route.params.subscribe(params => {
+      this.entrega.id = params['id'];
+    });
   }
 
   ngAfterViewInit(): void {
@@ -60,60 +70,127 @@ export class DespachosCentrodistribucionCreateComponent implements OnInit {
 
     //Prevents throwing an error for var status changed while initialization
     setTimeout(() => {
-        this.loadData();
-
-        this.despachoForm.controls.fecha.setValue(this.getDateToday());
-      },
-      100
-    );
+      this.loadEntrega();
+    },
+    100);
   }
 
-  ngOnDestroy(): void {
+  ngOnDestroy() {
+    this.sub.unsubscribe();
     this.dtTrigger.unsubscribe();
   }
-  
-  private renderDataTable(dataTableElement: DataTableDirective, trigger: Subject<any>): void {
+
+  private renderDataTable(dataTableElement: DataTableDirective): void {
     dataTableElement.dtInstance.then((dtInstance: DataTables.Api) => {
       // Destroy the table first
       dtInstance.destroy();
-      // Call the trigger to rerender again
-      trigger.next();
+      // Call the dtTrigger to rerender again
+      this.dtTrigger.next();
     });
   }
-  
-  public loadData(): void {
+
+  private loadFormData(entregaData: any)
+  {
+    if(entregaData.entrega['ocpartes'].length > 0)
+    {
+      // Load Entrega data
+      this.entrega.id = entregaData.entrega.id;
+      this.entrega.centrodistribucion_id = entregaData.entrega.oc.cotizacion.solicitud.sucursal.id;
+      this.entrega.centrodistribucion_name = entregaData.entrega.oc.cotizacion.solicitud.sucursal.name;
+      this.entrega.oc_id = entregaData.entrega.oc.id;
+      this.entrega.noccliente = entregaData.entrega.oc.noccliente;
+      this.entrega.cliente_name = entregaData.entrega.oc.cotizacion.solicitud.faena.cliente.name;
+      this.entrega.faena_name = entregaData.entrega.oc.cotizacion.solicitud.faena.name;
+
+      this.entregaForm.controls.fecha.setValue(this.dateStringFormat(entregaData.entrega.fecha));
+      if(entregaData.entrega.ndocumento !== null)
+      {
+        this.entregaForm.controls.documento.setValue(entregaData.entrega.ndocumento);
+      }
+      this.entregaForm.controls.responsable.setValue(entregaData.entrega.responsable);
+      if(entregaData.entrega.comentario !== null)
+      {
+        this.entregaForm.controls.comentario.setValue(entregaData.entrega.comentario);
+      }
+
+      let cantidad_pendiente: number;
+      let cantidad_max: number;
+
+      // Load partes list from queue_partes
+      this.partes = entregaData.queue_partes.reduce((carry: any[], parte: any) => {
+
+          cantidad_pendiente = parte.cantidad_total - parte.cantidad_entregado;
+          cantidad_max = cantidad_pendiente <= parte.cantidad_stock ? cantidad_pendiente : parte.cantidad_stock;
+
+          carry.push({
+            id: parte.id,
+            nparte: parte.nparte,
+            marca: parte.marca,
+            cantidad: cantidad_max,
+            cantidad_total: parte.cantidad_total,
+            cantidad_pendiente: cantidad_pendiente,
+            cantidad_stock: parte.cantidad_stock,
+            cantidad_entregado: parte.cantidad_entregado,
+            cantidad_max: cantidad_max,
+            checked: false,
+          });
+
+          return carry;
+        },
+        [] // Empty array
+      );
+
+      let index: number;
+
+      // Update values with partes list in entrega 
+      entregaData.entrega.ocpartes.forEach((ocparte: any) => {
+
+        index = this.partes.findIndex((parte) => {
+          return (parte.id === ocparte.parte.id);
+        });
+
+        if(index >= 0)
+        {
+          cantidad_pendiente = this.partes[index].cantidad_total - this.partes[index].cantidad_entregado + ocparte.pivot.cantidad;
+          cantidad_max = cantidad_pendiente <= this.partes[index].cantidad_stock ? cantidad_pendiente : this.partes[index].cantidad_stock;
+
+          this.partes[index].checked = true;
+          this.partes[index].cantidad = ocparte.pivot.cantidad;
+          this.partes[index].cantidad_pendiente = cantidad_pendiente;
+          this.partes[index].cantidad_max = cantidad_max;
+        }
+
+      });
+
+      this.partes = this.partes.sort((p1, p2) => {
+        return p2.cantidad - p1.cantidad;
+      });
+
+      this.renderDataTable(this.datatableElement_ocpartes);
+    }
+    else
+    {
+      NotificationsService.showToast(
+        'Error al intentar cargar la lista de partes',
+        NotificationsService.messageType.error
+      );
+
+      this.loading = false;
+      this.goTo_entregasList();
+    }
+  }
+
+  public loadEntrega(): void {
     
     this.loading = true;
-    this.despachoForm.disable();
 
-    this._despachosService.prepareStoreDespacho_centrodistribucion(this.centrodistribucion_id)
+    this._entregasService.prepareUpdateEntrega_centrodistribucion(this.centrodistribucion_id, this.entrega.id)
     .subscribe(
       //Success request
       (response: any) => {
 
-        // Sucursales
-        this.sucursales = response.data.sucursales;
-        
-        // Partes
-        this.partes = response.data.queue_partes.reduce((carry: any[], parte: any) => {
-            carry.push({
-              id: parte.id,
-              nparte: parte.nparte,
-              marca: parte.marca,
-              cantidad_stock: parte.cantidad_stock,
-              checked: false,
-              cantidad: parte.cantidad_stock,
-            });
-
-            return carry;
-          },
-          [] // Empty array
-        );
-
-        this.renderDataTable(this.datatableElement_partes, this.dtTrigger);
-
         this.loading = false;
-        this.despachoForm.enable();
+        this.loadFormData(response.data);
       },
       //Error request
       (errorResponse: any) => {
@@ -154,7 +231,7 @@ export class DespachosCentrodistribucionCreateComponent implements OnInit {
           default: //Unhandled error
           {
             NotificationsService.showToast(
-              'Error al cargar los datos de las sucursales',
+              'Error al cargar los datos de la entrega',
               NotificationsService.messageType.error
             );
   
@@ -164,17 +241,17 @@ export class DespachosCentrodistribucionCreateComponent implements OnInit {
         }
 
         this.loading = false;
-        this.goTo_back();
+        this.goTo_entregasList();
       }
     );
   }
 
-  public storeDespacho(): void {
-    this.despachoForm.disable();
+  public updateEntrega(): void {
+    this.entregaForm.disable();
     this.loading = true;
     this.responseErrors = [];
 
-    let dispatchedPartes = this.partes.reduce((carry, parte) => 
+    let deliveredPartes = this.partes.reduce((carry, parte) => 
       {
         if(parte.checked === true)
         {
@@ -191,16 +268,15 @@ export class DespachosCentrodistribucionCreateComponent implements OnInit {
       []
     );
 
-    let despacho: any = {
-      sucursal_id: this.despachoForm.value.sucursal,
-      fecha: this.despachoForm.value.fecha,
-      ndocumento: this.despachoForm.value.documento,
-      responsable: this.despachoForm.value.responsable,
-      comentario: this.despachoForm.value.comentario,
-      partes: dispatchedPartes
+    let entrega: any = {
+      fecha: this.entregaForm.value.fecha,
+      ndocumento: this.entregaForm.value.documento,
+      responsable: this.entregaForm.value.responsable,
+      comentario: this.entregaForm.value.comentario,
+      partes: deliveredPartes
     };
 
-    this._despachosService.storeDespacho_centrodistribucion(this.centrodistribucion_id, despacho)
+    this._entregasService.updateEntrega_centrodistribucion(this.centrodistribucion_id, this.entrega.id, entrega)
       .subscribe(
         //Success request
         (response: any) => {
@@ -210,11 +286,12 @@ export class DespachosCentrodistribucionCreateComponent implements OnInit {
             NotificationsService.messageType.success
           );
 
-          this.goTo_despachosList();
+          this.goTo_entregasList();
         },
         //Error request
         (errorResponse: any) => {
 
+          console.log(errorResponse);
           switch (errorResponse.status) 
           {
             case 400: //Invalid request parameters
@@ -267,7 +344,7 @@ export class DespachosCentrodistribucionCreateComponent implements OnInit {
             default: //Unhandled error
               {
                 NotificationsService.showAlert(
-                  'Error al intentar guardar el despacho',
+                  'Error al intentar actualizar la entrega',
                   NotificationsService.messageType.error
                 );
 
@@ -275,20 +352,24 @@ export class DespachosCentrodistribucionCreateComponent implements OnInit {
               }
           }
 
-          this.despachoForm.enable();
+          this.entrega.enable();
           this.loading = false;
         }
       );
   }
 
   public updateParte_cantidad(parte: any, evt: any): void {
-    if((isNaN(evt.target.value) === false) && (parseInt(evt.target.value) > 0) && (parseInt(evt.target.value) <= parte.cantidad_stock))
+    if(
+        (isNaN(evt.target.value) === false) && 
+        (parseInt(evt.target.value) > 0) && 
+        (parseInt(evt.target.value) <= parte.cantidad_stock)
+    )
     {
-      parte.cantidad = parseInt(evt.target.value);
+        parte.cantidad = parseInt(evt.target.value);
     }
     else
     {
-      evt.target.value = parte.cantidad_stock;
+      evt.target.value = parte.cantidad;
     }
   }
 
@@ -333,7 +414,7 @@ export class DespachosCentrodistribucionCreateComponent implements OnInit {
 
     return index >= 0 ? true : false;
   }
-  
+
   public getDateToday(): string {
     let dt = new Date();
 
@@ -344,12 +425,8 @@ export class DespachosCentrodistribucionCreateComponent implements OnInit {
     return this._utilsService.dateStringFormat(value);
   }
 
-  public goTo_despachosList(): void {
-    this.router.navigate(['/panel/despachos/centrodistribucion']);
-  }
-
-  public goTo_back(): void {
-    this.location.back();
+  public goTo_entregasList(): void {
+    this.router.navigate(['/panel/entregas/centrodistribucion']);
   }
 
 }
