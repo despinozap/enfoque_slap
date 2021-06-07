@@ -1307,7 +1307,7 @@ class DespachosController extends Controller
                         $queuePartes = $parteList->reduce(function($carry, $parte) use ($centrodistribucion)
                             {
                                 // Get the stock cantidad in Sucursal (centro) and skip the ones with no stock
-                                $cantidadStock = $parte->getCantidadRecepcionado($centrodistribucion) - $parte->getCantidadDespachado($centrodistribucion);
+                                $cantidadStock = $parte->getCantidadRecepcionado($centrodistribucion) - $parte->getCantidadEntregado($centrodistribucion) - $parte->getCantidadDespachado($centrodistribucion);
                                 if($cantidadStock > 0)
                                 {
                                     $parteData = [
@@ -1472,8 +1472,8 @@ class DespachosController extends Controller
                                         // Retrieves the partes list with cantidad_stock for dispatching
                                         $stockCantidades = $parteList->reduce(function($carry, $parte) use ($centrodistribucion)
                                             {
-                                                // Get how many partes have been received but not dispatched yet in Sucursal (centro)
-                                                $cantidadStock = $parte->getCantidadRecepcionado($centrodistribucion) - $parte->getCantidadDespachado($centrodistribucion);
+                                                // Get how many partes have been received but not delivered or dispatched yet in Sucursal (centro)
+                                                $cantidadStock = $parte->getCantidadRecepcionado($centrodistribucion) - $parte->getCantidadEntregado($centrodistribucion) - $parte->getCantidadDespachado($centrodistribucion);
                                                 if($cantidadStock > 0)
                                                 {
                                                     $carry[$parte->id] = $cantidadStock;
@@ -1909,7 +1909,7 @@ class DespachosController extends Controller
                                 $queuePartes = $parteList->reduce(function($carry, $parte) use ($centrodistribucion, $despacho)
                                     {
                                         // Get the stock cantidad in Sucursal (centro) and skip the ones with no stock
-                                        $cantidadStock = $parte->getCantidadRecepcionado($centrodistribucion) - $parte->getCantidadDespachado($centrodistribucion);
+                                        $cantidadStock = $parte->getCantidadRecepcionado($centrodistribucion) - $parte->getCantidadEntregado($centrodistribucion) - $parte->getCantidadDespachado($centrodistribucion);
 
                                         // If the Parte is already in the Despacho, then add the cantidad to queue calc in Despachos if already taken
                                         if($p = $despacho->partes->find($parte->id))
