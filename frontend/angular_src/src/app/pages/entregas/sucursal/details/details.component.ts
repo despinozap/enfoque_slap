@@ -1,21 +1,22 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
+import { DespachosService } from 'src/app/services/despachos.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
-import { RecepcionesService } from 'src/app/services/recepciones.service';
 import { UtilsService } from 'src/app/services/utils.service';
+import { EntregasService } from 'src/app/services/entregas.service';
 
 @Component({
   selector: 'app-details',
   templateUrl: './details.component.html',
   styleUrls: ['./details.component.css']
 })
-export class RecepcionesCompradorDetailsComponent implements OnInit {
+export class EntregasSucursalDetailsComponent implements OnInit {
 
   @ViewChild(DataTableDirective, {static: false})
-  datatableElement_partes: DataTableDirective = null as any;
+  datatableElement_ocpartes: DataTableDirective = null as any;
   dtOptions: any = {
     pagingType: 'full_numbers',
     pageLength: 10,
@@ -28,16 +29,19 @@ export class RecepcionesCompradorDetailsComponent implements OnInit {
   
   dtTrigger: Subject<any> = new Subject<any>();
   
-  comprador_id: number = 1;
-  recepcion: any = {
+  sucursal_id: number = 2;
+  entrega: any = {
     id: -1,
     fecha: null,
     ndocumento: null,
     responsable: null,
     comentario: null,
     created_at: null,
-    comprador_name: null,
-    proveedor_name: null,
+    sucursal_name: null,
+    oc_id: null,
+    noccliente: null,
+    cliente_name: null,
+    faena_name: null,
   };
   
   partes: any[] = [];
@@ -48,14 +52,14 @@ export class RecepcionesCompradorDetailsComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private _recepcionesService: RecepcionesService,
+    private _entregasService: EntregasService,
     private location: Location,
     private _utilsService: UtilsService,
   ) { }
 
   ngOnInit(): void {
     this.sub = this.route.params.subscribe(params => {
-      this.recepcion.id = params['id'];
+      this.entrega.id = params['id'];
     });
   }
 
@@ -64,7 +68,7 @@ export class RecepcionesCompradorDetailsComponent implements OnInit {
 
     //Prevents throwing an error for var status changed while initialization
     setTimeout(() => {
-      this.loadRecepcion();
+      this.loadEntrega();
     },
     100);
   }
@@ -83,30 +87,34 @@ export class RecepcionesCompradorDetailsComponent implements OnInit {
     });
   }
 
-  private loadFormData(recepcionData: any)
+  private loadFormData(entregaData: any)
   { 
-    if(recepcionData['partes'].length > 0)
+    if(entregaData['ocpartes'].length > 0)
     {
-      this.recepcion.id = recepcionData.id;
-      this.recepcion.fecha = recepcionData.fecha;
-      this.recepcion.ndocumento = recepcionData.ndocumento;
-      this.recepcion.responsable = recepcionData.responsable;
-      this.recepcion.comentario = recepcionData.comentario;
-      this.recepcion.created_at = recepcionData.created_at;
-      this.recepcion.comprador_name = recepcionData.recepcionable.name;
-      this.recepcion.proveedor_name = recepcionData.sourceable.name;
+      this.entrega.id = entregaData.id;
+      this.entrega.fecha = entregaData.fecha;
+      this.entrega.ndocumento = entregaData.ndocumento;
+      this.entrega.responsable = entregaData.responsable;
+      this.entrega.comentario = entregaData.comentario;
+      this.entrega.created_at = entregaData.created_at;
+      this.entrega.sucursal_name = entregaData.oc.cotizacion.solicitud.sucursal.name;
+      this.entrega.oc_id = entregaData.oc.id;
+      this.entrega.noccliente = entregaData.oc.noccliente;
+      this.entrega.cliente_name = entregaData.oc.cotizacion.solicitud.faena.cliente.name;
+      this.entrega.faena_name = entregaData.oc.cotizacion.solicitud.faena.name;
       
       this.partes = [];
-      recepcionData.partes.forEach((parte: any) => {
+      entregaData.ocpartes.forEach((ocparte: any) => {
         this.partes.push(
           {
-            'id': parte.id,
-            'nparte': parte.nparte,
-            'marca_name': parte.marca.name,
-            'cantidad': parte.pivot.cantidad
+            'id': ocparte.parte.id,
+            'nparte': ocparte.parte.nparte,
+            'marca_name': ocparte.parte.marca.name,
+            'cantidad': ocparte.pivot.cantidad
           }
         )
       });
+
     }
     else
     {
@@ -120,16 +128,16 @@ export class RecepcionesCompradorDetailsComponent implements OnInit {
     }
   }
 
-  public loadRecepcion(): void {
+  public loadEntrega(): void {
     
     this.loading = true;
 
-    this._recepcionesService.getRecepcion_comprador(this.comprador_id, this.recepcion.id)
+    this._entregasService.getEntrega_sucursal(this.sucursal_id, this.entrega.id)
     .subscribe(
       //Success request
       (response: any) => {
         this.loadFormData(response.data);
-        this.renderDataTable(this.datatableElement_partes);
+        this.renderDataTable(this.datatableElement_ocpartes);
 
         this.loading = false;
       },
@@ -172,7 +180,7 @@ export class RecepcionesCompradorDetailsComponent implements OnInit {
           default: //Unhandled error
           {
             NotificationsService.showToast(
-              'Error al cargar los datos de la recepcion',
+              'Error al cargar los datos de la entrega',
               NotificationsService.messageType.error
             );
   
@@ -194,4 +202,5 @@ export class RecepcionesCompradorDetailsComponent implements OnInit {
   public goTo_back(): void {
     this.location.back();
   }
+
 }

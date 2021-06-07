@@ -123,7 +123,7 @@ export class DespachosCompradorEditComponent implements OnInit {
 
       let index: number;
 
-      // Update values with partes list in recepcion 
+      // Update values with partes list in despacho 
       despachoData.despacho.partes.forEach((parteD: any) => {
 
         index = this.partes.findIndex((parteQ) => {

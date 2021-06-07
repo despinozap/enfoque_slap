@@ -26,7 +26,6 @@
         <h4 class="card-title">Recepcion {{ recepcion.id >= 0 ? "#" + recepcion.id : '' }}</h4>
         <p class="card-title-desc">Modifica los siguientes campos para editar la recepcion</p>
 
-        <!-- Estado comercial - Aprobar -->
         <form [formGroup]="recepcionForm" (ngSubmit)="updateRecepcion()" action="#">
             
           <div class="row">

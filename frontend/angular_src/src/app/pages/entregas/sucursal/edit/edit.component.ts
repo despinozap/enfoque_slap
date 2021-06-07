@@ -3,7 +3,7 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
-import { DespachosService } from 'src/app/services/despachos.service';
+import { EntregasService } from 'src/app/services/entregas.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { UtilsService } from 'src/app/services/utils.service';
 
@@ -12,10 +12,10 @@ import { UtilsService } from 'src/app/services/utils.service';
   templateUrl: './edit.component.html',
   styleUrls: ['./edit.component.css']
 })
-export class DespachosCentrodistribucionEditComponent implements OnInit {
+export class EntregasSucursalEditComponent implements OnInit {
 
   @ViewChild(DataTableDirective, {static: false})
-  datatableElement_partes: DataTableDirective = null as any;
+  datatableElement_ocpartes: DataTableDirective = null as any;
   dtOptions: any = {
     pagingType: 'full_numbers',
     pageLength: 10,
@@ -27,17 +27,21 @@ export class DespachosCentrodistribucionEditComponent implements OnInit {
 
   dtTrigger: Subject<any> = new Subject<any>();
 
-  despacho: any = {
+  entrega: any = {
     id: -1,
     sucursal_id: -1,
     sucursal_name: null,
+    oc_id: null,
+    noccliente: null,
+    cliente_name: null,
+    faena_name: null,
   };
 
   partes: any[] = [];
   loading: boolean = false;
   responseErrors: any = [];
 
-  despachoForm: FormGroup = new FormGroup({
+  entregaForm: FormGroup = new FormGroup({
     fecha: new FormControl('', [Validators.required, Validators.minLength(1)]),
     documento: new FormControl(''),
     responsable: new FormControl('', [Validators.required, Validators.minLength(2)]),
@@ -45,19 +49,19 @@ export class DespachosCentrodistribucionEditComponent implements OnInit {
   });
 
   private sub: any;
-  centrodistribucion_id: number = 1;
+  sucursal_id: number = 2;
   
   
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private _despachosService: DespachosService,
+    private _entregasService: EntregasService,
     private _utilsService: UtilsService,
   ) { }
 
   ngOnInit(): void {
     this.sub = this.route.params.subscribe(params => {
-      this.despacho.id = params['id'];
+      this.entrega.id = params['id'];
     });
   }
 
@@ -66,7 +70,7 @@ export class DespachosCentrodistribucionEditComponent implements OnInit {
 
     //Prevents throwing an error for var status changed while initialization
     setTimeout(() => {
-      this.loadDespacho();
+      this.loadEntrega();
     },
     100);
   }
@@ -85,35 +89,50 @@ export class DespachosCentrodistribucionEditComponent implements OnInit {
     });
   }
 
-  private loadFormData(despachoData: any)
+  private loadFormData(entregaData: any)
   {
-    if(despachoData.despacho['partes'].length > 0)
+    if(entregaData.entrega['ocpartes'].length > 0)
     {
-      // Load Despacho data
-      this.despacho.id = despachoData.despacho.id;
-      this.despacho.sucursal_id = despachoData.despacho.destinable.id;
-      this.despacho.sucursal_name = despachoData.despacho.destinable.name;
+      // Load Entrega data
+      this.entrega.id = entregaData.entrega.id;
+      this.entrega.sucursal_id = entregaData.entrega.oc.cotizacion.solicitud.sucursal.id;
+      this.entrega.sucursal_name = entregaData.entrega.oc.cotizacion.solicitud.sucursal.name;
+      this.entrega.oc_id = entregaData.entrega.oc.id;
+      this.entrega.noccliente = entregaData.entrega.oc.noccliente;
+      this.entrega.cliente_name = entregaData.entrega.oc.cotizacion.solicitud.faena.cliente.name;
+      this.entrega.faena_name = entregaData.entrega.oc.cotizacion.solicitud.faena.name;
 
-      this.despachoForm.controls.fecha.setValue(this.dateStringFormat(despachoData.despacho.fecha));
-      if(despachoData.despacho.ndocumento !== null)
+      this.entregaForm.controls.fecha.setValue(this.dateStringFormat(entregaData.entrega.fecha));
+      if(entregaData.entrega.ndocumento !== null)
       {
-        this.despachoForm.controls.documento.setValue(despachoData.despacho.ndocumento);
+        this.entregaForm.controls.documento.setValue(entregaData.entrega.ndocumento);
       }
-      this.despachoForm.controls.responsable.setValue(despachoData.despacho.responsable);
-      if(despachoData.despacho.comentario !== null)
+      this.entregaForm.controls.responsable.setValue(entregaData.entrega.responsable);
+      if(entregaData.entrega.comentario !== null)
       {
-        this.despachoForm.controls.comentario.setValue(despachoData.despacho.comentario);
+        this.entregaForm.controls.comentario.setValue(entregaData.entrega.comentario);
       }
+
+      let cantidad_pendiente: number;
+      let cantidad_max: number;
 
       // Load partes list from queue_partes
-      this.partes = despachoData.queue_partes.reduce((carry: any[], parte: any) => {
+      this.partes = entregaData.queue_partes.reduce((carry: any[], parte: any) => {
+
+          cantidad_pendiente = parte.cantidad_total - parte.cantidad_entregado;
+          cantidad_max = cantidad_pendiente <= parte.cantidad_stock ? cantidad_pendiente : parte.cantidad_stock;
+
           carry.push({
             id: parte.id,
             nparte: parte.nparte,
             marca: parte.marca,
+            cantidad: cantidad_max,
+            cantidad_total: parte.cantidad_total,
+            cantidad_pendiente: cantidad_pendiente,
             cantidad_stock: parte.cantidad_stock,
+            cantidad_entregado: parte.cantidad_entregado,
+            cantidad_max: cantidad_max,
             checked: false,
-            cantidad: 0,
           });
 
           return carry;
@@ -123,17 +142,22 @@ export class DespachosCentrodistribucionEditComponent implements OnInit {
 
       let index: number;
 
-      // Update values with partes list in despacho 
-      despachoData.despacho.partes.forEach((parteD: any) => {
+      // Update values with partes list in entrega 
+      entregaData.entrega.ocpartes.forEach((ocparte: any) => {
 
-        index = this.partes.findIndex((parteQ) => {
-          return (parteD.id === parteQ.id);
+        index = this.partes.findIndex((parte) => {
+          return (parte.id === ocparte.parte.id);
         });
 
         if(index >= 0)
         {
+          cantidad_pendiente = this.partes[index].cantidad_total - this.partes[index].cantidad_entregado + ocparte.pivot.cantidad;
+          cantidad_max = cantidad_pendiente <= this.partes[index].cantidad_stock ? cantidad_pendiente : this.partes[index].cantidad_stock;
+
           this.partes[index].checked = true;
-          this.partes[index].cantidad = parteD.pivot.cantidad;
+          this.partes[index].cantidad = ocparte.pivot.cantidad;
+          this.partes[index].cantidad_pendiente = cantidad_pendiente;
+          this.partes[index].cantidad_max = cantidad_max;
         }
 
       });
@@ -142,7 +166,7 @@ export class DespachosCentrodistribucionEditComponent implements OnInit {
         return p2.cantidad - p1.cantidad;
       });
 
-      this.renderDataTable(this.datatableElement_partes);
+      this.renderDataTable(this.datatableElement_ocpartes);
     }
     else
     {
@@ -152,15 +176,15 @@ export class DespachosCentrodistribucionEditComponent implements OnInit {
       );
 
       this.loading = false;
-      this.goTo_despachosList();
+      this.goTo_entregasList();
     }
   }
 
-  public loadDespacho(): void {
+  public loadEntrega(): void {
     
     this.loading = true;
 
-    this._despachosService.prepareUpdateDespacho_centrodistribucion(this.centrodistribucion_id, this.despacho.id)
+    this._entregasService.prepareUpdateEntrega_sucursal(this.sucursal_id, this.entrega.id)
     .subscribe(
       //Success request
       (response: any) => {
@@ -207,7 +231,7 @@ export class DespachosCentrodistribucionEditComponent implements OnInit {
           default: //Unhandled error
           {
             NotificationsService.showToast(
-              'Error al cargar los datos del despacho',
+              'Error al cargar los datos de la entrega',
               NotificationsService.messageType.error
             );
   
@@ -217,17 +241,17 @@ export class DespachosCentrodistribucionEditComponent implements OnInit {
         }
 
         this.loading = false;
-        this.goTo_despachosList();
+        this.goTo_entregasList();
       }
     );
   }
 
-  public updateDespacho(): void {
-    this.despachoForm.disable();
+  public updateEntrega(): void {
+    this.entregaForm.disable();
     this.loading = true;
     this.responseErrors = [];
 
-    let dispatchedPartes = this.partes.reduce((carry, parte) => 
+    let deliveredPartes = this.partes.reduce((carry, parte) => 
       {
         if(parte.checked === true)
         {
@@ -244,15 +268,15 @@ export class DespachosCentrodistribucionEditComponent implements OnInit {
       []
     );
 
-    let despacho: any = {
-      fecha: this.despachoForm.value.fecha,
-      ndocumento: this.despachoForm.value.documento,
-      responsable: this.despachoForm.value.responsable,
-      comentario: this.despachoForm.value.comentario,
-      partes: dispatchedPartes
+    let entrega: any = {
+      fecha: this.entregaForm.value.fecha,
+      ndocumento: this.entregaForm.value.documento,
+      responsable: this.entregaForm.value.responsable,
+      comentario: this.entregaForm.value.comentario,
+      partes: deliveredPartes
     };
 
-    this._despachosService.updateDespacho_centrodistribucion(this.centrodistribucion_id, this.despacho.id, despacho)
+    this._entregasService.updateEntrega_sucursal(this.sucursal_id, this.entrega.id, entrega)
       .subscribe(
         //Success request
         (response: any) => {
@@ -262,7 +286,7 @@ export class DespachosCentrodistribucionEditComponent implements OnInit {
             NotificationsService.messageType.success
           );
 
-          this.goTo_despachosList();
+          this.goTo_entregasList();
         },
         //Error request
         (errorResponse: any) => {
@@ -320,7 +344,7 @@ export class DespachosCentrodistribucionEditComponent implements OnInit {
             default: //Unhandled error
               {
                 NotificationsService.showAlert(
-                  'Error al intentar actualizar el despacho',
+                  'Error al intentar actualizar la entrega',
                   NotificationsService.messageType.error
                 );
 
@@ -328,7 +352,7 @@ export class DespachosCentrodistribucionEditComponent implements OnInit {
               }
           }
 
-          this.despachoForm.enable();
+          this.entrega.enable();
           this.loading = false;
         }
       );
@@ -401,8 +425,8 @@ export class DespachosCentrodistribucionEditComponent implements OnInit {
     return this._utilsService.dateStringFormat(value);
   }
 
-  public goTo_despachosList(): void {
-    this.router.navigate(['/panel/despachos/centrodistribucion']);
+  public goTo_entregasList(): void {
+    this.router.navigate(['/panel/entregas/sucursal']);
   }
 
 }

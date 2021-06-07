@@ -314,22 +314,22 @@ export class UtilsService {
                 }
               ]
             },
-            // {
-            //   'title': 'Despachos',
-            //   'icon': 'bx-log-out-circle',
-            //   'header': true,
-            //   'route': '',
-            //   'items': [
-            //     {
-            //       'title': 'Nuevo despacho',
-            //       'route': '/panel/despachos/centrodistribucion/create'
-            //     },
-            //     {
-            //       'title': 'Lista de despachos',
-            //       'route': '/panel/despachos/centrodistribucion'
-            //     }
-            //   ]
-            // },
+            {
+              'title': 'Entregas',
+              'icon': 'bxs-truck',
+              'header': true,
+              'route': '',
+              'items': [
+                {
+                  'title': 'Nueva entrega',
+                  'route': '/panel/entregas/sucursal/create'
+                },
+                {
+                  'title': 'Lista de entregas',
+                  'route': '/panel/entregas/sucursal'
+                }
+              ]
+            },
           ]
         };
 

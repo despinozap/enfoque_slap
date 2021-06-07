@@ -26,7 +26,6 @@
         <h4 class="card-title">Despacho {{ despacho.id >= 0 ? "#" + despacho.id : '' }}</h4>
         <p class="card-title-desc">Modifica los siguientes campos para editar el despacho</p>
 
-        <!-- Estado comercial - Aprobar -->
         <form [formGroup]="despachoForm" (ngSubmit)="updateDespacho()" action="#">
             
           <div class="row">

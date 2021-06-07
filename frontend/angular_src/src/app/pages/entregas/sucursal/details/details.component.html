@@ -1,0 +1,141 @@
+<!-- start page title -->
+<div class="row">
+  <div class="col-12">
+    <div class="page-title-box d-flex align-items-center justify-content-between">
+      <h4 class="mb-0 font-size-18">Detalle de entrega</h4>
+
+      <div class="page-title-right">
+        <ol class="breadcrumb m-0">
+          <li class="breadcrumb-item">Entregas</li>
+          <li class="breadcrumb-item">Sucursal</li>
+          <li class="breadcrumb-item active">Detalle</li>
+        </ol>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- end page title -->
+
+<div class="row">
+
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body">
+        <div>
+          <span class="card-title">Entrega {{ entrega.id >= 0 ? "#" + entrega.id : '' }}</span>
+        </div>
+        <span class="badge badge-primary"></span>
+        <p class="card-title-desc">Detalle de la entrega</p>
+        <div class="row">
+          <div class="col-4">
+            <div class="form-group">
+              <label class="control-label">Sucursal</label>
+              <br>
+              <label>{{ entrega.sucursal_name !== null ? entrega.sucursal_name : '' }}</label>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="form-group">
+              <label class="control-label">OC Interna</label>
+              <br>
+              <label>{{ entrega.oc_id !== null ? entrega.oc_id : '' }}</label>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="form-group">
+              <label class="control-label">OC Cliente</label>
+              <br>
+              <label>{{ entrega.noccliente !== null ? entrega.noccliente : '' }}</label>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="form-group">
+              <label class="control-label">Cliente</label>
+              <br>
+              <label>{{ entrega.cliente_name !== null ? entrega.cliente_name : '' }}</label>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="form-group">
+              <label class="control-label">Faena</label>
+              <br>
+              <label>{{ entrega.faena_name !== null ? entrega.faena_name : '' }}</label>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="form-group">
+              <label class="control-label">Entregado en</label>
+              <br>
+              <label>{{ entrega.fecha !== null ? dateStringFormat(entrega.fecha) : '' }}</label>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="form-group">
+              <label class="control-label">N° Documento</label>
+              <br>
+              <label>{{ entrega.ndocumento !== null ? entrega.ndocumento : '' }}</label>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="form-group">
+              <label class="control-label">Entregado por</label>
+              <br>
+              <label>{{ entrega.responsable !== null ? entrega.responsable : '' }}</label>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="form-group">
+              <label class="control-label">Comentario</label>
+              <br>
+              <label>{{ entrega.comentario !== null ? entrega.comentario : '' }}</label>
+            </div>
+          </div>
+        </div>
+
+        <hr>
+
+        <!-- Partes list -->
+        <div>
+          <h4 class="card-title">Lista de partes</h4>
+          <p class="card-title-desc">Lista de partes en la entrega</p>
+
+          <div class="table-responsive">
+
+            <table datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger" class="table table-hover table-bordered mb-2">
+              <thead>
+                <tr>
+                  <th>N° Parte</th>
+                  <th>Marca</th>
+                  <th>Cantidad</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let parte of partes; index as i">
+                  <td align="left">{{ parte.nparte !== null ? parte.nparte : "" }}</td>
+                  <td align="center">{{ parte.marca_name !== null ? parte.marca_name : "" }}</td>
+                  <td align="right">{{ parte.cantidad !== null ? parte.cantidad : "" }}</td>              
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-12">
+            <div class="form-buttons mt-2">
+              <button [disabled]="(loading === true)" class="btn btn-light" (click)="goTo_back()">
+                <span>Volver</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- end card -->
+
+  </div>
+
+</div>
+<!-- end row -->

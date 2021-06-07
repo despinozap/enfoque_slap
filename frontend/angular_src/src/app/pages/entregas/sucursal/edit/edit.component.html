@@ -2,13 +2,13 @@
 <div class="row">
   <div class="col-12">
     <div class="page-title-box d-flex align-items-center justify-content-between">
-      <h4 class="mb-0 font-size-18">Nueva recepcion</h4>
+      <h4 class="mb-0 font-size-18">Editar entrega</h4>
 
       <div class="page-title-right">
         <ol class="breadcrumb m-0">
-          <li class="breadcrumb-item">Recepciones</li>
+          <li class="breadcrumb-item">Entregas</li>
           <li class="breadcrumb-item">Sucursal</li>
-          <li class="breadcrumb-item active">Nueva recepcion</li>
+          <li class="breadcrumb-item active">Editar entrega</li>
         </ol>
       </div>
 
@@ -23,45 +23,60 @@
     <div class="card">
       <div class="card-body">
 
-        <h4 class="card-title">Recepcion</h4>
-        <p class="card-title-desc">Completa los siguientes campos para registrar una nueva recepcion</p>
+        <h4 class="card-title">Entrega {{ entrega.id >= 0 ? "#" + entrega.id : '' }}</h4>
+        <p class="card-title-desc">Modifica los siguientes campos para editar la entrega</p>
 
-        <form [formGroup]="recepcionForm" (ngSubmit)="storeRecepcion()" action="#">
+        <form [formGroup]="entregaForm" (ngSubmit)="updateEntrega()" action="#">
             
           <div class="row">
             <div class="col-4">
               <div class="form-group">
-                <label class="control-label">Centro distribucion</label>
-                <!-- Backend errors -->
-                <div class="alert alert-danger" *ngIf="(responseErrors.sucursal_id)">
-                  <div *ngFor="let errorMessage of responseErrors.sucursal_id">{{ errorMessage }}</div>
-                </div>
-                <select class="form-control" name="centrodistribucion" id="centrodistribucion" formControlName="centrodistribucion" (change)="loadQueuePartes()">
-                  <option *ngFor="let centrodistribucion of centrosdistribucion" [value]="centrodistribucion.id">{{ centrodistribucion.name }}</option>
-                </select>
-                <!-- Frontend errors -->
-                <div
-                    *ngIf="(recepcionForm.controls.centrodistribucion.errors) && (recepcionForm.controls.centrodistribucion.touched) && (recepcionForm.controls.centrodistribucion.dirty)">
-                  <div class="error-response" *ngIf="recepcionForm.controls.centrodistribucion.errors.required === true">Debes
-                    seleccionar el centro de distribucion
-                  </div>
-                  <div class="error-response" *ngIf="recepcionForm.controls.centrodistribucion.errors.minlength !== null">El centro de distribucion debe ser valido</div>
-                </div>
+                <label class="control-label">Sucursal</label>
+                <br>
+                <label>{{ entrega.sucursal_name !== null ? entrega.sucursal_name : '' }}</label>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="form-group">
+                <label class="control-label">OC Interna</label>
+                <br>
+                <label>{{ entrega.oc_id !== null ? entrega.oc_id : '' }}</label>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="form-group">
+                <label class="control-label">OC Cliente</label>
+                <br>
+                <label>{{ entrega.noccliente !== null ? entrega.noccliente : '' }}</label>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="form-group">
+                <label class="control-label">Cliente</label>
+                <br>
+                <label>{{ entrega.cliente_name !== null ? entrega.cliente_name : '' }}</label>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="form-group">
+                <label class="control-label">Faena</label>
+                <br>
+                <label>{{ entrega.faena_name !== null ? entrega.faena_name : '' }}</label>
               </div>
             </div>
             <div class="col-4">
 							<div class="form-group">
-								<label class="control-label" for="name">Fecha de recepcion</label>
+								<label class="control-label" for="name">Fecha de entrega</label>
 								<!-- Backend errors -->
 								<div class="alert alert-danger" *ngIf="(responseErrors.fecha)">
 									<div *ngFor="let errorMessage of responseErrors.fecha">{{ errorMessage }}</div>
 								</div>
-								<input type="date" class="form-control valid-control" name="fecha" id="recepcion_fecha" max="{{ getDateToday() }}"
+								<input type="date" class="form-control valid-control" name="fecha" max="{{ getDateToday() }}"
 									formControlName="fecha">
 								<!-- Frontend errors -->
 								<div
-									*ngIf="(recepcionForm.controls.fecha.errors) && (recepcionForm.controls.fecha.touched) && (recepcionForm.controls.fecha.dirty)">
-									<div class="error-response" *ngIf="recepcionForm.controls.fecha.errors.required === true">
+									*ngIf="(entregaForm.controls.fecha.errors) && (entregaForm.controls.fecha.touched) && (entregaForm.controls.fecha.dirty)">
+									<div class="error-response" *ngIf="entregaForm.controls.fecha.errors.required === true">
 										La fecha es obligatoria
 									</div>
 								</div>
@@ -71,15 +86,15 @@
 							<div class="form-group">
 								<label class="control-label" for="documento">N° Guia despacho</label>
 								<!-- Backend errors -->
-								<div class="alert alert-danger" *ngIf="(responseErrors.documento)">
-									<div *ngFor="let errorMessage of responseErrors.documento">{{ errorMessage }}</div>
+								<div class="alert alert-danger" *ngIf="(responseErrors.ndocumento)">
+									<div *ngFor="let errorMessage of responseErrors.ndocumento">{{ errorMessage }}</div>
 								</div>
 								<input type="text" class="form-control valid-control" name="documento" id="documento"
 									formControlName="documento">
 								<!-- Frontend errors -->
 								<div
-									*ngIf="(recepcionForm.controls.documento.errors) && (recepcionForm.controls.documento.touched) && (recepcionForm.controls.documento.dirty)">
-									<div class="error-response" *ngIf="recepcionForm.controls.documento.errors.required === true">
+									*ngIf="(entregaForm.controls.documento.errors) && (entregaForm.controls.documento.touched) && (entregaForm.controls.documento.dirty)">
+									<div class="error-response" *ngIf="entregaForm.controls.documento.errors.required === true">
 										El documento es obligatorio
 									</div>
 								</div>
@@ -87,7 +102,7 @@
 						</div>
             <div class="col-4">
 							<div class="form-group">
-								<label class="control-label" for="responsable">Recibido por</label>
+								<label class="control-label" for="responsable">Entregado por</label>
 								<!-- Backend errors -->
 								<div class="alert alert-danger" *ngIf="(responseErrors.responsable)">
 									<div *ngFor="let errorMessage of responseErrors.responsable">{{ errorMessage }}</div>
@@ -96,17 +111,17 @@
 									formControlName="responsable">
 								<!-- Frontend errors -->
 								<div
-									*ngIf="(recepcionForm.controls.responsable.errors) && (recepcionForm.controls.responsable.touched) && (recepcionForm.controls.responsable.dirty)">
-									<div class="error-response" *ngIf="recepcionForm.controls.responsable.errors.required === true">
+									*ngIf="(entregaForm.controls.responsable.errors) && (entregaForm.controls.responsable.touched) && (entregaForm.controls.responsable.dirty)">
+									<div class="error-response" *ngIf="entregaForm.controls.responsable.errors.required === true">
 										El responsable es obligatorio
 									</div>
 									<div class="error-response"
-										*ngIf="recepcionForm.controls.responsable.errors.minlength !== null">El nombre del responsable debe tener al
+										*ngIf="entregaForm.controls.responsable.errors.minlength !== null">El nombre del responsable debe tener al
 										menos 2 caracteres</div>
 								</div>
 							</div>
 						</div>
-            <div class="col-8">
+            <div class="col-4">
               <div class="form-group">
                 <label class="control-label" for="name">Comentario</label>
                 <input type="text" class="form-control valid-control" name="comentario" id="comentario"
@@ -120,8 +135,8 @@
             <div class="col-12">
 
               <!-- Partes list -->
-              <label class="control-label">Lista de partes pendientes de recepcion</label>
-              <p class="card-title-desc">Completa las cantidades para las partes que se reciben</p>
+              <label class="control-label">Lista de partes disponibles para entrega</label>
+              <p class="card-title-desc">Completa las cantidades para las partes que se entregan</p>
 
               <div class="table-responsive">
 
@@ -135,13 +150,15 @@
                         </div>
                       </th>
                       <th>N° Parte</th>
-                      <th>Cantidad</th>
                       <th>Marca</th>
+                      <th>Cantidad</th>
+                      <th>Pendiente</th>
+                      <th>En stock</th>
                     </tr>
                   </thead>
                   <tbody *ngIf="(loading === true)">
                     <tr>
-                      <td colspan="4" style="text-align: center;"><i
+                      <td colspan="6" style="text-align: center;"><i
                             class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</td>
                     </tr>
                   </tbody>
@@ -154,10 +171,12 @@
                         </div>
                       </td>
                       <td align="left">{{ parte.nparte !== null ? parte.nparte : '' }}</td>
-                      <td align="center">
-                        <input class="form-control" type="number" name="" id="txtParte-{{ i }}-cantidad" min="1" max="parte.cantidad_pendiente" value="{{ parte.cantidad_pendiente !== null ? parte.cantidad_pendiente : '' }}" (change)="updateParte_cantidad(parte, $event)" [disabled]="loading === true ? true : (parte.checked ? false : true)">
-                      </td>
                       <td align="left">{{ parte.marca.name !== null ? parte.marca.name : '' }}</td>
+                      <td align="center">
+                        <input class="form-control" type="number" name="" id="txtParte-{{ i }}-cantidad" min="1" max="{{parte.cantidad_max}}" value="{{ ((parte.checked === true) && (parte.cantidad !== null)) ? parte.cantidad : '' }}" (change)="updateParte_cantidad(parte, $event)" [disabled]="loading === true ? true : (parte.checked ? false : true)">
+                      </td>
+                      <td align="left">{{ parte.cantidad_pendiente !== null ? parte.cantidad_pendiente : '' }}</td>
+                      <td align="left">{{ parte.cantidad_stock !== null ? parte.cantidad_stock : '' }}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -169,12 +188,12 @@
           <div class="row">
             <div class="col-12">
               <div class="form-buttons mt-2">
-                <button class="btn btn-primary mr-2" (click)="storeRecepcion()"
-                    [disabled]="(recepcionForm.invalid) || (loading === true) || (isCheckedItem(partes) === false)">
+                <button class="btn btn-primary mr-2" (click)="updateEntrega()"
+                    [disabled]="(entregaForm.invalid) || (loading === true) || (isCheckedItem(partes) === false)">
                   <span *ngIf="loading === true"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
                   <span *ngIf="loading === false">Guardar</span>
                 </button>
-                <button [disabled]="(loading === true)" class="btn btn-light" (click)="goTo_recepcionesList()">
+                <button [disabled]="(loading === true)" class="btn btn-light" (click)="goTo_entregasList()">
                   <span>Cancelar</span>
                 </button>
               </div>

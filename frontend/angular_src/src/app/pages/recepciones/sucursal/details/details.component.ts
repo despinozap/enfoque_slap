@@ -15,7 +15,7 @@ import { UtilsService } from 'src/app/services/utils.service';
 export class RecepcionesSucursalDetailsComponent implements OnInit {
 
   @ViewChild(DataTableDirective, {static: false})
-  datatableElement_ocpartes: DataTableDirective = null as any;
+  datatableElement_partes: DataTableDirective = null as any;
   dtOptions: any = {
     pagingType: 'full_numbers',
     pageLength: 10,
@@ -129,7 +129,7 @@ export class RecepcionesSucursalDetailsComponent implements OnInit {
       //Success request
       (response: any) => {
         this.loadFormData(response.data);
-        this.renderDataTable(this.datatableElement_ocpartes);
+        this.renderDataTable(this.datatableElement_partes);
 
         this.loading = false;
       },

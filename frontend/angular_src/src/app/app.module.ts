@@ -71,6 +71,10 @@ import { RecepcionesSucursalListComponent } from './pages/recepciones/sucursal/l
 import { RecepcionesSucursalEditComponent } from './pages/recepciones/sucursal/edit/edit.component';
 import { RecepcionesSucursalCreateComponent } from './pages/recepciones/sucursal/create/create.component';
 import { RecepcionesSucursalDetailsComponent } from './pages/recepciones/sucursal/details/details.component';
+import { EntregasSucursalListComponent } from './pages/entregas/sucursal/list/list.component';
+import { EntregasSucursalCreateComponent } from './pages/entregas/sucursal/create/create.component';
+import { EntregasSucursalDetailsComponent } from './pages/entregas/sucursal/details/details.component';
+import { EntregasSucursalEditComponent } from './pages/entregas/sucursal/edit/edit.component';
 
 
 /* Routes */
@@ -134,6 +138,10 @@ const routes: Routes = [
       { path: 'recepciones/sucursal/create', component: RecepcionesSucursalCreateComponent },
       { path: 'recepciones/sucursal/details/:id', component: RecepcionesSucursalDetailsComponent },
       { path: 'recepciones/sucursal/edit/:id', component: RecepcionesSucursalEditComponent },
+      { path: 'entregas/sucursal', component: EntregasSucursalListComponent },
+      { path: 'entregas/sucursal/create', component: EntregasSucursalCreateComponent },
+      { path: 'entregas/sucursal/details/:id', component: EntregasSucursalDetailsComponent },
+      { path: 'entregas/sucursal/edit/:id', component: EntregasSucursalEditComponent },
     ]
   },
   { path: '**', redirectTo: 'login', pathMatch: 'full' } //any other page, redirects to base path
@@ -198,6 +206,10 @@ const routes: Routes = [
     RecepcionesSucursalEditComponent,
     RecepcionesSucursalCreateComponent,
     RecepcionesSucursalDetailsComponent,
+    EntregasSucursalListComponent,
+    EntregasSucursalCreateComponent,
+    EntregasSucursalDetailsComponent,
+    EntregasSucursalEditComponent,
   ],
   imports: [
     BrowserModule,
