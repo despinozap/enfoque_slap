@@ -45,6 +45,7 @@ export class SolicitudesEditComponent implements OnInit {
   responseErrors: any = [];
 
   private sub: any;
+  sucursal_id: number = 2;
   id: number = -1;
   private parte_index: number = -1;
 
@@ -197,7 +198,7 @@ export class SolicitudesEditComponent implements OnInit {
 
   private prepareSolicitud() {
     this.loading = true;
-    this._solicitudesService.prepareSolicitud()
+    this._solicitudesService.prepareSolicitud(this.sucursal_id)
       .subscribe(
         //Success request
         (response: any) => {
