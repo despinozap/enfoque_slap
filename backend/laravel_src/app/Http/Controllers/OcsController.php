@@ -676,7 +676,7 @@ class OcsController extends Controller
                         }
                         else if(($oc->estadooc_id === 2) || ($oc->estadooc_id === 3) || ($oc->estadooc_id === 4))
                         {
-                            //If Cerrada or Baja
+                            //If En proceso, Cerrada or Baja
                             $response = HelpController::buildResponse(
                                 409,
                                 'No puedes dar de baja una OC que ya esta en proceso, cerrada o de baja',
