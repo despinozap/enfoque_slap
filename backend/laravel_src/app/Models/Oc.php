@@ -36,7 +36,7 @@ class Oc extends Model
         );
         
         // For all the Cotizacion partes match ID's with OC partes
-        $amount = $this->cotizacion->partes->whereIn('partes.id', $partesIds)->reduce(function($carry, $parte) 
+        $amount = $this->cotizacion->partes->whereIn('id', $partesIds)->reduce(function($carry, $parte) 
             { 
                 // Adds the monto field multiplied by cantidad
                 return $carry += ($parte->pivot->monto * $parte->pivot->cantidad); 
@@ -97,10 +97,5 @@ class Oc extends Model
     public function proveedor()
     {
         return $this->belongsTo(Proveedor::class);
-    }
-
-    public function despachos()
-    {
-        return $this->belongsToMany(Despacho::class, 'despacho_oc', 'oc_id', 'despacho_id')->withTimestamps();
     }
 }
