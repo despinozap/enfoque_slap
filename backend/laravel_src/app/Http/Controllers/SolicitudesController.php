@@ -8,6 +8,7 @@ use Auth;
 use Illuminate\Support\Facades\DB;
 
 use App\Models\Parameter;
+use App\Models\Sucursal;
 use App\Models\Faena;
 use App\Models\Marca;
 use App\Models\Comprador;
@@ -243,15 +244,27 @@ class SolicitudesController extends Controller
      * selecting data and storing a new Solicitud
      * 
      */
-    public function store_prepare()
+    public function store_prepare($sucursal_id)
     {
         try
         {
             $user = Auth::user();
             if($user->role->hasRoutepermission('solicitudes store'))
             {
-                
-                if( ! ($faenas = Faena::all()) )
+                if( ! ($sucursal = Sucursal::find($sucursal_id)) )
+                {
+                    $response = HelpController::buildResponse(
+                        500,
+                        'Error al obtener la sucursal',
+                        null
+                    );
+                }
+                else if( ! ($faenas = Faena::select('faenas.*')
+                                    ->join('clientes', 'clientes.id', '=', 'faenas.cliente_id')
+                                    ->where('clientes.country_id', '=', $sucursal->country_id) // Gets only the Faenas in the same country than Sucursal
+                                    ->get()
+                            )
+                )
                 {
                     $response = HelpController::buildResponse(
                         500,
@@ -418,34 +431,30 @@ class SolicitudesController extends Controller
                 }
                 else        
                 {
-                    $solicitud = new Solicitud();
-                    $solicitud->fill($request->all());
-                    $solicitud->user_id = $user->id;
-                    $solicitud->estadosolicitud_id = 1; //Initial Estadosolicitud
-        
-                    DB::beginTransaction();
-        
-                    if($solicitud->save())
+                    // Check if faena is in the same country than Surursal
+                    if($faena = Faena::select('faenas.*')
+                        ->join('clientes', 'clientes.id', '=', 'faenas.cliente_id')
+                        ->join('sucursales', 'sucursales.country_id', '=', 'clientes.country_id')
+                        ->where('sucursales.id', '=', $request->sucursal_id)
+                        ->where('faenas.id', '=', $request->faena_id)
+                        ->first()
+                    )
                     {
-                        $success = true;
-        
-                        //Attaching each Parte to the Solicitud
-                        foreach($request->partes as $parte)
+                        $solicitud = new Solicitud();
+                        $solicitud->fill($request->all());
+                        $solicitud->user_id = $user->id;
+                        $solicitud->estadosolicitud_id = 1; //Initial Estadosolicitud
+            
+                        DB::beginTransaction();
+            
+                        if($solicitud->save())
                         {
-                            if($p = Parte::where('nparte', $parte['nparte'])->where('marca_id', $request->marca_id)->first())
+                            $success = true;
+            
+                            //Attaching each Parte to the Solicitud
+                            foreach($request->partes as $parte)
                             {
-                                $solicitud->partes()->attach([ 
-                                    $p->id => [
-                                        'cantidad' => $parte['cantidad']
-                                    ]
-                                ]);
-                            }
-                            else
-                            {
-                                $p = new Parte();
-                                $p->nparte = $parte['nparte'];
-                                $p->marca_id = $request->marca_id;
-                                if($p->save())
+                                if($p = Parte::where('nparte', $parte['nparte'])->where('marca_id', $request->marca_id)->first())
                                 {
                                     $solicitud->partes()->attach([ 
                                         $p->id => [
@@ -455,41 +464,63 @@ class SolicitudesController extends Controller
                                 }
                                 else
                                 {
-                                    $success = false;
-        
-                                    $response = HelpController::buildResponse(
-                                        500,
-                                        'Error al crear la parte N:' . $parte['nparte'],
-                                        null
-                                    );
+                                    $p = new Parte();
+                                    $p->nparte = $parte['nparte'];
+                                    $p->marca_id = $request->marca_id;
+                                    if($p->save())
+                                    {
+                                        $solicitud->partes()->attach([ 
+                                            $p->id => [
+                                                'cantidad' => $parte['cantidad']
+                                            ]
+                                        ]);
+                                    }
+                                    else
+                                    {
+                                        $success = false;
             
-                                    break;
+                                        $response = HelpController::buildResponse(
+                                            500,
+                                            'Error al crear la parte N:' . $parte['nparte'],
+                                            null
+                                        );
+                
+                                        break;
+                                    }
                                 }
                             }
-                        }
-        
-                        if($success === true)
-                        {
-                            DB::commit();
-        
-                            $response = HelpController::buildResponse(
-                                201,
-                                'Solicitud creada',
-                                null
-                            );
+            
+                            if($success === true)
+                            {
+                                DB::commit();
+            
+                                $response = HelpController::buildResponse(
+                                    201,
+                                    'Solicitud creada',
+                                    null
+                                );
+                            }
+                            else
+                            {
+                                DB::rollback();
+                            }
                         }
                         else
                         {
                             DB::rollback();
+            
+                            $response = HelpController::buildResponse(
+                                500,
+                                'Error al crear la solicitud',
+                                null
+                            );
                         }
                     }
                     else
                     {
-                        DB::rollback();
-        
                         $response = HelpController::buildResponse(
-                            500,
-                            'Error al crear la solicitud',
+                            412,
+                            'La faena no existe para la sucursal',
                             null
                         );
                     }
@@ -784,94 +815,111 @@ class SolicitudesController extends Controller
                 {
                     if($solicitud = Solicitud::find($id))
                     {
-                        if(($user->role_id === 2) && ($solicitud->user_id !== $user->id))
+                        // Check if faena is in the same country than Surursal
+                        if($faena = Faena::select('faenas.*')
+                            ->join('clientes', 'clientes.id', '=', 'faenas.cliente_id')
+                            ->join('sucursales', 'sucursales.country_id', '=', 'clientes.country_id')
+                            ->where('sucursales.id', '=', $solicitud->sucursal_id)
+                            ->where('faenas.id', '=', $request->faena_id)
+                            ->first()
+                        )
                         {
-                            //If Vendedor and solicitud doesn't belong
-                            $response = HelpController::buildResponse(
-                                405,
-                                'No tienes acceso a actualizar esta solicitud',
-                                null
-                            );
-                        }
-                        else if($solicitud->estadosolicitud_id === 3)
-                        {
-                            // If solicitud is already 'Cerrada'
-                            $response = HelpController::buildResponse(
-                                409,
-                                'No puedes editar una solicitud cerrada',
-                                null
-                            );
-                        }
-                        else
-                        {
-                            $solicitud->fill($request->all());
-        
-                            DB::beginTransaction();
-            
-                            if($solicitud->save())
+                            if(($user->role_id === 2) && ($solicitud->user_id !== $user->id))
                             {
-                                $success = true;
+                                //If Vendedor and solicitud doesn't belong
+                                $response = HelpController::buildResponse(
+                                    405,
+                                    'No tienes acceso a actualizar esta solicitud',
+                                    null
+                                );
+                            }
+                            else if($solicitud->estadosolicitud_id === 3)
+                            {
+                                // If solicitud is already 'Cerrada'
+                                $response = HelpController::buildResponse(
+                                    409,
+                                    'No puedes editar una solicitud cerrada',
+                                    null
+                                );
+                            }
+                            else
+                            {
+                                $solicitud->fill($request->all());
             
-                                $syncData = [];
-                                foreach($request->partes as $parte)
+                                DB::beginTransaction();
+                
+                                if($solicitud->save())
                                 {
-                                    if($p = Parte::where('nparte', $parte['nparte'])->where('marca_id', $request->marca_id)->first())
+                                    $success = true;
+                
+                                    $syncData = [];
+                                    foreach($request->partes as $parte)
                                     {
-                                        $syncData[$p->id] =  array('cantidad' => $parte['cantidad']);
-                                    }
-                                    else
-                                    {
-                                        $p = new Parte();
-                                        $p->nparte = $parte['nparte'];
-                                        $p->marca_id = $request->marca_id;
-                                        if($p->save())
+                                        if($p = Parte::where('nparte', $parte['nparte'])->where('marca_id', $request->marca_id)->first())
                                         {
                                             $syncData[$p->id] =  array('cantidad' => $parte['cantidad']);
                                         }
                                         else
                                         {
-                                            $success = false;
-                
-                                            $response = HelpController::buildResponse(
-                                                500,
-                                                'Error al crear la parte N:' . $parte['nparte'],
-                                                null
-                                            );
+                                            $p = new Parte();
+                                            $p->nparte = $parte['nparte'];
+                                            $p->marca_id = $request->marca_id;
+                                            if($p->save())
+                                            {
+                                                $syncData[$p->id] =  array('cantidad' => $parte['cantidad']);
+                                            }
+                                            else
+                                            {
+                                                $success = false;
                     
-                                            break;
+                                                $response = HelpController::buildResponse(
+                                                    500,
+                                                    'Error al crear la parte N:' . $parte['nparte'],
+                                                    null
+                                                );
+                        
+                                                break;
+                                            }
                                         }
                                     }
-                                }
-            
-                                if($success === true)
-                                {
-                                    $solicitud->partes()->sync($syncData);
+                
+                                    if($success === true)
+                                    {
+                                        $solicitud->partes()->sync($syncData);
 
-                                    DB::commit();
-            
-                                    $response = HelpController::buildResponse(
-                                        200,
-                                        'Solicitud editada',
-                                        null
-                                    );
+                                        DB::commit();
+                
+                                        $response = HelpController::buildResponse(
+                                            200,
+                                            'Solicitud editada',
+                                            null
+                                        );
+                                    }
+                                    else
+                                    {
+                                        DB::rollback();
+                                    }
                                 }
                                 else
                                 {
                                     DB::rollback();
+                
+                                    $response = HelpController::buildResponse(
+                                        500,
+                                        'Error al editar la solicitud',
+                                        null
+                                    );
                                 }
                             }
-                            else
-                            {
-                                DB::rollback();
-            
-                                $response = HelpController::buildResponse(
-                                    500,
-                                    'Error al editar la solicitud',
-                                    null
-                                );
-                            }
                         }
-                        
+                        else
+                        {
+                            $response = HelpController::buildResponse(
+                                412,
+                                'La faena no existe para la sucursal',
+                                null
+                            );
+                        }
                     }
                     else
                     {
