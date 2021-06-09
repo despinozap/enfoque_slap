@@ -433,6 +433,7 @@ class EntregasController extends Controller
                                         "id" => $parte->id,
                                         "nparte" => $parte->nparte,
                                         "marca" => $parte->marca->makeHidden(['created_at', 'updated_at']),
+                                        "backorder" => $parte->pivot->backorder,
                                         "cantidad_total" => $parte->pivot->cantidad,
                                         "cantidad_entregado" => $parte->pivot->getCantidadEntregado(),
                                         "cantidad_stock" => $cantidadStock
@@ -1084,6 +1085,7 @@ class EntregasController extends Controller
                                         "id" => $parte->id,
                                         "nparte" => $parte->nparte,
                                         "marca" => $parte->marca->makeHidden(['created_at', 'updated_at']),
+                                        "backorder" => $parte->pivot->backorder,
                                         "cantidad_total" => $parte->pivot->cantidad,
                                         "cantidad_entregado" => $parte->pivot->getCantidadEntregado(),
                                         "cantidad_stock" => $cantidadStock
@@ -1954,6 +1956,7 @@ class EntregasController extends Controller
                                         "id" => $parte->id,
                                         "nparte" => $parte->nparte,
                                         "marca" => $parte->marca->makeHidden(['created_at', 'updated_at']),
+                                        "backorder" => $parte->pivot->backorder,
                                         "cantidad_total" => $parte->pivot->cantidad,
                                         "cantidad_entregado" => $parte->pivot->getCantidadEntregado(),
                                         "cantidad_stock" => $cantidadStock
@@ -2604,6 +2607,7 @@ class EntregasController extends Controller
                                         "id" => $parte->id,
                                         "nparte" => $parte->nparte,
                                         "marca" => $parte->marca->makeHidden(['created_at', 'updated_at']),
+                                        "backorder" => $parte->pivot->backorder,
                                         "cantidad_total" => $parte->pivot->cantidad,
                                         "cantidad_entregado" => $parte->pivot->getCantidadEntregado(),
                                         "cantidad_stock" => $cantidadStock
