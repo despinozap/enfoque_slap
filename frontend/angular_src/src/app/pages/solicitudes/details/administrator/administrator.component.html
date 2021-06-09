@@ -95,8 +95,8 @@
             <tbody>
               <tr *ngFor="let parte of partes; index as i">
                 <td align="right">{{ parte.cantidad !== null ? parte.cantidad : "" }}</td>
-                <td align="left"><i class="bx bx-timer icon-table" *ngIf="(parte.backorder === true)"></i>{{ parte.nparte !== null ? parte.nparte : "" }}</td>
-                <td align="right">{{ parte.descripcion !== null ? parte.descripcion : "" }}</td>
+                <td align="center"><i class="bx bx-timer icon-table" *ngIf="(parte.backorder === true)"></i>{{ parte.nparte !== null ? parte.nparte : "" }}</td>
+                <td align="left">{{ parte.descripcion !== null ? parte.descripcion : "" }}</td>
                 <td align="right">{{ parte.costo !== null ? "$" + moneyStringFormat(parte.costo) : "" }}</td>
                 <td align="right">{{ parte.margen !== null ? parte.margen + "%" : "" }}</td>
                 <td align="right">{{ parte.peso !== null ? parte.peso + " kg" : "" }}</td>

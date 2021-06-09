@@ -200,6 +200,7 @@ export class EntregasCentrodistribucionCreateComponent implements OnInit {
               id: parte.id,
               nparte: parte.nparte,
               marca: parte.marca,
+              backorder: parte.backorder > 0 ? true : false,
               cantidad: cantidad_max,
               cantidad_pendiente: cantidad_pendiente,
               cantidad_stock: parte.cantidad_stock,

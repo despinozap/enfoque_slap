@@ -109,6 +109,7 @@ export class EntregasCentrodistribucionDetailsComponent implements OnInit {
             'id': ocparte.parte.id,
             'nparte': ocparte.parte.nparte,
             'marca_name': ocparte.parte.marca.name,
+            'backorder': ocparte.backorder > 0 ? true : false,
             'cantidad': ocparte.pivot.cantidad
           }
         )

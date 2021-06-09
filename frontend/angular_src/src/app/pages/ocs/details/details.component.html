@@ -129,10 +129,10 @@
                   </td>                  
                 </tr>
               </tbody>
-              <tfoot>
+              <tfoot [hidden]="(oc.estadooc_id !== 1)"> <!-- It's only shown when Oc is still 'Pendiente' -->
                 <tr>
                   <td colspan="7" align="left">
-                    <button type="button" class="btn btn-outline-primary mr-2" (click)="goTo_darBaja()" [hidden]="(oc.estadooc_id !== 1) && (oc.estadooc_id !== 2)"
+                    <button type="button" class="btn btn-outline-primary mr-2" (click)="goTo_darBaja()"
                         [disabled]="(loading === true)">
                       <i class="bx bx-unlink font-size-16 align-middle"></i> Dar OC de baja
                     </button>

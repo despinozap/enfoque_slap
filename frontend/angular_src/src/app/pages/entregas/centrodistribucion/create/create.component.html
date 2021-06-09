@@ -61,10 +61,10 @@
                     <td align="center">{{ oc.noccliente ? oc.noccliente : '' }}</td>
                     <td align="center">{{ oc.id ? oc.id : '' }}</td>
                     <td align="center">{{ oc.cotizacion.id ? oc.cotizacion.id : ''}}</td>
-                    <td>{{ oc.cotizacion.solicitud.faena.cliente.name }}</td>
-                    <td>{{ oc.cotizacion.solicitud.faena.name }}</td>
-                    <td>{{ oc.cotizacion.solicitud.marca.name }}</td>
-                    <td>{{ oc.cotizacion.solicitud.user.name }}</td>
+                    <td align="center">{{ oc.cotizacion.solicitud.faena.cliente.name }}</td>
+                    <td align="center">{{ oc.cotizacion.solicitud.faena.name }}</td>
+                    <td align="center">{{ oc.cotizacion.solicitud.marca.name }}</td>
+                    <td align="center">{{ oc.cotizacion.solicitud.user.name }}</td>
                     <td align="right">{{ oc.partes_total }}</td>
                     <td align="right">{{ oc.dias }}</td>
                     <td align="center">{{ oc.estadooc.name }}</td>
@@ -238,8 +238,8 @@
                           <label class="custom-control-label" for="chkParte-{{ i }}"></label>
                         </div>
                       </td>
-                      <td align="left">{{ parte.nparte !== null ? parte.nparte : '' }}</td>
-                      <td align="left">{{ parte.marca.name !== null ? parte.marca.name : '' }}</td>
+                      <td align="center"><i class="bx bx-timer icon-table" *ngIf="(parte.backorder === true)"></i>{{ parte.nparte !== null ? parte.nparte : '' }}</td>
+                      <td align="center">{{ parte.marca.name !== null ? parte.marca.name : '' }}</td>
                       <td align="center">
                         <input class="form-control" type="number" name="" id="txtParte-{{ i }}-cantidad" min="1" max="{{parte.cantidad_max}}" value="{{ (parte.cantidad_max !== null) && (parte.checked === true) ? parte.cantidad_max : '' }}" (change)="updateParte_cantidad(parte, $event)" [disabled]="loading === true ? true : (parte.checked ? false : true)">
                       </td>

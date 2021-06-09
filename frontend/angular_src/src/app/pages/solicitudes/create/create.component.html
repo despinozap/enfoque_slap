@@ -122,7 +122,7 @@
             <tbody *ngIf="(loading === false)">
               <tr *ngFor="let parte of partes; index as i">
                 <td align="right">{{ parte.cantidad }}</td>
-                <td align="left">{{ parte.nparte }}</td>
+                <td align="center">{{ parte.nparte }}</td>
                 <td align="center">
                   <button (click)="goTo_updateParte(i)" class="btn-table btn btn-secondary" title="Editar"><i class="bx bx-edit-alt"></i></button>
                   <button (click)="removeParte(i)" class="btn-table btn btn-secondary" title="Eliminar"><i class="bx bx-trash-alt"></i></button>

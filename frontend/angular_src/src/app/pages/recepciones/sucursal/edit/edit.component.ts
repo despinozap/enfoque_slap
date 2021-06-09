@@ -115,7 +115,7 @@ export class RecepcionesSucursalEditComponent implements OnInit {
             cantidad_max: parte.cantidad_pendiente,
             cantidad_despachos: parte.cantidad_despachos,
             checked: false,
-            cantidad: 0,
+            cantidad: 1,
           });
 
           return carry;

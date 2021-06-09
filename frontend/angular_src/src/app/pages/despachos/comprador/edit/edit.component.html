@@ -122,8 +122,8 @@
                         </div>
                       </th>
                       <th>N° Parte</th>
-                      <th>Cantidad</th>
                       <th>Marca</th>
+                      <th>Cantidad</th>
                     </tr>
                   </thead>
                   <tbody *ngIf="(loading === true)">
@@ -140,11 +140,11 @@
                           <label class="custom-control-label" for="chkParte-{{ i }}"></label>
                         </div>
                       </td>
-                      <td align="left">{{ parte.nparte !== null ? parte.nparte : '' }}</td>
+                      <td align="center">{{ parte.nparte !== null ? parte.nparte : '' }}</td>
+                      <td align="center">{{ parte.marca.name !== null ? parte.marca.name : '' }}</td>
                       <td align="center">
                         <input class="form-control" type="number" name="" id="txtParte-{{ i }}-cantidad" min="{{parte.cantidad_despachos}}" max="{{parte.cantidad_max}}" value="{{ ((parte.checked === true) && (parte.cantidad !== null)) ? parte.cantidad : '' }}" (change)="updateParte_cantidad(parte, $event)" [disabled]="loading === true ? true : (parte.checked ? false : true)">
                       </td>
-                      <td align="left">{{ parte.marca.name !== null ? parte.marca.name : '' }}</td>
                     </tr>
                   </tbody>
                 </table>

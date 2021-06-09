@@ -52,12 +52,12 @@
           <tbody *ngIf="(loading === false)">
             <tr *ngFor="let oc of ocs">
               <td align="center">{{ oc.noccliente ? oc.noccliente : '' }}</td>
-              <td>{{ oc.id }}</td>
-              <td>{{ oc.cotizacion.id}}</td>
-              <td>{{ oc.cotizacion.solicitud.faena.cliente.name }}</td>
+              <td align="center">{{ oc.id }}</td>
+              <td align="center">{{ oc.cotizacion.id}}</td>
+              <td align="center">{{ oc.cotizacion.solicitud.faena.cliente.name }}</td>
               <!-- <td>{{ oc.cotizacion.solicitud.faena.name }}</td> -->
-              <td>{{ oc.cotizacion.solicitud.marca.name }}</td>
-              <td>{{ oc.cotizacion.solicitud.user.name }}</td>
+              <td align="center">{{ oc.cotizacion.solicitud.marca.name }}</td>
+              <td align="center">{{ oc.cotizacion.solicitud.user.name }}</td>
               <td align="right">{{ oc.partes_total }}</td>
               <td align="right">{{ oc.dias }}</td>
               <td align="right">{{ "$" + moneyStringFormat(oc.monto) }}</td>

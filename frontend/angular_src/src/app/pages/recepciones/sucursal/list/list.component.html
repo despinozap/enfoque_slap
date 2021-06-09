@@ -49,12 +49,12 @@
           <tbody *ngIf="(loading === false)">
             <tr *ngFor="let recepcion of recepciones">
               <td align="center">{{ recepcion.id }}</td>
-              <td>{{ dateStringFormat(recepcion.fecha) }}</td>
+              <td align="center">{{ dateStringFormat(recepcion.fecha) }}</td>
               <td align="center">{{ recepcion.sourceable.name }}</td>
               <td align="center">{{ recepcion.ndocumento !== null ? recepcion.ndocumento : '' }}</td>
               <td align="right">{{ recepcion.partes_total }}</td>
               <td align="center">{{ recepcion.responsable }}</td>
-              <td>{{ recepcion.comentario !== null ? recepcion.comentario : '' }}</td>
+              <td align="left">{{ recepcion.comentario !== null ? recepcion.comentario : '' }}</td>
               <td align="center">
                 <a [routerLink]="['details', recepcion.id]" class="btn-table btn btn-secondary" title="Detalle"><i
                   class="bx bx-zoom-in"></i></a>
@@ -63,6 +63,15 @@
               </td>
             </tr>
           </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="8" align="left">
+                <button type="button" class="btn btn-outline-primary mr-2" (click)="goTo_newRecepcion()" [disabled]="(loading === true)">
+                  <i class="bx bx-notepad font-size-16 align-middle"></i> Nueva recepcion
+                </button>
+              </td>
+            </tr>
+          </tfoot>
         </table>
 
       </div>

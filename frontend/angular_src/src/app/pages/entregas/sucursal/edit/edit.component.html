@@ -170,13 +170,13 @@
                           <label class="custom-control-label" for="chkParte-{{ i }}"></label>
                         </div>
                       </td>
-                      <td align="left">{{ parte.nparte !== null ? parte.nparte : '' }}</td>
-                      <td align="left">{{ parte.marca.name !== null ? parte.marca.name : '' }}</td>
+                      <td align="center"><i class="bx bx-timer icon-table" *ngIf="(parte.backorder === true)"></i>{{ parte.nparte !== null ? parte.nparte : '' }}</td>
+                      <td align="center">{{ parte.marca.name !== null ? parte.marca.name : '' }}</td>
                       <td align="center">
                         <input class="form-control" type="number" name="" id="txtParte-{{ i }}-cantidad" min="1" max="{{parte.cantidad_max}}" value="{{ ((parte.checked === true) && (parte.cantidad !== null)) ? parte.cantidad : '' }}" (change)="updateParte_cantidad(parte, $event)" [disabled]="loading === true ? true : (parte.checked ? false : true)">
                       </td>
-                      <td align="left">{{ parte.cantidad_pendiente !== null ? parte.cantidad_pendiente : '' }}</td>
-                      <td align="left">{{ parte.cantidad_stock !== null ? parte.cantidad_stock : '' }}</td>
+                      <td align="right">{{ parte.cantidad_pendiente !== null ? parte.cantidad_pendiente : '' }}</td>
+                      <td align="right">{{ parte.cantidad_stock !== null ? parte.cantidad_stock : '' }}</td>
                     </tr>
                   </tbody>
                 </table>

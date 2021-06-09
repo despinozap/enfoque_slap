@@ -40,8 +40,8 @@
                   </tbody>
                   <tbody *ngIf="(loading === false)">
                       <tr *ngFor="let parte of partes">
-                          <td>{{ parte.nparte }}</td>
-                          <td>{{ parte.marca.name }}</td>
+                          <td align="center">{{ parte.nparte }}</td>
+                          <td align="center">{{ parte.marca.name }}</td>
                           <td align="center">
                               <a [routerLink]="['edit', parte.id]" class="btn-table btn btn-secondary" title="Editar"><i class="bx bx-edit-alt"></i></a>
                               <a [routerLink]="" (click)="removeParte(parte)" class="btn-table btn btn-secondary"title="Eliminar"><i class="bx bx-trash-alt"></i></a>

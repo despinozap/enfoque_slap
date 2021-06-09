@@ -46,13 +46,13 @@
                   </tbody>
                   <tbody *ngIf="(loading === false)">
                       <tr *ngFor="let proveedor of proveedores">
-                          <td>{{ proveedor.id }}</td>
-                          <td>{{ proveedor.rut }}</td>
-                          <td>{{ proveedor.name }}</td>
-                          <td>{{ proveedor.address }}</td>
-                          <td>{{ proveedor.city }}</td>
-                          <td>{{ proveedor.contact }}</td>
-                          <td>{{ proveedor.phone }}</td>
+                          <td align="center">{{ proveedor.id }}</td>
+                          <td align="center">{{ proveedor.rut }}</td>
+                          <td align="center">{{ proveedor.name }}</td>
+                          <td align="center">{{ proveedor.address }}</td>
+                          <td align="center">{{ proveedor.city }}</td>
+                          <td align="center">{{ proveedor.contact }}</td>
+                          <td align="center">{{ proveedor.phone }}</td>
                           <td align="center">
                               <a [routerLink]="['edit', proveedor.id]" class="btn-table btn btn-secondary"
                                   title="Editar"><i class="bx bx-edit-alt"></i></a>

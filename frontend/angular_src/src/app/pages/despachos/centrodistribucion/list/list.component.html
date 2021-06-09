@@ -49,12 +49,12 @@
           <tbody *ngIf="(loading === false)">
             <tr *ngFor="let despacho of despachos">
               <td align="center">{{ despacho.id }}</td>
-              <td>{{ dateStringFormat(despacho.fecha) }}</td>
+              <td align="center">{{ dateStringFormat(despacho.fecha) }}</td>
               <td align="center">{{ despacho.destinable.name }}</td>
               <td align="center">{{ despacho.ndocumento !== null ? despacho.ndocumento : '' }}</td>
               <td align="right">{{ despacho.partes_total }}</td>
               <td align="center">{{ despacho.responsable }}</td>
-              <td>{{ despacho.comentario !== null ? despacho.comentario : '' }}</td>
+              <td align="left">{{ despacho.comentario !== null ? despacho.comentario : '' }}</td>
               <td align="center">
                 <a [routerLink]="['details', despacho.id]" class="btn-table btn btn-secondary" title="Detalle"><i
                   class="bx bx-zoom-in"></i></a>
@@ -63,6 +63,15 @@
               </td>
             </tr>
           </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="8" align="left">
+                <button type="button" class="btn btn-outline-primary mr-2" (click)="goTo_newDespacho()" [disabled]="(loading === true)">
+                  <i class="bx bx-notepad font-size-16 align-middle"></i> Nuevo despacho
+                </button>
+              </td>
+            </tr>
+          </tfoot>
         </table>
 
       </div>

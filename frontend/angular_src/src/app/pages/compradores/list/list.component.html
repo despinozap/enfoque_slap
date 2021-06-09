@@ -43,8 +43,8 @@
                   </tbody>
                   <tbody *ngIf="(loading === false)">
                       <tr *ngFor="let comprador of compradores">
-                          <td>{{ comprador.id }}</td>
-                          <td>{{ comprador.name }}</td>
+                          <td align="center">{{ comprador.id }}</td>
+                          <td align="center">{{ comprador.name }}</td>
                           <td align="right">{{ comprador.proveedores.length }}</td>
                           <td align="center">
                               <a [routerLink]="[comprador.id, 'proveedores']" class="btn-table btn btn-secondary"

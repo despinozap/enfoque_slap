@@ -113,7 +113,7 @@ export class DespachosCompradorEditComponent implements OnInit {
             marca: parte.marca,
             cantidad_stock: parte.cantidad_stock,
             checked: false,
-            cantidad: 0,
+            cantidad: 1,
           });
 
           return carry;

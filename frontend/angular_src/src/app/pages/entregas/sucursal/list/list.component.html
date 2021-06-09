@@ -50,13 +50,13 @@
           <tbody *ngIf="(loading === false)">
             <tr *ngFor="let entrega of entregas">
               <td align="center">{{ entrega.id }}</td>
-              <td>{{ dateStringFormat(entrega.fecha) }}</td>
+              <td align="center">{{ dateStringFormat(entrega.fecha) }}</td>
               <td align="center">{{ entrega.oc.id }}</td>
               <td align="center">{{ entrega.oc.cotizacion.solicitud.faena.name }}</td>
               <td align="center">{{ entrega.ndocumento !== null ? entrega.ndocumento : '' }}</td>
               <td align="right">{{ entrega.partes_total }}</td>
               <td align="center">{{ entrega.responsable }}</td>
-              <td>{{ entrega.comentario !== null ? entrega.comentario : '' }}</td>
+              <td align="left">{{ entrega.comentario !== null ? entrega.comentario : '' }}</td>
               <td align="center">
                 <a [routerLink]="['details', entrega.id]" class="btn-table btn btn-secondary" title="Detalle"><i
                   class="bx bx-zoom-in"></i></a>
@@ -65,6 +65,15 @@
               </td>
             </tr>
           </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="9" align="left">
+                <button type="button" class="btn btn-outline-primary mr-2" (click)="goTo_newEntrega()" [disabled]="(loading === true)">
+                  <i class="bx bx-notepad font-size-16 align-middle"></i> Nueva entrega
+                </button>
+              </td>
+            </tr>
+          </tfoot>
         </table>
 
       </div>

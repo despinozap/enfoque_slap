@@ -1,4 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
 import { NotificationsService } from 'src/app/services/notifications.service';
@@ -47,6 +48,7 @@ export class RecepcionesCentrodistribucionListComponent implements OnInit {
   loading: boolean = false;
   
   constructor(
+    private router: Router,
     private _recepcionesService: RecepcionesService,
     private _utilsService: UtilsService
   ) { }
@@ -254,6 +256,10 @@ export class RecepcionesCentrodistribucionListComponent implements OnInit {
   
   public dateStringFormat(value: string): string {
     return this._utilsService.dateStringFormat(value);
+  }
+
+  public goTo_newRecepcion(): void {
+    this.router.navigate(['/panel/recepciones/centrodistribucion/create']);
   }
 
 }

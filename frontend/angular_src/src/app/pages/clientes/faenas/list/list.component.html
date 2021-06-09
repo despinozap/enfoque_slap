@@ -46,13 +46,13 @@
                   </tbody>
                   <tbody *ngIf="(loading === false)">
                       <tr *ngFor="let faena of faenas">
-                          <td>{{ faena.id }}</td>
-                          <td>{{ faena.rut }}</td>
-                          <td>{{ faena.name }}</td>
-                          <td>{{ faena.address }}</td>
-                          <td>{{ faena.city }}</td>
-                          <td>{{ faena.contact }}</td>
-                          <td>{{ faena.phone }}</td>
+                          <td align="center">{{ faena.id }}</td>
+                          <td align="center">{{ faena.rut }}</td>
+                          <td align="center">{{ faena.name }}</td>
+                          <td align="center">{{ faena.address }}</td>
+                          <td align="center">{{ faena.city }}</td>
+                          <td align="center">{{ faena.contact }}</td>
+                          <td align="center">{{ faena.phone }}</td>
                           <td align="center">
                               <a [routerLink]="['edit', faena.id]" class="btn-table btn btn-secondary"
                                   title="Editar"><i class="bx bx-edit-alt"></i></a>

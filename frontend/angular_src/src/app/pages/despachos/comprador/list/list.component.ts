@@ -1,4 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
 import { DespachosService } from 'src/app/services/despachos.service';
@@ -47,6 +48,7 @@ export class DespachosCompradorListComponent implements OnInit {
   loading: boolean = false;
   
   constructor(
+    private router: Router,
     private _despachosService: DespachosService,
     private _utilsService: UtilsService
   ) { }
@@ -254,6 +256,10 @@ export class DespachosCompradorListComponent implements OnInit {
   
   public dateStringFormat(value: string): string {
     return this._utilsService.dateStringFormat(value);
+  }
+
+  public goTo_newDespacho(): void {
+    this.router.navigate(['/panel/despachos/comprador/create']);
   }
 
 }

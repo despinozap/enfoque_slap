@@ -18,6 +18,10 @@ label.control-label {
   display: none; 
 }
 
+input[type="number"] {
+  text-align: center;
+}
+
 /*  DataTables */
 .dataTables_length .custom-select {
   padding: 4px 28px 4px 8px !important;

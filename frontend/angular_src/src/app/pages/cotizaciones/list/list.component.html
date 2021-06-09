@@ -64,11 +64,11 @@
                 </div>
               </td>
               <td align="center">{{ cotizacion.id }}</td>
-              <td>{{ dateStringFormat(cotizacion.created_at) }}</td>
-              <td>{{ cotizacion.solicitud.faena.cliente.name }}</td>
+              <td align="center">{{ dateStringFormat(cotizacion.created_at) }}</td>
+              <td align="center">{{ cotizacion.solicitud.faena.cliente.name }}</td>
               <!-- <td>{{ cotizacion.solicitud.faena.name }}</td> -->
-              <td>{{ cotizacion.solicitud.marca.name }}</td>
-              <td>{{ cotizacion.solicitud.user.name }}</td>
+              <td align="center">{{ cotizacion.solicitud.marca.name }}</td>
+              <td align="center">{{ cotizacion.solicitud.user.name }}</td>
               <td align="right">{{ cotizacion.partes_total }}</td>
               <td align="right">{{ cotizacion.dias }}</td>
               <td align="right">{{ "$" + moneyStringFormat(cotizacion.monto) }}</td>
