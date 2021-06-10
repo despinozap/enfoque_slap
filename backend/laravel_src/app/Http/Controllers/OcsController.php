@@ -399,6 +399,19 @@ class OcsController extends Controller
                             ]);
 
                             $parte->pivot->makeHidden(['oc']);
+
+                            $parte->pivot->cantidad_entregado = $parte->pivot->getCantidadEntregado();
+                            
+                            if($oc->cotizacion->solicitud->sucursal->type === 'centro')
+                            {
+                                // Calc cantidad stock with cantidad in Recepciones - cantidad in Entregas - cantidad in Despachos
+                                $parte->pivot->cantidad_stock = $parte->getCantidadRecepcionado($oc->cotizacion->solicitud->sucursal) - $parte->getCantidadEntregado($oc->cotizacion->solicitud->sucursal) - $parte->getCantidadDespachado($oc->cotizacion->solicitud->sucursal);
+                            }
+                            else if($oc->cotizacion->solicitud->sucursal->type === 'sucursal')
+                            {
+                                // Calc cantidad stock with cantidad in Recepciones - cantidad in Entregas
+                                $parte->pivot->cantidad_stock = $parte->getCantidadRecepcionado($oc->cotizacion->solicitud->sucursal) - $parte->getCantidadEntregado($oc->cotizacion->solicitud->sucursal);
+                            }                            
     
                             $parte->pivot->estadoocparte;
                             $parte->pivot->estadoocparte->makeHidden([
@@ -519,7 +532,7 @@ class OcsController extends Controller
             
                 $validatorRules = [
                     'nparte' => 'required|exists:partes,nparte',
-                    'cantidad.required' => 'Debes ingresar la cantidad para la parte',
+                    'cantidad' => 'required|numeric|min:1',
                     'backorder'  => 'required|boolean',
                 ];
 
@@ -579,19 +592,34 @@ class OcsController extends Controller
                         //     $parte->pivot->estadoocparte_id = 3; //Entregado
                         // }
                     
-                        if($parte->pivot->save())
+                        if($request->cantidad >= $parte->pivot->getCantidadEntregado())
                         {
-                            $response = HelpController::buildResponse(
-                                200,
-                                'Parte actualizada',
-                                null
-                            );
+                            if($parte->pivot->save())
+                            {
+                                $response = HelpController::buildResponse(
+                                    200,
+                                    'Parte actualizada',
+                                    null
+                                );
+                            }
+                            else
+                            {
+                                $response = HelpController::buildResponse(
+                                    500,
+                                    'Error al actualizar la parte en la OC',
+                                    null
+                                );
+                            }
                         }
                         else
                         {
                             $response = HelpController::buildResponse(
-                                500,
-                                'Error al actualizar la parte en la OC',
+                                400,
+                                [
+                                    "cantidad" => [
+                                        "La cantidad debe ser mayor o igual a la ya entregada"
+                                    ]
+                                ],
                                 null
                             );
                         }
@@ -619,7 +647,7 @@ class OcsController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al actualizar la parte en la OC [!]',
+                'Error al actualizar la parte en la OC [!]' . $e,
                 null
             );
         }
