@@ -183,6 +183,8 @@ export class OcsDetailsComponent implements OnInit {
             'nparte': p.nparte,
             'descripcion': p.pivot.descripcion,
             'cantidad': p.pivot.cantidad,
+            'cantidad_entregado': p.pivot.cantidad_entregado,
+            'cantidad_stock': p.pivot.cantidad_stock,
             'tiempoentrega': p.pivot.tiempoentrega,
             'backorder': p.pivot.backorder === 1 ? true : false,
             'updated_at': p.pivot.updated_at,

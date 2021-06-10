@@ -111,6 +111,9 @@
                   <th>Descripcion</th>
                   <th>Tiempo entrega</th>
                   <th>Dias estado</th>
+                  <th>Entregado</th>
+                  <th>Pendiente</th>
+                  <th>En stock</th>
                   <th>Estado</th>
                   <th>Opciones</th>
                 </tr>
@@ -123,7 +126,10 @@
                   <td align="right">{{ parte.tiempoentrega !== null ? parte.tiempoentrega + " dias" : "" }}</td>
                   <td align="right">{{ parte.statusdays !== null ? parte.statusdays + " dias" : ""
                     }}</td>
-                  <td align="right">{{ parte.estadoocparte_name !== null ? parte.estadoocparte_name : "" }}</td>
+                  <td align="right">{{ parte.cantidad_entregado !== null ? parte.cantidad_entregado : "" }}</td>
+                  <td align="right">{{ (parte.cantidad !== null) && (parte.cantidad_entregado !== null) ? (parte.cantidad - parte.cantidad_entregado) : "" }}</td>
+                  <td align="right">{{ parte.cantidad_stock !== null ? parte.cantidad_stock : "" }}</td>
+                  <td align="right">{{ (parte.cantidad_entregado === parte.cantidad) ? 'Entregado' : ( (parte.cantidad_entregado > 0) ? 'Parcial' : ( (parte.cantidad_stock === 0) ? 'Sin stock' : 'Pendiente' ) ) }}</td>
                   <td align="center">
                     <button (click)="goTo_updateParte(i)" [hidden]="(oc.estadooc_id !== 1) && (oc.estadooc_id !== 2)" class="btn-table btn btn-secondary" title="Editar"><i class="bx bx-edit-alt"></i></button>
                   </td>                  
@@ -131,7 +137,7 @@
               </tbody>
               <tfoot [hidden]="(oc.estadooc_id !== 1)"> <!-- It's only shown when Oc is still 'Pendiente' -->
                 <tr>
-                  <td colspan="7" align="left">
+                  <td colspan="9" align="left">
                     <button type="button" class="btn btn-outline-primary mr-2" (click)="goTo_darBaja()"
                         [disabled]="(loading === true)">
                       <i class="bx bx-unlink font-size-16 align-middle"></i> Dar OC de baja
