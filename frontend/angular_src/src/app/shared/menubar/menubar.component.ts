@@ -10,11 +10,10 @@ import { UtilsService } from 'src/app/services/utils.service';
 })
 export class MenubarComponent implements OnInit {
 
-  menu: any;
+  loggedUser: any = null;
 
   constructor(
     private _authService: AuthService,
-    private _utilsService: UtilsService
   ) { }
 
   ngOnInit(): void {
@@ -24,7 +23,7 @@ export class MenubarComponent implements OnInit {
       this._authService.loggedUser$.subscribe((data) => {
         if(data.receiver === this._authService.NOTIFICATION_RECEIVER_HOME)
         {
-          this.menu = this._utilsService.generateMenu(data.user.role_id);
+          this.loggedUser = data.user;
 
           this.cleanScripts();
           this.loadScript('assets/js/app.js');
