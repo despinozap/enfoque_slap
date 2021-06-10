@@ -520,10 +520,12 @@ class DatabaseSeeder extends Seeder
 
                 $solicitud->partes()->attach([ 
                     1 => [
-                        'cantidad' => rand(1, 300)
+                        'cantidad' => rand(1, 300),
+                        'descripcion' => 'DescriptionParte-Rand' . rand(100, 999)
                     ],
                     2 => [
-                        'cantidad' => rand(1, 300)
+                        'cantidad' => rand(1, 300),
+                        'descripcion' => 'DescriptionParte-Rand' . rand(100, 999)
                     ]
                 ]);
             } 
@@ -585,7 +587,7 @@ class DatabaseSeeder extends Seeder
                         foreach($solicitud->partes as $parte)
                         {
                             $syncData[$parte->id] =  array(
-                                'descripcion' => 'DescriptionParte-Rand' . rand(100, 999),
+                                'descripcion' => $parte->pivot->descripcion,
                                 'cantidad' => $parte->pivot->cantidad,
                                 'costo' => rand(1, 250),
                                 'margen' => rand(15, 75),
@@ -720,7 +722,7 @@ class DatabaseSeeder extends Seeder
                     $oc = new OC();
                     $oc->cotizacion_id = $cotizacion->id;
                     $oc->estadooc_id = 1; //Initial Estadooc
-                    $oc->noccliente = '1234';
+                    $oc->noccliente = rand(1000, 9999);
                     $oc->usdvalue = $cotizacion->usdvalue;
 
                     if($oc->save())
@@ -783,84 +785,204 @@ class DatabaseSeeder extends Seeder
         /*
          *  Solicitud American Parts, OC Interna: 228.SG
          */
-        // {
-        //     // Partes
-        //     $partes = array();
-        //     $parte = new Parte();
-        //     $parte->marca_id = 2;
-        //     $parte->nparte = '1987251121';
-        //     $item = [
-        //         'parte' => $parte,
-        //         'cantidad' => 2,
-        //         'descripcion' => 'BRACKET'
-        //     ];
-        //     array_push($partes, $item);
-        //     $parte = new Parte();
-        //     $parte->marca_id = 2;
-        //     $parte->nparte = '1986111250';
-        //     $item = [
-        //         'parte' => $parte,
-        //         'cantidad' => 2,
-        //         'descripcion' => 'BOLT'
-        //     ];
-        //     array_push($partes, $item);
-        //     $parte = new Parte();
-        //     $parte->marca_id = 2;
-        //     $parte->nparte = '5610782712';
-        //     $item = [
-        //         'parte' => $parte,
-        //         'cantidad' => 2,
-        //         'descripcion' => 'COVER'
-        //     ];
-        //     array_push($partes, $item);
-        //     $parte = new Parte();
-        //     $parte->marca_id = 2;
-        //     $parte->nparte = '5610782790';
-        //     $item = [
-        //         'parte' => $parte,
-        //         'cantidad' => 2,
-        //         'descripcion' => 'SCREW'
-        //     ];
-        //     array_push($partes, $item);
-        //     $parte = new Parte();
-        //     $parte->marca_id = 2;
-        //     $parte->nparte = '5615485771';
-        //     $item = [
-        //         'parte' => $parte,
-        //         'cantidad' => 1,
-        //         'descripcion' => 'MAT'
-        //     ];
-        //     array_push($partes, $item);
-        //     $parte = new Parte();
-        //     $parte->marca_id = 2;
-        //     $parte->nparte = '5615485780';
-        //     $item = [
-        //         'parte' => $parte,
-        //         'cantidad' => 1,
-        //         'descripcion' => 'MAT'
-        //     ];
-        //     array_push($partes, $item);
+        {
+            // Solicitud
+            {
+                // Partes
+                $partes = array();
+                $parte = new Parte();
+                $parte->marca_id = 2;
+                $parte->nparte = '1987251121';
+                $item = [
+                    'parte' => $parte,
+                    'cantidad' => 2,
+                    'descripcion' => 'BRACKET'
+                ];
+                array_push($partes, $item);
+                $parte = new Parte();
+                $parte->marca_id = 2;
+                $parte->nparte = '1986111250';
+                $item = [
+                    'parte' => $parte,
+                    'cantidad' => 2,
+                    'descripcion' => 'BOLT'
+                ];
+                array_push($partes, $item);
+                $parte = new Parte();
+                $parte->marca_id = 2;
+                $parte->nparte = '5610782712';
+                $item = [
+                    'parte' => $parte,
+                    'cantidad' => 2,
+                    'descripcion' => 'COVER'
+                ];
+                array_push($partes, $item);
+                $parte = new Parte();
+                $parte->marca_id = 2;
+                $parte->nparte = '5610782790';
+                $item = [
+                    'parte' => $parte,
+                    'cantidad' => 2,
+                    'descripcion' => 'SCREW'
+                ];
+                array_push($partes, $item);
+                $parte = new Parte();
+                $parte->marca_id = 2;
+                $parte->nparte = '5615485771';
+                $item = [
+                    'parte' => $parte,
+                    'cantidad' => 1,
+                    'descripcion' => 'MAT'
+                ];
+                array_push($partes, $item);
+                $parte = new Parte();
+                $parte->marca_id = 2;
+                $parte->nparte = '5615485780';
+                $item = [
+                    'parte' => $parte,
+                    'cantidad' => 1,
+                    'descripcion' => 'MAT'
+                ];
+                array_push($partes, $item);
+    
+                $solicitud = new Solicitud();
+                $solicitud->sucursal_id = 2; // American Parts (Antofagasta)
+                $solicitud->faena_id = 2;
+                $solicitud->marca_id = 2;
+                $solicitud->comprador_id = 1;
+                $solicitud->user_id = 2;
+                $solicitud->estadosolicitud_id = 1;
+                $solicitud->comentario = 'Esta es una solicitud que se ha creado para pruebas, basado en el caso real OC Interna: 228.SG';
+                $solicitud->save();
+    
+                foreach($partes as $item)
+                {
+                    $item['parte']->save();
+    
+                    $solicitud->partes()->attach([
+                        $item['parte']->id => [
+                            'cantidad' => $item['cantidad'],
+                            'descripcion' => $item['descripcion']
+                        ]
+                    ]);
+                }
+            }
 
-        //     $solicitud = new Solicitud();
-        //     $solicitud->faena_id = 2;
-        //     $solicitud->marca_id = 2;
-        //     $solicitud->comprador_id = 1;
-        //     $solicitud->user_id = 2;
-        //     $solicitud->estadosolicitud_id = 1;
-        //     $solicitud->comentario = 'Esta es una solicitud que se ha creado para pruebas, basado en el caso real OC Interna: 228.SG';
-        //     $solicitud->save();
+            // Cotizacion
+            {
+                $success = true;
+    
+                DB::beginTransaction();
 
-        //     foreach($partes as $item)
-        //     {
-        //         $item['parte']->save();
+                $solicitud->estadosolicitud_id = 3; // Cerrada
+                if($solicitud->save())
+                {
+                    $cotizacion = new Cotizacion();
+                    $cotizacion->solicitud_id = $solicitud->id;
+                    $cotizacion->estadocotizacion_id = 1; //Initial Estadocotizacion
+                    $cotizacion->usdvalue = 760;
 
-        //         $solicitud->partes()->attach([
-        //             $item['parte']->id => [
-        //                 'cantidad' => $item['cantidad'],
-        //                 'descripcion' => $item['descripcion']
-        //             ]
-        //         ]);
-        //     }
-        // }
+                    if($cotizacion->save())
+                    {
+                        //Attaching each Parte to the Cotizacion
+                        $syncData = [];
+                        foreach($solicitud->partes as $parte)
+                        {
+                            $syncData[$parte->id] =  array(
+                                'descripcion' => $parte->pivot->descripcion,
+                                'cantidad' => $parte->pivot->cantidad,
+                                'costo' => rand(1, 250),
+                                'margen' => rand(15, 75),
+                                'tiempoentrega' => rand(0, 40),
+                                'peso' => rand(5, 700),
+                                'flete' => rand(20, 100),
+                                'monto' => rand(2, 900),
+                                'backorder' => rand(0, 1),
+                            );
+                        }
+        
+                        // Fill partes in Cotizacion using all the partes in Solicitud
+                        if(!$cotizacion->partes()->sync($syncData))
+                        {
+                            $success = false;
+                        }
+                    }
+                    else
+                    {
+                        $success = false;
+                    }
+                }
+                else
+                {
+                    $success = false;
+                }
+    
+                if($success === true)
+                {
+                    DB::commit();
+                }
+                else
+                {
+                    DB::rollback();
+                }
+            }
+
+            // OC
+            {
+                DB::beginTransaction();
+
+                $cotizacion->estadocotizacion_id = 3; // Aprobada
+                $cotizacion->motivorechazo_id = null; // Removes Motivorechazo if it had
+
+                if($cotizacion->save())
+                {
+                    $oc = new OC();
+                    $oc->cotizacion_id = $cotizacion->id;
+                    $oc->noccliente = rand(1000, 9999);
+                    $oc->usdvalue = $cotizacion->usdvalue;
+                    $oc->estadooc_id = 2; // En proceso
+                    $oc->proveedor_id = 2; // Set proveedor
+                    $oc->motivobaja_id = null; // Removes Motivorechazo if it had
+
+                    if($oc->save())
+                    {
+                        //Attaching each Parte to the Cotizacion
+                        $syncData = [];
+
+                        foreach($cotizacion->partes as $parte)
+                        {
+                            $syncData[$parte->id] =  array(
+                                'estadoocparte_id' => 1, // Pendiente
+                                'descripcion' => $parte->pivot->descripcion,
+                                'cantidad' => $parte->pivot->cantidad,
+                                'tiempoentrega' => rand(1, 30),
+                                'backorder' => rand(0, 1)
+                            );
+                        }
+
+
+                        if($oc->partes()->sync($syncData))
+                        {
+                            DB::commit();
+                        }
+                        else
+                        {
+                            DB::rollback();
+                        }
+                        
+                    }
+                    else
+                    {
+                        DB::rollback();
+                    }
+                    
+                }
+                else
+                {
+                    DB::rollback();
+                }
+
+            }
+        }
     }
 }
