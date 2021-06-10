@@ -121,15 +121,15 @@
               <tbody>
                 <tr *ngFor="let parte of partes; index as i">
                   <td align="right">{{ parte.cantidad !== null ? parte.cantidad : "" }}</td>
-                  <td align="left"><i class="bx bx-timer icon-table" *ngIf="(parte.backorder === true)"></i>{{ parte.nparte !== null ? parte.nparte : "" }}</td>
-                  <td align="right">{{ parte.descripcion !== null ? parte.descripcion : "" }}</td>
+                  <td align="center"><i class="bx bx-timer icon-table" *ngIf="(parte.backorder === true)"></i>{{ parte.nparte !== null ? parte.nparte : "" }}</td>
+                  <td align="center">{{ parte.descripcion !== null ? parte.descripcion : "" }}</td>
                   <td align="right">{{ parte.tiempoentrega !== null ? parte.tiempoentrega + " dias" : "" }}</td>
                   <td align="right">{{ parte.statusdays !== null ? parte.statusdays + " dias" : ""
                     }}</td>
                   <td align="right">{{ parte.cantidad_entregado !== null ? parte.cantidad_entregado : "" }}</td>
                   <td align="right">{{ (parte.cantidad !== null) && (parte.cantidad_entregado !== null) ? (parte.cantidad - parte.cantidad_entregado) : "" }}</td>
                   <td align="right">{{ parte.cantidad_stock !== null ? parte.cantidad_stock : "" }}</td>
-                  <td align="right">{{ (parte.cantidad_entregado === parte.cantidad) ? 'Entregado' : ( (parte.cantidad_entregado > 0) ? 'Parcial' : ( (parte.cantidad_stock === 0) ? 'Sin stock' : 'Pendiente' ) ) }}</td>
+                  <td align="center">{{ (parte.cantidad_entregado === parte.cantidad) ? 'Entregado' : ( (parte.cantidad_entregado > 0) ? 'Parcial' : ( (parte.cantidad_stock === 0) ? 'Sin stock' : 'Pendiente' ) ) }}</td>
                   <td align="center">
                     <button (click)="goTo_updateParte(i)" [hidden]="(oc.estadooc_id !== 1) && (oc.estadooc_id !== 2)" class="btn-table btn btn-secondary" title="Editar"><i class="bx bx-edit-alt"></i></button>
                   </td>                  
