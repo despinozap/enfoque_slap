@@ -1,5 +1,29 @@
 /* You can add global styles to this file, and also import other style files */
 
+/*  Top header */
+.navbar-header .d-flex .navbar-brand-box .logo .logo-lg label {
+  color: #ffffff;
+  font-size: 24px;
+  line-height: 24px;
+  font-weight: bold;
+}
+
+/* Sidebar menu */
+#sidebar-menu .logo-container {
+  width: 100%;
+  text-align: center;
+}
+
+#sidebar-menu .logo-container .menu-logo {
+  width: 200px;
+  margin: auto;
+}
+
+.vertical-collpsed #sidebar-menu .logo-container {
+  /* Hides logo when vertical menu is collapsed */
+  display: none;
+}
+
 /*  Display forms */
 .badge {
   font-size: 90%;
