@@ -68,7 +68,7 @@ export class SolicitudesCompleteComponent implements OnInit {
     costo: new FormControl('', [Validators.min(0)]),
     margen: new FormControl('', [Validators.min(0)]),
     tiempoentrega: new FormControl('', [Validators.min(0)]),
-    peso: new FormControl('', [Validators.min(1)]),
+    peso: new FormControl('', [Validators.min(0)]),
     flete: new FormControl('', [Validators.min(0)]),
     monto: new FormControl('', [Validators.min(0)]),
     backorder: new FormControl(''),
@@ -772,7 +772,7 @@ export class SolicitudesCompleteComponent implements OnInit {
           'Costo (USD)',
           'Margen (%)',
           'Tiempo entrega (dias)',
-          'Peso (kg)',
+          'Peso (lb)',
           'Valor flete (USD)',
           'Monto (USD)',
           'Backorder (SI = 1, NO = 0)'
