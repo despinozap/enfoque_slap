@@ -10,7 +10,7 @@ class OcParte extends Pivot
     use HasFactory;
 
     protected $table = 'oc_parte';
-    protected $fillable = ['id'];
+    protected $fillable = ['id', 'descripcion', 'cantidad', 'tiempoentrega', 'backorder', 'estadoocparte_id'];
 
     public function oc()
     {

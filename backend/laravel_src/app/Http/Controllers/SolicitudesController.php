@@ -974,7 +974,7 @@ class SolicitudesController extends Controller
                     'partes.*.costo'  => 'nullable|numeric|min:0',
                     'partes.*.margen'  => 'nullable|numeric|min:0',
                     'partes.*.tiempoentrega'  => 'nullable|numeric|min:0',
-                    'partes.*.peso'  => 'nullable|numeric|min:1',
+                    'partes.*.peso'  => 'nullable|numeric|min:0',
                     'partes.*.flete'  => 'nullable|numeric|min:0',
                     'partes.*.monto'  => 'nullable|numeric|min:0',
                     'partes.*.backorder'  => 'required|boolean',

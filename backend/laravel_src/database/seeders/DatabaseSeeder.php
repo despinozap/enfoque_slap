@@ -214,6 +214,7 @@ class DatabaseSeeder extends Seeder
                 'solicitudes show',
                 'solicitudes update',
                 'solicitudes complete',
+                'solicitudes close',
                 'solicitudes destroy',
                 //Cotizaciones
                 'cotizaciones index',
