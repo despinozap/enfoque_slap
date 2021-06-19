@@ -21,6 +21,12 @@ export class FaenasEditComponent implements OnInit {
     name: null,
   };
 
+  sucursal: any = {
+    city: null
+  };
+
+  sucursales: any[] = [];
+
   private sub: any;
   private id: number = -1;
 
@@ -31,6 +37,7 @@ export class FaenasEditComponent implements OnInit {
     city: new FormControl('', [Validators.required, Validators.minLength(1)]),
     contact: new FormControl('', [Validators.required, Validators.minLength(1)]),
     phone: new FormControl('', [Validators.required, Validators.minLength(1)]),
+    sucursal: new FormControl('', [Validators.required]),
   });
   
   constructor(
@@ -55,13 +62,17 @@ export class FaenasEditComponent implements OnInit {
 
   private loadFormData(faenaData: any)
   {
-    this.cliente = faenaData.cliente;
-    this.faenaForm.controls.rut.setValue(faenaData.rut);
-    this.faenaForm.controls.name.setValue(faenaData.name);
-    this.faenaForm.controls.address.setValue(faenaData.address);
-    this.faenaForm.controls.city.setValue(faenaData.city);
-    this.faenaForm.controls.contact.setValue(faenaData.contact);
-    this.faenaForm.controls.phone.setValue(faenaData.phone);
+    this.cliente = faenaData.faena.cliente;
+    this.sucursales = faenaData.sucursales;
+
+    this.faenaForm.controls.rut.setValue(faenaData.faena.rut);
+    this.faenaForm.controls.name.setValue(faenaData.faena.name);
+    this.faenaForm.controls.address.setValue(faenaData.faena.address);
+    this.faenaForm.controls.city.setValue(faenaData.faena.city);
+    this.faenaForm.controls.contact.setValue(faenaData.faena.contact);
+    this.faenaForm.controls.phone.setValue(faenaData.faena.phone);
+    this.faenaForm.controls.sucursal.setValue(faenaData.faena.sucursal.id);
+    this.sucursal.city = faenaData.faena.sucursal.city;
   }
 
   public loadFaena(): void {
@@ -136,14 +147,15 @@ export class FaenasEditComponent implements OnInit {
     this.loading = true;
     this.responseErrors = [];
 
-    let faena: Faena = {
+    let faena: any = {
+      sucursal_id: this.faenaForm.value.sucursal,
       rut: this.faenaForm.value.rut,
       name: this.faenaForm.value.name,
       address: this.faenaForm.value.address,
       city: this.faenaForm.value.city,
       contact: this.faenaForm.value.contact,
       phone: this.faenaForm.value.phone
-    } as Faena;
+    };
     
     this._faenasService.updateFaena(this.cliente.id, this.id, faena)
     .subscribe(
@@ -219,6 +231,15 @@ export class FaenasEditComponent implements OnInit {
         this.loading = false;
       }
     );
+  }
+
+  public setSucursal(): void
+  {
+    let sucursal = this.sucursales.find((s) => {
+      return (s.id == this.faenaForm.value.sucursal);
+    });
+    
+    this.sucursal.city = sucursal.city;
   }
 
   public goTo_faenasList()

@@ -263,8 +263,8 @@ export class SolicitudesCompleteComponent implements OnInit {
                 parte.tiempoentrega = sheet[i][5] !== undefined ? sheet[i][5] : null;
                 parte.peso = sheet[i][6] !== undefined ? sheet[i][6] : null;
                 parte.flete = sheet[i][7] !== undefined ? sheet[i][7] : null;
-                parte.monto = sheet[i][8] !== undefined ? sheet[i][8] : null;
-                parte.backorder = (sheet[i][9] !== undefined) && (sheet[i][9] === 1) ? true : false;
+                parte.monto = this.calculateParteMonto(parte);
+                parte.backorder = (sheet[i][8] !== undefined) && (sheet[i][8] === 1) ? true : false;
                 parte.complete = this.isParteCompleted(index);
                 this.dataUpdated= true;
 
@@ -581,8 +581,7 @@ export class SolicitudesCompleteComponent implements OnInit {
           'tiempoentrega': row[5] !== undefined ? row[5] : null,
           'peso': row[6] !== undefined ? row[6] : null,
           'flete': row[7] !== undefined ? row[7] : null,
-          'monto': row[8] !== undefined ? row[8] : null,
-          'backorder': row[9] !== undefined ? row[9] : null,
+          'backorder': row[8] !== undefined ? row[8] : null,
         };
 
         if(parte.nparte !== null)
@@ -654,15 +653,6 @@ export class SolicitudesCompleteComponent implements OnInit {
               response.message = `La parte N°:${ parte.nparte } tiene valor de flete invalido`;
             }
           }
-
-          if(parte.monto !== null)
-          {
-            if((isNaN(parte.monto)) || (parte.monto < 0))
-            {
-              response.code = 0;
-              response.message = `La parte N°:${ parte.nparte } tiene monto invalido`;
-            }
-          }
           
           if(parte.backorder !== null)
           {
@@ -703,7 +693,7 @@ export class SolicitudesCompleteComponent implements OnInit {
     this.partes[this.parte_index].tiempoentrega = this.parteForm.value.tiempoentrega;
     this.partes[this.parte_index].peso = this.parteForm.value.peso;
     this.partes[this.parte_index].flete = this.parteForm.value.flete;
-    this.partes[this.parte_index].monto = this.parteForm.value.monto;
+    this.partes[this.parte_index].monto = this.calculateParteMonto(this.partes[this.parte_index]);
     this.partes[this.parte_index].backorder = this.parteForm.value.backorder;
     this.partes[this.parte_index].descripcion = this.parteForm.value.descripcion;
     this.partes[this.parte_index].complete = this.isParteCompleted(this.parte_index);
@@ -726,8 +716,7 @@ export class SolicitudesCompleteComponent implements OnInit {
           (this.partes[index].margen !== null) &&
           (this.partes[index].tiempoentrega !== null) &&
           (this.partes[index].peso !== null) &&
-          (this.partes[index].flete !== null) &&
-          (this.partes[index].monto !== null)
+          (this.partes[index].flete !== null)
       )
       {
         return true;
@@ -774,7 +763,6 @@ export class SolicitudesCompleteComponent implements OnInit {
           'Tiempo entrega (dias)',
           'Peso (lb)',
           'Valor flete (USD)',
-          'Monto (USD)',
           'Backorder (SI = 1, NO = 0)'
         ]
       );
@@ -790,12 +778,28 @@ export class SolicitudesCompleteComponent implements OnInit {
           p.tiempoentrega,
           p.peso,
           p.flete,
-          p.monto,
           (p.backorder === true) ? '1' : '0',
         ]);
       });
 
       this._utilsService.exportTableToExcel(data, `Solicitud_${ this.solicitud.id }-Partes`);
+    }
+  }
+
+  public calculateParteMonto(parte: any): number | null {
+    if(
+      (parte.cantidad !== null) &&
+      (parte.costo !== null) &&
+      (parte.margen !== null) &&
+      (parte.peso !== null) &&
+      (parte.flete !== null)
+    )
+    {
+      return (parte.costo * (1 + (parte.margen / 100))) + (parte.flete);
+    }
+    else
+    {
+      return null;
     }
   }
 
@@ -812,7 +816,6 @@ export class SolicitudesCompleteComponent implements OnInit {
     this.parteForm.controls.tiempoentrega.setValue(this.partes[this.parte_index].tiempoentrega);
     this.parteForm.controls.peso.setValue(this.partes[this.parte_index].peso);
     this.parteForm.controls.flete.setValue(this.partes[this.parte_index].flete);
-    this.parteForm.controls.monto.setValue(this.partes[this.parte_index].monto);
     this.parteForm.controls.descripcion.setValue(this.partes[this.parte_index].descripcion);
     this.parteForm.controls.backorder.setValue(this.partes[this.parte_index].backorder);
 

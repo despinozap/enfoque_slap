@@ -55,6 +55,7 @@ export class CotizacionesDetailsComponent implements OnInit {
     created_at: null,
     faena_name: null,
     usdvalue: null,
+    monto: null,
     // Details
     dias: -1,
     cliente_name: null,
@@ -183,6 +184,7 @@ export class CotizacionesDetailsComponent implements OnInit {
 
       // Details
       this.cotizacion.dias = cotizacionData.dias;
+      this.cotizacion.monto = cotizacionData.monto;
       this.cotizacion.cliente_name = cotizacionData.solicitud.faena.cliente.name;
       this.cotizacion.marca_name = cotizacionData.solicitud.marca.name;
       this.cotizacion.comprador_name = cotizacionData.solicitud.comprador.name;
@@ -331,9 +333,18 @@ export class CotizacionesDetailsComponent implements OnInit {
     // If report component was found
     if(this.reportCotizacion !== undefined)
     {
+      let partesClp = this.partes.map((parte: any) => 
+        {
+          let parteClp = {...parte}; // Clone the current part
+          parteClp.monto = parteClp.monto * this.cotizacion.usdvalue; // Assign new monto in CLP
+          
+          return parteClp;
+        }
+      );
+
       let reportData = {
         cotizacion: this.cotizacion,
-        partes: this.partes
+        partes: partesClp
       };
 
       // Set report data

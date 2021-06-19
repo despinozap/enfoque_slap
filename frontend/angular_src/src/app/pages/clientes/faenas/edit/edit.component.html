@@ -1,179 +1,178 @@
 <!-- start page title -->
 <div class="row">
-	<div class="col-12">
-			<div class="page-title-box d-flex align-items-center justify-content-between">
-					<h4 class="mb-0 font-size-18">Editar faena</h4>
+    <div class="col-12">
+        <div class="page-title-box d-flex align-items-center justify-content-between">
+            <h4 class="mb-0 font-size-18">Editar faena</h4>
 
-					<div class="page-title-right">
-							<ol class="breadcrumb m-0">
-									<li class="breadcrumb-item">Cliente</li>
-                  <li class="breadcrumb-item">Faena</li>
-									<li class="breadcrumb-item active">Editar faena</li>
-							</ol>
-					</div>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item">Cliente</li>
+                    <li class="breadcrumb-item">Faena</li>
+                    <li class="breadcrumb-item active">Editar faena</li>
+                </ol>
+            </div>
 
-			</div>
-	</div>
+        </div>
+    </div>
 </div>
 <!-- end page title -->
 
 <div class="row">
-	<div class="col-12">
-		<div class="card">
-			<div class="card-body">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
 
-				<h4 class="card-title">Editar faena</h4>
-				<p class="card-title-desc">Completa los siguientes campos para editar la faena de sistema</p>
+                <h4 class="card-title">Editar faena</h4>
+                <p class="card-title-desc">Completa los siguientes campos para editar la faena de sistema</p>
 
-				<form [formGroup]="faenaForm" (ngSubmit)="updateFaena()" action="#">
-					<div class="row">
-						<div class="col-6">
-							<div class="form-group">
-								<label class="control-label" for="rut">RUT</label>
-								<!-- Backend errors -->
-								<div class="alert alert-danger" *ngIf="(responseErrors.rut)">
-									<div *ngFor="let errorMessage of responseErrors.rut">{{ errorMessage }}</div>
-								</div>
-								<input type="text" class="form-control valid-control" name="rut" id="rut"
-									formControlName="rut">
-								<!-- Frontend errors -->
-								<div
-									*ngIf="(faenaForm.controls.rut.errors) && (faenaForm.controls.rut.touched) && (faenaForm.controls.rut.dirty)">
-									<div class="error-response" *ngIf="faenaForm.controls.rut.errors.required === true">
-										El RUT es obligatorio
-									</div>
-									<div class="error-response"
-										*ngIf="faenaForm.controls.rut.errors.minlength !== null">El RUT debe tener al
-										menos 1 caracter</div>
-								</div>
-							</div>
-						</div>
-						<div class="col-6">
-							<div class="form-group">
-								<label class="control-label" for="name">Nombre</label>
-								<!-- Backend errors -->
-								<div class="alert alert-danger" *ngIf="(responseErrors.name)">
-									<div *ngFor="let errorMessage of responseErrors.name">{{ errorMessage }}</div>
-								</div>
-								<input type="text" class="form-control valid-control" name="name" id="name"
-									formControlName="name">
-								<!-- Frontend errors -->
-								<div
-									*ngIf="(faenaForm.controls.name.errors) && (faenaForm.controls.name.touched) && (faenaForm.controls.name.dirty)">
-									<div class="error-response" *ngIf="faenaForm.controls.name.errors.required === true">
-										El nombre es obligatorio
-									</div>
-									<div class="error-response"
-										*ngIf="faenaForm.controls.name.errors.minlength !== null">El nombre debe tener al
-										menos 4 caracteres</div>
-								</div>
-							</div>
-						</div>
-						<div class="col-6">
-							<div class="form-group">
-								<label class="control-label" for="address">Direccion</label>
-								<!-- Backend errors -->
-								<div class="alert alert-danger" *ngIf="(responseErrors.address)">
-									<div *ngFor="let errorMessage of responseErrors.address">{{ errorMessage }}</div>
-								</div>
-								<input type="text" class="form-control valid-control" name="address" id="address"
-									formControlName="address">
-								<!-- Frontend errors -->
-								<div
-									*ngIf="(faenaForm.controls.address.errors) && (faenaForm.controls.address.touched) && (faenaForm.controls.address.dirty)">
-									<div class="error-response" *ngIf="faenaForm.controls.address.errors.required === true">
-										La direccion es obligatoria
-									</div>
-									<div class="error-response"
-										*ngIf="faenaForm.controls.address.errors.minlength !== null">La direccion debe tener al
-										menos 1 caracter</div>
-								</div>
-							</div>
-						</div>
-						<div class="col-6">
-							<div class="form-group">
-								<label class="control-label" for="city">Ciudad</label>
-								<!-- Backend errors -->
-								<div class="alert alert-danger" *ngIf="(responseErrors.city)">
-									<div *ngFor="let errorMessage of responseErrors.city">{{ errorMessage }}</div>
-								</div>
-								<input type="text" class="form-control valid-control" name="city" id="city"
-									formControlName="city">
-								<!-- Frontend errors -->
-								<div
-									*ngIf="(faenaForm.controls.city.errors) && (faenaForm.controls.city.touched) && (faenaForm.controls.city.dirty)">
-									<div class="error-response" *ngIf="faenaForm.controls.city.errors.required === true">
-										La ciudad es obligatoria
-									</div>
-									<div class="error-response"
-										*ngIf="faenaForm.controls.city.errors.minlength !== null">La ciudad debe tener al
-										menos 1 caracter</div>
-								</div>
-							</div>
-						</div>
-						<div class="col-6">
-							<div class="form-group">
-								<label class="control-label" for="contact">Contacto (nombre persona)</label>
-								<!-- Backend errors -->
-								<div class="alert alert-danger" *ngIf="(responseErrors.contact)">
-									<div *ngFor="let errorMessage of responseErrors.contact">{{ errorMessage }}</div>
-								</div>
-								<input type="text" class="form-control valid-control" name="contact" id="contact"
-									formControlName="contact">
-								<!-- Frontend errors -->
-								<div
-									*ngIf="(faenaForm.controls.contact.errors) && (faenaForm.controls.contact.touched) && (faenaForm.controls.contact.dirty)">
-									<div class="error-response" *ngIf="faenaForm.controls.contact.errors.required === true">
-										El contacto es obligatorio
-									</div>
-									<div class="error-response"
-										*ngIf="faenaForm.controls.contact.errors.minlength !== null">El contacto debe tener al
-										menos 1 caracter</div>
-								</div>
-							</div>
-						</div>
-						<div class="col-6">
-							<div class="form-group">
-								<label class="control-label" for="phone">Telefono</label>
-								<!-- Backend errors -->
-								<div class="alert alert-danger" *ngIf="(responseErrors.phone)">
-									<div *ngFor="let errorMessage of responseErrors.phone">{{ errorMessage }}</div>
-								</div>
-								<input type="text" class="form-control valid-control" name="phone" id="phone"
-									formControlName="phone">
-								<!-- Frontend errors -->
-								<div
-									*ngIf="(faenaForm.controls.phone.errors) && (faenaForm.controls.phone.touched) && (faenaForm.controls.phone.dirty)">
-									<div class="error-response" *ngIf="faenaForm.controls.phone.errors.required === true">
-										El telefono es obligatorio
-									</div>
-									<div class="error-response"
-										*ngIf="faenaForm.controls.phone.errors.minlength !== null">El telefono debe tener al
-										menos 1 caracter</div>
-								</div>
-							</div>
-						</div>
-						<div class="col-12">
-							<div class="form-buttons mt-2">
-								<button type="submit" class="btn btn-primary mr-2"
-									[disabled]="(faenaForm.invalid) || (loading === true)">
+                <form [formGroup]="faenaForm" (ngSubmit)="updateFaena()" action="#">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label class="control-label" for="rut">RUT</label>
+                                <!-- Backend errors -->
+                                <div class="alert alert-danger" *ngIf="(responseErrors.rut)">
+                                    <div *ngFor="let errorMessage of responseErrors.rut">{{ errorMessage }}</div>
+                                </div>
+                                <input type="text" class="form-control valid-control" name="rut" id="rut" formControlName="rut">
+                                <!-- Frontend errors -->
+                                <div *ngIf="(faenaForm.controls.rut.errors) && (faenaForm.controls.rut.touched) && (faenaForm.controls.rut.dirty)">
+                                    <div class="error-response" *ngIf="faenaForm.controls.rut.errors.required === true">
+                                        El RUT es obligatorio
+                                    </div>
+                                    <div class="error-response" *ngIf="faenaForm.controls.rut.errors.minlength !== null">El RUT debe tener al menos 1 caracter</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label class="control-label" for="name">Nombre</label>
+                                <!-- Backend errors -->
+                                <div class="alert alert-danger" *ngIf="(responseErrors.name)">
+                                    <div *ngFor="let errorMessage of responseErrors.name">{{ errorMessage }}</div>
+                                </div>
+                                <input type="text" class="form-control valid-control" name="name" id="name" formControlName="name">
+                                <!-- Frontend errors -->
+                                <div *ngIf="(faenaForm.controls.name.errors) && (faenaForm.controls.name.touched) && (faenaForm.controls.name.dirty)">
+                                    <div class="error-response" *ngIf="faenaForm.controls.name.errors.required === true">
+                                        El nombre es obligatorio
+                                    </div>
+                                    <div class="error-response" *ngIf="faenaForm.controls.name.errors.minlength !== null">El nombre debe tener al menos 4 caracteres</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label class="control-label" for="address">Direccion</label>
+                                <!-- Backend errors -->
+                                <div class="alert alert-danger" *ngIf="(responseErrors.address)">
+                                    <div *ngFor="let errorMessage of responseErrors.address">{{ errorMessage }}</div>
+                                </div>
+                                <input type="text" class="form-control valid-control" name="address" id="address" formControlName="address">
+                                <!-- Frontend errors -->
+                                <div *ngIf="(faenaForm.controls.address.errors) && (faenaForm.controls.address.touched) && (faenaForm.controls.address.dirty)">
+                                    <div class="error-response" *ngIf="faenaForm.controls.address.errors.required === true">
+                                        La direccion es obligatoria
+                                    </div>
+                                    <div class="error-response" *ngIf="faenaForm.controls.address.errors.minlength !== null">La direccion debe tener al menos 1 caracter</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label class="control-label" for="city">Ciudad</label>
+                                <!-- Backend errors -->
+                                <div class="alert alert-danger" *ngIf="(responseErrors.city)">
+                                    <div *ngFor="let errorMessage of responseErrors.city">{{ errorMessage }}</div>
+                                </div>
+                                <input type="text" class="form-control valid-control" name="city" id="city" formControlName="city">
+                                <!-- Frontend errors -->
+                                <div *ngIf="(faenaForm.controls.city.errors) && (faenaForm.controls.city.touched) && (faenaForm.controls.city.dirty)">
+                                    <div class="error-response" *ngIf="faenaForm.controls.city.errors.required === true">
+                                        La ciudad es obligatoria
+                                    </div>
+                                    <div class="error-response" *ngIf="faenaForm.controls.city.errors.minlength !== null">La ciudad debe tener al menos 1 caracter</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label class="control-label" for="contact">Contacto (nombre persona)</label>
+                                <!-- Backend errors -->
+                                <div class="alert alert-danger" *ngIf="(responseErrors.contact)">
+                                    <div *ngFor="let errorMessage of responseErrors.contact">{{ errorMessage }}</div>
+                                </div>
+                                <input type="text" class="form-control valid-control" name="contact" id="contact" formControlName="contact">
+                                <!-- Frontend errors -->
+                                <div *ngIf="(faenaForm.controls.contact.errors) && (faenaForm.controls.contact.touched) && (faenaForm.controls.contact.dirty)">
+                                    <div class="error-response" *ngIf="faenaForm.controls.contact.errors.required === true">
+                                        El contacto es obligatorio
+                                    </div>
+                                    <div class="error-response" *ngIf="faenaForm.controls.contact.errors.minlength !== null">El contacto debe tener al menos 1 caracter</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label class="control-label" for="phone">Telefono</label>
+                                <!-- Backend errors -->
+                                <div class="alert alert-danger" *ngIf="(responseErrors.phone)">
+                                    <div *ngFor="let errorMessage of responseErrors.phone">{{ errorMessage }}</div>
+                                </div>
+                                <input type="text" class="form-control valid-control" name="phone" id="phone" formControlName="phone">
+                                <!-- Frontend errors -->
+                                <div *ngIf="(faenaForm.controls.phone.errors) && (faenaForm.controls.phone.touched) && (faenaForm.controls.phone.dirty)">
+                                    <div class="error-response" *ngIf="faenaForm.controls.phone.errors.required === true">
+                                        El telefono es obligatorio
+                                    </div>
+                                    <div class="error-response" *ngIf="faenaForm.controls.phone.errors.minlength !== null">El telefono debe tener al menos 1 caracter</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label class="control-label">Sucursal de entrega</label>
+                                <!-- Backend errors -->
+                                <div class="alert alert-danger" *ngIf="(responseErrors.sucursal_id)">
+                                    <div *ngFor="let errorMessage of responseErrors.sucursal_id">{{ errorMessage }}</div>
+                                </div>
+                                <select class="form-control" name="sucursal" id="sucursal" formControlName="sucursal" (change)="setSucursal()">
+																		<option *ngFor="let sucursal of sucursales" [value]="sucursal.id">{{ sucursal.name }}</option>
+																</select>
+                                <!-- Frontend errors -->
+                                <div *ngIf="(faenaForm.controls.sucursal.errors) && (faenaForm.controls.sucursal.touched) && (faenaForm.controls.sucursal.dirty)">
+                                    <div class="error-response" *ngIf="faenaForm.controls.sucursal.errors.required === true">Debes seleccionar la sucursal
+                                    </div>
+                                    <div class="error-response" *ngIf="faenaForm.controls.sucursal.errors.minlength !== null">La sucursal debe ser valida</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label class="control-label">Ciudad de entrega</label>
+                                <br>
+                                <label>{{ sucursal.city !== null ? sucursal.city : '' }}</label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-buttons mt-2">
+                                <button type="submit" class="btn btn-primary mr-2" [disabled]="(faenaForm.invalid) || (loading === true)">
 									<span *ngIf="loading === true"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
 									<span *ngIf="loading === false">Guardar</span>
 								</button>
-								<button [disabled]="(loading === true)" class="btn btn-light"
-									(click)="goTo_faenasList()">
+                                <button [disabled]="(loading === true)" class="btn btn-light" (click)="goTo_faenasList()">
 									<span>Cancelar</span>
 								</button>
-							</div>
-						</div>
-					</div>
+                            </div>
+                        </div>
+                    </div>
 
-				</form>
+                </form>
 
-			</div>
-		</div>
-		<!-- end select2 -->
+            </div>
+        </div>
+        <!-- end select2 -->
 
-	</div>
+    </div>
 </div>
 <!-- end row -->

@@ -267,6 +267,7 @@ export class CotizacionesListComponent implements OnInit, AfterViewInit {
         updated_at: null,
         faena_name: null,
         // Details
+        usdvalue: null,
         dias: -1,
         currentdate: null,
         cliente_name: null,
@@ -300,6 +301,7 @@ export class CotizacionesListComponent implements OnInit, AfterViewInit {
         cotizacion.faena_name = cotizacionData.solicitud.faena.name;
 
         // Details
+        cotizacion.usdvalue = cotizacionData.usdvalue;
         cotizacion.dias = cotizacionData.dias;
         cotizacion.cliente_name = cotizacionData.solicitud.faena.cliente.name;
         cotizacion.marca_name = cotizacionData.solicitud.marca.name;
@@ -380,9 +382,18 @@ export class CotizacionesListComponent implements OnInit, AfterViewInit {
     {
       this.showReportStatus(`Construyendo reporte de Cotización #${cotizacion.id}`);
 
+      let partesClp = cotizacion.partes.map((parte: any) => 
+        {
+          let parteClp = {...parte}; // Clone the current part
+          parteClp.monto = parteClp.monto * cotizacion.usdvalue; // Assign new monto in CLP
+          
+          return parteClp;
+        }
+      );
+
       let reportData = {
         cotizacion: cotizacion,
-        partes: cotizacion.partes
+        partes: partesClp
       };
 
       // Set report data

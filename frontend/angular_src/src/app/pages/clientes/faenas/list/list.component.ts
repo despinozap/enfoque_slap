@@ -79,8 +79,8 @@ export class FaenasListComponent implements OnInit {
 
   private loadFormData(clienteData: any)
   {
-    this.cliente.name = clienteData.name;
-    this.faenas = clienteData.faenas;
+    this.cliente.name = clienteData.cliente.name;
+    this.faenas = clienteData.cliente.faenas;
   }
 
   public loadCliente(): void {

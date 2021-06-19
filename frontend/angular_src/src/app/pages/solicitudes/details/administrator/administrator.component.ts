@@ -312,7 +312,6 @@ export class SolicitudesDetailsAdministratorComponent implements OnInit {
         'Tiempo entrega (dias)',
         'Peso (lb)',
         'Valor flete (USD)',
-        'Monto (USD)',
         'Backorder (SI = 1, NO = 0)'
       ]
     );
@@ -328,7 +327,6 @@ export class SolicitudesDetailsAdministratorComponent implements OnInit {
         p.tiempoentrega,
         p.peso,
         p.flete,
-        p.monto,
         (p.backorder === true) ? '1' : '0',
       ]);
     });

@@ -18,7 +18,12 @@ export class FaenasCreateComponent implements OnInit {
     name: null,
   };
 
+  sucursal: any = {
+    city: null
+  };
+
   faenas: any[] = [];
+  sucursales: any[] = [];
   loading: boolean = false;
   responseErrors: any = [];
 
@@ -31,6 +36,7 @@ export class FaenasCreateComponent implements OnInit {
     city: new FormControl('', [Validators.required, Validators.minLength(1)]),
     contact: new FormControl('', [Validators.required, Validators.minLength(1)]),
     phone: new FormControl('', [Validators.required, Validators.minLength(1)]),
+    sucursal: new FormControl('', [Validators.required]),
   });
 
   constructor(
@@ -53,8 +59,9 @@ export class FaenasCreateComponent implements OnInit {
 
   private loadFormData(clienteData: any)
   {
-    this.cliente.name = clienteData.name;
-    this.faenas = clienteData.faenas;
+    this.cliente.name = clienteData.cliente.name;
+    this.faenas = clienteData.cliente.faenas;
+    this.sucursales = clienteData.sucursales;
   }
 
   public loadCliente(): void {
@@ -128,14 +135,15 @@ export class FaenasCreateComponent implements OnInit {
     this.loading = true;
     this.responseErrors = [];
 
-    let faena: Faena = {
+    let faena: any = {
+      sucursal_id: this.faenaForm.value.sucursal,
       rut: this.faenaForm.value.rut,
       name: this.faenaForm.value.name,
       address: this.faenaForm.value.address,
       city: this.faenaForm.value.city,
       contact: this.faenaForm.value.contact,
       phone: this.faenaForm.value.phone
-    } as Faena;
+    };
 
     this._faenasService.storeFaena(this.cliente.id, faena)
     .subscribe(
@@ -208,6 +216,15 @@ export class FaenasCreateComponent implements OnInit {
         this.loading = false;
       }
     );
+  }
+
+  public setSucursal(): void
+  {
+    let sucursal = this.sucursales.find((s) => {
+      return (s.id == this.faenaForm.value.sucursal);
+    });
+    
+    this.sucursal.city = sucursal.city;
   }
 
   public goTo_faenasList(): void {

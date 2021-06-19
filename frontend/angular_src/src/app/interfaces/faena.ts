@@ -6,5 +6,5 @@ export interface Faena {
   city: string,
   contact: string,
   phone: string,
-  cliente: any
+  cliente: any,
 }

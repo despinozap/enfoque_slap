@@ -105,7 +105,7 @@
                                 <td align="right">{{ parte.flete !== null ? "$" + moneyStringFormat(parte.flete) : parte.flete }}</td>
                                 <td align="right">{{ parte.tiempoentrega !== null ? parte.tiempoentrega + " dias" : parte.tiempoentrega }}
                                 </td>
-                                <td align="right">{{ parte.monto !== null ? "$" + moneyStringFormat(parte.monto) : parte.monto }}</td>
+                                <td align="right">{{ parte.monto !== null ? "$" + moneyStringFormat(parte.monto * parte.cantidad) : '' }}</td>
                                 <td align="center">
                                     <button (click)="goTo_updateParte(i)" class="btn-table btn btn-secondary" title="Editar"><i class="bx bx-edit-alt"></i></button>
                                 </td>
@@ -237,17 +237,6 @@
 
                         <div class="col-4">
                             <div class="form-group">
-                                <label for="monto">Monto (en USD)</label>
-                                <input type="number" class="form-control valid-control" name="monto" id="monto" formControlName="monto">
-                                <!-- Frontend errors -->
-                                <div *ngIf="(parteForm.controls.monto.errors) && (parteForm.controls.monto.touched) && (parteForm.controls.monto.dirty)">
-                                    <div class="error-response" *ngIf="parteForm.controls.monto.errors.min !== null">EL monto debe ser igual o mayor a 0</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-12">
-                            <div class="form-group">
                                 <label for="backorder">Backorder</label>
                                 <div class="custom-control custom-checkbox mb-3">
                                     <input type="checkbox" class="custom-control-input" id="backorder" name="backorder" formControlName="backorder">
@@ -259,13 +248,13 @@
                         <div class="col-12">
                             <div class="form-group">
                                 <button type="submit" [disabled]="(parteForm.invalid) || (loading === true)" class="btn btn-primary mr-2">
-                  <span *ngIf="loading === true"><i
-                        class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
-                  <span *ngIf="loading === false">Guardar</span>
-                </button>
+                                <span *ngIf="loading === true"><i
+                                        class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
+                                <span *ngIf="loading === false">Guardar</span>
+                                </button>
                                 <button type="button" class="btn btn-outline-primary" (click)="goTo_completeSolicitud();">
-                  Cancelar
-                </button>
+                                    Cancelar
+                                </button>
                             </div>
                         </div>
 

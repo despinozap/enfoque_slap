@@ -1,11 +1,15 @@
 .btn-right {
-  position: absolute;
-  right: 1.25rem;
-  margin-top: 0rem;
-  margin-right: 0rem;
+    position: absolute;
+    right: 1.25rem;
+    margin-top: 0rem;
+    margin-right: 0rem;
 }
 
 app-pdf-cotizacion {
-  position: absolute;
-  top: -2000px;
+    position: absolute;
+    top: -2000px;
+}
+
+table tr.row-total td {
+    font-weight: bold;
 }
