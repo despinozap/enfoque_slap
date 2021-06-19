@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Cliente;
+use App\Models\Sucursal;
 use Auth;
 
 class ClientesController extends Controller
@@ -40,7 +41,14 @@ class ClientesController extends Controller
                         $cliente->faenas;
                         $cliente->faenas = $cliente->faenas->filter(function($faena)
                         {
-                            return $faena->makeHidden(['cliente_id', 'created_at', 'updated_at']);
+                            $faena->makeHidden([
+                                'cliente_id',
+                                'sucursal_id',
+                                'created_at', 
+                                'updated_at'
+                            ]);
+                            
+                            return $faena;
                         });
 
                         return $cliente;
@@ -205,15 +213,66 @@ class ClientesController extends Controller
                     $cliente->faenas;
                     $cliente->faenas = $cliente->faenas->filter(function($faena)
                     {
-                        return $faena->makeHidden(['cliente_id', 'created_at', 'updated_at']);
+                        $faena->makeHidden([
+                            'cliente_id',
+                            'sucursal_id',
+                            'created_at', 
+                            'updated_at'
+                        ]);
+
+                        $faena->sucursal;
+                        $faena->sucursal->makeHidden([
+                            'type',
+                            'rut',
+                            'address',
+                            'country_id',
+                            'created_at',
+                            'updated_at'
+                        ]);
+                        
+                        return $faena;
                     });
 
-                    
-                    $response = HelpController::buildResponse(
-                        200,
-                        null,
-                        $cliente
-                    );
+                    $sucursales = Sucursal::where('country_id', '=', $cliente->country_id)->get();
+                    if($sucursales !== null)
+                    {
+                        $sucursales = $sucursales->filter(function($sucursal)
+                        {
+                            $sucursal->makeHidden([
+                                'type',
+                                'rut',
+                                'address',
+                                'country',
+                                'country_id',
+                                'created_at', 
+                                'updated_at'
+                            ]);
+
+                            $sucursal->country;
+                            $sucursal->country->makeHidden(['created_at', 'updated_at']);
+
+                            return $sucursal;
+                        });
+
+                        $data = [
+                            "cliente" => $cliente,
+                            "sucursales" => $sucursales,
+                        ];
+    
+                        $response = HelpController::buildResponse(
+                            200,
+                            null,
+                            $data
+                        );
+                    }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            500,
+                            'Error al obtener la lista de sucursales',
+                            null
+                        );
+                    }
                 }   
                 else     
                 {

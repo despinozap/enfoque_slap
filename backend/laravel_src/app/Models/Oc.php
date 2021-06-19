@@ -15,31 +15,30 @@ class Oc extends Model
     protected $fillable = [
         'cotizacion_id', 'proveedor_id', 'filedata_id', 'estadooc_id', 'noccliente', 'usdvalue',
     ];
-    public $appends = ['partes_total', 'dias'];
+    public $appends = ['partes_total', 'dias', 'monto'];
 
-    public function setMontoAttribute($value)
-    {
-        $this->attributes['monto'] = $value;
-    }
-
-    public function getUsdMontoAttribute()
+    public function getMontoAttribute()
     {
         // Partes ID's
-        $partesIds = $this->partes->reduce(function($carry, $cparte)
+        $partesOc = $this->partes->reduce(function($carry, $cparte)
             { 
-                array_push($carry, $cparte->id); 
+                $carry[$cparte->id] = $cparte->pivot->cantidad;
+                // array_push(
+                //     $carry, 
+                //     $cparte->id => $cparte->pivot->cantidad
+                // ); 
             
                 return $carry; 
             }, 
             // Initial empty array
-            array()
+            []
         );
         
         // For all the Cotizacion partes match ID's with OC partes
-        $amount = $this->cotizacion->partes->whereIn('id', $partesIds)->reduce(function($carry, $parte) 
+        $amount = $this->cotizacion->partes->whereIn('id', array_keys($partesOc))->reduce(function($carry, $parte) use ($partesOc)
             { 
-                // Adds the monto field multiplied by cantidad
-                return $carry += ($parte->pivot->monto * $parte->pivot->cantidad); 
+                // Adds the monto field from Cotizacion multiplied by cantidad in OC
+                return $carry += ($parte->pivot->monto * $partesOc[$parte->id]); 
             }, 
             // Initial value
             0

@@ -8,6 +8,7 @@ use Auth;
 
 use App\Models\Faena;
 use App\Models\Cliente;
+use App\Models\Sucursal;
 
 class FaenasController extends Controller
 {
@@ -62,6 +63,17 @@ class FaenasController extends Controller
                     {
                         $faena->makeHidden([
                             'cliente_id',
+                            'sucursal_id',
+                            'created_at',
+                            'updated_at'
+                        ]);
+
+                        $faena->sucursal;
+                        $faena->sucursal->makeHidden([
+                            'type',
+                            'rut',
+                            'address',
+                            'country_id',
                             'created_at',
                             'updated_at'
                         ]);
@@ -121,18 +133,21 @@ class FaenasController extends Controller
             $user = Auth::user();
             if($user->role->hasRoutepermission('faenas store'))
             {
-                $validatorInput = $request->only('rut', 'name', 'address', 'city', 'contact', 'phone');
+                $validatorInput = $request->only('sucursal_id', 'rut', 'name', 'address', 'city', 'contact', 'phone');
             
                 $validatorRules = [
+                    'sucursal_id' => 'required|exists:sucursales,id',
                     'rut' => 'required|min:1',
                     'name' => 'required|min:4',
                     'address' => 'required|min:1',
                     'city' => 'required|min:1',
                     'contact' => 'required|min:1',
-                    'phone' => 'required|min:1'
+                    'phone' => 'required|min:1',
                 ];
 
                 $validatorMessages = [
+                    'sucursal_id.required' => 'Debes seleccionar una sucursal',
+                    'sucursal_id.exists' => 'La sucursal ingresada no existe',
                     'rut.required' => 'Debes ingresar el RUT',
                     'rut.min' => 'El RUT debe tener al menos 1 caracter',
                     'name.required' => 'Debes ingresar el nombre',
@@ -161,11 +176,23 @@ class FaenasController extends Controller
                         null
                     );
                 }
-                else if(!Cliente::find($cliente_id))
+                else if(!($cliente = Cliente::find($cliente_id)))
                 {
                     $response = HelpController::buildResponse(
                         412,
                         'El cliente no existe',
+                        null
+                    );
+                }
+                else if(!($sucursal = Sucursal::where('id', '=', $request->sucursal_id)->where('country_id', '=', $cliente->country_id)->first()))
+                {
+                    $response = HelpController::buildResponse(
+                        400,
+                        [
+                            'sucursal_id' => [
+                                'La sucursal de entrega debe estar en el mismo pais del cliente'
+                            ]
+                        ],
                         null
                     );
                 }
@@ -197,7 +224,7 @@ class FaenasController extends Controller
                 {
                     $faena = new Faena();
                     $faena->fill($request->all());
-                    $faena->cliente_id = $cliente_id;
+                    $faena->cliente_id = $cliente->id;
                     
                     if($faena->save())
                     {
@@ -251,12 +278,13 @@ class FaenasController extends Controller
             $user = Auth::user();
             if($user->role->hasRoutepermission('faenas show'))
             {
-                if(Cliente::find($cliente_id))
+                if($cliente = Cliente::find($cliente_id))
                 {
                     if($faena = Faena::find($id))
                     {
                         $faena->makeHidden([
                             'cliente_id',
+                            'sucursal_id',
                             'created_at', 
                             'updated_at'
                         ]);
@@ -268,11 +296,56 @@ class FaenasController extends Controller
                             'updated_at'
                         ]);
 
-                        $response = HelpController::buildResponse(
-                            200,
-                            null,
-                            $faena
-                        );
+                        $faena->sucursal;
+                        $faena->sucursal->makeHidden([
+                            'type',
+                            'rut',
+                            'address',
+                            'country_id',
+                            'created_at',
+                            'updated_at'
+                        ]);
+
+                        $sucursales = Sucursal::where('country_id', '=', $cliente->country_id)->get();
+                        if($sucursales !== null)
+                        {
+                            $sucursales = $sucursales->filter(function($sucursal)
+                            {
+                                $sucursal->makeHidden([
+                                    'type',
+                                    'rut',
+                                    'address',
+                                    'country',
+                                    'country_id',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+
+                                $sucursal->country;
+                                $sucursal->country->makeHidden(['created_at', 'updated_at']);
+
+                                return $sucursal;
+                            });
+
+                            $data = [
+                                "faena" => $faena,
+                                "sucursales" => $sucursales,
+                            ];
+        
+                            $response = HelpController::buildResponse(
+                                200,
+                                null,
+                                $data
+                            );
+                        }
+                        else
+                        {
+                            $response = HelpController::buildResponse(
+                                500,
+                                'Error al obtener la lista de sucursales',
+                                null
+                            );
+                        }
                     }   
                     else     
                     {
@@ -305,7 +378,7 @@ class FaenasController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al obtener la faena [!]',
+                'Error al obtener la faena [!]' .$e,
                 null
             );
         }
@@ -338,9 +411,10 @@ class FaenasController extends Controller
             $user = Auth::user();
             if($user->role->hasRoutepermission('faenas update'))
             {
-                $validatorInput = $request->only('rut', 'name', 'address', 'city', 'contact', 'phone');
+                $validatorInput = $request->only('sucursal_id', 'rut', 'name', 'address', 'city', 'contact', 'phone');
             
                 $validatorRules = [
+                    'sucursal_id' => 'required|exists:sucursales,id',
                     'rut' => 'required|min:1',
                     'name' => 'required|min:4',
                     'address' => 'required|min:1',
@@ -352,6 +426,8 @@ class FaenasController extends Controller
                 $validatorMessages = [
                     'cliente_id.required' => 'Debes seleccionar el cliente',
                     'cliente_id.exists' => 'El cliente ingresado no existe',
+                    'sucursal_id.required' => 'Debes seleccionar una sucursal',
+                    'sucursal_id.exists' => 'La sucursal ingresada no existe',
                     'rut.required' => 'Debes ingresar el RUT',
                     'rut.min' => 'El RUT debe tener al menos 1 caracter',
                     'name.required' => 'Debes ingresar el nombre',
@@ -380,11 +456,23 @@ class FaenasController extends Controller
                         null
                     );
                 }
-                else if(($cliente = Cliente::find($cliente_id)) === null)
+                else if(!($cliente = Cliente::find($cliente_id)))
                 {
                     $response = HelpController::buildResponse(
                         412,
                         'El cliente no existe',
+                        null
+                    );
+                }
+                else if(!($sucursal = Sucursal::where('id', '=', $request->sucursal_id)->where('country_id', '=', $cliente->country_id)->first()))
+                {
+                    $response = HelpController::buildResponse(
+                        400,
+                        [
+                            'sucursal_id' => [
+                                'La sucursal de entrega debe estar en el mismo pais del cliente'
+                            ]
+                        ],
                         null
                     );
                 }

@@ -433,6 +433,7 @@ class DatabaseSeeder extends Seeder
         */
         $faena = new Faena();
         $faena->cliente_id = 1;
+        $faena->sucursal_id = 1; // Delivered at
         $faena->rut = 'RutTest01';
         $faena->name = 'FaenaTest01';
         $faena->address = 'FaenaAddressTest01';
@@ -442,6 +443,7 @@ class DatabaseSeeder extends Seeder
         $faena->save();
         $faena = new Faena();
         $faena->cliente_id = 2;
+        $faena->sucursal_id = 2; // Delivered at
         $faena->rut = '12.345.678-9';
         $faena->name = 'Chuquicamata';
         $faena->address = 'Chuquicamata';

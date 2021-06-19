@@ -10,12 +10,17 @@ class Faena extends Model
     use HasFactory;
 
     protected $fillable = [
-        'cliente_id', 'rut', 'name', 'address', 'city', 'contact', 'phone' 
+        'cliente_id', 'sucursal_id', 'rut', 'name', 'address', 'city', 'contact', 'phone' 
     ];
 
     public function cliente()
     {
         return $this->belongsTo(Cliente::class);
+    }
+
+    public function sucursal()
+    {
+        return $this->belongsTo(Sucursal::class);
     }
 
     public function solicitudes()

@@ -16,6 +16,7 @@ class CreateFaenasTable extends Migration
         Schema::create('faenas', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('cliente_id')->unsigned();
+            $table->bigInteger('sucursal_id')->unsigned(); // Delivered at
             $table->string('rut');
             $table->string('name');
             $table->string('address');
@@ -25,6 +26,7 @@ class CreateFaenasTable extends Migration
             $table->timestamps();
 
             $table->foreign('cliente_id')->references('id')->on('clientes')->onDelete('cascade');
+            $table->foreign('sucursal_id')->references('id')->on('sucursales')->onDelete('cascade');
         });
     }
 

@@ -42,16 +42,6 @@ class CotizacionesController extends Controller
                     {
                         $cotizacion->partes_total;
                         $cotizacion->dias;
-                        // If user has role Vendedor retrieves monto converted to CLP
-                        if($user->role->id === 2)
-                        {
-                            // CLP conversion
-                            $cotizacion->monto = $cotizacion->usd_monto * $cotizacion->usdvalue;
-                        }
-                        else
-                        {
-                            $cotizacion->monto = $cotizacion->usd_monto;
-                        }
 
                         $cotizacion->makeHidden([
                             'solicitud_id', 
@@ -85,6 +75,7 @@ class CotizacionesController extends Controller
                         ]);
                         $cotizacion->solicitud->faena;
                         $cotizacion->solicitud->faena->makeHidden([
+                            'sucursal_id',
                             'rut',
                             'address',
                             'city',
@@ -290,6 +281,8 @@ class CotizacionesController extends Controller
                             $cotizacion->solicitud;
                             $cotizacion->solicitud->makeHidden([
                                 'partes',
+                                'sucursal_id',
+                                'comprador_id',
                                 'faena_id',
                                 'marca_id',
                                 'user_id',
@@ -299,13 +292,19 @@ class CotizacionesController extends Controller
                             ]);
         
                             $cotizacion->solicitud->faena;
-                            $cotizacion->solicitud->faena->makeHidden(['cliente_id', 'created_at', 'updated_at']);
+                            $cotizacion->solicitud->faena->makeHidden(['cliente_id', 'sucursal_id', 'created_at', 'updated_at']);
         
                             $cotizacion->solicitud->faena->cliente;
-                            $cotizacion->solicitud->faena->cliente->makeHidden(['sucursal_id', 'created_at', 'updated_at']);
+                            $cotizacion->solicitud->faena->cliente->makeHidden([
+                                'sucursal_id', 
+                                'country_id', 
+                                'created_at', 
+                                'updated_at'
+                            ]);
 
                             $cotizacion->solicitud->sucursal;
                             $cotizacion->solicitud->sucursal->makeHidden([
+                                'country_id', 
                                 'created_at',
                                 'updated_at'
                             ]);
@@ -314,7 +313,7 @@ class CotizacionesController extends Controller
                             $cotizacion->solicitud->marca->makeHidden(['created_at', 'updated_at']);
 
                             $cotizacion->solicitud->comprador;
-                            $cotizacion->solicitud->comprador->makeHidden(['created_at', 'updated_at']);
+                            $cotizacion->solicitud->comprador->makeHidden(['country_id', 'created_at', 'updated_at']);
 
                             $cotizacion->estadocotizacion;
                             $cotizacion->estadocotizacion->makeHidden(['created_at', 'updated_at']);
@@ -326,7 +325,7 @@ class CotizacionesController extends Controller
                             }
 
                             $cotizacion->solicitud->user;
-                            $cotizacion->solicitud->user->makeHidden(['created_at', 'updated_at']);
+                            $cotizacion->solicitud->user->makeHidden(['email_verified_at', 'role_id', 'country_id', 'created_at', 'updated_at']);
         
                             $cotizacion->partes;
                             foreach($cotizacion->partes as $parte)
@@ -337,12 +336,6 @@ class CotizacionesController extends Controller
                                     'created_at', 
                                     'updated_at'
                                 ]);
-        
-                                // For report, monto value is always in CLP
-                                if($parte->pivot->monto !== null)
-                                {
-                                    $parte->pivot->monto = $parte->pivot->monto * $cotizacion->usdvalue;
-                                }
                                 
                                 $parte->pivot->makeHidden([
                                     'costo',

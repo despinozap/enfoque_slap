@@ -15,15 +15,15 @@ class Cotizacion extends Model
     protected $fillable = [
         'solicitud_id', 'estadocotizacion_id', 'motivorechazo_id', 'usdvalue',
     ];
-    public $appends = ['partes_total', 'dias'];
+    public $appends = ['partes_total', 'dias', 'monto'];
 
-    public function getUsdMontoAttribute()
+    public function getMontoAttribute()
     {
         $amount = 0;
 
         foreach($this->partes as $parte)
         {
-            $amount += $parte->pivot->monto;
+            $amount += $parte->pivot->monto * $parte->pivot->cantidad;
         }
 
         return $amount;

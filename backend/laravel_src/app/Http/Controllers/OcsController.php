@@ -27,7 +27,7 @@ class OcsController extends Controller
                 
                 if($ocs = ($user->role->id === 2) ? // By role
                     // If Vendedor filters only the belonging data
-                    Oc::select('cotizaciones.*')->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')->where('solicitudes.user_id', '=', $user->id)->get() :
+                    Oc::select('ocs.*')->join('cotizaciones', 'ocs.cotizacion_id', '=', 'cotizaciones.id')->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')->where('solicitudes.user_id', '=', $user->id)->get() :
                     // For any other role
                     Oc::all()
                 )
@@ -36,17 +36,6 @@ class OcsController extends Controller
                     {
                         $oc->partes_total;
                         $oc->dias;
-                        
-                        // If user has role Vendedor retrieves monto converted to CLP
-                        if($user->role->id === 2)
-                        {
-                            // CLP conversion
-                            $oc->monto = $oc->usd_monto * $oc->usdvalue;
-                        }
-                        else
-                        {
-                            $oc->monto = $oc->usd_monto;
-                        }
                         
                         $oc->makeHidden([
                             'cotizacion_id',
@@ -63,7 +52,7 @@ class OcsController extends Controller
                             $parte->makeHidden(['marca_id', 'created_at', 'updated_at']);
                             
                             $parte->pivot;
-                            $parte->pivot->makeHidden(['oc_id', 'parte_id']);
+                            $parte->pivot->makeHidden(['oc_id', 'parte_id', 'estadoocparte_id']);
 
                             $parte->marca;
                             $parte->marca->makeHidden(['created_at', 'updated_at']);
@@ -110,6 +99,7 @@ class OcsController extends Controller
                         
                         $oc->cotizacion->solicitud->faena;
                         $oc->cotizacion->solicitud->faena->makeHidden([
+                            'sucursal_id',
                             'rut',
                             'address',
                             'city',
@@ -166,7 +156,7 @@ class OcsController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al obtener la lista de OCs [!]',
+                'Error al obtener la lista de OCs [!]' . $e,
                 null
             );
         }
@@ -351,6 +341,7 @@ class OcsController extends Controller
                         
                         $oc->cotizacion->solicitud->faena;
                         $oc->cotizacion->solicitud->faena->makeHidden([
+                            'sucursal_id',
                             'rut',
                             'address',
                             'city',

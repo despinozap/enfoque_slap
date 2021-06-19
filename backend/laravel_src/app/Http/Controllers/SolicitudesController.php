@@ -39,6 +39,7 @@ class SolicitudesController extends Controller
                                 foreach($solicitudes as $solicitud)
                                 {
                                     $solicitud->makeHidden([
+                                        'partes',
                                         'sucursal_id',
                                         'faena_id',
                                         'marca_id',
@@ -71,6 +72,7 @@ class SolicitudesController extends Controller
                                     ]);
                                     $solicitud->faena;
                                     $solicitud->faena->makeHidden([
+                                        'sucursal_id',
                                         'rut',
                                         'address',
                                         'city',
@@ -126,6 +128,7 @@ class SolicitudesController extends Controller
                             foreach($solicitudes as $solicitud)
                             {
                                 $solicitud->makeHidden([
+                                    'partes',
                                     'sucursal_id',
                                     'faena_id',
                                     'marca_id',
@@ -158,6 +161,7 @@ class SolicitudesController extends Controller
                                 ]);
                                 $solicitud->faena;
                                 $solicitud->faena->makeHidden([
+                                    'sucursal_id',
                                     'rut',
                                     'address',
                                     'city',
@@ -294,6 +298,12 @@ class SolicitudesController extends Controller
                     {
                         $faena->makeHidden([
                             'cliente_id',
+                            'sucursal_id',
+                            'rut',
+                            'address',
+                            'city',
+                            'contact',
+                            'phone',
                             'created_at',
                             'updated_at'
                         ]);
@@ -321,6 +331,11 @@ class SolicitudesController extends Controller
                     $compradores = $compradores->filter(function($comprador)
                     {
                         $comprador->makeHidden([
+                            'rut',
+                            'address',
+                            'city',
+                            'contact',
+                            'phone',
                             'country_id',
                             'created_at', 
                             'updated_at'
@@ -603,6 +618,7 @@ class SolicitudesController extends Controller
                             
                             $solicitud->faena;
                             $solicitud->faena->makeHidden([
+                                'sucursal_id',
                                 'rut',
                                 'address',
                                 'city',
