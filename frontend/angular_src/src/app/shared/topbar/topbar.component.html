@@ -12,7 +12,7 @@
                         <label>American Parts</label>
                     </span>
                 </a>
-                
+
             </div>
 
             <button type="button" class="btn btn-sm px-3 font-size-16 header-item" id="vertical-menu-btn">
@@ -32,12 +32,10 @@
         <div class="d-flex">
 
             <div class="dropdown d-inline-block d-lg-none ml-2">
-                <button type="button" class="btn header-item noti-icon" id="page-header-search-dropdown"
-                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <button type="button" class="btn header-item noti-icon" id="page-header-search-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <i class="mdi mdi-magnify"></i>
                 </button>
-                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right p-0"
-                    aria-labelledby="page-header-search-dropdown">
+                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right p-0" aria-labelledby="page-header-search-dropdown">
 
                     <form class="p-3">
                         <div class="form-group m-0">
@@ -58,7 +56,8 @@
                 </button>
             </div>
 
-            <div class="dropdown d-inline-block">
+            <!-- Notifications -->
+            <!-- <div class="dropdown d-inline-block">
                 <button type="button" class="btn header-item noti-icon" id="page-header-notifications-dropdown"
                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <i class="bx bx-bell bx-tada"></i>
@@ -139,11 +138,10 @@
                         </a>
                     </div>
                 </div>
-            </div>
+            </div> -->
 
             <div class="dropdown d-inline-block">
-                <button type="button" class="btn header-item" id="page-header-user-dropdown"
-                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <button type="button" class="btn header-item" id="page-header-user-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <span class="d-none d-xl-inline-block ml-1" *ngIf="(loggedUser)">{{ loggedUser.name }}</span>
                     <i class="mdi mdi-chevron-down d-none d-xl-inline-block"></i>
                 </button>

@@ -12,7 +12,7 @@
             </div>
 
             <!-- Role: Administrador [1] -->
-            <ul class="metismenu list-unstyled" id="side-menu" *ngIf="(loggedUser !== null)" [hidden]="(loggedUser.role_id !== 1)">
+            <ul class="metismenu list-unstyled" id="side-menu" *ngIf="(loggedUser !== null) && (loggedUser.role_id === 1)">
 
                 <!-- Menu -->
                 <li class="menu-title" key="t-menu">Menu</li>
@@ -168,11 +168,11 @@
                         <li><a [routerLink]="['entregas/sucursal']" key="t-sucursalentregaslista">Lista de entregas</a></li>
                     </ul>
                 </li>
-                
+
             </ul>
 
             <!-- Role: Vendedor [2] -->
-            <ul class="metismenu list-unstyled" id="side-menu" *ngIf="(loggedUser !== null)" [hidden]="(loggedUser.role_id !== 2)">
+            <ul class="metismenu list-unstyled" id="side-menu" *ngIf="(loggedUser !== null) && (loggedUser.role_id === 2)">
 
                 <!-- Menu -->
                 <li class="menu-title" key="t-menu">Menu</li>
@@ -216,7 +216,6 @@
                         <span key="t-sucursalrecepciones">Recepciones</span>
                     </a>
                     <ul class="sub-menu" aria-expanded="false">
-                        <li><a [routerLink]="['recepciones/sucursal/create']" key="t-sucursalrecepcionesnuevo">Nueva recepcion</a></li>
                         <li><a [routerLink]="['recepciones/sucursal']" key="t-sucursalrecepcioneslista">Lista de recepciones</a></li>
                     </ul>
                 </li>
@@ -230,7 +229,7 @@
                         <li><a [routerLink]="['entregas/sucursal']" key="t-sucursalentregaslista">Lista de entregas</a></li>
                     </ul>
                 </li>
-                
+
             </ul>
 
         </div>
