@@ -24,6 +24,11 @@ class Comprador extends Model
         return $this->hasMany(Proveedor::class);
     }
 
+    public function users()
+    {
+        return $this->morphMany(User::class, 'stationable');
+    }
+    
     public function recepciones()
     {
         return $this->morphMany(Recepcion::class, 'recepcionable');

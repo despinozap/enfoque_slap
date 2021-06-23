@@ -9,6 +9,17 @@ class Role extends Model
 {
     use HasFactory;
 
+    /*
+     *  Roles:
+     *      suadm: Super Administrator
+     *      admin: Administrador
+     *      vensol: Vendedor solicitante (Vendedor en Sucursal)
+     *      agtcom: Agente de compra en Comprador
+     *      colcom: Coordinador Logistico comprador (bodega en Comprador)
+     *      colsol: Coordinador Logistico solicitante (Bodega en Sucursal)
+    */
+
+
     protected $fillable = [
         'name',
     ];

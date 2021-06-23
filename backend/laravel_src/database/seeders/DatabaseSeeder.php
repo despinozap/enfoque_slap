@@ -161,17 +161,42 @@ class DatabaseSeeder extends Seeder
             $routepermission->save();
         }
 
-
         /*
         *   Roles
         */
-        //Administrador
+        //Super Administrator
         {
             $role = new Role();
-            $role->name = 'Administrador';
+            $role->name = 'suadm';
+            $role->label = 'Super Admin';
             $role->save();
 
-            //Route permissions to for Role: Administrador
+            $routePermissionNames = [
+                //Loggedactions
+                'loggedactions index',
+                'loggedactions store'
+            ];
+
+            $routePermissionIds = [];
+
+            //Get all the Routepermissions IDs
+            foreach($routePermissionNames as $routePermissionName)
+            {
+                $routePermission = Routepermission::where('name', $routePermissionName)->first();
+                $routePermissionIds[] = $routePermission->id;
+            }
+
+            //Sync permissions to the role
+            $role->routepermissions()->sync($routePermissionIds);
+        }
+
+        //Administrator
+        {
+            $role = new Role();
+            $role->name = 'admin';
+            $role->label = 'Administrador';
+            $role->save();
+
             $routePermissionNames = [
                 //Roles
                 'roles index_full',
@@ -299,41 +324,95 @@ class DatabaseSeeder extends Seeder
             $role->routepermissions()->sync($routePermissionIds);
         }
         
-        //Vendedor
+        //Vendedor solicitante en Sucursal
         {
             $role = new Role();
-            $role->name = 'Vendedor';
+            $role->name = 'vensol';
+            $role->label = 'Vendedor (CL)';
             $role->save();
 
-            //Route permissions to for Role: Vendedor
             $routePermissionNames = [
                 //Loggedactions
                 'loggedactions index',
-                'loggedactions store',
-                //Faenas
-                'faenas index_full',
-                //Marcas
-                'marcas index_full',
-                //Solicitudes
-                'solicitudes index',
-                'solicitudes store',
-                'solicitudes show',
-                'solicitudes update',
-                'solicitudes close',
-                'solicitudes destroy',
-                //Cotizaciones
-                'cotizaciones index',
-                'cotizaciones show',
-                'cotizaciones report',
-                'cotizaciones approve',
-                'cotizaciones reject',
-                'cotizaciones close',
-                'cotizaciones destroy',
-                //Ocs
-                'ocs index',
-                'ocs show',
-                'ocs update',
-                'ocs reject',
+                'loggedactions store'
+            ];
+
+            $routePermissionIds = [];
+
+            //Get all the Routepermissions IDs
+            foreach($routePermissionNames as $routePermissionName)
+            {
+                $routePermission = Routepermission::where('name', $routePermissionName)->first();
+                $routePermissionIds[] = $routePermission->id;
+            }
+
+            //Sync permissions to the role
+            $role->routepermissions()->sync($routePermissionIds);
+        }
+        
+        //Agente de compra en Comprador
+        {
+            $role = new Role();
+            $role->name = 'agtcom';
+            $role->label = 'Agente Compras (USA)';
+            $role->save();
+
+            $routePermissionNames = [
+                //Loggedactions
+                'loggedactions index',
+                'loggedactions store'
+            ];
+
+            $routePermissionIds = [];
+
+            //Get all the Routepermissions IDs
+            foreach($routePermissionNames as $routePermissionName)
+            {
+                $routePermission = Routepermission::where('name', $routePermissionName)->first();
+                $routePermissionIds[] = $routePermission->id;
+            }
+
+            //Sync permissions to the role
+            $role->routepermissions()->sync($routePermissionIds);
+        }
+        
+        //Coordinador Logistico en Comprador
+        {
+            $role = new Role();
+            $role->name = 'colcom';
+            $role->label = 'Coordinador (USA)';
+            $role->save();
+
+            $routePermissionNames = [
+                //Loggedactions
+                'loggedactions index',
+                'loggedactions store'
+            ];
+
+            $routePermissionIds = [];
+
+            //Get all the Routepermissions IDs
+            foreach($routePermissionNames as $routePermissionName)
+            {
+                $routePermission = Routepermission::where('name', $routePermissionName)->first();
+                $routePermissionIds[] = $routePermission->id;
+            }
+
+            //Sync permissions to the role
+            $role->routepermissions()->sync($routePermissionIds);
+        }
+
+        //Coordinador Logistico solicitante en Sucursal
+        {
+            $role = new Role();
+            $role->name = 'colsol';
+            $role->label = 'Coordinador (CL)';
+            $role->save();
+
+            $routePermissionNames = [
+                //Loggedactions
+                'loggedactions index',
+                'loggedactions store'
             ];
 
             $routePermissionIds = [];
@@ -362,38 +441,6 @@ class DatabaseSeeder extends Seeder
         
 
         /*
-        *   Users
-        */
-        $user = new User();
-        $user->name = 'Administrador AP';
-        $user->email = 'admin@mail.com';
-        $user->phone = '9012345678';
-        $user->password = bcrypt('admin');
-        $user->role_id = 1; // Administrador
-        $user->country_id = 1; // Chile
-        $user->save();
-
-        $user = new User();
-        $user->name = 'Vendedor AP';
-        $user->email = 'seller@mail.com';
-        $user->phone = '9012345678';
-        $user->password = bcrypt('seller');
-        $user->role_id = 2; // Vendedor
-        $user->country_id = 1; // Chile
-        $user->save();
-
-
-        /*
-        *   Parameters
-        */
-        $parameter = new Parameter();
-        $parameter->name = 'usd_to_clp';
-        $parameter->description = 'Valor del Dolar (USD) para transformar a peso chileno (CLP)';
-        $parameter->value = 740;
-        $parameter->save();
-
-        
-        /*
         *   Sucursales
         */
         $sucursal = new Sucursal();
@@ -413,6 +460,58 @@ class DatabaseSeeder extends Seeder
         $sucursal->city = 'Antofagasta';
         $sucursal->country_id = 1; // Chile
         $sucursal->save();
+
+
+        /*
+        *   Compradores
+        */
+        $comprador = new Comprador();
+        $comprador->rut = '5.917.158-5';
+        $comprador->name = 'American Parts Miami';
+        $comprador->address = 'CompradorDireccionTest01';
+        $comprador->city = 'Miami';
+        $comprador->country_id = 2; // Chile
+        $comprador->contact = 'John Doe';
+        $comprador->phone = '+12345678901';
+        $comprador->save();
+
+    
+        /*
+        *   Users
+        */
+        //Administrador
+        $station = Sucursal::find(2); // Sucursal Antofagasta
+        $user = new User();
+        $user->stationable_type = get_class($station);
+        $user->stationable_id = $station->id;
+        $user->name = 'Administrador AP';
+        $user->email = 'admin@mail.com';
+        $user->phone = '9012345678';
+        $user->password = bcrypt('admin');
+        $user->role_id = 2; // Administrador
+        $user->save();
+
+        //Vendedor Chile
+        $station = Sucursal::find(2); // Sucursal Antofagasta
+        $user = new User();
+        $user->stationable_type = get_class($station);
+        $user->stationable_id = $station->id;
+        $user->name = 'Vendedor AP';
+        $user->email = 'seller@mail.com';
+        $user->phone = '9012345678';
+        $user->password = bcrypt('seller');
+        $user->role_id = 3; // Vendedor solicitante en Sucursal
+        $user->save();
+
+
+        /*
+        *   Parameters
+        */
+        $parameter = new Parameter();
+        $parameter->name = 'usd_to_clp';
+        $parameter->description = 'Valor del Dolar (USD) para transformar a peso chileno (CLP)';
+        $parameter->value = 740;
+        $parameter->save();
 
 
         /*
@@ -475,20 +574,6 @@ class DatabaseSeeder extends Seeder
         $parte->marca_id = 1;
         $parte->nparte = 'NParteTest02';
         $parte->save();
-
-
-        /*
-        *   Compradores
-        */
-        $comprador = new Comprador();
-        $comprador->rut = '5.917.158-5';
-        $comprador->name = 'American Parts Miami';
-        $comprador->address = 'CompradorDireccionTest01';
-        $comprador->city = 'Miami';
-        $comprador->country_id = 2; // Chile
-        $comprador->contact = 'John Doe';
-        $comprador->phone = '+12345678901';
-        $comprador->save();
 
 
         /*

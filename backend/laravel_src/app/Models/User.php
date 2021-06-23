@@ -44,6 +44,15 @@ class User extends Authenticatable
         return $this->belongsTo(Country::class)->withDefault();
     }
 
+    /*
+     * The User's station (workstation). 
+     * Stationable models: Sucursal, Comprador
+     */
+    public function stationable()
+    {
+        return $this->morphTo();
+    }
+
     public function role()
     {
         return $this->belongsTo(Role::class)->withDefault();

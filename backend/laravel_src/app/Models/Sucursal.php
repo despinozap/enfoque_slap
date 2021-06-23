@@ -12,6 +12,11 @@ class Sucursal extends Model
     protected $table = 'sucursales';
     protected $fillable = ['rut', 'name', 'address', 'city'];
 
+    public function users()
+    {
+        return $this->morphMany(User::class, 'stationable');
+    }
+
     public function recepciones()
     {
         return $this->morphMany(Recepcion::class, 'recepcionable');
@@ -26,6 +31,7 @@ class Sucursal extends Model
     {
         return $this->hasMany(Entrega::class);
     }
+    
 
     public function country()
     {

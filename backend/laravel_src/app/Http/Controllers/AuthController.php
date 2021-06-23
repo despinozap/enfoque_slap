@@ -199,16 +199,31 @@ class AuthController extends Controller
 				$user = Auth::user();
 
 				$user->makeHidden([
-					'email_verified_at',
-					'country_id',
+					'stationable_type',
+					'stationable_id',
 					'role_id',
+					'country_id',
+					'email_verified_at',
 					'created_at', 
 					'updated_at'
 				]);
-
-				$user->country;
-				$user->country->makeHidden(['created_at', 'updated_at']);
-
+		
+				$user->stationable->makeHidden([
+						'rut',
+						'address',
+						'city',
+						'contact',
+						'phone',
+						'country_id',
+						'created_at', 
+						'updated_at'
+				]);
+		
+				$user->stationable->country->makeHidden([
+						'created_at', 
+						'updated_at'
+				]);
+		
 				$user->role;
 				$user->role->makeHidden(['created_at', 'updated_at']);
 
@@ -263,15 +278,30 @@ class AuthController extends Controller
 		$user = Auth::user();
 
 		$user->makeHidden([
-			'email_verified_at',
-			'country_id',
+			'stationable_type',
+			'stationable_id',
 			'role_id',
+			'country_id',
+			'email_verified_at',
 			'created_at', 
 			'updated_at'
 		]);
 
-		$user->country;
-		$user->country->makeHidden(['created_at', 'updated_at']);
+		$user->stationable->makeHidden([
+				'rut',
+				'address',
+				'city',
+				'contact',
+				'phone',
+				'country_id',
+				'created_at', 
+				'updated_at'
+		]);
+
+		$user->stationable->country->makeHidden([
+				'created_at', 
+				'updated_at'
+		]);
 
 		$user->role;
 		$user->role->makeHidden(['created_at', 'updated_at']);
