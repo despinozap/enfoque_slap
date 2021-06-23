@@ -14,7 +14,7 @@ import { UsersService } from 'src/app/services/users.service';
 })
 export class UsuariosCreateComponent implements OnInit {
 
-  roles: Array<Role> = null as any;
+  roles: any[] = [];
   loading: boolean = false;
   responseErrors: any = [];
 
@@ -26,15 +26,45 @@ export class UsuariosCreateComponent implements OnInit {
   });
 
   constructor(
-    private _rolesService: RolesService,
     private _usersService: UsersService,
     private router: Router
   ) {
   }
 
   ngOnInit(): void {
-    this.userForm.disable();
-    this.loadRoles();
+
+    this.roles = [
+      // Vendedor solicitante (Vendedor en Sucursal Santiago)
+      {
+        name: "vensol",
+        label: "Vendedor en Santiago",
+        stationable_id: 1
+      },
+      // Vendedor solicitante (Vendedor en Sucursal Antofagasta)
+      {
+        name: "vensol",
+        label: "Vendedor en Antofagasta",
+        stationable_id: 2
+      },
+      // Coordinador Logistico comprador (bodega en Comprador)
+      {
+        name: "colcom",
+        label: "Coordinador logistico en USA",
+        stationable_id: 1
+      },
+      // Coordinador Logistico solicitante (Bodega en Sucursal Santiago)
+      {
+        name: "colsol",
+        label: "Coordinador logistico en Santiago",
+        stationable_id: 1
+      },
+      // Coordinador Logistico solicitante (Bodega en Sucursal Antofagasta)
+      {
+        name: "colsol",
+        label: "Coordinador logistico en Antofagasta",
+        stationable_id: 2
+      }
+    ];
   }
 
   public storeUser():void {
@@ -42,13 +72,13 @@ export class UsuariosCreateComponent implements OnInit {
     this.loading = true;
     this.responseErrors = [];
 
-    let user: User = {
+    let user: any = {
+      stationable_id: this.roles[this.userForm.value.role].stationable_id,
       name: this.userForm.value.name,
       email: this.userForm.value.email,
       phone: this.userForm.value.phone,
-      role_id: this.userForm.value.role,
-      country_id: 1 // Chile
-    } as User;
+      role_name: this.roles[this.userForm.value.role].name
+    };
 
     this._usersService.storeUser(user)
     .subscribe(
@@ -108,63 +138,6 @@ export class UsuariosCreateComponent implements OnInit {
         this.loading = false;
       }
     );
-  }
-
-  private loadRoles()
-  {
-    this.loading = true;
-    this._rolesService.getRoles()
-    .subscribe(
-      //Success request
-      (response: any) => {
-        this.loading = false;
-
-        this.roles = <Array<Role>>(response.data);
-        
-        this.userForm.enable();
-      },
-      //Error request
-      (errorResponse: any) => {
-
-        switch(errorResponse.status)
-        {     
-          case 405: //Permission denied
-          {
-            NotificationsService.showToast(
-              errorResponse.error.message,
-              NotificationsService.messageType.error
-            );
-
-            break;
-          }
-
-          case 500: //Internal server
-          {
-            NotificationsService.showToast(
-              errorResponse.error.message,
-              NotificationsService.messageType.error
-            );
-
-            break;
-          }
-        
-          default: //Unhandled error
-          {
-            NotificationsService.showToast(
-              'Error al cargar la lista de roles',
-              NotificationsService.messageType.error
-            )
-        
-            break;
-          }
-        }
-        
-        this.roles = null as any;
-        this.loading = false;
-
-        this.goTo_usersList();
-      }
-    );  
   }
 
   public goTo_usersList()

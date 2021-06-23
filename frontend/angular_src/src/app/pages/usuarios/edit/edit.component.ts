@@ -4,7 +4,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Role } from 'src/app/interfaces/role';
 import { User } from 'src/app/interfaces/user';
 import { NotificationsService } from 'src/app/services/notifications.service';
-import { RolesService } from 'src/app/services/roles.service';
 import { UsersService } from 'src/app/services/users.service';
 
 @Component({
@@ -14,7 +13,8 @@ import { UsersService } from 'src/app/services/users.service';
 })
 export class UsuariosEditComponent implements OnInit {
 
-  roles: Array<Role> = null as any;
+  roles: any[] = null as any;
+  stations: any[] = null as any;
   loading: boolean = false;
   responseErrors: any = [];
   
@@ -22,16 +22,15 @@ export class UsuariosEditComponent implements OnInit {
   private id: number = -1;
 
   userForm: FormGroup = new FormGroup({
+    station: new FormControl('', [Validators.required]),
     name: new FormControl('', [Validators.required, Validators.minLength(4)]),
     email: new FormControl('', [Validators.required, Validators.email]),
-    phone: new FormControl('', [Validators.required, Validators.min(0)]),
-    role: new FormControl('', [Validators.required])
+    phone: new FormControl('', [Validators.required, Validators.min(0)])
   });
   
 
   constructor(
     private route: ActivatedRoute, 
-    private _rolesService: RolesService,
     private _usersService: UsersService,
     private router: Router
   ) 
@@ -45,7 +44,38 @@ export class UsuariosEditComponent implements OnInit {
       this.userForm.disable();
       this.loading = true;
 
-      this.loadRoles();
+      this.roles = [
+      // Vendedor solicitante (Vendedor en Sucursal Santiago)
+      {
+        name: "vensol",
+        label: "Vendedor en Santiago",
+        stationable_id: 1
+      },
+      // Vendedor solicitante (Vendedor en Sucursal Antofagasta)
+      {
+        name: "vensol",
+        label: "Vendedor en Antofagasta",
+        stationable_id: 2
+      },
+      // Coordinador Logistico comprador (bodega en Comprador)
+      {
+        name: "colcom",
+        label: "Coordinador logistico en USA",
+        stationable_id: 1
+      },
+      // Coordinador Logistico solicitante (Bodega en Sucursal Santiago)
+      {
+        name: "colsol",
+        label: "Coordinador logistico en Santiago",
+        stationable_id: 1
+      },
+      // Coordinador Logistico solicitante (Bodega en Sucursal Antofagasta)
+      {
+        name: "colsol",
+        label: "Coordinador logistico en Antofagasta",
+        stationable_id: 2
+      }
+    ];
 
       this._usersService.getUser(this.id)
       .subscribe(
@@ -105,68 +135,15 @@ export class UsuariosEditComponent implements OnInit {
     this.sub.unsubscribe();
   }
 
-  private loadRoles()
-  {
-    this.loading = true;
-    this._rolesService.getRoles()
-    .subscribe(
-      //Success request
-      (response: any) => {
-        this.loading = false;
-
-        this.roles = <Array<Role>>(response.data);
-        
-        this.userForm.enable();
-      },
-      //Error request
-      (errorResponse: any) => {
-
-        switch(errorResponse.status)
-        {     
-          case 405: //Permission denied
-          {
-            NotificationsService.showToast(
-              errorResponse.error.message,
-              NotificationsService.messageType.error
-            );
-
-            break;
-          }
-
-          case 500: //Internal server
-          {
-            NotificationsService.showToast(
-              errorResponse.error.message,
-              NotificationsService.messageType.error
-            );
-
-            break;
-          }
-        
-          default: //Unhandled error
-          {
-            NotificationsService.showToast(
-              'Error al cargar la lista de roles',
-              NotificationsService.messageType.error
-            )
-        
-            break;
-          }
-        }
-        
-        this.roles = null as any;
-        this.loading = false;
-
-        this.goTo_usersList();
-      }
-    );  
-  }
-
   private loadFormData(userData: any)
   {
+    this.stations = this.roles.filter((role) => {
+      return (role.name === userData.role.name) ? role : null;
+    });
+
     this.userForm.controls.name.setValue(userData.name);
     this.userForm.controls.email.setValue(userData.email);
-    this.userForm.controls.role.setValue(userData.role.id);
+    this.userForm.controls.station.setValue(userData.stationable.id);
     this.userForm.controls.phone.setValue(userData.phone);
   }
 
@@ -176,12 +153,12 @@ export class UsuariosEditComponent implements OnInit {
     this.loading = true;
     this.responseErrors = [];
 
-    let user: User = {
+    let user: any = {
+      stationable_id: this.userForm.value.station,
       name: this.userForm.value.name,
       email: this.userForm.value.email,
-      phone: this.userForm.value.phone,
-      role_id: this.userForm.value.role
-    } as User;
+      phone: this.userForm.value.phone
+    };
     
     this._usersService.updateUser(this.id, user)
     .subscribe(

@@ -54,11 +54,11 @@ export class ProfileEditComponent implements OnInit {
         // Subscribes for getting the loggedUser whenever is stored in the service
         this._authService.loggedUser$.subscribe(
           //Success request
-          (response: User) => {
+          (response: any) => {
             this.profileForm.enable();
             this.loading = false;
             
-            this.loggedUser = response;
+            this.loggedUser = response.user as User;
             this.loadFormData(this.loggedUser);
           },
           //Error request

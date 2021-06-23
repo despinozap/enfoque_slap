@@ -29,14 +29,7 @@ export class HomeComponent implements OnInit {
           //Success request
           (response: any) => {
 
-            let loggedUser = {
-              id: response.data.id,
-              name: response.data.name,
-              email: response.data.email,
-              phone: response.data.phone,
-              role_id: response.data.role.id,
-              role_name: response.data.role.name
-            } as User;
+            let loggedUser = response.data as User;
             
             this._authService.setLoggedUser(loggedUser);
           },

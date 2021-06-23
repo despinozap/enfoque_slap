@@ -1,135 +1,118 @@
 <!-- start page title -->
 <div class="row">
-	<div class="col-12">
-			<div class="page-title-box d-flex align-items-center justify-content-between">
-					<h4 class="mb-0 font-size-18">Nuevo usuario</h4>
+    <div class="col-12">
+        <div class="page-title-box d-flex align-items-center justify-content-between">
+            <h4 class="mb-0 font-size-18">Nuevo usuario</h4>
 
-					<div class="page-title-right">
-							<ol class="breadcrumb m-0">
-									<li class="breadcrumb-item">Usuarios</li>
-									<li class="breadcrumb-item active">Nuevo usuario</li>
-							</ol>
-					</div>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item">Usuarios</li>
+                    <li class="breadcrumb-item active">Nuevo usuario</li>
+                </ol>
+            </div>
 
-			</div>
-	</div>
+        </div>
+    </div>
 </div>
 <!-- end page title -->
 
 <div class="row">
-	<div class="col-12">
-		<div class="card">
-			<div class="card-body">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
 
-				<h4 class="card-title">Nuevo usuario</h4>
-				<p class="card-title-desc">Completa los siguientes campos para crear un nuevo usuario en el sistema</p>
+                <h4 class="card-title">Nuevo usuario</h4>
+                <p class="card-title-desc">Completa los siguientes campos para crear un nuevo usuario en el sistema</p>
 
-				<form [formGroup]="userForm" (ngSubmit)="storeUser()" action="#">
-					<div class="row">
-						<div class="col-12">
-							<div class="form-group">
-								<label class="control-label" for="name">Nombre</label>
-								<!-- Backend errors -->
-								<div class="alert alert-danger" *ngIf="(responseErrors.name)">
-									<div *ngFor="let errorMessage of responseErrors.name">{{ errorMessage }}</div>
-								</div>
-								<input type="text" class="form-control valid-control" name="name" id="name"
-									formControlName="name">
-								<!-- Frontend errors -->
-								<div
-									*ngIf="(userForm.controls.name.errors) && (userForm.controls.name.touched) && (userForm.controls.name.dirty)">
-									<div class="error-response" *ngIf="userForm.controls.name.errors.required === true">
-										El nombre es obligatorio
-									</div>
-									<div class="error-response"
-										*ngIf="userForm.controls.name.errors.minlength !== null">El nombre debe tener al
-										menos 4 caracteres</div>
-								</div>
-							</div>
-						</div>
-						<div class="col-12">
-							<div class="form-group">
-								<label class="control-label" for="email">Email</label>
-								<!-- Backend errors -->
-								<div class="alert alert-danger" *ngIf="(responseErrors.email)">
-									<div *ngFor="let errorMessage of responseErrors.email">{{ errorMessage }}</div>
-								</div>
-								<input type="text" class="form-control valid-control" name="email" id="email"
-									formControlName="email">
-								<!-- Frontend errors -->
-								<div
-									*ngIf="(userForm.controls.email.errors) && (userForm.controls.email.touched) && (userForm.controls.email.dirty)">
-									<div class="error-response"
-										*ngIf="userForm.controls.email.errors.required === true">El email es obligatorio
-									</div>
-									<div class="error-response"
-										*ngIf="userForm.controls.email.errors.minlength !== null">El email debe tener al
-										menos 4 caracteres</div>
-								</div>
-							</div>
-						</div>
-						<div class="col-12">
-							<div class="form-group">
-								<label class="control-label">Rol</label>
-								<!-- Backend errors -->
-								<div class="alert alert-danger" *ngIf="(responseErrors.role_id)">
-									<div *ngFor="let errorMessage of responseErrors.role_id">{{ errorMessage }}</div>
-								</div>
-								<select class="form-control" name="role" id="role" formControlName="role">
-									<option *ngFor="let role of roles" [value]="role.id">{{ role.name }}</option>
-								</select>
-								<!-- Frontend errors -->
-								<div
-									*ngIf="(userForm.controls.role.errors) && (userForm.controls.role.touched) && (userForm.controls.role.dirty)">
-									<div class="error-response"
-										*ngIf="userForm.controls.role.errors.required === true">Debes seleccionar el rol
-									</div>
-									<div class="error-response"
-										*ngIf="userForm.controls.role.errors.minlength !== null">El rol debe ser valido</div>
-								</div>
-							</div>
-						</div>
-						<div class="col-12">
-							<div class="form-group">
-								<label class="control-label" for="phone">Telefono</label>
-								<!-- Backend errors -->
-								<div class="alert alert-danger" *ngIf="(responseErrors.phone)">
-									<div *ngFor="let errorMessage of responseErrors.phone">{{ errorMessage }}</div>
-								</div>
-								<input type="text" class="form-control valid-control" name="phone" id="phone"
-									formControlName="phone">
-								<!-- Frontend errors -->
-								<div
-									*ngIf="(userForm.controls.phone.errors) && (userForm.controls.phone.touched) && (userForm.controls.phone.dirty)">
-									<div class="error-response"
-										*ngIf="userForm.controls.phone.errors.required === true">El telefono es
-										obligatorio
-									</div>
-									<div class="error-response"
-										*ngIf="userForm.controls.phone.errors.minlength !== null">El telefono debe ser
-										valido</div>
-								</div>
-							</div>
-						</div>
-						<div class="col-12">
-							<div class="form-buttons mt-2">
-								<button type="submit" class="btn btn-primary mr-2" [disabled]="(userForm.invalid) || (loading === true)">
+                <form [formGroup]="userForm" (ngSubmit)="storeUser()" action="#">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label class="control-label" for="name">Nombre</label>
+                                <!-- Backend errors -->
+                                <div class="alert alert-danger" *ngIf="(responseErrors.name)">
+                                    <div *ngFor="let errorMessage of responseErrors.name">{{ errorMessage }}</div>
+                                </div>
+                                <input type="text" class="form-control valid-control" name="name" id="name" formControlName="name">
+                                <!-- Frontend errors -->
+                                <div *ngIf="(userForm.controls.name.errors) && (userForm.controls.name.touched) && (userForm.controls.name.dirty)">
+                                    <div class="error-response" *ngIf="userForm.controls.name.errors.required === true">
+                                        El nombre es obligatorio
+                                    </div>
+                                    <div class="error-response" *ngIf="userForm.controls.name.errors.minlength !== null">El nombre debe tener al menos 4 caracteres</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label class="control-label" for="email">Email</label>
+                                <!-- Backend errors -->
+                                <div class="alert alert-danger" *ngIf="(responseErrors.email)">
+                                    <div *ngFor="let errorMessage of responseErrors.email">{{ errorMessage }}</div>
+                                </div>
+                                <input type="text" class="form-control valid-control" name="email" id="email" formControlName="email">
+                                <!-- Frontend errors -->
+                                <div *ngIf="(userForm.controls.email.errors) && (userForm.controls.email.touched) && (userForm.controls.email.dirty)">
+                                    <div class="error-response" *ngIf="userForm.controls.email.errors.required === true">El email es obligatorio
+                                    </div>
+                                    <div class="error-response" *ngIf="userForm.controls.email.errors.minlength !== null">El email debe tener al menos 4 caracteres</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label class="control-label">Rol</label>
+                                <!-- Backend errors -->
+                                <div class="alert alert-danger" *ngIf="(responseErrors.role_name)">
+                                    <div *ngFor="let errorMessage of responseErrors.role_name">{{ errorMessage }}</div>
+                                </div>
+                                <select class="form-control" name="role" id="role" formControlName="role">
+																	<option *ngFor="let role of roles; index as i" [value]="(i)">{{ role.label }}</option>
+																</select>
+                                <!-- Frontend errors -->
+                                <div *ngIf="(userForm.controls.role.errors) && (userForm.controls.role.touched) && (userForm.controls.role.dirty)">
+                                    <div class="error-response" *ngIf="userForm.controls.role.errors.required === true">Debes seleccionar el rol
+                                    </div>
+                                    <div class="error-response" *ngIf="userForm.controls.role.errors.minlength !== null">El rol debe ser valido</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label class="control-label" for="phone">Telefono</label>
+                                <!-- Backend errors -->
+                                <div class="alert alert-danger" *ngIf="(responseErrors.phone)">
+                                    <div *ngFor="let errorMessage of responseErrors.phone">{{ errorMessage }}</div>
+                                </div>
+                                <input type="text" class="form-control valid-control" name="phone" id="phone" formControlName="phone">
+                                <!-- Frontend errors -->
+                                <div *ngIf="(userForm.controls.phone.errors) && (userForm.controls.phone.touched) && (userForm.controls.phone.dirty)">
+                                    <div class="error-response" *ngIf="userForm.controls.phone.errors.required === true">El telefono es obligatorio
+                                    </div>
+                                    <div class="error-response" *ngIf="userForm.controls.phone.errors.minlength !== null">El telefono debe ser valido
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-buttons mt-2">
+                                <button type="submit" class="btn btn-primary mr-2" [disabled]="(userForm.invalid) || (loading === true)">
 									<span *ngIf="loading === true"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
 									<span *ngIf="loading === false">Guardar</span>
 								</button>
-								<button [disabled]="(loading === true)" class="btn btn-light" (click)="goTo_usersList()">
+                                <button [disabled]="(loading === true)" class="btn btn-light" (click)="goTo_usersList()">
 									<span>Cancelar</span>
 								</button>
-							</div>
-						</div>
-					</div>
+                            </div>
+                        </div>
+                    </div>
 
-				</form>
+                </form>
 
-			</div>
-		</div>
-		<!-- end select2 -->
+            </div>
+        </div>
+        <!-- end select2 -->
 
-	</div>
+    </div>
 </div>
 <!-- end row -->

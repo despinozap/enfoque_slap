@@ -1,73 +1,84 @@
 <!-- start page title -->
 <div class="row">
-	<div class="col-12">
-			<div class="page-title-box d-flex align-items-center justify-content-between">
-					<h4 class="mb-0 font-size-18">Perfil de usuario</h4>
+    <div class="col-12">
+        <div class="page-title-box d-flex align-items-center justify-content-between">
+            <h4 class="mb-0 font-size-18">Perfil de usuario</h4>
 
-					<div class="page-title-right">
-							<ol class="breadcrumb m-0">
-									<li class="breadcrumb-item">Perfil</li>
-									<li class="breadcrumb-item active">Detalle</li>
-							</ol>
-					</div>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item">Perfil</li>
+                    <li class="breadcrumb-item active">Detalle</li>
+                </ol>
+            </div>
 
-			</div>
-	</div>
+        </div>
+    </div>
 </div>
 <!-- end page title -->
 
 <div class="col-xl-12">
-	<div class="card">
-		<div class="card-body">
-			<div class="media">
-				<div class="mr-3">
-					<!-- <img src="assets/images/users/avatar-1.jpg" alt="" class="avatar-sm rounded-circle img-thumbnail"> -->
-				</div>
-				<div class="media-body" *ngIf="(loggedUser !== null)">
-					<div class="media">
-						<div class="media-body">
-							<div class="text-muted">
-								<h5 class="mb-1">{{ loggedUser.name }}</h5>
-								<p class="mb-0">{{ loggedUser.role_name }}</p>
-							</div>
+    <div class="card">
+        <div class="card-body">
+            <div class="media">
+                <div class="mr-3">
+                    <!-- <img src="assets/images/users/avatar-1.jpg" alt="" class="avatar-sm rounded-circle img-thumbnail"> -->
+                </div>
+                <div class="media-body" *ngIf="(loggedUser !== null)">
+                    <div class="media">
+                        <div class="media-body">
+                            <div class="text-muted">
+                                <h5 class="mb-1">{{ loggedUser.name }}</h5>
+                                <p class="mb-0">{{ loggedUser.role.label }}</p>
+                            </div>
 
-						</div>
-					</div>
-
-
-					<hr>
-
-					<div class="row">
-						<div class="col-4">
-							<div>
-								<p class="text-muted text-truncate mb-2">Email</p>
-								<h5 class="mb-0">{{ loggedUser.email }}</h5>
-							</div>
-						</div>
-						<div class="col-4">
-							<div>
-								<p class="text-muted text-truncate mb-2">Telefono</p>
-								<h5 class="mb-0">{{ loggedUser.phone }}</h5>
-							</div>
-						</div>
-						<div class="col-4"></div>
-					</div>
-
-					<div class="row">
-						<div class="col-12">
-							<div class="form-buttons mt-2">
-								<button [disabled]="(loading === true)" class="btn btn-light" (click)="goTo_back()">
-									<span>Volver</span>
-								</button>
-							</div>
-						</div>
-					</div>
-
-				</div>
+                        </div>
+                    </div>
 
 
-			</div>
+                    <hr>
 
-		</div>
-	</div>
+                    <div class="row">
+                        <div class="col-3">
+                            <div>
+                                <p class="text-muted text-truncate mb-2">Email</p>
+                                <h5 class="mb-0">{{ loggedUser.email }}</h5>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div>
+                                <p class="text-muted text-truncate mb-2">Telefono</p>
+                                <h5 class="mb-0">{{ loggedUser.phone }}</h5>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div>
+                                <p class="text-muted text-truncate mb-2">Estacion</p>
+                                <h5 class="mb-0">{{ loggedUser.stationable.name }}</h5>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div>
+                                <p class="text-muted text-truncate mb-2">Pais</p>
+                                <h5 class="mb-0">{{ loggedUser.stationable.country.name }}</h5>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-buttons mt-2">
+                                <button [disabled]="(loading === true)" class="btn btn-light" (click)="goTo_back()">
+																	<span>Volver</span>
+																</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </div>
+    </div>
 </div>

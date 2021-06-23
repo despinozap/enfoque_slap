@@ -1,96 +1,84 @@
 <!-- start page title -->
 <div class="row">
-	<div class="col-12">
-			<div class="page-title-box d-flex align-items-center justify-content-between">
-					<h4 class="mb-0 font-size-18">Editar perfil de usuario</h4>
+    <div class="col-12">
+        <div class="page-title-box d-flex align-items-center justify-content-between">
+            <h4 class="mb-0 font-size-18">Editar perfil de usuario</h4>
 
-					<div class="page-title-right">
-							<ol class="breadcrumb m-0">
-									<li class="breadcrumb-item">Perfil</li>
-									<li class="breadcrumb-item active">Editar</li>
-							</ol>
-					</div>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item">Perfil</li>
+                    <li class="breadcrumb-item active">Editar</li>
+                </ol>
+            </div>
 
-			</div>
-	</div>
+        </div>
+    </div>
 </div>
 <!-- end page title -->
 
 <div class="row">
-	<div class="col-12">
-		<div class="card">
-			<div class="card-body">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
 
-				<div *ngIf="(loggedUser !== null)">
-					<h4 class="card-title">{{ loggedUser.name }}</h4>
-					<p class="card-title-desc">{{ loggedUser.role_name }}</p>
-				</div>
-				
-				<form [formGroup]="profileForm" (ngSubmit)="updateProfile()" action="#">
-					<div class="row">
-						<div class="col-12">
-							<div class="form-group">
-								<label class="control-label" for="email">Email</label>
-								<!-- Backend errors -->
-								<div class="alert alert-danger" *ngIf="(responseErrors.email)">
-									<div *ngFor="let errorMessage of responseErrors.email">{{ errorMessage }}</div>
-								</div>
-								<input type="text" class="form-control valid-control" name="email" id="email"
-									formControlName="email">
-								<!-- Frontend errors -->
-								<div
-									*ngIf="(profileForm.controls.email.errors) && (profileForm.controls.email.touched) && (profileForm.controls.email.dirty)">
-									<div class="error-response"
-										*ngIf="profileForm.controls.email.errors.required === true">El email es obligatorio
-									</div>
-									<div class="error-response"
-										*ngIf="profileForm.controls.email.errors.minlength !== null">El email debe tener al
-										menos 4 caracteres</div>
-								</div>
-							</div>
-						</div>
-						<div class="col-12">
-							<div class="form-group">
-								<label class="control-label" for="phone">Telefono</label>
-								<!-- Backend errors -->
-								<div class="alert alert-danger" *ngIf="(responseErrors.phone)">
-									<div *ngFor="let errorMessage of responseErrors.phone">{{ errorMessage }}</div>
-								</div>
-								<input type="text" class="form-control valid-control" name="phone" id="phone"
-									formControlName="phone">
-								<!-- Frontend errors -->
-								<div
-									*ngIf="(profileForm.controls.phone.errors) && (profileForm.controls.phone.touched) && (profileForm.controls.phone.dirty)">
-									<div class="error-response"
-										*ngIf="profileForm.controls.phone.errors.required === true">El telefono es
-										obligatorio
-									</div>
-									<div class="error-response"
-										*ngIf="profileForm.controls.phone.errors.minlength !== null">El telefono debe ser
-										valido</div>
-								</div>
-							</div>
-						</div>
-						<div class="col-12">
-							<div class="form-buttons mt-2">
-								<button type="submit" class="btn btn-primary mr-3"
-									[disabled]="(profileForm.invalid) || (loading === true)">
+                <div *ngIf="(loggedUser !== null)">
+                    <h4 class="card-title">{{ loggedUser.name }}</h4>
+                    <p class="card-title-desc">{{ loggedUser.role.name }}</p>
+                </div>
+
+                <form [formGroup]="profileForm" (ngSubmit)="updateProfile()" action="#">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label class="control-label" for="email">Email</label>
+                                <!-- Backend errors -->
+                                <div class="alert alert-danger" *ngIf="(responseErrors.email)">
+                                    <div *ngFor="let errorMessage of responseErrors.email">{{ errorMessage }}</div>
+                                </div>
+                                <input type="text" class="form-control valid-control" name="email" id="email" formControlName="email">
+                                <!-- Frontend errors -->
+                                <div *ngIf="(profileForm.controls.email.errors) && (profileForm.controls.email.touched) && (profileForm.controls.email.dirty)">
+                                    <div class="error-response" *ngIf="profileForm.controls.email.errors.required === true">El email es obligatorio
+                                    </div>
+                                    <div class="error-response" *ngIf="profileForm.controls.email.errors.minlength !== null">El email debe tener al menos 4 caracteres</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label class="control-label" for="phone">Telefono</label>
+                                <!-- Backend errors -->
+                                <div class="alert alert-danger" *ngIf="(responseErrors.phone)">
+                                    <div *ngFor="let errorMessage of responseErrors.phone">{{ errorMessage }}</div>
+                                </div>
+                                <input type="text" class="form-control valid-control" name="phone" id="phone" formControlName="phone">
+                                <!-- Frontend errors -->
+                                <div *ngIf="(profileForm.controls.phone.errors) && (profileForm.controls.phone.touched) && (profileForm.controls.phone.dirty)">
+                                    <div class="error-response" *ngIf="profileForm.controls.phone.errors.required === true">El telefono es obligatorio
+                                    </div>
+                                    <div class="error-response" *ngIf="profileForm.controls.phone.errors.minlength !== null">El telefono debe ser valido
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-buttons mt-2">
+                                <button type="submit" class="btn btn-primary mr-3" [disabled]="(profileForm.invalid) || (loading === true)">
 									<span *ngIf="loading === true">Cargando..</span>
 									<span *ngIf="loading === false">Guardar</span>
 								</button>
-								<button [disabled]="(loading === true)" class="btn btn-light"
-									(click)="goTo_profile()">
+                                <button [disabled]="(loading === true)" class="btn btn-light" (click)="goTo_profile()">
 									<span>Cancelar</span>
 								</button>
-							</div>
-						</div>
-					</div>
+                            </div>
+                        </div>
+                    </div>
 
-				</form>
+                </form>
 
-			</div>
-		</div>
+            </div>
+        </div>
 
-	</div>
+    </div>
 </div>
 <!-- end row -->

@@ -3,8 +3,6 @@ export interface User {
     name: string,
     email: string,
     phone: string,
-    role_id: number,
-    role_name: string,
-    country_id: number,
-    country_name: string
+    role: any,
+    stationable: any
 }
