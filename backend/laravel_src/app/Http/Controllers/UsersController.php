@@ -246,7 +246,7 @@ class UsersController extends Controller
                         switch($role->name)
                         {
                             // Vendedor solicitante (Vendedor en Sucursal)
-                            case 'vensol': {
+                            case 'seller': {
                                 
                                 $station = Sucursal::find($request->stationable_id);
 
@@ -496,8 +496,8 @@ class UsersController extends Controller
                         $station = null;
                         switch($user->role->name)
                         {
-                            // Vendedor solicitante (Vendedor en Sucursal)
-                            case 'vensol': {
+                            // Vendedor
+                            case 'seller': {
                                 
                                 $station = Sucursal::find($request->stationable_id);
 

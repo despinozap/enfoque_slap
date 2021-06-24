@@ -13,7 +13,7 @@ class Role extends Model
      *  Roles:
      *      suadm: Super Administrator
      *      admin: Administrador
-     *      vensol: Vendedor solicitante (Vendedor en Sucursal)
+     *      seller: Vendedor
      *      agtcom: Agente de compra en Comprador
      *      colcom: Coordinador Logistico comprador (bodega en Comprador)
      *      colsol: Coordinador Logistico solicitante (Bodega en Sucursal)

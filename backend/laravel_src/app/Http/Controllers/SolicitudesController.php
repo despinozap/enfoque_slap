@@ -30,11 +30,198 @@ class SolicitudesController extends Controller
             $user = Auth::user();
             if($user->role->hasRoutepermission('solicitudes index'))
             {
-                switch($user->role->id)
+                switch($user->role->name)
                 {
-                    case 2: //Vendedor
+                    case 'admin': // Administrador
                         {
-                            if($solicitudes = Solicitud::where('user_id', $user->id)->get()) //Only belonging data
+                            if(
+                                $solicitudes = Solicitud::select('solicitudes.*')
+                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // All the data in its own country
+                                            ->get()
+                            )
+                            {
+                                foreach($solicitudes as $solicitud)
+                                {
+                                    $solicitud->makeHidden([
+                                        'partes',
+                                        'sucursal_id',
+                                        'faena_id',
+                                        'marca_id',
+                                        'comprador_id',
+                                        'user_id', 
+                                        'estadosolicitud_id'
+                                    ]);
+
+                                    foreach($solicitud->partes as $parte)
+                                    {   
+                                        $parte->makeHidden(['marca_id', 'created_at', 'updated_at']);
+                                        
+                                        $parte->pivot;
+                                        $parte->pivot->makeHidden(['solicitud_id', 'parte_id']);
+
+                                        $parte->marca;
+                                        $parte->marca->makeHidden(['created_at', 'updated_at']);
+                                    }
+
+                                    $solicitud->partes_total;
+                                    $solicitud->sucursal;
+                                    $solicitud->sucursal->makeHidden([
+                                        'type',
+                                        'rut',
+                                        'address',
+                                        'city',
+                                        'country_id',
+                                        'created_at', 
+                                        'updated_at'
+                                    ]);
+                                    $solicitud->faena;
+                                    $solicitud->faena->makeHidden([
+                                        'sucursal_id',
+                                        'rut',
+                                        'address',
+                                        'city',
+                                        'contact',
+                                        'phone',
+                                        'cliente_id', 
+                                        'created_at', 
+                                        'updated_at'
+                                    ]);
+                                    $solicitud->faena->cliente;
+                                    $solicitud->faena->cliente->makeHidden(['country_id', 'created_at', 'updated_at']);
+                                    $solicitud->marca;
+                                    $solicitud->marca->makeHidden(['created_at', 'updated_at']);
+                                    $solicitud->comprador;
+                                    $solicitud->comprador->makeHidden([
+                                        'rut',
+                                        'address',
+                                        'city',
+                                        'contact',
+                                        'phone',
+                                        'country_id', 
+                                        'created_at', 
+                                        'updated_at'
+                                    ]);
+                                    $solicitud->user;
+                                    $solicitud->user->makeHidden(['email', 'phone', 'country_id', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
+                                    $solicitud->estadosolicitud;
+                                    $solicitud->estadosolicitud->makeHidden(['created_at', 'updated_at']);
+                                }
+
+                                $response = HelpController::buildResponse(
+                                    200,
+                                    null,
+                                    $solicitudes
+                                );
+                            }
+                            else
+                            {
+                                $response = HelpController::buildResponse(
+                                    500,
+                                    'Error al obtener la lista de solicitudes',
+                                    null
+                                );
+                            }
+
+                            break;
+                        }
+
+                    case 'seller': // Vendedor
+                        {
+                            if(
+                                $solicitudes = Solicitud::where('sucursal_id', '=', $user->stationable->id)  //Only belonging data in its Sucursal
+                                            ->where('user_id', '=', $user->id)
+                                            ->get()
+                            )
+                            {
+                                foreach($solicitudes as $solicitud)
+                                {
+                                    $solicitud->makeHidden([
+                                        'partes',
+                                        'sucursal_id',
+                                        'faena_id',
+                                        'marca_id',
+                                        'comprador_id',
+                                        'user_id', 
+                                        'estadosolicitud_id'
+                                    ]);
+
+                                    foreach($solicitud->partes as $parte)
+                                    {   
+                                        $parte->makeHidden(['marca_id', 'created_at', 'updated_at']);
+                                        
+                                        $parte->pivot;
+                                        $parte->pivot->makeHidden(['solicitud_id', 'parte_id']);
+
+                                        $parte->marca;
+                                        $parte->marca->makeHidden(['created_at', 'updated_at']);
+                                    }
+
+                                    $solicitud->partes_total;
+                                    $solicitud->sucursal;
+                                    $solicitud->sucursal->makeHidden([
+                                        'type',
+                                        'rut',
+                                        'address',
+                                        'city',
+                                        'country_id',
+                                        'created_at', 
+                                        'updated_at'
+                                    ]);
+                                    $solicitud->faena;
+                                    $solicitud->faena->makeHidden([
+                                        'sucursal_id',
+                                        'rut',
+                                        'address',
+                                        'city',
+                                        'contact',
+                                        'phone',
+                                        'cliente_id', 
+                                        'created_at', 
+                                        'updated_at'
+                                    ]);
+                                    $solicitud->faena->cliente;
+                                    $solicitud->faena->cliente->makeHidden(['country_id', 'created_at', 'updated_at']);
+                                    $solicitud->marca;
+                                    $solicitud->marca->makeHidden(['created_at', 'updated_at']);
+                                    $solicitud->comprador;
+                                    $solicitud->comprador->makeHidden([
+                                        'rut',
+                                        'address',
+                                        'city',
+                                        'contact',
+                                        'phone',
+                                        'country_id', 
+                                        'created_at', 
+                                        'updated_at'
+                                    ]);
+                                    $solicitud->user;
+                                    $solicitud->user->makeHidden(['email', 'phone', 'country_id', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
+                                    $solicitud->estadosolicitud;
+                                    $solicitud->estadosolicitud->makeHidden(['created_at', 'updated_at']);
+                                }
+
+                                $response = HelpController::buildResponse(
+                                    200,
+                                    null,
+                                    $solicitudes
+                                );
+                            }
+                            else
+                            {
+                                $response = HelpController::buildResponse(
+                                    500,
+                                    'Error al obtener la lista de solicitudes',
+                                    null
+                                );
+                            }
+
+                            break;
+                        }
+
+                    case 'agtcom': // Agente de compra
+                        {
+                            if($solicitudes = Solicitud::where('comprador_id', '=', $user->stationable->id)->get()) //Only Solicitudes for its Comprador
                             {
                                 foreach($solicitudes as $solicitud)
                                 {
@@ -122,93 +309,11 @@ class SolicitudesController extends Controller
                         }
 
                     default: //All others
-                    {
-                        if($solicitudes = Solicitud::all())
                         {
-                            foreach($solicitudes as $solicitud)
-                            {
-                                $solicitud->makeHidden([
-                                    'partes',
-                                    'sucursal_id',
-                                    'faena_id',
-                                    'marca_id',
-                                    'comprador_id',
-                                    'user_id', 
-                                    'estadosolicitud_id'
-                                ]);
+                            $solicitudes = [];
 
-                                foreach($solicitud->partes as $parte)
-                                {   
-                                    $parte->makeHidden(['marca_id', 'created_at', 'updated_at']);
-                                    
-                                    $parte->pivot;
-                                    $parte->pivot->makeHidden(['solicitud_id', 'parte_id']);
-
-                                    $parte->marca;
-                                    $parte->marca->makeHidden(['created_at', 'updated_at']);
-                                }
-
-                                $solicitud->partes_total;
-                                $solicitud->sucursal;
-                                $solicitud->sucursal->makeHidden([
-                                    'type',
-                                    'rut',
-                                    'address',
-                                    'city',
-                                    'country_id',
-                                    'created_at', 
-                                    'updated_at'
-                                ]);
-                                $solicitud->faena;
-                                $solicitud->faena->makeHidden([
-                                    'sucursal_id',
-                                    'rut',
-                                    'address',
-                                    'city',
-                                    'contact',
-                                    'phone',
-                                    'cliente_id', 
-                                    'created_at', 
-                                    'updated_at'
-                                ]);
-                                $solicitud->faena->cliente;
-                                $solicitud->faena->cliente->makeHidden(['country_id', 'created_at', 'updated_at']);
-                                $solicitud->marca;
-                                $solicitud->marca->makeHidden(['created_at', 'updated_at']);
-                                $solicitud->comprador;
-                                $solicitud->comprador->makeHidden([
-                                    'rut',
-                                    'address',
-                                    'city',
-                                    'contact',
-                                    'phone',
-                                    'country_id', 
-                                    'created_at', 
-                                    'updated_at'
-                                ]);
-                                $solicitud->user;
-                                $solicitud->user->makeHidden(['email', 'phone', 'country_id', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
-                                $solicitud->estadosolicitud;
-                                $solicitud->estadosolicitud->makeHidden(['created_at', 'updated_at']);
-                            }
-
-                            $response = HelpController::buildResponse(
-                                200,
-                                null,
-                                $solicitudes
-                            );
+                            break;
                         }
-                        else
-                        {
-                            $response = HelpController::buildResponse(
-                                500,
-                                'Error al obtener la lista de solicitudes',
-                                null
-                            );
-                        }
-
-                        break;
-                    }
                 }
                 
             }
@@ -248,24 +353,16 @@ class SolicitudesController extends Controller
      * selecting data and storing a new Solicitud
      * 
      */
-    public function store_prepare($sucursal_id)
+    public function store_prepare()
     {
         try
         {
             $user = Auth::user();
             if($user->role->hasRoutepermission('solicitudes store'))
             {
-                if( ! ($sucursal = Sucursal::find($sucursal_id)) )
-                {
-                    $response = HelpController::buildResponse(
-                        500,
-                        'Error al obtener la sucursal',
-                        null
-                    );
-                }
-                else if( ! ($faenas = Faena::select('faenas.*')
+                if( ! ($faenas = Faena::select('faenas.*')
                                     ->join('clientes', 'clientes.id', '=', 'faenas.cliente_id')
-                                    ->where('clientes.country_id', '=', $sucursal->country_id) // Gets only the Faenas in the same country than Sucursal
+                                    ->where('clientes.country_id', '=', $user->stationable->country->id) // Gets only the Faenas in the same country than Sucursal
                                     ->get()
                             )
                 )
@@ -444,9 +541,21 @@ class SolicitudesController extends Controller
                         null
                     );
                 }
+                // For 'admin' and 'seller' checks if they belong to the same Sucursal
+                else if (
+                    (in_array($user->role->name, ['admin', 'seller'])) && 
+                    ($request->sucursal_id !== $user->stationable->id)
+                ) 
+                {
+                    $response = HelpController::buildResponse(
+                        409,
+                        'No puedes crear solicitudes bajo otras sucursales',
+                        null
+                    );
+                }
                 else        
                 {
-                    // Check if faena is in the same country than Surursal
+                    // Check if faena is in the same country than Sucursal
                     if($faena = Faena::select('faenas.*')
                         ->join('clientes', 'clientes.id', '=', 'faenas.cliente_id')
                         ->join('sucursales', 'sucursales.country_id', '=', 'clientes.country_id')
@@ -579,9 +688,29 @@ class SolicitudesController extends Controller
             {
                 if($solicitud = Solicitud::find($id))
                 {
-                    if(($user->role_id === 2) && ($solicitud->user_id !== $user->id))
+                    // Administrador
+                    if(
+                        ($user->role->name === 'admin') && 
+                        ($solicitud->sucursal->country->id !== $user->stationable->country->id)
+                    )
                     {
-                        //If Vendedor and solicitud doesn't belong
+                        //If Administrator and solicitud doesn't belong to its country
+                        $response = HelpController::buildResponse(
+                            405,
+                            'No tienes acceso a visualizar esta solicitud',
+                            null
+                        );
+                    }
+                    // Vendedor
+                    else if(
+                        ($user->role->name === 'seller') &&
+                        (
+                            ($solicitud->sucursal->id !== $user->stationable->id) ||
+                            ($solicitud->user->id !== $user->id)
+                        ) 
+                    )
+                    {
+                        //If Vendedor and solicitud doesn't belong or not in its Sucursal
                         $response = HelpController::buildResponse(
                             405,
                             'No tienes acceso a visualizar esta solicitud',
@@ -665,9 +794,9 @@ class SolicitudesController extends Controller
                                 $parte->marca;
                                 $parte->marca->makeHidden(['created_at', 'updated_at']);
         
-                                switch($user->role_id)
+                                switch($user->role->name)
                                 {
-                                    case 1: { // Administrador
+                                    case 'admin': { // Administrador
         
                                         $parte->pivot->makeHidden([
                                             'solicitud_id',
@@ -680,7 +809,7 @@ class SolicitudesController extends Controller
                                         break;
                                     }
         
-                                    case 2: { // Vendedor
+                                    case 'seller': { // Vendedor
         
                                         if($parte->pivot->monto !== null)
                                         {
@@ -692,6 +821,21 @@ class SolicitudesController extends Controller
                                             'margen',
                                             'peso',
                                             'flete',
+                                            'solicitud_id',
+                                            'parte_id',
+                                            'marca_id',
+                                            'created_at', 
+                                            'updated_at'
+                                        ]);
+        
+                                        break;
+                                    }
+
+                                    case 'agtcom': { // Agente de compra
+        
+                                        $parte->pivot->makeHidden([
+                                            'solicitud_id',
+                                            'parte_id',
                                             'marca_id', 
                                             'created_at', 
                                             'updated_at'
@@ -840,9 +984,29 @@ class SolicitudesController extends Controller
                             ->first()
                         )
                         {
-                            if(($user->role_id === 2) && ($solicitud->user_id !== $user->id))
+                            // Administrador
+                            if(
+                                ($user->role->name === 'admin') && 
+                                ($solicitud->sucursal->country->id !== $user->stationable->country->id)
+                            )
                             {
-                                //If Vendedor and solicitud doesn't belong
+                                //If Administrator and solicitud doesn't belong to its country
+                                $response = HelpController::buildResponse(
+                                    405,
+                                    'No tienes acceso a actualizar esta solicitud',
+                                    null
+                                );
+                            }
+                            // Vendedor
+                            else if(
+                                ($user->role->name === 'seller') &&
+                                (
+                                    ($solicitud->sucursal->id !== $user->stationable->id) ||
+                                    ($solicitud->user->id !== $user->id)
+                                ) 
+                            )
+                            {
+                                //If Vendedor and solicitud doesn't belong or not in its Sucursal
                                 $response = HelpController::buildResponse(
                                     405,
                                     'No tienes acceso a actualizar esta solicitud',
@@ -1038,151 +1202,189 @@ class SolicitudesController extends Controller
                 {
                     if($solicitud = Solicitud::find($id))
                     {    
-                        $success = true;
-        
-                        DB::beginTransaction();
-
-                        $syncData = [];
-                        foreach($request->partes as $parte)
+                        // Administrador
+                        if(
+                            ($user->role->name === 'admin') && 
+                            ($solicitud->sucursal->country->id !== $user->stationable->country->id)
+                        )
                         {
-                            if($p = $solicitud->partes->where('nparte', $parte['nparte'])->first())
-                            {
-                                $syncData[$p->id] =  array(
-                                    'descripcion' => isset($parte['descripcion']) ? $parte['descripcion'] : null,
-                                    'cantidad' => $parte['cantidad'],
-                                    'costo' => isset($parte['costo']) ? $parte['costo'] : null,
-                                    'margen' => isset($parte['margen']) ? $parte['margen'] : null,
-                                    'tiempoentrega' => isset($parte['tiempoentrega']) ? $parte['tiempoentrega'] : null,
-                                    'peso' => isset($parte['peso']) ? $parte['peso'] : null,
-                                    'flete' => isset($parte['flete']) ? $parte['flete'] : null,
-                                    'monto' => isset($parte['monto']) ? $parte['monto'] : null,
-                                    'backorder' => $parte['backorder'],
-                                );
-                            }
-                            else
-                            {
-                                $success = false;
-
-                                $response = HelpController::buildResponse(
-                                    409,
-                                    'La parte N:' . $parte['nparte'] . ' no existe en la solicitud seleccionada',
-                                    null
-                                );
-
-                                break;
-                            }
-                        }
-                        
-                        $solicitud->partes()->sync($syncData);
-
-                        $completed = true;
-                        foreach($syncData as $parte)
-                        {
-                            if(
-                                ($parte['costo'] === null) || 
-                                ($parte['margen'] === null) || 
-                                ($parte['tiempoentrega'] === null) || 
-                                ($parte['peso'] === null) || 
-                                ($parte['flete'] === null) || 
-                                ($parte['monto'] === null)
-                            )
-                            {
-                                $completed = false;
-                                
-                                break;
-                            }
-                        }
-
-                        if($completed === true)
-                        {
-                            $solicitud->estadosolicitud_id = 2; // Completada
-                        }
-                        else
-                        {
-                            $solicitud->estadosolicitud_id = 1; // Pendiente
-                        }
-
-                        $solicitud->save();
-
-                        if($success === true)
-                        {
-                            DB::commit();
-                            $solicitud = Solicitud::find($id);
-
-                            $solicitud->makeHidden([
-                                'faena_id',
-                                'estadosolicitud_id',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-            
-                            $solicitud->partes_total;
-                                    
-                            $solicitud->sucursal;
-                            $solicitud->sucursal->makeHidden([
-                                'type',
-                                'rut',
-                                'address',
-                                'city',
-                                'country_id',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-                            
-                            $solicitud->faena;
-                            $solicitud->faena->makeHidden([
-                                'rut',
-                                'address',
-                                'city',
-                                'contact',
-                                'phone',
-                                'cliente_id', 
-                                'created_at', 
-                                'updated_at'
-                            ]);
-                            
-                            $solicitud->faena->cliente;
-                            $solicitud->faena->cliente->makeHidden(['country_id', 'created_at', 'updated_at']);
-                            
-                            $solicitud->marca;
-                            $solicitud->marca->makeHidden(['created_at', 'updated_at']);
-                            
-                            $solicitud->comprador;
-                            $solicitud->comprador->makeHidden([
-                                'rut',
-                                'address',
-                                'city',
-                                'contact',
-                                'phone',
-                                'country_id', 
-                                'created_at', 
-                                'updated_at'
-                            ]);
-                            
-                            $solicitud->user;
-                            $solicitud->user->makeHidden(['email', 'phone', 'country_id', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
-                            
-                            $solicitud->estadosolicitud;
-                            $solicitud->estadosolicitud->makeHidden(['created_at', 'updated_at']);
-            
-                            $solicitud->partes;
-                            foreach($solicitud->partes as $parte)
-                            {
-                                $parte->makeHidden(['marca_id', 'created_at', 'updated_at']);
-                                
-                                $parte->marca;
-                                $parte->marca->makeHidden(['created_at', 'updated_at']);
-                            }
-
+                            //If Administrator and solicitud doesn't belong to its country
                             $response = HelpController::buildResponse(
-                                200,
-                                ($completed === true) ? 'Solicitud completada' : 'Solicitud actualizada',
-                                $solicitud
+                                405,
+                                'No tienes acceso a completar esta solicitud',
+                                null
+                            );
+                        }
+                        // Agente de compra
+                        else if(
+                            ($user->role->name === 'agtcom') &&
+                            ($solicitud->comprador->id !== $user->stationable->id)
+                        )
+                        {
+                            //If Agente de compra and solicitud isn't to its Comprador
+                            $response = HelpController::buildResponse(
+                                405,
+                                'No tienes acceso a completar esta solicitud',
+                                null
+                            );
+                        }
+                        else if($solicitud->estadosolicitud_id === 3)
+                        {
+                            // If solicitud is already 'Cerrada'
+                            $response = HelpController::buildResponse(
+                                409,
+                                'No puedes completar una solicitud cerrada',
+                                null
                             );
                         }
                         else
                         {
-                            DB::rollback();
+                            $success = true;
+            
+                            DB::beginTransaction();
+    
+                            $syncData = [];
+                            foreach($request->partes as $parte)
+                            {
+                                if($p = $solicitud->partes->where('nparte', $parte['nparte'])->first())
+                                {
+                                    $syncData[$p->id] =  array(
+                                        'descripcion' => isset($parte['descripcion']) ? $parte['descripcion'] : null,
+                                        'cantidad' => $parte['cantidad'],
+                                        'costo' => isset($parte['costo']) ? $parte['costo'] : null,
+                                        'margen' => isset($parte['margen']) ? $parte['margen'] : null,
+                                        'tiempoentrega' => isset($parte['tiempoentrega']) ? $parte['tiempoentrega'] : null,
+                                        'peso' => isset($parte['peso']) ? $parte['peso'] : null,
+                                        'flete' => isset($parte['flete']) ? $parte['flete'] : null,
+                                        'monto' => isset($parte['monto']) ? $parte['monto'] : null,
+                                        'backorder' => $parte['backorder'],
+                                    );
+                                }
+                                else
+                                {
+                                    $success = false;
+    
+                                    $response = HelpController::buildResponse(
+                                        409,
+                                        'La parte N:' . $parte['nparte'] . ' no existe en la solicitud seleccionada',
+                                        null
+                                    );
+    
+                                    break;
+                                }
+                            }
+                            
+                            $solicitud->partes()->sync($syncData);
+    
+                            $completed = true;
+                            foreach($syncData as $parte)
+                            {
+                                if(
+                                    ($parte['costo'] === null) || 
+                                    ($parte['margen'] === null) || 
+                                    ($parte['tiempoentrega'] === null) || 
+                                    ($parte['peso'] === null) || 
+                                    ($parte['flete'] === null) || 
+                                    ($parte['monto'] === null)
+                                )
+                                {
+                                    $completed = false;
+                                    
+                                    break;
+                                }
+                            }
+    
+                            if($completed === true)
+                            {
+                                $solicitud->estadosolicitud_id = 2; // Completada
+                            }
+                            else
+                            {
+                                $solicitud->estadosolicitud_id = 1; // Pendiente
+                            }
+    
+                            $solicitud->save();
+    
+                            if($success === true)
+                            {
+                                DB::commit();
+                                $solicitud = Solicitud::find($id);
+    
+                                $solicitud->makeHidden([
+                                    'faena_id',
+                                    'estadosolicitud_id',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+                
+                                $solicitud->partes_total;
+                                        
+                                $solicitud->sucursal;
+                                $solicitud->sucursal->makeHidden([
+                                    'type',
+                                    'rut',
+                                    'address',
+                                    'city',
+                                    'country_id',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+                                
+                                $solicitud->faena;
+                                $solicitud->faena->makeHidden([
+                                    'rut',
+                                    'address',
+                                    'city',
+                                    'contact',
+                                    'phone',
+                                    'cliente_id', 
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+                                
+                                $solicitud->faena->cliente;
+                                $solicitud->faena->cliente->makeHidden(['country_id', 'created_at', 'updated_at']);
+                                
+                                $solicitud->marca;
+                                $solicitud->marca->makeHidden(['created_at', 'updated_at']);
+                                
+                                $solicitud->comprador;
+                                $solicitud->comprador->makeHidden([
+                                    'rut',
+                                    'address',
+                                    'city',
+                                    'contact',
+                                    'phone',
+                                    'country_id', 
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+                                
+                                $solicitud->user;
+                                $solicitud->user->makeHidden(['email', 'phone', 'country_id', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
+                                
+                                $solicitud->estadosolicitud;
+                                $solicitud->estadosolicitud->makeHidden(['created_at', 'updated_at']);
+                
+                                $solicitud->partes;
+                                foreach($solicitud->partes as $parte)
+                                {
+                                    $parte->makeHidden(['marca_id', 'created_at', 'updated_at']);
+                                    
+                                    $parte->marca;
+                                    $parte->marca->makeHidden(['created_at', 'updated_at']);
+                                }
+    
+                                $response = HelpController::buildResponse(
+                                    200,
+                                    ($completed === true) ? 'Solicitud completada' : 'Solicitud actualizada',
+                                    $solicitud
+                                );
+                            }
+                            else
+                            {
+                                DB::rollback();
+                            }
                         }
                     }
                     else
@@ -1227,12 +1429,41 @@ class SolicitudesController extends Controller
             {
                 if($solicitud = Solicitud::find($id))
                 {    
-                    if(($user->role_id === 2) && ($solicitud->user_id !== $user->id))
+                    // Administrador
+                    if(
+                        ($user->role->name === 'admin') && 
+                        ($solicitud->sucursal->country->id !== $user->stationable->country->id)
+                    )
                     {
-                        //If Vendedor and solicitud doesn't belong
+                        //If Administrator and solicitud doesn't belong to its country
                         $response = HelpController::buildResponse(
                             405,
                             'No tienes acceso a cerrar esta solicitud',
+                            null
+                        );
+                    }
+                    // Vendedor
+                    else if(
+                        ($user->role->name === 'seller') &&
+                        (
+                            ($solicitud->sucursal->id !== $user->stationable->id) || 
+                            ($solicitud->user->id !== $user->id)
+                        )
+                    )
+                    {
+                        //If Vendedor and solicitud doesn't belong or isn't to its Sucursal
+                        $response = HelpController::buildResponse(
+                            405,
+                            'No tienes acceso a cerrar esta solicitud',
+                            null
+                        );
+                    }
+                    else if($solicitud->estadosolicitud_id === 3) // Cerrada
+                    {
+                        // If solicitud is already 'Cerrada'
+                        $response = HelpController::buildResponse(
+                            409,
+                            'La solicitud ya esta cerrada',
                             null
                         );
                     }
@@ -1380,41 +1611,59 @@ class SolicitudesController extends Controller
             {
                 if($solicitud = Solicitud::find($id))
                 {    
-                    if(($user->role_id === 2) && ($solicitud->user_id !== $user->id))
+                    // Administrador
+                    if(
+                        ($user->role->name === 'admin') && 
+                        ($solicitud->sucursal->country->id !== $user->stationable->country->id)
+                    )
                     {
-                        //If Vendedor and solicitud doesn't belong
+                        //If Administrator and solicitud doesn't belong to its country
                         $response = HelpController::buildResponse(
                             405,
                             'No tienes acceso a eliminar esta solicitud',
                             null
                         );
                     }
+                    // Vendedor
+                    else if(
+                        ($user->role->name === 'seller') &&
+                        (
+                            ($solicitud->sucursal->id !== $user->stationable->id) || 
+                            ($solicitud->user->id !== $user->id)
+                        )
+                    )
+                    {
+                        //If Vendedor and solicitud doesn't belong or isn't to its Sucursal
+                        $response = HelpController::buildResponse(
+                            405,
+                            'No tienes acceso a eliminar esta solicitud',
+                            null
+                        );
+                    }
+                    else if($solicitud->estadosolicitud_id === 3) // Cerrada
+                    {
+                        // If solicitud is already 'Cerrada'
+                        $response = HelpController::buildResponse(
+                            409,
+                            'No puedes eliminar una solicitud cerrada',
+                            null
+                        );
+                    }
                     else
                     {
-                        if(($solicitud->estadosolicitud_id === 1) || ($solicitud->estadosolicitud_id === 2))// If Estadosolicitud = 'Pendiente' or 'Completada'
+                        if($solicitud->delete())
                         {
-                            if($solicitud->delete())
-                            {
-                                $response = HelpController::buildResponse(
-                                    200,
-                                    'Solicitud eliminada',
-                                    null
-                                );
-                            }
-                            else
-                            {
-                                $response = HelpController::buildResponse(
-                                    500,
-                                    'Error al eliminar la solicitud',
-                                    null
-                                );
-                            }
+                            $response = HelpController::buildResponse(
+                                200,
+                                'Solicitud eliminada',
+                                null
+                            );
                         }
                         else
                         {
                             $response = HelpController::buildResponse(
-                                409,
-                                'La solicitud ya esta cerrada',
+                                500,
+                                'Error al eliminar la solicitud',
                                 null
                             );
                         }

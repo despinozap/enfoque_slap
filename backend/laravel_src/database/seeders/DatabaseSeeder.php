@@ -324,17 +324,36 @@ class DatabaseSeeder extends Seeder
             $role->routepermissions()->sync($routePermissionIds);
         }
         
-        //Vendedor solicitante en Sucursal
+        //Vendedor
         {
             $role = new Role();
-            $role->name = 'vensol';
-            $role->label = 'Vendedor (CL)';
+            $role->name = 'seller';
+            $role->label = 'Vendedor';
             $role->save();
 
             $routePermissionNames = [
                 //Loggedactions
                 'loggedactions index',
-                'loggedactions store'
+                'loggedactions store',
+                //Solicitudes
+                'solicitudes index',
+                'solicitudes store',
+                'solicitudes show',
+                'solicitudes update',
+                'solicitudes close',
+                'solicitudes destroy',
+                //Cotizaciones
+                'cotizaciones index',
+                'cotizaciones show',
+                'cotizaciones report',
+                'cotizaciones approve',
+                'cotizaciones reject',
+                'cotizaciones close',
+                //Ocs
+                'ocs index',
+                'ocs show',
+                'ocs update',
+                'ocs reject'
             ];
 
             $routePermissionIds = [];
@@ -354,13 +373,24 @@ class DatabaseSeeder extends Seeder
         {
             $role = new Role();
             $role->name = 'agtcom';
-            $role->label = 'Agente Compras (USA)';
+            $role->label = 'Agente Compras';
             $role->save();
 
             $routePermissionNames = [
                 //Loggedactions
                 'loggedactions index',
-                'loggedactions store'
+                'loggedactions store',
+                //Solicitudes
+                'solicitudes index',
+                'solicitudes show',
+                'solicitudes complete',
+                //Cotizaciones
+                'cotizaciones index',
+                'cotizaciones show',
+                //Ocs
+                'ocs index',
+                'ocs show',
+                'ocs update'
             ];
 
             $routePermissionIds = [];
@@ -380,7 +410,7 @@ class DatabaseSeeder extends Seeder
         {
             $role = new Role();
             $role->name = 'colcom';
-            $role->label = 'Coordinador (USA)';
+            $role->label = 'Coordinador COM';
             $role->save();
 
             $routePermissionNames = [
@@ -406,7 +436,7 @@ class DatabaseSeeder extends Seeder
         {
             $role = new Role();
             $role->name = 'colsol';
-            $role->label = 'Coordinador (CL)';
+            $role->label = 'Coordinador SOL';
             $role->save();
 
             $routePermissionNames = [
@@ -479,7 +509,7 @@ class DatabaseSeeder extends Seeder
         /*
         *   Users
         */
-        //Administrador
+        // Administrador
         $station = Sucursal::find(2); // Sucursal Antofagasta
         $user = new User();
         $user->stationable_type = get_class($station);
@@ -491,16 +521,28 @@ class DatabaseSeeder extends Seeder
         $user->role_id = 2; // Administrador
         $user->save();
 
-        //Vendedor Chile
+        // Vendedor Chile
         $station = Sucursal::find(2); // Sucursal Antofagasta
         $user = new User();
         $user->stationable_type = get_class($station);
         $user->stationable_id = $station->id;
-        $user->name = 'Vendedor AP';
+        $user->name = 'VendedorTest ANF';
         $user->email = 'seller@mail.com';
         $user->phone = '9012345678';
         $user->password = bcrypt('seller');
         $user->role_id = 3; // Vendedor solicitante en Sucursal
+        $user->save();
+
+        // Agente de compra en Comprador
+        $station = Comprador::find(1); // Comprador USA
+        $user = new User();
+        $user->stationable_type = get_class($station);
+        $user->stationable_id = $station->id;
+        $user->name = 'AgenteTest MIA';
+        $user->email = 'agent@mail.com';
+        $user->phone = '9012345678';
+        $user->password = bcrypt('agent');
+        $user->role_id = 4; // Agente de compra en Comprador
         $user->save();
 
 
@@ -989,8 +1031,8 @@ class DatabaseSeeder extends Seeder
                             );
                         }
         
-                        // Fill partes in Cotizacion using all the partes in Solicitud
-                        if(!$cotizacion->partes()->sync($syncData))
+                        // Fill randomly Partes for Cotizacion and update values on Solicitud
+                        if((!$solicitud->partes()->sync($syncData)) || (!$cotizacion->partes()->sync($syncData)))
                         {
                             $success = false;
                         }
