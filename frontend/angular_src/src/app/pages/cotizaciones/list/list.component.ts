@@ -1,6 +1,7 @@
 import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
+import { User } from 'src/app/interfaces/user';
 import { AuthService } from 'src/app/services/auth.service';
 import { CotizacionesService } from 'src/app/services/cotizaciones.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
@@ -48,9 +49,9 @@ export class CotizacionesListComponent implements OnInit, AfterViewInit {
 
   cotizaciones: any[] = [];
   loading: boolean = false;
-  loggedUser: any = {
-    role_id: -1,
-  };
+
+  loggedUser: User = null as any;
+  private subLoggedUser: any;
 
   reportsDataCotizacion: any[] = [];
 
@@ -64,8 +65,8 @@ export class CotizacionesListComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     //For loggedUser
     {
-      this._authService.loggedUser$.subscribe((data) => {
-        this.loggedUser = data.user;
+      this.subLoggedUser = this._authService.loggedUser$.subscribe((data) => {
+        this.loggedUser = data.user as User;
       });
       
       this._authService.notifyLoggedUser(this._authService.NOTIFICATION_RECEIVER_CONTENTPAGE);
@@ -83,6 +84,7 @@ export class CotizacionesListComponent implements OnInit, AfterViewInit {
   }
 
   ngOnDestroy(): void {
+    this.subLoggedUser.unsubscribe();
     this.dtTrigger.unsubscribe();
   }
 

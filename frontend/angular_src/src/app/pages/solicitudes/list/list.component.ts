@@ -49,8 +49,8 @@ export class SolicitudesListComponent implements OnInit {
 
   solicitudes: any[] = [];
   loading: boolean = false;
+  
   loggedUser: User = null as any;
-
   private subLoggedUser: any;
 
   constructor(

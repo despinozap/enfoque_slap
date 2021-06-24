@@ -28,10 +28,7 @@
                     <div class="btn-group mr-1 mt-2 btn-right dropleft">
                         <button [hidden]="(cotizacion.solicitud_id <= 0)" [disabled]="(loading === true)" type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="mdi mdi-chevron-left"></i> Referencias</button>
                         <div class="dropdown-menu">
-                            <a class="dropdown-item" [hidden]="(loggedUser.role_id !== 1)" [routerLink]="['/panel/solicitudes/details/administrator', cotizacion.solicitud_id]">Ver
-                                Solicitud</a>
-                            <a class="dropdown-item" [hidden]="(loggedUser.role_id !== 2)" [routerLink]="['/panel/solicitudes/details/seller', cotizacion.solicitud_id]">Ver
-                                Solicitud</a>
+                            <a class="dropdown-item" [routerLink]="['/panel/solicitudes/details', cotizacion.solicitud_id]">Ver Solicitud</a>
                         </div>
                     </div>
                 </div>
@@ -97,14 +94,15 @@
                     <div class="table-responsive">
 
                         <table datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger" class="table table-hover table-bordered mb-2">
+                            <!-- <table class="table table-hover table-bordered mb-2"> -->
                             <thead>
                                 <tr>
                                     <th>Cantidad</th>
                                     <th>N° Parte</th>
                                     <th>Descripcion</th>
                                     <th>Tiempo de entrega</th>
-                                    <th>Precio unitario {{ (loggedUser.role_id === 2) ? "(CLP)" : "(USD)" }}</th>
-                                    <th>Precio total {{ (loggedUser.role_id === 2) ? "(CLP)" : "(USD)" }}</th>
+                                    <th>Precio unitario {{ ((loggedUser !== null) && (loggedUser.role.name === 'seller')) ? "(CLP)" : "(USD)" }}</th>
+                                    <th>Precio total {{ ((loggedUser !== null) && (loggedUser.role.name === 'seller')) ? "(CLP)" : "(USD)" }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -114,20 +112,21 @@
                                     <td align="left">{{ parte.descripcion !== null ? parte.descripcion : "" }}</td>
                                     <td align="right">{{ parte.tiempoentrega !== null ? parte.tiempoentrega + " dias" : "" }}
                                     </td>
-                                    <td align="right">{{ parte.monto !== null ? ((loggedUser.role_id === 2) ? "$" + moneyStringFormat(parte.monto * cotizacion.usdvalue) : "$" + moneyStringFormat(parte.monto)) : "" }}
+                                    <td align="right">{{ parte.monto !== null ? (((loggedUser !== null) && (loggedUser.role.name === 'seller')) ? "$" + moneyStringFormat(parte.monto * cotizacion.usdvalue) : "$" + moneyStringFormat(parte.monto)) : "" }}
                                     </td>
-                                    <td align="right">{{ parte.monto !== null ? ((loggedUser.role_id === 2) ? "$" + moneyStringFormat((parte.monto * cotizacion.usdvalue) * parte.cantidad) : "$" + moneyStringFormat(parte.monto * parte.cantidad)) : "" }}
+                                    <td align="right">{{ parte.monto !== null ? (((loggedUser !== null) && (loggedUser.role.name === 'seller')) ? "$" + moneyStringFormat((parte.monto * cotizacion.usdvalue) * parte.cantidad) : "$" + moneyStringFormat(parte.monto * parte.cantidad))
+                                        : "" }}
                                     </td>
-                                </tr>
-                                <tr class="row-total" *ngIf="(partes.length > 0)">
-                                    <td colspan="5" align="right">Total Neto</td>
-                                    <td align="right">{{ (loggedUser.role_id === 2) ? "$" + moneyStringFormat(cotizacion.monto * cotizacion.usdvalue) : "$" + moneyStringFormat(cotizacion.monto) }}</td>
                                 </tr>
                             </tbody>
                             <tfoot>
+                                <tr class="row-total">
+                                    <td colspan="5" align="right">{{ (cotizacion.monto !== null) ? 'Total Neto' : '' }}</td>
+                                    <td align="right">{{ (cotizacion.monto !== null) ? (((loggedUser !== null) && (loggedUser.role.name === 'seller')) ? "$" + moneyStringFormat(cotizacion.monto * cotizacion.usdvalue) : "$" + moneyStringFormat(cotizacion.monto)) : '' }}</td>
+                                </tr>
                                 <tr>
                                     <td colspan="3" align="left">
-                                        <button type="button" class="btn btn-outline-primary mr-2" (click)="goTo_estadoComercial()" [hidden]="(cotizacion.estadocotizacion_id !== 1) && (cotizacion.estadocotizacion_id !== 2)" [disabled]="(loading === true)">
+                                        <button type="button" class="btn btn-outline-primary mr-2" (click)="goTo_estadoComercial()" *ngIf="((loggedUser !== null) && (['admin', 'seller'].includes(loggedUser.role.name))) && ([1, 2].includes(cotizacion.estadocotizacion_id))" [disabled]="(loading === true)">
                                             <i class="bx bx-check font-size-16 align-middle"></i> Definir estado
                                             comercial
                                         </button>
@@ -219,9 +218,9 @@
                                                 <th>N° Parte</th>
                                                 <th>Descripcion</th>
                                                 <th>Tiempo de entrega</th>
-                                                <th>Precio unitario {{ (loggedUser.role_id === 2) ? "(CLP)" : "(USD)" }}
+                                                <th>Precio unitario {{ ((loggedUser !== null) && (loggedUser.role.name === 'seller')) ? "(CLP)" : "(USD)" }}
                                                 </th>
-                                                <th>Precio total {{ (loggedUser.role_id === 2) ? "(CLP)" : "(USD)" }}
+                                                <th>Precio total {{ ((loggedUser !== null) && (loggedUser.role.name === 'seller')) ? "(CLP)" : "(USD)" }}
                                                 </th>
                                             </tr>
                                         </thead>
@@ -239,9 +238,10 @@
                                                 <td align="left"><i class="bx bx-timer icon-table" *ngIf="(parteAprobada.backorder === true)"></i>{{ parteAprobada.nparte !== null ? parteAprobada.nparte : "" }}</td>
                                                 <td align="right">{{ parteAprobada.descripcion !== null ? parteAprobada.descripcion : "" }}</td>
                                                 <td align="right">{{ parteAprobada.tiempoentrega !== null ? parteAprobada.tiempoentrega + " dias" : "" }}</td>
-                                                <td align="right">{{ parteAprobada.monto !== null ? ((loggedUser.role_id === 2) ? "$" + moneyStringFormat(parteAprobada.monto * cotizacion.usdvalue) : "$" + moneyStringFormat(parteAprobada.monto)) : "" }}
+                                                <td align="right">{{ parteAprobada.monto !== null ? (((loggedUser !== null) && (loggedUser.role.name === 'seller')) ? "$" + moneyStringFormat(parteAprobada.monto * cotizacion.usdvalue) : "$" + moneyStringFormat(parteAprobada.monto))
+                                                    : "" }}
                                                 </td>
-                                                <td align="right">{{ parteAprobada.monto !== null ? ((loggedUser.role_id === 2) ? "$" + moneyStringFormat((parteAprobada.monto * cotizacion.usdvalue) * parteAprobada.cantidad) : "$" + moneyStringFormat(parteAprobada.monto
+                                                <td align="right">{{ parteAprobada.monto !== null ? (((loggedUser !== null) && (loggedUser.role.name === 'seller')) ? "$" + moneyStringFormat((parteAprobada.monto * cotizacion.usdvalue) * parteAprobada.cantidad) : "$" + moneyStringFormat(parteAprobada.monto
                                                     * parteAprobada.cantidad)) : "" }}
                                                 </td>
                                             </tr>
@@ -285,8 +285,7 @@
                                         </div>
                                         <div class="custom-file">
                                             <input type="file" class="custom-file-input" (change)="onFileDocOCClienteSelected($event)" [disabled]="(loading === true)">
-                                            <label class="custom-file-label">{{ dococcliente === null ? 'No hay un
-                                                archivo seleccionado' : dococcliente.name }}</label>
+                                            <label class="custom-file-label">{{ dococcliente === null ? 'No hay un archivo seleccionado' : dococcliente.name }}</label>
                                         </div>
                                     </div>
 

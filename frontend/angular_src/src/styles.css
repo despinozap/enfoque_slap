@@ -1,92 +1,100 @@
 /* You can add global styles to this file, and also import other style files */
 
+
 /*  Top header */
+
 .navbar-header .d-flex .navbar-brand-box .logo .logo-lg label {
-  color: #ffffff;
-  font-size: 24px;
-  line-height: 24px;
-  font-weight: bold;
+    color: #ffffff;
+    font-size: 24px;
+    line-height: 24px;
+    font-weight: bold;
 }
 
+
 /* Sidebar menu */
+
 #sidebar-menu .logo-container {
-  width: 100%;
-  text-align: center;
+    width: 100%;
+    text-align: center;
 }
 
 #sidebar-menu .logo-container .menu-logo {
-  width: 200px;
-  margin: auto;
+    width: 200px;
+    margin: auto;
 }
 
 .vertical-collpsed #sidebar-menu .logo-container {
-  /* Hides logo when vertical menu is collapsed */
-  display: none;
+    /* Hides logo when vertical menu is collapsed */
+    display: none;
 }
 
+
 /*  Display forms */
+
 .badge {
-  font-size: 90%;
-  margin-bottom: 20px;
+    font-size: 90%;
+    margin-bottom: 20px;
 }
 
 label.control-label {
-  font-weight: 700;
+    font-weight: 700;
 }
 
 .custom-file-label {
-  cursor: pointer;
+    cursor: pointer;
 }
 
 .custom-file-label::after {
-  display: none; 
+    display: none;
 }
 
 input[type="number"] {
-  text-align: center;
+    text-align: center;
 }
 
+
 /*  DataTables */
+
 .dataTables_length .custom-select {
-  padding: 4px 28px 4px 8px !important;
+    padding: 4px 28px 4px 8px !important;
 }
 
 .dataTables_paginate .pagination .paginate_button {
-  padding: 0px !important;
-  margin: 0px !important;
+    padding: 0px !important;
+    margin: 0px !important;
 }
 
 .custom-header-checkbox {
-  padding-left: 1.5rem;
+    padding-left: 1.5rem;
 }
 
 .custom-header-checkbox label {
-  font-weight: 600;
+    font-weight: 600;
 }
 
 .icon-table {
-  font-size: 24px;
-  margin-right: 3px;
-  vertical-align: middle;
-  font-weight: 400;
+    font-size: 24px;
+    margin-right: 3px;
+    vertical-align: middle;
+    font-weight: 400;
 }
 
 .error-response {
-  color: #b1324b;
+    color: #b1324b;
 }
 
 .form-buttons {
-  text-align: left;
+    text-align: left;
 }
 
 .form-buttons button {
-  display: inline;
+    display: inline;
 }
 
 table tbody tr td .btn-table:not(:last-child) {
-  margin-right: 5px;
+    margin-right: 5px;
 }
 
-table tfoot tr td:not(:last-child){
-  border-right: 0px;
+table tfoot tr:not(.row-total) td:not(:last-child) {
+    border-right: 0px;
 }

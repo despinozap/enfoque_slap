@@ -9,6 +9,7 @@ import { CotizacionesService } from 'src/app/services/cotizaciones.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { UtilsService } from 'src/app/services/utils.service';
 import { PDFCotizacionComponent } from '../../pdfs/cotizacion/cotizacion.component';
+import { User } from 'src/app/interfaces/user';
 
 /* SweetAlert2 */
 const Swal = require('../../../../assets/vendors/sweetalert2/sweetalert2.all.min.js');
@@ -48,6 +49,9 @@ export class CotizacionesDetailsComponent implements OnInit, AfterViewInit {
   
   dtTrigger: Subject<any> = new Subject<any>();
   dtTriggerAprobar: Subject<any> = new Subject<any>();
+
+  loggedUser: User = null as any;
+  private subLoggedUser: any;
 
   cotizacion: any = {
     // Common fields
@@ -116,11 +120,6 @@ export class CotizacionesDetailsComponent implements OnInit, AfterViewInit {
   *       1: Rechazar
   */
   ESTADOCOMERCIAL_FORM: number = -1;
-
-
-  loggedUser: any = {
-    role_id: -1,
-  };
   
   constructor(
     private location: Location,
@@ -133,8 +132,8 @@ export class CotizacionesDetailsComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     //For loggedUser
     {
-      this._authService.loggedUser$.subscribe((data) => {
-        this.loggedUser = data.user;
+      this.subLoggedUser = this._authService.loggedUser$.subscribe((data) => {
+        this.loggedUser = data.user as User;
       });
       
       this._authService.notifyLoggedUser(this._authService.NOTIFICATION_RECEIVER_CONTENTPAGE);
@@ -158,6 +157,7 @@ export class CotizacionesDetailsComponent implements OnInit, AfterViewInit {
 
   ngOnDestroy(): void {
     this.sub.unsubscribe();
+    this.subLoggedUser.unsubscribe();
     this.dtTrigger.unsubscribe();
     this.dtTriggerAprobar.unsubscribe();
   }
@@ -252,7 +252,6 @@ export class CotizacionesDetailsComponent implements OnInit, AfterViewInit {
     .subscribe(
       //Success request
       (response: any) => {
-
         // Loads the first item
         if(response.data.length > 0)
         {
@@ -276,7 +275,7 @@ export class CotizacionesDetailsComponent implements OnInit, AfterViewInit {
       },
       //Error request
       (errorResponse: any) => {
-
+        
         switch(errorResponse.status)
         {
         
@@ -323,7 +322,7 @@ export class CotizacionesDetailsComponent implements OnInit, AfterViewInit {
         }
 
         this.loading = false;
-        //this.goTo_back();
+        this.goTo_back();
       }
     );
   }

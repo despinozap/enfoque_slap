@@ -43,7 +43,7 @@
                             <th>Ejecutivo</th>
                             <th>Partes</th>
                             <th>Dias</th>
-                            <th>Monto {{ (loggedUser.role_id === 2) ? "(CLP)" : " (USD)" }}</th>
+                            <th>Monto {{ ((loggedUser !== null) && (loggedUser.role.name === 'seller')) ? "(CLP)" : " (USD)" }}</th>
                             <th>Estado</th>
                             <th>Opciones</th>
                         </tr>
@@ -70,7 +70,7 @@
                             <td align="center">{{ cotizacion.solicitud.user.name }}</td>
                             <td align="right">{{ cotizacion.partes_total }}</td>
                             <td align="right">{{ cotizacion.dias }}</td>
-                            <td align="right">{{ (loggedUser.role_id === 2) ? "$" + moneyStringFormat(cotizacion.monto * cotizacion.usdvalue) : "$" + moneyStringFormat(cotizacion.monto)}}</td>
+                            <td align="right">{{ ((loggedUser !== null) && (loggedUser.role.name === 'seller')) ? "$" + moneyStringFormat(cotizacion.monto * cotizacion.usdvalue) : "$" + moneyStringFormat(cotizacion.monto)}}</td>
                             <td align="center">{{ cotizacion.estadocotizacion.name }}</td>
                             <td align="center">
                                 <a [routerLink]="['details', cotizacion.id]" class="btn-table btn btn-secondary" title="Detalle">
