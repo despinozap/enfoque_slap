@@ -85,7 +85,6 @@ class DatabaseSeeder extends Seeder
             'solicitudes destroy',
             //Cotizaciones
             'cotizaciones index',
-            'cotizaciones show',
             'cotizaciones report',
             'cotizaciones approve',
             'cotizaciones reject',
@@ -243,7 +242,6 @@ class DatabaseSeeder extends Seeder
                 'solicitudes destroy',
                 //Cotizaciones
                 'cotizaciones index',
-                'cotizaciones show',
                 'cotizaciones report',
                 'cotizaciones approve',
                 'cotizaciones reject',
@@ -344,7 +342,6 @@ class DatabaseSeeder extends Seeder
                 'solicitudes destroy',
                 //Cotizaciones
                 'cotizaciones index',
-                'cotizaciones show',
                 'cotizaciones report',
                 'cotizaciones approve',
                 'cotizaciones reject',
@@ -386,7 +383,7 @@ class DatabaseSeeder extends Seeder
                 'solicitudes complete',
                 //Cotizaciones
                 'cotizaciones index',
-                'cotizaciones show',
+                'cotizaciones report',
                 //Ocs
                 'ocs index',
                 'ocs show',

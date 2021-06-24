@@ -30,13 +30,53 @@ class CotizacionesController extends Controller
             $user = Auth::user();
             if($user->role->hasRoutepermission('cotizaciones index'))
             {
-                
-                if($cotizaciones = ($user->role->name === 'seller') ? // By role
-                    // If Vendedor filters only the belonging data
-                    Cotizacion::select('cotizaciones.*')->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')->where('solicitudes.user_id', '=', $user->id)->get() :
-                    // For any other role
-                    Cotizacion::all()
-                )
+                $cotizaciones = null;
+
+                switch($user->role->name)
+                {
+                    // Administrador
+                    case 'admin': {
+
+                        $cotizaciones = Cotizacion::select('cotizaciones.*')
+                                    ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                    ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                    ->where('sucursales.country_id', '=', $user->stationable->country->id) // For Solicitudes in the same Country
+                                    ->get();
+
+                        break;
+                    }
+
+                    // Vendedor
+                    case 'seller': {
+
+                        $cotizaciones = Cotizacion::select('cotizaciones.*')
+                                    ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                    ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                    ->where('sucursales.id', '=', $user->stationable->id) // For Solicitudes in its Sucursal
+                                    ->where('solicitudes.user_id', '=', $user->id) // Only belonging data
+                                    ->get();
+
+                        break;
+                    }
+
+                    // Agente de compra
+                    case 'agtcom': {
+
+                        $cotizaciones = Cotizacion::select('cotizaciones.*')
+                                    ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                    ->where('solicitudes.comprador_id', '=', $user->stationable->id) // For Solicitudes in its Comprador
+                                    ->get();
+
+                        break;
+                    }
+
+                    default:
+                    {
+                        break;
+                    }
+                }
+
+                if($cotizaciones !== null)
                 {
                     foreach($cotizaciones as $cotizacion)
                     {
@@ -129,7 +169,7 @@ class CotizacionesController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al obtener la lista de cotizaciones [!]',
+                'Error al obtener la lista de cotizaciones [!]' . $e,
                 null
             );
         }
@@ -142,7 +182,7 @@ class CotizacionesController extends Controller
         try
         {
             $user = Auth::user();
-            if($user->role->hasRoutepermission('cotizaciones show'))
+            if($user->role->hasRoutepermission('cotizaciones reject'))
             {
                 if($motivosRechazo = Motivorechazo::all())
                 {
@@ -261,12 +301,56 @@ class CotizacionesController extends Controller
                 }
                 else        
                 {
-                    if($cotizaciones = ($user->role->name === 'seller') ? // By role
-                        // If Vendedor filters only the belonging data
-                        Cotizacion::whereIn('cotizaciones.id', $request->cotizaciones)->select('cotizaciones.*')->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')->where('solicitudes.user_id', '=', $user->id)->get() :
-                        // For any other role
-                        Cotizacion::whereIn('cotizaciones.id', $request->cotizaciones)->get()
-                    )
+                    $cotizaciones = null;
+
+                    switch($user->role->name)
+                    {
+                        // Administrador
+                        case 'admin': {
+
+                            $cotizaciones = Cotizacion::select('cotizaciones.*')
+                                        ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                        ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                        ->where('sucursales.country_id', '=', $user->stationable->country->id) // For Solicitudes in the same Country
+                                        ->whereIn('cotizaciones.id', $request->cotizaciones) // For the requested Cotizaciones
+                                        ->get();
+
+                            break;
+                        }
+
+                        // Vendedor
+                        case 'seller': {
+
+                            $cotizaciones = Cotizacion::select('cotizaciones.*')
+                                        ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                        ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                        ->where('sucursales.id', '=', $user->stationable->id) // For Solicitudes in its Sucursal
+                                        ->where('solicitudes.user_id', '=', $user->id) // Only belonging data
+                                        ->whereIn('cotizaciones.id', $request->cotizaciones) // For the requested Cotizaciones
+                                        ->get();
+
+                            break;
+                        }
+
+                        // Agente de compra
+                        case 'agtcom': {
+
+                            $cotizaciones = Cotizacion::select('cotizaciones.*')
+                                        ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                        ->where('solicitudes.comprador_id', '=', $user->stationable->id) // For Solicitudes in its Comprador
+                                        ->whereIn('cotizaciones.id', $request->cotizaciones) // For the requested Cotizaciones
+                                        ->get();
+
+                            break;
+                        }
+
+                        default:
+                        {
+                            break;
+                        }
+                    }
+
+                    if($cotizaciones !== null)
                     {
                         foreach($cotizaciones as $cotizacion) 
                         {
@@ -471,18 +555,37 @@ class CotizacionesController extends Controller
                 {
                     if($cotizacion = Cotizacion::find($id))
                     {
-                        if(($user->role_id === 2) && ($cotizacion->solicitud->user_id !== $user->id))
+                        // Administrador
+                        if(
+                            ($user->role->name === 'admin') && 
+                            ($cotizacion->solicitud->sucursal->country->id !== $user->stationable->country->id)
+                        )
                         {
-                            //If Vendedor and solicitud doesn't belong
+                            //If Administrator and solicitud doesn't belong to its country
                             $response = HelpController::buildResponse(
                                 405,
                                 'No tienes acceso a aprobar esta cotizacion',
                                 null
                             );
                         }
-                        else if(($cotizacion->estadocotizacion_id === 3) || ($cotizacion->estadocotizacion_id === 4))
+                        // Vendedor
+                        else if(
+                            ($user->role->name === 'seller') &&
+                            (
+                                ($cotizacion->solicitud->sucursal->id !== $user->stationable->id) ||
+                                ($cotizacion->solicitud->user->id !== $user->id)
+                            ) 
+                        )
                         {
-                            //If Aprobada or Rechazada
+                            //If Vendedor and solicitud doesn't belong or not in its Sucursal
+                            $response = HelpController::buildResponse(
+                                405,
+                                'No tienes acceso a aprobar esta cotizacion',
+                                null
+                            );
+                        }
+                        else if(in_array($cotizacion->estadocotizacion_id, [3, 4]))  // If Estadocotizacion = 'Aprobada' or 'Rechazada'
+                        {
                             $response = HelpController::buildResponse(
                                 409,
                                 'No puedes aprobar una cotizacion con estado comercial ya definido',
@@ -491,157 +594,147 @@ class CotizacionesController extends Controller
                         }
                         else
                         {
-                            if(($cotizacion->estadocotizacion_id === 1) || ($cotizacion->estadocotizacion_id === 2)) // If Estadocotizacion = 'Pendiente' or 'Vencida'
+                            // If Estadocotizacion = 'Pendiente' or 'Vencida'
+                            DB::beginTransaction();
+
+                            $cotizacion->estadocotizacion_id = 3; // Aprobada
+                            $cotizacion->motivorechazo_id = null; // Removes Motivorechazo if it had
+
+                            if($cotizacion->save())
                             {
-                                DB::beginTransaction();
+                                $success = true;
+                                $path = null;
 
-                                $cotizacion->estadocotizacion_id = 3; // Aprobada
-                                $cotizacion->motivorechazo_id = null; // Removes Motivorechazo if it had
-
-                                if($cotizacion->save())
+                                $filedata = null;
+                                if($request->file('dococcliente'))
                                 {
-                                    $success = true;
-                                    $path = null;
-
-                                    $filedata = null;
-                                    if($request->file('dococcliente'))
+                                    if($path = $request->file('dococcliente')->store('occlientes', 'public'))
                                     {
-                                        if($path = $request->file('dococcliente')->store('occlientes', 'public'))
+                                        $filedata = new Filedata();
+                                        $filedata->path = $path;
+                                        $filedata->filename = $request->file('dococcliente')->getClientOriginalName();
+                                        $filedata->size = $request->file('dococcliente')->getSize();
+
+                                        if(!$filedata->save())
                                         {
-                                            $filedata = new Filedata();
-                                            $filedata->path = $path;
-                                            $filedata->filename = $request->file('dococcliente')->getClientOriginalName();
-                                            $filedata->size = $request->file('dococcliente')->getSize();
+                                            Storage::disk('public')->delete($path);
 
-                                            if(!$filedata->save())
-                                            {
-                                                Storage::disk('public')->delete($path);
-
-                                                $response = HelpController::buildResponse(
-                                                    500,
-                                                    'Error al adjuntar el archivo de OC cliente a la cotizacion',
-                                                    null
-                                                );
-
-                                                $success = false;
-                                            }
-                                        }
-                                        else
-                                        {
                                             $response = HelpController::buildResponse(
                                                 500,
-                                                'Error al guardar el archivo de OC cliente',
+                                                'Error al adjuntar el archivo de OC cliente a la cotizacion',
                                                 null
                                             );
 
                                             $success = false;
                                         }
                                     }
-
-                                    if($success === true)
+                                    else
                                     {
-                                        $oc = new OC();
-                                        $oc->cotizacion_id = $cotizacion->id;
-                                        $oc->estadooc_id = 1; //Initial Estadooc
-                                        $oc->noccliente = $request->noccliente;
-                                        $oc->usdvalue = $cotizacion->usdvalue;
-                                        if($filedata !== null)
+                                        $response = HelpController::buildResponse(
+                                            500,
+                                            'Error al guardar el archivo de OC cliente',
+                                            null
+                                        );
+
+                                        $success = false;
+                                    }
+                                }
+
+                                if($success === true)
+                                {
+                                    $oc = new OC();
+                                    $oc->cotizacion_id = $cotizacion->id;
+                                    $oc->estadooc_id = 1; //Initial Estadooc
+                                    $oc->noccliente = $request->noccliente;
+                                    $oc->usdvalue = $cotizacion->usdvalue;
+                                    if($filedata !== null)
+                                    {
+                                        $oc->filedata_id = $filedata->id;
+                                    }
+
+                                    if($oc->save())
+                                    {
+                                        //Attaching each Parte to the Cotizacion
+                                        $syncData = [];
+
+                                        foreach($partes as $parte)
                                         {
-                                            $oc->filedata_id = $filedata->id;
-                                        }
-
-                                        if($oc->save())
-                                        {
-                                            //Attaching each Parte to the Cotizacion
-                                            $syncData = [];
-
-                                            foreach($partes as $parte)
+                                            if($cparte = $cotizacion->partes->find($parte['id']))
                                             {
-                                                if($cparte = $cotizacion->partes->find($parte['id']))
-                                                {
-                                                    $syncData[$cparte->id] =  array(
-                                                        'estadoocparte_id' => 1, // Pendiente
-                                                        'descripcion' => $cparte->pivot->descripcion,
-                                                        'cantidad' => $parte['cantidad'],
-                                                        'tiempoentrega' => $cparte->pivot->tiempoentrega,
-                                                        'backorder' => $cparte->pivot->backorder
-                                                    );
-                                                }
-                                                else
-                                                {
-                                                    $success = false;
-                                                    $response = HelpController::buildResponse(
-                                                        500,
-                                                        'Error al aprobar la cotizacion',
-                                                        null
-                                                    );
-
-                                                    break;
-                                                }
-                                            }
-
-
-                                            if($success === true)
-                                            {
-                                                if($oc->partes()->sync($syncData))
-                                                {
-                                                    DB::commit();
-
-                                                    $response = HelpController::buildResponse(
-                                                        201,
-                                                        'Cotizacion aprobada',
-                                                        null
-                                                    );
-                                                }
-                                                else
-                                                {
-                                                    DB::rollback();
-
-                                                    $response = HelpController::buildResponse(
-                                                        500,
-                                                        'Error al aprobar la cotizacion',
-                                                        null
-                                                    );
-                                                }
+                                                $syncData[$cparte->id] =  array(
+                                                    'estadoocparte_id' => 1, // Pendiente
+                                                    'descripcion' => $cparte->pivot->descripcion,
+                                                    'cantidad' => $parte['cantidad'],
+                                                    'tiempoentrega' => $cparte->pivot->tiempoentrega,
+                                                    'backorder' => $cparte->pivot->backorder
+                                                );
                                             }
                                             else
                                             {
-                                                //Error message already set
+                                                $success = false;
+                                                $response = HelpController::buildResponse(
+                                                    500,
+                                                    'Error al aprobar la cotizacion',
+                                                    null
+                                                );
+
+                                                break;
                                             }
-                                            
+                                        }
+
+
+                                        if($success === true)
+                                        {
+                                            if($oc->partes()->sync($syncData))
+                                            {
+                                                DB::commit();
+
+                                                $response = HelpController::buildResponse(
+                                                    201,
+                                                    'Cotizacion aprobada',
+                                                    null
+                                                );
+                                            }
+                                            else
+                                            {
+                                                DB::rollback();
+
+                                                $response = HelpController::buildResponse(
+                                                    500,
+                                                    'Error al aprobar la cotizacion',
+                                                    null
+                                                );
+                                            }
                                         }
                                         else
                                         {
-                                            DB::rollback();
-
-                                            $response = HelpController::buildResponse(
-                                                500,
-                                                'Error al aprobar la cotizacion',
-                                                null
-                                            );
+                                            //Error message already set
                                         }
+                                        
                                     }
                                     else
                                     {
-                                        //Error message already set
+                                        DB::rollback();
+
+                                        $response = HelpController::buildResponse(
+                                            500,
+                                            'Error al aprobar la cotizacion',
+                                            null
+                                        );
                                     }
                                 }
                                 else
                                 {
-                                    DB::rollback();
-
-                                    $response = HelpController::buildResponse(
-                                        500,
-                                        'Error al aprobar la cotizacion',
-                                        null
-                                    );
+                                    //Error message already set
                                 }
                             }
                             else
                             {
+                                DB::rollback();
+
                                 $response = HelpController::buildResponse(
-                                    409,
-                                    'El estado comercial de la cotizacion ya esta definido',
+                                    500,
+                                    'Error al aprobar la cotizacion',
                                     null
                                 );
                             }
@@ -717,18 +810,37 @@ class CotizacionesController extends Controller
                 {
                     if($cotizacion = Cotizacion::find($id))
                     {
-                        if(($user->role_id === 2) && ($cotizacion->solicitud->user_id !== $user->id))
+                        // Administrador
+                        if(
+                            ($user->role->name === 'admin') && 
+                            ($cotizacion->solicitud->sucursal->country->id !== $user->stationable->country->id)
+                        )
                         {
-                            //If Vendedor and solicitud doesn't belong
+                            //If Administrator and solicitud doesn't belong to its country
                             $response = HelpController::buildResponse(
                                 405,
                                 'No tienes acceso a rechazar esta cotizacion',
                                 null
                             );
                         }
-                        else if(($cotizacion->estadocotizacion_id === 3) || ($cotizacion->estadocotizacion_id === 4))
+                        // Vendedor
+                        else if(
+                            ($user->role->name === 'seller') &&
+                            (
+                                ($cotizacion->solicitud->sucursal->id !== $user->stationable->id) ||
+                                ($cotizacion->solicitud->user->id !== $user->id)
+                            ) 
+                        )
                         {
-                            //If Aprobada or Rechazada
+                            //If Vendedor and solicitud doesn't belong or not in its Sucursal
+                            $response = HelpController::buildResponse(
+                                405,
+                                'No tienes acceso a rechazar esta cotizacion',
+                                null
+                            );
+                        }
+                        else if(in_array($cotizacion->estadocotizacion_id, [3, 4]))  // If Estadocotizacion = 'Aprobada' or 'Rechazada'
+                        {
                             $response = HelpController::buildResponse(
                                 409,
                                 'No puedes rechazar una cotizacion con estado comercial ya definido',
