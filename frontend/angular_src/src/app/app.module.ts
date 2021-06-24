@@ -38,8 +38,7 @@ import { SolicitudesCreateComponent } from './pages/solicitudes/create/create.co
 import { SolicitudesListComponent } from './pages/solicitudes/list/list.component';
 import { SolicitudesEditComponent } from './pages/solicitudes/edit/edit.component';
 import { SolicitudesCompleteComponent } from './pages/solicitudes/complete/complete.component';
-import { SolicitudesDetailsAdministratorComponent } from './pages/solicitudes/details/administrator/administrator.component';
-import { SolicitudesDetailsSellerComponent } from './pages/solicitudes/details/seller/seller.component';
+import { SolicitudesDetailsComponent } from './pages/solicitudes/details/details.component';
 import { PartesListComponent } from './pages/partes/list/list.component';
 import { PartesEditComponent } from './pages/partes/edit/edit.component';
 import { CotizacionesListComponent } from './pages/cotizaciones/list/list.component';
@@ -110,8 +109,7 @@ const routes: Routes = [
       { path: 'solicitudes', component: SolicitudesListComponent },
       { path: 'solicitudes/edit/:id', component: SolicitudesEditComponent },
       { path: 'solicitudes/complete/:id', component: SolicitudesCompleteComponent },
-      { path: 'solicitudes/details/administrator/:id', component: SolicitudesDetailsAdministratorComponent },
-      { path: 'solicitudes/details/seller/:id', component: SolicitudesDetailsSellerComponent },
+      { path: 'solicitudes/details/:id', component: SolicitudesDetailsComponent },
       { path: 'partes', component: PartesListComponent },
       { path: 'partes/edit/:id', component: PartesEditComponent },
       { path: 'cotizaciones', component: CotizacionesListComponent },
@@ -181,8 +179,7 @@ const routes: Routes = [
     SolicitudesListComponent,
     SolicitudesEditComponent,
     SolicitudesCompleteComponent,
-    SolicitudesDetailsAdministratorComponent,
-    SolicitudesDetailsSellerComponent,
+    SolicitudesDetailsComponent,
     PartesListComponent,
     PartesEditComponent,
     CotizacionesListComponent,

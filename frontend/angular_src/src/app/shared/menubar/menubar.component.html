@@ -91,7 +91,7 @@
 
 
                 <!-- Comprador -->
-                <li class="menu-title" key="t-comprador">Comprador</li>
+                <!-- <li class="menu-title" key="t-comprador">Comprador</li>
                 <li>
                     <a href="javascript: void(0);" class="has-arrow waves-effect">
                         <i class="bx bx-log-in-circle"></i>
@@ -111,10 +111,10 @@
                         <li><a [routerLink]="['despachos/comprador/create']" key="t-compradordespachosnuevo">Nuevo despacho</a></li>
                         <li><a [routerLink]="['despachos/comprador']" key="t-compradordespachoslista">Lista de despachos</a></li>
                     </ul>
-                </li>
+                </li> -->
 
                 <!-- Centro distribucion -->
-                <li class="menu-title" key="t-centrodistribucion">Centro distribucion</li>
+                <!-- <li class="menu-title" key="t-centrodistribucion">Centro distribucion</li>
                 <li>
                     <a href="javascript: void(0);" class="has-arrow waves-effect">
                         <i class="bx bx-log-in-circle"></i>
@@ -144,10 +144,10 @@
                         <li><a [routerLink]="['entregas/centrodistribucion/create']" key="t-centrodistribucionentregasnuevo">Nueva entrega</a></li>
                         <li><a [routerLink]="['entregas/centrodistribucion']" key="t-centrodistribucionentregaslista">Lista de entregas</a></li>
                     </ul>
-                </li>
+                </li> -->
 
                 <!-- Sucursal -->
-                <li class="menu-title" key="t-sucursal">Sucursal</li>
+                <!-- <li class="menu-title" key="t-sucursal">Sucursal</li>
                 <li>
                     <a href="javascript: void(0);" class="has-arrow waves-effect">
                         <i class="bx bx-log-in-circle"></i>
@@ -167,12 +167,12 @@
                         <li><a [routerLink]="['entregas/sucursal/create']" key="t-sucursalentregasnuevo">Nueva entrega</a></li>
                         <li><a [routerLink]="['entregas/sucursal']" key="t-sucursalentregaslista">Lista de entregas</a></li>
                     </ul>
-                </li>
+                </li> -->
 
             </ul>
 
-            <!-- Role: Vendedor solicitante en Centro distribucion [vensol - centro] -->
-            <ul class="metismenu list-unstyled" id="side-menu" *ngIf="(loggedUser !== null) && (loggedUser.role.name === 'vensol') && (loggedUser.stationable.type === 'centro')">
+            <!-- Role: Vendedor solicitante en Centro distribucion [seller - centro] -->
+            <ul class="metismenu list-unstyled" id="side-menu" *ngIf="(loggedUser !== null) && (loggedUser.role.name === 'seller') && (loggedUser.stationable.type === 'centro')">
 
                 <!-- Menu -->
                 <li class="menu-title" key="t-menu">Menu</li>
@@ -209,7 +209,7 @@
                 </li>
 
                 <!-- Centro distribucion -->
-                <li class="menu-title" key="t-centrodistribucion">Centro distribucion</li>
+                <!-- <li class="menu-title" key="t-centrodistribucion">Centro distribucion</li>
                 <li>
                     <a href="javascript: void(0);" class="has-arrow waves-effect">
                         <i class="bx bx-log-in-circle"></i>
@@ -239,12 +239,12 @@
                         <li><a [routerLink]="['entregas/centrodistribucion/create']" key="t-centrodistribucionentregasnuevo">Nueva entrega</a></li>
                         <li><a [routerLink]="['entregas/centrodistribucion']" key="t-centrodistribucionentregaslista">Lista de entregas</a></li>
                     </ul>
-                </li>
+                </li> -->
 
             </ul>
 
-            <!-- Role: Vendedor solicitante en Sucursal [vensol - sucursal] -->
-            <ul class="metismenu list-unstyled" id="side-menu" *ngIf="(loggedUser !== null) && (loggedUser.role.name === 'vensol') && (loggedUser.stationable.type === 'sucursal')">
+            <!-- Role: Vendedor solicitante en Sucursal [seller - sucursal] -->
+            <ul class="metismenu list-unstyled" id="side-menu" *ngIf="(loggedUser !== null) && (loggedUser.role.name === 'seller') && (loggedUser.stationable.type === 'sucursal')">
 
                 <!-- Menu -->
                 <li class="menu-title" key="t-menu">Menu</li>
@@ -281,7 +281,7 @@
                 </li>
 
                 <!-- Sucursal -->
-                <li class="menu-title" key="t-sucursal">Sucursal</li>
+                <!-- <li class="menu-title" key="t-sucursal">Sucursal</li>
                 <li>
                     <a href="javascript: void(0);" class="has-arrow waves-effect">
                         <i class="bx bx-log-in-circle"></i>
@@ -300,7 +300,68 @@
                         <li><a [routerLink]="['entregas/sucursal/create']" key="t-sucursalentregasnuevo">Nueva entrega</a></li>
                         <li><a [routerLink]="['entregas/sucursal']" key="t-sucursalentregaslista">Lista de entregas</a></li>
                     </ul>
+                </li> -->
+
+            </ul>
+
+            <!-- Role: Agente de compras en Comprador [agtcom] -->
+            <ul class="metismenu list-unstyled" id="side-menu" *ngIf="(loggedUser !== null) && (loggedUser.role.name === 'agtcom')">
+
+                <!-- Menu -->
+                <li class="menu-title" key="t-menu">Menu</li>
+                <li>
+                    <a [routerLink]="['']" class="waves-effect">
+                        <i class="bx bx-home-circle"></i>
+                        <span key="t-menudashboard">Dashboard</span>
+                    </a>
                 </li>
+
+                <!-- General -->
+                <li class="menu-title" key="t-general">General</li>
+                <li>
+                    <a href="javascript: void(0);" class="has-arrow waves-effect">
+                        <i class="bx bx-list-ol"></i>
+                        <span key="t-solicitudes">Solicitudes</span>
+                    </a>
+                    <ul class="sub-menu" aria-expanded="false">
+                        <li><a [routerLink]="['solicitudes']" key="t-solicitudeslista">Lista de solicitudes</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a [routerLink]="['cotizaciones']" class="waves-effect">
+                        <i class="bx bx-money"></i>
+                        <span key="t-cotizaciones">Cotizaciones</span>
+                    </a>
+                </li>
+                <li>
+                    <a [routerLink]="['ocs']" class="waves-effect">
+                        <i class="bx bx-hive"></i>
+                        <span key="t-ocs">OCs</span>
+                    </a>
+                </li>
+
+                <!-- Comprador -->
+                <!-- <li class="menu-title" key="t-comprador">Comprador</li>
+                <li>
+                    <a href="javascript: void(0);" class="has-arrow waves-effect">
+                        <i class="bx bx-log-in-circle"></i>
+                        <span key="t-compradorrecepciones">Recepciones</span>
+                    </a>
+                    <ul class="sub-menu" aria-expanded="false">
+                        <li><a [routerLink]="['recepciones/comprador/create']" key="t-compradorrecepcionesnuevo">Nueva recepcion</a></li>
+                        <li><a [routerLink]="['recepciones/comprador']" key="t-compradorrecepcioneslista">Lista de recepciones</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="javascript: void(0);" class="has-arrow waves-effect">
+                        <i class="bx bx-log-out-circle"></i>
+                        <span key="t-compradordespachos">Despachos</span>
+                    </a>
+                    <ul class="sub-menu" aria-expanded="false">
+                        <li><a [routerLink]="['despachos/comprador/create']" key="t-compradordespachosnuevo">Nuevo despacho</a></li>
+                        <li><a [routerLink]="['despachos/comprador']" key="t-compradordespachoslista">Lista de despachos</a></li>
+                    </ul>
+                </li> -->
 
             </ul>
 

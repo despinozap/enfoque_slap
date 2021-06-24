@@ -21,11 +21,11 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <div class="alert alert-success alert-dismissible fade show" role="alert" *ngIf="(solicitud.estadosolicitud_id === 2)">
+                <div class="alert alert-success alert-dismissible fade show" role="alert" *ngIf="(loggedUser !== null) && (['admin', 'seller'].includes(this.loggedUser.role.name)) && (solicitud.estadosolicitud_id === 2)">
                     La lista de partes para esta solicitud esta <strong>completa</strong>
                     <button type="button" class="ml-2 btn btn-light" aria-label="Cerrar solicitud" [disabled]="(loading === true)" (click)="closeSolicitud()"><i class="mdi mdi-thumb-up"></i> Cerrar solicitud</button>
                 </div>
-                <button class="btn btn-info btn-right" (click)="goTo_duplicateSolicitud()" [disabled]="(loading === true)">Duplicar solicitud</button>
+                <button class="btn btn-info btn-right" (click)="goTo_duplicateSolicitud()" *ngIf="(loggedUser !== null) && (['admin', 'seller'].includes(this.loggedUser.role.name))" [disabled]="(loading === true)">Duplicar solicitud</button>
                 <h4 class="card-title">Solicitud {{ solicitud.id !== null ? "#" + solicitud.id : '' }}</h4>
                 <span class="badge" [class.badge-warning]="(solicitud.estadosolicitud_id === 1)" [class.badge-success]="(solicitud.estadosolicitud_id === 2)" [class.badge-primary]="(solicitud.estadosolicitud_id === 3)" *ngIf="(solicitud.estadosolicitud_name !== null)">{{ solicitud.estadosolicitud_name }}</span>
                 <p class="card-title-desc">Detalle de la solicitud</p>
@@ -86,12 +86,12 @@
                                 <th>Cantidad</th>
                                 <th>N° Parte</th>
                                 <th>Descripcion</th>
-                                <th>Costo</th>
-                                <th>Margen</th>
-                                <th>Peso</th>
-                                <th>Flete</th>
+                                <th *ngIf="(loggedUser !== null) && (['admin', 'agtcom'].includes(loggedUser.role.name))">Costo</th>
+                                <th *ngIf="(loggedUser !== null) && (['admin', 'agtcom'].includes(loggedUser.role.name))">Margen</th>
+                                <th *ngIf="(loggedUser !== null) && (['admin', 'agtcom'].includes(loggedUser.role.name))">Peso</th>
+                                <th *ngIf="(loggedUser !== null) && (['admin', 'agtcom'].includes(loggedUser.role.name))">Flete</th>
                                 <th>Tiempo de entrega</th>
-                                <th>Monto</th>
+                                <th>Monto {{ ((loggedUser !== null) && (loggedUser.role.name === 'seller')) ? '(CLP estimado)' : '' }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -99,21 +99,21 @@
                                 <td align="right">{{ parte.cantidad !== null ? parte.cantidad : "" }}</td>
                                 <td align="center"><i class="bx bx-timer icon-table" *ngIf="(parte.backorder === true)"></i>{{ parte.nparte !== null ? parte.nparte : "" }}</td>
                                 <td align="left">{{ parte.descripcion !== null ? parte.descripcion : "" }}</td>
-                                <td align="right">{{ parte.costo !== null ? "$" + moneyStringFormat(parte.costo) : "" }}</td>
-                                <td align="right">{{ parte.margen !== null ? parte.margen + "%" : "" }}</td>
-                                <td align="right">{{ parte.peso !== null ? parte.peso + " lb" : "" }}</td>
-                                <td align="right">{{ parte.flete !== null ? "$" + moneyStringFormat(parte.flete) : "" }}</td>
-                                <td align="right">{{ parte.tiempoentrega !== null ? parte.tiempoentrega + " dias" : "" }}
-                                </td>
+                                <td align="right" *ngIf="(loggedUser !== null) && (['admin', 'agtcom'].includes(loggedUser.role.name))">{{ parte.costo !== null ? "$" + moneyStringFormat(parte.costo) : "" }}</td>
+                                <td align="right" *ngIf="(loggedUser !== null) && (['admin', 'agtcom'].includes(loggedUser.role.name))">{{ parte.margen !== null ? parte.margen + "%" : "" }}</td>
+                                <td align="right" *ngIf="(loggedUser !== null) && (['admin', 'agtcom'].includes(loggedUser.role.name))">{{ parte.peso !== null ? parte.peso + " lb" : "" }}</td>
+                                <td align="right" *ngIf="(loggedUser !== null) && (['admin', 'agtcom'].includes(loggedUser.role.name))">{{ parte.flete !== null ? "$" + moneyStringFormat(parte.flete) : "" }}</td>
+                                <td align="right">{{ parte.tiempoentrega !== null ? parte.tiempoentrega + " dias" : "" }}</td>
                                 <td align="right">{{ parte.monto !== null ? "$" + moneyStringFormat(parte.monto) : "" }}</td>
                             </tr>
                         </tbody>
                         <tfoot>
                             <tr>
-                                <td colspan="9" align="right">
+                                <td colspan="4" *ngIf="(loggedUser !== null) && (['admin', 'agtcom'].includes(loggedUser.role.name))"></td>
+                                <td colspan="5" align="right">
                                     <button type="button" class="btn btn-outline-primary" (click)="exportPartesToExcel()" [disabled]="(loading === true)">
-                    <i class="bx bx-spreadsheet font-size-16 align-middle"></i> Exportar a Excel
-                  </button>
+                                      <i class="bx bx-spreadsheet font-size-16 align-middle"></i> Exportar a Excel
+                                    </button>
                                 </td>
                             </tr>
                         </tfoot>
@@ -124,8 +124,8 @@
                     <div class="col-12">
                         <div class="form-buttons mt-2">
                             <button [disabled]="(loading === true)" class="btn btn-light" (click)="goTo_back()">
-                <span>Volver</span>
-              </button>
+                              <span>Volver</span>
+                            </button>
                         </div>
                     </div>
                 </div>

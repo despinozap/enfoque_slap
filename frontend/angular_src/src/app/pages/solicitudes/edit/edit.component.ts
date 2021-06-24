@@ -6,6 +6,8 @@ import { Subject } from 'rxjs';
 import { Comprador } from 'src/app/interfaces/comprador';
 import { Faena } from 'src/app/interfaces/faena';
 import { Marca } from 'src/app/interfaces/marca';
+import { User } from 'src/app/interfaces/user';
+import { AuthService } from 'src/app/services/auth.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { SolicitudesService } from 'src/app/services/solicitudes.service';
 import { UtilsService } from 'src/app/services/utils.service';
@@ -45,7 +47,6 @@ export class SolicitudesEditComponent implements OnInit {
   responseErrors: any = [];
 
   private sub: any;
-  sucursal_id: number = 2;
   id: number = -1;
   private parte_index: number = -1;
 
@@ -105,6 +106,7 @@ export class SolicitudesEditComponent implements OnInit {
   }
 
   ngOnDestroy(): void {
+    this.sub.unsubscribe();
     this.dtTrigger.unsubscribe();
   }
 
@@ -198,7 +200,7 @@ export class SolicitudesEditComponent implements OnInit {
 
   private prepareSolicitud() {
     this.loading = true;
-    this._solicitudesService.prepareSolicitud(this.sucursal_id)
+    this._solicitudesService.prepareSolicitud()
       .subscribe(
         //Success request
         (response: any) => {

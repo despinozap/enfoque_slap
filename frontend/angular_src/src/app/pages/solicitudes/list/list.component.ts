@@ -6,6 +6,7 @@ import { Subject } from 'rxjs';
 import { DataTableDirective } from 'angular-datatables';
 import { UtilsService } from 'src/app/services/utils.service';
 import { AuthService } from 'src/app/services/auth.service';
+import { User } from 'src/app/interfaces/user';
 
 /* SweetAlert2 */
 const Swal = require('../../../../assets/vendors/sweetalert2/sweetalert2.all.min.js');
@@ -48,9 +49,9 @@ export class SolicitudesListComponent implements OnInit {
 
   solicitudes: any[] = [];
   loading: boolean = false;
-  loggedUser: any = {
-    role_id: -1,
-  };
+  loggedUser: User = null as any;
+
+  private subLoggedUser: any;
 
   constructor(
     private router: Router,
@@ -63,8 +64,8 @@ export class SolicitudesListComponent implements OnInit {
   ngOnInit(): void {
     //For loggedUser
     {
-      this._authService.loggedUser$.subscribe((data) => {
-        this.loggedUser = data.user;
+      this.subLoggedUser = this._authService.loggedUser$.subscribe((data) => {
+        this.loggedUser = data.user as User;
       });
       
       this._authService.notifyLoggedUser(this._authService.NOTIFICATION_RECEIVER_CONTENTPAGE);
@@ -82,6 +83,7 @@ export class SolicitudesListComponent implements OnInit {
   }
 
   ngOnDestroy(): void {
+    this.subLoggedUser.unsubscribe();
     this.dtTrigger.unsubscribe();
   }
 

@@ -45,7 +45,6 @@ export class SolicitudesCreateComponent implements OnInit {
   responseErrors: any = [];
 
   private sub: any;
-  sucursal_id: number = 2;
   id: number = -1;
 
   /*
@@ -204,7 +203,7 @@ export class SolicitudesCreateComponent implements OnInit {
 
   private prepareSolicitud() {
     this.loading = true;
-    this._solicitudesService.prepareSolicitud(this.sucursal_id)
+    this._solicitudesService.prepareSolicitud()
       .subscribe(
         //Success request
         (response: any) => {
@@ -410,6 +409,16 @@ export class SolicitudesCreateComponent implements OnInit {
               }
 
             case 405: //Permission denied
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+    
+                break;
+              }
+
+            case 409: //Conflict
               {
                 NotificationsService.showAlert(
                   errorResponse.error.message,

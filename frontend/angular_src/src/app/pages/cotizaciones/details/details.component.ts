@@ -1,4 +1,4 @@
-import { Component, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { AfterViewInit, Component, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { Location } from '@angular/common';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -18,7 +18,7 @@ const Swal = require('../../../../assets/vendors/sweetalert2/sweetalert2.all.min
   templateUrl: './details.component.html',
   styleUrls: ['./details.component.css']
 })
-export class CotizacionesDetailsComponent implements OnInit {
+export class CotizacionesDetailsComponent implements OnInit, AfterViewInit {
 
   @ViewChild('reportCotizacion') reportCotizacion: PDFCotizacionComponent = null as any;
   @ViewChildren(DataTableDirective)

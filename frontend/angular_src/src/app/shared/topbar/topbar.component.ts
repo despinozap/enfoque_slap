@@ -11,6 +11,7 @@ import { AuthService } from 'src/app/services/auth.service';
 export class TopbarComponent implements OnInit {
 
   loggedUser: User = null as any;
+  private subLoggedUser: any;
 
   constructor(
     private router: Router,
@@ -22,12 +23,16 @@ export class TopbarComponent implements OnInit {
 
     //For loggedUser
     {
-      this._authService.loggedUser$.subscribe((data) => {
+      this.subLoggedUser = this._authService.loggedUser$.subscribe((data) => {
         this.loggedUser = data.user;
       });
 
       this._authService.notifyLoggedUser(this._authService.NOTIFICATION_RECEIVER_HOME);
     }
+  }
+
+  ngOnDestroy(): void {
+    this.subLoggedUser.unsubscribe();
   }
 
   public goTo_login() {

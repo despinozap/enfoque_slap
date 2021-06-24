@@ -11,6 +11,7 @@ import { UtilsService } from 'src/app/services/utils.service';
 export class MenubarComponent implements OnInit {
 
   loggedUser: any = null;
+  private subLoggedUser: any;
 
   constructor(
     private _authService: AuthService,
@@ -20,7 +21,7 @@ export class MenubarComponent implements OnInit {
     
     //For loggedUser
     {
-      this._authService.loggedUser$.subscribe((data) => {
+      this.subLoggedUser = this._authService.loggedUser$.subscribe((data) => {
         if(data.receiver === this._authService.NOTIFICATION_RECEIVER_HOME)
         {
           this.loggedUser = data.user;
@@ -32,6 +33,10 @@ export class MenubarComponent implements OnInit {
 
       this._authService.notifyLoggedUser(this._authService.NOTIFICATION_RECEIVER_HOME);
     }    
+  }
+
+  ngOnDestroy(): void {
+    this.subLoggedUser.unsubscribe();
   }
 
   private cleanScripts(): void {
