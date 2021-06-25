@@ -717,6 +717,19 @@ class SolicitudesController extends Controller
                             null
                         );
                     }
+                    // Agente de compra
+                    else if(
+                        ($user->role->name === 'agtcom') &&
+                        ($solicitud->comprador->id !== $user->stationable->id)
+                    )
+                    {
+                        //If Agente de compra and solicitud isn't to its Comprador
+                        $response = HelpController::buildResponse(
+                            405,
+                            'No tienes acceso a visualizar esta solicitud',
+                            null
+                        );
+                    }
                     else
                     {
                         if($usdToClp = Parameter::all()->where('name', 'usd_to_clp')->first())

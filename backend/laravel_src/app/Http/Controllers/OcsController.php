@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Validator;
 
 use App\Models\Cotizacion;
 use App\Models\Oc;
+use App\Models\Proveedor;
 use App\Models\Motivobaja;
 
 class OcsController extends Controller
@@ -24,13 +25,56 @@ class OcsController extends Controller
             $user = Auth::user();
             if($user->role->hasRoutepermission('ocs index'))
             {
-                
-                if($ocs = ($user->role->id === 2) ? // By role
-                    // If Vendedor filters only the belonging data
-                    Oc::select('ocs.*')->join('cotizaciones', 'ocs.cotizacion_id', '=', 'cotizaciones.id')->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')->where('solicitudes.user_id', '=', $user->id)->get() :
-                    // For any other role
-                    Oc::all()
-                )
+                $ocs = null;
+
+                switch($user->role->name)
+                {
+                    // Administrador
+                    case 'admin': {
+
+                        $ocs = Oc::select('ocs.*')
+                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // For Solicitudes in the same Country
+                            ->get();
+
+                        break;
+                    }
+
+                    // Vendedor
+                    case 'seller': {
+
+                        $ocs = Oc::select('ocs.*')
+                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                            ->where('sucursales.id', '=', $user->stationable->id) // For Solicitudes in its Sucursal
+                            ->where('solicitudes.user_id', '=', $user->id) // Only belonging data
+                            ->get();
+
+                        break;
+                    }
+
+                    // Agente de compra
+                    case 'agtcom': {
+
+                        $ocs = Oc::select('ocs.*')
+                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                            ->where('solicitudes.comprador_id', '=', $user->stationable->id) // For Solicitudes in its Comprador
+                            ->get();
+
+                        break;
+                    }
+
+                    default:
+                    {
+                        break;
+                    }
+                }
+
+                if($ocs !== null)
                 {
                     foreach($ocs as $oc)
                     {
@@ -156,7 +200,7 @@ class OcsController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al obtener la lista de OCs [!]' . $e,
+                'Error al obtener la lista de OCs [!]',
                 null
             );
         }
@@ -169,7 +213,7 @@ class OcsController extends Controller
         try
         {
             $user = Auth::user();
-            if($user->role->hasRoutepermission('ocs show'))
+            if($user->role->hasRoutepermission('ocs reject'))
             {
                 if($motivosBaja = Motivobaja::all())
                 {
@@ -246,225 +290,260 @@ class OcsController extends Controller
      */
     public function show($id)
     {
+        //
+    }
+
+    public function report(Request $request)
+    {
         try
         {
             $user = Auth::user();
-            if($user->role->hasRoutepermission('ocs show'))
+            if($user->role->hasRoutepermission('ocs report'))
             {
-                if($oc = Oc::find($id))
+                $validatorInput = $request->only(
+                    'ocs'
+                );
+                
+                $validatorRules = [
+                    'ocs' => 'required|array|min:1',
+                    'ocs.*'  => 'required|exists:ocs,id',
+                ];
+        
+                $validatorMessages = [
+                    'ocs.required' => 'Debes seleccionar las OCs',
+                    'ocs.array' => 'Lista de OCs es invalida',
+                    'ocs.min' => 'El reporte debe contener al menos 1 OC',
+                    'ocs.*.exists' => 'La lista de OCs es invalida',
+                ];
+        
+                $validator = Validator::make(
+                    $validatorInput,
+                    $validatorRules,
+                    $validatorMessages
+                );
+        
+                if ($validator->fails()) 
                 {
-                    if(($user->role_id === 2) && ($oc->cotizacion->solicitud->user_id !== $user->id))
-                    {
-                        //If Vendedor and solicitud doesn't belong
-                        $response = HelpController::buildResponse(
-                            405,
-                            'No tienes acceso a visualizar esta OC',
-                            null
-                        );
-                    }
-                    else
-                    {
-                        $oc->dias;
-                        $oc->makeHidden([
-                            'cotizacion_id',
-                            'filedata_id',
-                            'proveedor_id',
-                            'motivobaja_id',
-                            'estadooc_id',
-                            'partes_total',
-                            'updated_at'
-                        ]);
+                    $response = HelpController::buildResponse(
+                        400,
+                        $validator->errors(),
+                        null
+                    );
+                }
+                else        
+                {
+                    $ocs = null;
 
-                        if($oc->proveedor)
+                    switch($user->role->name)
+                    {
+                        // Administrador
+                        case 'admin': {
+
+                            $ocs = Oc::select('ocs.*')
+                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                ->where('sucursales.country_id', '=', $user->stationable->country->id) // For Solicitudes in the same Country
+                                ->whereIn('ocs.id', $request->ocs) // For the requested OCs
+                                ->get();
+
+                            break;
+                        }
+
+                        // Vendedor
+                        case 'seller': {
+
+                            $ocs = Oc::select('ocs.*')
+                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                ->where('sucursales.id', '=', $user->stationable->id) // For Solicitudes in its Sucursal
+                                ->where('solicitudes.user_id', '=', $user->id) // Only belonging data
+                                ->whereIn('ocs.id', $request->ocs) // For the requested OCs
+                                ->get();
+
+                            break;
+                        }
+
+                        // Agente de compra
+                        case 'agtcom': {
+
+                            $ocs = Oc::select('ocs.*')
+                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                ->where('solicitudes.comprador_id', '=', $user->stationable->id) // For Solicitudes in its Comprador
+                                ->whereIn('ocs.id', $request->ocs) // For the requested OCs
+                                ->get();
+
+                            break;
+                        }
+
+                        default:
                         {
-                            $oc->proveedor->makeHidden([
+                            break;
+                        }
+                    }
+
+                    if($ocs !== null)
+                    {
+                        foreach($ocs as $oc) 
+                        {
+                            $oc->dias;
+                            $oc->makeHidden([
+                                'cotizacion_id',
+                                'filedata_id',
+                                'proveedor_id',
+                                'motivobaja_id',
+                                'estadooc_id',
+                                'partes_total',
+                                'updated_at'
+                            ]);
+
+                            if($oc->proveedor)
+                            {
+                                $oc->proveedor->makeHidden([
+                                    'comprador_id',
+                                    'rut',
+                                    'address',
+                                    'city',
+                                    'contact',
+                                    'phone',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+                            }
+
+                            if($oc->filedata)
+                            {
+                                $oc->filedata->url;
+                                $oc->filedata->name;
+                                $oc->filedata->makeHidden([
+                                    'size',
+                                    'path',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+                            }
+        
+                            $oc->cotizacion;
+                            $oc->cotizacion->makeHidden([
+                                'solicitud_id',
+                                'motivorechazo_id',
+                                'estadocotizacion_id',
+                                'usdvalue',
+                                'partes_total',
+                                'dias',
+                                'created_at', 
+                                'updated_at',
+                                'partes',
+                            ]);
+                            
+                            $oc->cotizacion->solicitud;
+                            $oc->cotizacion->solicitud->makeHidden([
+                                'partes_total',
+                                'comentario',
+                                'sucursal_id',
                                 'comprador_id',
+                                'user_id',
+                                'faena_id',
+                                'marca_id',
+                                'estadosolicitud_id',
+                                'created_at', 
+                                'updated_at'
+                            ]);
+                                        
+                            $oc->cotizacion->solicitud->sucursal;
+                            $oc->cotizacion->solicitud->sucursal->makeHidden([
+                                'type',
+                                'rut',
+                                'address',
+                                'city',
+                                'country_id',
+                                'created_at', 
+                                'updated_at'
+                            ]);
+                            
+                            $oc->cotizacion->solicitud->faena;
+                            $oc->cotizacion->solicitud->faena->makeHidden([
+                                'sucursal_id',
                                 'rut',
                                 'address',
                                 'city',
                                 'contact',
                                 'phone',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-                        }
-
-                        if($oc->filedata)
-                        {
-                            $oc->filedata->url;
-                            $oc->filedata->name;
-                            $oc->filedata->makeHidden([
-                                'size',
-                                'path',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-                        }
-    
-                        $oc->cotizacion;
-                        $oc->cotizacion->makeHidden([
-                            'solicitud_id',
-                            'motivorechazo_id',
-                            'estadocotizacion_id',
-                            'usdvalue',
-                            'partes_total',
-                            'dias',
-                            'created_at', 
-                            'updated_at',
-                            'partes',
-                        ]);
-                        
-                        $oc->cotizacion->solicitud;
-                        $oc->cotizacion->solicitud->makeHidden([
-                            'partes_total',
-                            'comentario',
-                            'sucursal_id',
-                            'comprador_id',
-                            'user_id',
-                            'faena_id',
-                            'marca_id',
-                            'estadosolicitud_id',
-                            'created_at', 
-                            'updated_at'
-                        ]);
-                                    
-                        $oc->cotizacion->solicitud->sucursal;
-                        $oc->cotizacion->solicitud->sucursal->makeHidden([
-                            'type',
-                            'rut',
-                            'address',
-                            'city',
-                            'country_id',
-                            'created_at', 
-                            'updated_at'
-                        ]);
-                        
-                        $oc->cotizacion->solicitud->faena;
-                        $oc->cotizacion->solicitud->faena->makeHidden([
-                            'sucursal_id',
-                            'rut',
-                            'address',
-                            'city',
-                            'contact',
-                            'phone',
-                            'cliente_id', 
-                            'created_at', 
-                            'updated_at'
-                        ]);
-
-                        $oc->cotizacion->solicitud->faena->cliente;
-                        $oc->cotizacion->solicitud->faena->cliente->makeHidden([
-                            'country_id',
-                            'created_at', 
-                            'updated_at'
-                        ]);
-
-                        $oc->cotizacion->solicitud->marca;
-                        $oc->cotizacion->solicitud->marca->makeHidden(['created_at', 'updated_at']);
-                        
-                        $oc->cotizacion->solicitud->user;
-                        $oc->cotizacion->solicitud->user->makeHidden(['email', 'phone', 'country_id', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
-                        
-                        $oc->cotizacion->solicitud->comprador;
-                        $oc->cotizacion->solicitud->comprador->makeHidden([
-                            'rut',
-                            'address',
-                            'city',
-                            'contact',
-                            'phone',
-                            'country_id',
-                            'created_at', 
-                            'updated_at'
-                        ]);
-
-                        $oc->estadooc;
-                        $oc->estadooc->makeHidden(['created_at', 'updated_at']);
-    
-                        $oc->partes;
-                        foreach($oc->partes as $parte)
-                        {
-                            $parte->makeHidden([
-                                'marca_id', 
+                                'cliente_id', 
                                 'created_at', 
                                 'updated_at'
                             ]);
 
-                            $parte->pivot->makeHidden(['oc']);
+                            $oc->cotizacion->solicitud->faena->cliente;
+                            $oc->cotizacion->solicitud->faena->cliente->makeHidden([
+                                'country_id',
+                                'created_at', 
+                                'updated_at'
+                            ]);
 
-                            $parte->pivot->cantidad_entregado = $parte->pivot->getCantidadEntregado();
+                            $oc->cotizacion->solicitud->marca;
+                            $oc->cotizacion->solicitud->marca->makeHidden(['created_at', 'updated_at']);
                             
-                            if($oc->cotizacion->solicitud->sucursal->type === 'centro')
-                            {
-                                // Calc cantidad stock with cantidad in Recepciones - cantidad in Entregas - cantidad in Despachos
-                                $parte->pivot->cantidad_stock = $parte->getCantidadRecepcionado($oc->cotizacion->solicitud->sucursal) - $parte->getCantidadEntregado($oc->cotizacion->solicitud->sucursal) - $parte->getCantidadDespachado($oc->cotizacion->solicitud->sucursal);
-                            }
-                            else if($oc->cotizacion->solicitud->sucursal->type === 'sucursal')
-                            {
-                                // Calc cantidad stock with cantidad in Recepciones - cantidad in Entregas
-                                $parte->pivot->cantidad_stock = $parte->getCantidadRecepcionado($oc->cotizacion->solicitud->sucursal) - $parte->getCantidadEntregado($oc->cotizacion->solicitud->sucursal);
-                            }                            
-    
-                            $parte->pivot->estadoocparte;
-                            $parte->pivot->estadoocparte->makeHidden([
-                                'created_at',
+                            $oc->cotizacion->solicitud->user;
+                            $oc->cotizacion->solicitud->user->makeHidden(['email', 'phone', 'country_id', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
+                            
+                            $oc->cotizacion->solicitud->comprador;
+                            $oc->cotizacion->solicitud->comprador->makeHidden([
+                                'rut',
+                                'address',
+                                'city',
+                                'contact',
+                                'phone',
+                                'country_id',
+                                'created_at', 
                                 'updated_at'
                             ]);
 
-                            switch($user->role_id)
+                            $oc->estadooc;
+                            $oc->estadooc->makeHidden(['created_at', 'updated_at']);
+        
+                            $oc->partes;
+                            foreach($oc->partes as $parte)
                             {
-                                case 1: { // Administrador
-    
-                                    $parte->pivot->makeHidden([
-                                        'oc_id',
-                                        'parte_id',
-                                        'estadoocparte_id', 
-                                        'created_at', 
-                                        //'updated_at'
-                                    ]);
-    
-                                    break;
-                                }
-    
-                                case 2: { // Vendedor
-    
-                                    if($parte->pivot->monto !== null)
-                                    {
-                                        $parte->pivot->monto = $parte->pivot->monto * $oc->usdvalue;
-                                    }
-                                    
-                                    $parte->pivot->makeHidden([
-                                        'oc_id',
-                                        'parte_id',
-                                        'estadoocparte_id', 
-                                        'created_at', 
-                                        //'updated_at'
-                                    ]);
-    
-                                    break;
-                                }
-    
-                                default: {
-    
-                                    break;
-                                }
+                                $parte->makeHidden([
+                                    'marca_id', 
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+
+                                $parte->pivot->makeHidden([
+                                    'oc',
+                                    'oc_id',
+                                    'parte_id',
+                                    'estadoocparte_id', 
+                                    'created_at', 
+                                    //'updated_at'
+                                ]);                        
+        
+                                $parte->pivot->estadoocparte;
+                                $parte->pivot->estadoocparte->makeHidden([
+                                    'created_at',
+                                    'updated_at'
+                                ]);
                             }
                         }
-                        
+
                         $response = HelpController::buildResponse(
                             200,
                             null,
-                            $oc
+                            $ocs
                         );
                     }
-                    
-                }   
-                else     
-                {
-                    $response = HelpController::buildResponse(
-                        412,
-                        'La OC no existe',
-                        null
-                    );
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            500,
+                            'Error al obtener el reporte de OC',
+                            null
+                        );
+                    }                     
                 }
             }
             else
@@ -480,7 +559,7 @@ class OcsController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al obtener la OC [!]',
+                'Error al obtener el reporte de OC [!]',
                 null
             );
         }
@@ -560,9 +639,51 @@ class OcsController extends Controller
                         null
                     );
                 }
-                else if(($oc->estadooc_id === 3) || ($oc->estadooc_id === 4))
+                // Administrador
+                else if(
+                    ($user->role->name === 'admin') && 
+                    ($oc->cotizacion->solicitud->sucursal->country->id !== $user->stationable->country->id)
+                )
                 {
-                    //If Cerrada or Baja
+                    //If Administrator and solicitud doesn't belong to its country
+                    $response = HelpController::buildResponse(
+                        405,
+                        'No tienes acceso a editar esta OC',
+                        null
+                    );
+                }
+                // Vendedor
+                else if(
+                    ($user->role->name === 'seller') &&
+                    (
+                        ($oc->cotizacion->solicitud->sucursal->id !== $user->stationable->id) ||
+                        ($oc->cotizacion->solicitud->user->id !== $user->id)
+                    ) 
+                )
+                {
+                    //If Vendedor and solicitud doesn't belong or not in its Sucursal
+                    $response = HelpController::buildResponse(
+                        405,
+                        'No tienes acceso a editar esta OC',
+                        null
+                    );
+                }
+                // Agente de compra
+                else if(
+                    ($user->role->name === 'agtcom') &&
+                    ($oc->cotizacion->solicitud->comprador->id !== $user->stationable->id)
+                )
+                {
+                    //If Agente de compra and solicitud isn't to its Comprador
+                    $response = HelpController::buildResponse(
+                        405,
+                        'No tienes acceso a editar esta OC',
+                        null
+                    );
+                }
+                else if(in_array($oc->estadooc_id, [3, 4]))
+                {
+                    //If not Pendiente or En proceso
                     $response = HelpController::buildResponse(
                         409,
                         'No puedes editar una OC que ya esta cerrada o de baja',
@@ -576,15 +697,9 @@ class OcsController extends Controller
                         $parte->pivot->cantidad = $request->cantidad;
                         $parte->pivot->tiempoentrega = $request->tiempoentrega;
                         $parte->pivot->backorder = $request->backorder;
-
-                        //If all of them (cantidad) were delivered
-                        // if(false)
-                        // {
-                        //     $parte->pivot->estadoocparte_id = 3; //Entregado
-                        // }
                     
-                        if($request->cantidad >= $parte->pivot->getCantidadEntregado())
-                        {
+                        // if($request->cantidad >= $parte->pivot->getCantidadEntregado())
+                        // {
                             if($parte->pivot->save())
                             {
                                 $response = HelpController::buildResponse(
@@ -601,19 +716,19 @@ class OcsController extends Controller
                                     null
                                 );
                             }
-                        }
-                        else
-                        {
-                            $response = HelpController::buildResponse(
-                                400,
-                                [
-                                    "cantidad" => [
-                                        "La cantidad debe ser mayor o igual a la ya entregada"
-                                    ]
-                                ],
-                                null
-                            );
-                        }
+                        // }
+                        // else
+                        // {
+                        //     $response = HelpController::buildResponse(
+                        //         400,
+                        //         [
+                        //             "cantidad" => [
+                        //                 "La cantidad debe ser mayor o igual a la ya entregada"
+                        //             ]
+                        //         ],
+                        //         null
+                        //     );
+                        // }
                     }
                     else
                     {
@@ -638,7 +753,168 @@ class OcsController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al actualizar la parte en la OC [!]' . $e,
+                'Error al actualizar la parte en la OC [!]',
+                null
+            );
+        }
+        
+        return $response;
+    }
+
+    public function destroyParte($id, $parte_id)
+    {
+        //VALIDATE: At least 1 parte in OC, parte not received, parte not dispatched, parte not delivered
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('ocs update'))
+            {
+                $validatorInput = [
+                    'parte_id' => $parte_id
+                ];
+            
+                $validatorRules = [
+                    'parte_id' => 'required|exists:partes,id'
+                ];
+
+                $validatorMessages = [
+                    'parte_id.required' => 'Debes inresar la parte',
+                    'parte_id.exists' => 'La parte seleccionada no existe en la OC'
+                ];
+
+                $validator = Validator::make(
+                    $validatorInput,
+                    $validatorRules,
+                    $validatorMessages
+                );
+
+                if ($validator->fails()) 
+                {
+                    $response = HelpController::buildResponse(
+                        400,
+                        $validator->errors(),
+                        null
+                    );
+                }
+                else if(($oc = Oc::find($id)) === null)
+                {
+                    $response = HelpController::buildResponse(
+                        412,
+                        'La OC no existe',
+                        null
+                    );
+                }
+                // Administrador
+                else if(
+                    ($user->role->name === 'admin') && 
+                    ($oc->cotizacion->solicitud->sucursal->country->id !== $user->stationable->country->id)
+                )
+                {
+                    //If Administrator and solicitud doesn't belong to its country
+                    $response = HelpController::buildResponse(
+                        405,
+                        'No tienes acceso a editar esta OC',
+                        null
+                    );
+                }
+                // Vendedor
+                else if(
+                    ($user->role->name === 'seller') &&
+                    (
+                        ($oc->cotizacion->solicitud->sucursal->id !== $user->stationable->id) ||
+                        ($oc->cotizacion->solicitud->user->id !== $user->id)
+                    ) 
+                )
+                {
+                    //If Vendedor and solicitud doesn't belong or not in its Sucursal
+                    $response = HelpController::buildResponse(
+                        405,
+                        'No tienes acceso a editar esta OC',
+                        null
+                    );
+                }
+                // Agente de compra
+                else if(
+                    ($user->role->name === 'agtcom') &&
+                    ($oc->cotizacion->solicitud->comprador->id !== $user->stationable->id)
+                )
+                {
+                    //If Agente de compra and solicitud isn't to its Comprador
+                    $response = HelpController::buildResponse(
+                        405,
+                        'No tienes acceso a editar esta OC',
+                        null
+                    );
+                }
+                else if(in_array($oc->estadooc_id, [3, 4]))
+                {
+                    //If not Pendiente or En proceso
+                    $response = HelpController::buildResponse(
+                        409,
+                        'No puedes editar una OC que ya esta cerrada o de baja',
+                        null
+                    );
+                }
+                else     
+                {
+                    if($parte = $oc->partes->find($parte_id))
+                    {                   
+                        // if($request->cantidad >= $parte->pivot->getCantidadEntregado())
+                        // {
+                            if($oc->partes()->detach($parte->id))
+                            {
+                                $response = HelpController::buildResponse(
+                                    200,
+                                    'Parte eliminada',
+                                    null
+                                );
+                            }
+                            else
+                            {
+                                $response = HelpController::buildResponse(
+                                    500,
+                                    'Error al eliminar la parte en la OC',
+                                    null
+                                );
+                            }
+                        // }
+                        // else
+                        // {
+                        //     $response = HelpController::buildResponse(
+                        //         400,
+                        //         [
+                        //             "cantidad" => [
+                        //                 "La cantidad debe ser mayor o igual a la ya entregada"
+                        //             ]
+                        //         ],
+                        //         null
+                        //     );
+                        // }
+                    }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            412,
+                            'La parte no existe en la OC',
+                            null
+                        );
+                    }
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a actualizar OC',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al actualizar la parte en la OC [!]',
                 null
             );
         }
@@ -684,18 +960,51 @@ class OcsController extends Controller
                 {
                     if($oc = Oc::find($id))
                     {
-                        if(($user->role_id === 2) && ($oc->cotizacion->solicitud->user_id !== $user->id))
+                        // Administrador
+                        if(
+                            ($user->role->name === 'admin') && 
+                            ($oc->cotizacion->solicitud->sucursal->country->id !== $user->stationable->country->id)
+                        )
                         {
-                            //If Vendedor and solicitud doesn't belong
+                            //If Administrator and solicitud doesn't belong to its country
                             $response = HelpController::buildResponse(
                                 405,
                                 'No tienes acceso a dar de baja esta OC',
                                 null
                             );
                         }
-                        else if(($oc->estadooc_id === 2) || ($oc->estadooc_id === 3) || ($oc->estadooc_id === 4))
+                        // Vendedor
+                        else if(
+                            ($user->role->name === 'seller') &&
+                            (
+                                ($oc->cotizacion->solicitud->sucursal->id !== $user->stationable->id) ||
+                                ($oc->cotizacion->solicitud->user->id !== $user->id)
+                            ) 
+                        )
                         {
-                            //If En proceso, Cerrada or Baja
+                            //If Vendedor and solicitud doesn't belong or not in its Sucursal
+                            $response = HelpController::buildResponse(
+                                405,
+                                'No tienes acceso a dar de baja esta OC',
+                                null
+                            );
+                        }
+                        // Agente de compra
+                        else if(
+                            ($user->role->name === 'agtcom') &&
+                            ($oc->cotizacion->solicitud->comprador->id !== $user->stationable->id)
+                        )
+                        {
+                            //If Agente de compra and solicitud isn't to its Comprador
+                            $response = HelpController::buildResponse(
+                                405,
+                                'No tienes acceso a dar de baja esta OC',
+                                null
+                            );
+                        }
+                        else if(in_array($oc->estadooc_id, [2, 3, 4]))
+                        {
+                            //If not Pendiente
                             $response = HelpController::buildResponse(
                                 409,
                                 'No puedes dar de baja una OC que ya esta en proceso, cerrada o de baja',
@@ -794,45 +1103,82 @@ class OcsController extends Controller
                 else        
                 {
                     if($oc = Oc::find($id))
-                    {
-                        if(($user->role_id === 2) && ($oc->cotizacion->solicitud->user_id !== $user->id))
+                    {                       
+                        // Administrador
+                        if(
+                            ($user->role->name === 'admin') && 
+                            ($oc->cotizacion->solicitud->sucursal->country->id !== $user->stationable->country->id)
+                        )
                         {
-                            //If Vendedor and solicitud doesn't belong
+                            //If Administrator and solicitud doesn't belong to its country
                             $response = HelpController::buildResponse(
                                 405,
-                                'No tienes acceso a procesar esta OC',
+                                'No tienes acceso a activar esta OC',
                                 null
                             );
                         }
-                        else if($oc->estadooc_id !== 1)
+                        // Agente de compra
+                        else if(
+                            ($user->role->name === 'agtcom') &&
+                            ($oc->cotizacion->solicitud->comprador->id !== $user->stationable->id)
+                        )
+                        {
+                            //If Agente de compra and solicitud isn't to its Comprador
+                            $response = HelpController::buildResponse(
+                                405,
+                                'No tienes acceso a activar esta OC',
+                                null
+                            );
+                        }
+                        else if(in_array($oc->estadooc_id, [2, 3, 4]))
                         {
                             //If not Pendiente
                             $response = HelpController::buildResponse(
                                 409,
-                                'Solo puedes procesar OCs que estan pendiente',
+                                'No puedes activar una OC que ya esta en proceso, cerrada o de baja',
                                 null
                             );
-                        }
+                        }                      
                         else
                         {
-                            $oc->estadooc_id = 2; // En proceso
-                            $oc->proveedor_id = $request->proveedor_id;
-                            
-                            if($oc->save())
+                            if(
+                                $proveedor = Proveedor::where('id', '=', $request->proveedor_id)
+                                            ->where('comprador_id', '=', $oc->cotizacion->solicitud->comprador->id)
+                                            ->first()
+                            )
                             {
-                                $response = HelpController::buildResponse(
-                                    200,
-                                    'Proceso de OC iniciado',
-                                    null
-                                );
+                                $oc->estadooc_id = 2; // En proceso
+                                $oc->proveedor_id = $request->proveedor_id;
+                                
+                                if($oc->save())
+                                {
+                                    $response = HelpController::buildResponse(
+                                        200,
+                                        'Proceso de OC iniciado',
+                                        null
+                                    );
+                                }
+                                else
+                                {
+                                    $response = HelpController::buildResponse(
+                                        500,
+                                        'Error al iniciar el proceso de la OC',
+                                        null
+                                    );   
+                                }
                             }
                             else
                             {
+                                //If Proveedor is not in Comprador
                                 $response = HelpController::buildResponse(
-                                    500,
-                                    'Error al iniciar el proceso de la OC',
+                                    400,
+                                    [
+                                        'proveedor_id' => [
+                                            'El proveedor ingresado no esta asociado al comprador'
+                                        ]
+                                    ],
                                     null
-                                );   
+                                );
                             }
                         }
                         
