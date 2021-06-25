@@ -1,341 +1,316 @@
 <!-- start page title -->
 <div class="row">
-  <div class="col-12">
-    <div class="page-title-box d-flex align-items-center justify-content-between">
-      <h4 class="mb-0 font-size-18">Detalle de OC</h4>
+    <div class="col-12">
+        <div class="page-title-box d-flex align-items-center justify-content-between">
+            <h4 class="mb-0 font-size-18">Detalle de OC</h4>
 
-      <div class="page-title-right">
-        <ol class="breadcrumb m-0">
-          <li class="breadcrumb-item">OCs</li>
-          <li class="breadcrumb-item active">Detalle</li>
-        </ol>
-      </div>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item">OCs</li>
+                    <li class="breadcrumb-item active">Detalle</li>
+                </ol>
+            </div>
 
+        </div>
     </div>
-  </div>
 </div>
 <!-- end page title -->
 
 <div class="row">
 
-  <div class="col-12">
-    <div class="card">
-      <div class="card-body">
-        <div class="alert alert-success alert-dismissible fade show" role="alert" *ngIf="(oc.estadooc_id === 1)">
-          La OC aun esta <strong>pendiente</strong>
-          <button type="button" class="ml-2 btn btn-light" aria-label="Cerrar solicitud" [disabled]="(loading === true)" (click)="startOC()"><i class="mdi mdi-thumb-up"></i> Iniciar proceso de OC</button>
-        </div>
-        <div>
-          <span class="card-title">OC {{ oc.id !== null ? "#" + oc.id : '' }}</span>
-          <div class="btn-group mr-1 mt-2 btn-right dropleft">
-            <button [hidden]="(oc.cotizacion_id <= 0) || (oc.solicitud_id <= 0)" [disabled]="(loading === true)" type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="mdi mdi-chevron-left"></i> Referencias</button>
-            <div class="dropdown-menu">
-                <a class="dropdown-item" [routerLink]="['/panel/cotizaciones/details', oc.cotizacion_id]">Ver Cotizacion</a>
-                <a class="dropdown-item" [hidden]="(loggedUser.role_id !== 1)" [routerLink]="['/panel/solicitudes/details/administrator', oc.solicitud_id]">Ver Solicitud</a>
-                <a class="dropdown-item" [hidden]="(loggedUser.role_id !== 2)" [routerLink]="['/panel/solicitudes/details/seller', oc.solicitud_id]">Ver Solicitud</a>
-            </div>
-          </div>
-        </div>
-        <span class="badge" [class.badge-warning]="(oc.estadooc_id === 1)"
-            [class.badge-primary]="(oc.estadooc_id === 2)"
-            [class.badge-success]="(oc.estadooc_id === 3)"
-            [class.badge-danger]="(oc.estadooc_id === 4)"
-            *ngIf="(oc.estadooc_name !== null)">{{ oc.estadooc_name }}</span>
-        <p class="card-title-desc">Detalle de la OC</p>
-        <div class="row">
-          <div class="col-4">
-            <div class="form-group">
-              <label class="control-label">Cliente</label>
-              <br>
-              <label>{{ oc.cliente_name }}</label>
-            </div>
-          </div>
-          <div class="col-4">
-            <div class="form-group">
-              <label class="control-label">Faena</label>
-              <br>
-              <label>{{ oc.faena_name }}</label>
-            </div>
-          </div>
-          <div class="col-4">
-            <div class="form-group">
-              <label class="control-label">Marca</label>
-              <br>
-              <label>{{ oc.marca_name }}</label>
-            </div>
-          </div>
-          <div class="col-4">
-            <div class="form-group">
-              <label class="control-label">Comprador</label>
-              <br>
-              <label>{{ oc.comprador_name ? oc.comprador_name : '' }}</label>
-            </div>
-          </div>
-          <div class="col-4">
-            <div class="form-group">
-              <label class="control-label">Proveedor</label>
-              <br>
-              <label>{{ oc.proveedor_name ? oc.proveedor_name : '' }}</label>
-            </div>
-          </div>
-          <div class="col-4">
-            <div class="form-group">
-              <label class="control-label">Creada en</label>
-              <br>
-              <label>{{ dateStringFormat(oc.created_at) + ((oc.dias >= 0) ? ((oc.dias == 1) ? ' (hace 1 dia)' : ((oc.dias > 1) ? ' (hace ' + oc.dias + ' dias)' : ' (hoy)')) : '') }}</label>
-            </div>
-          </div>
-          <div class="col-12" *ngIf="oc.occliente_url !== null">
-            <div class="form-group">
-              <label class="control-label">Documento OC cliente</label>
-              <br>
-              <a href="{{oc.occliente_url}}" download="{{oc.occliente_filename}}" target="_blank" class="btn btn-light btn-label"><i class="bx bx-download label-icon"></i> Descargar</a>
-            </div>
-          </div>
-        </div>
-
-        <hr>
-
-        <!-- Partes list -->
-        <div [hidden]="(DISPLAYING_FORM !== 0)">
-          <h4 class="card-title">Lista de partes</h4>
-          <p class="card-title-desc">Lista de partes en la OC</p>
-
-          <div class="table-responsive">
-
-            <table datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger" class="table table-hover table-bordered mb-2">
-              <thead>
-                <tr>
-                  <th>Cantidad</th>
-                  <th>N° Parte</th>
-                  <th>Descripcion</th>
-                  <th>Tiempo entrega</th>
-                  <th>Dias estado</th>
-                  <th>Entregado</th>
-                  <th>Pendiente</th>
-                  <th>En stock</th>
-                  <th>Estado</th>
-                  <th>Opciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let parte of partes; index as i">
-                  <td align="right">{{ parte.cantidad !== null ? parte.cantidad : "" }}</td>
-                  <td align="center"><i class="bx bx-timer icon-table" *ngIf="(parte.backorder === true)"></i>{{ parte.nparte !== null ? parte.nparte : "" }}</td>
-                  <td align="center">{{ parte.descripcion !== null ? parte.descripcion : "" }}</td>
-                  <td align="right">{{ parte.tiempoentrega !== null ? parte.tiempoentrega + " dias" : "" }}</td>
-                  <td align="right">{{ parte.statusdays !== null ? parte.statusdays + " dias" : ""
-                    }}</td>
-                  <td align="right">{{ parte.cantidad_entregado !== null ? parte.cantidad_entregado : "" }}</td>
-                  <td align="right">{{ (parte.cantidad !== null) && (parte.cantidad_entregado !== null) ? (parte.cantidad - parte.cantidad_entregado) : "" }}</td>
-                  <td align="right">{{ parte.cantidad_stock !== null ? parte.cantidad_stock : "" }}</td>
-                  <td align="center">{{ (parte.cantidad_entregado === parte.cantidad) ? 'Entregado' : ( (parte.cantidad_entregado > 0) ? 'Parcial' : ( (parte.cantidad_stock === 0) ? 'Sin stock' : 'Pendiente' ) ) }}</td>
-                  <td align="center">
-                    <button (click)="goTo_updateParte(i)" [hidden]="(oc.estadooc_id !== 1) && (oc.estadooc_id !== 2)" class="btn-table btn btn-secondary" title="Editar"><i class="bx bx-edit-alt"></i></button>
-                  </td>                  
-                </tr>
-              </tbody>
-              <tfoot [hidden]="(oc.estadooc_id !== 1)"> <!-- It's only shown when Oc is still 'Pendiente' -->
-                <tr>
-                  <td colspan="9" align="left">
-                    <button type="button" class="btn btn-outline-primary mr-2" (click)="goTo_darBaja()"
-                        [disabled]="(loading === true)">
-                      <i class="bx bx-unlink font-size-16 align-middle"></i> Dar OC de baja
-                    </button>
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        </div>
-        
-        <!-- Parte edit -->
-        <div [hidden]="(DISPLAYING_FORM !== 1)">
-          <h4 class="card-title">Editar parte</h4>
-          <p class="card-title-desc">Modifica los siguientes campos para editar la parte en la OC</p>
-
-          <form [formGroup]="parteForm" (ngSubmit)="updateParte()" action="#">
-            <div class="row">
-
-              <div class="col-6">
-                <div class="form-group">
-                  <label for="cantidad">Cantidad</label>
-                  <!-- Backend errors -->
-                  <div class="alert alert-danger" *ngIf="(responseErrors.cantidad)">
-                    <div *ngFor="let errorMessage of responseErrors.cantidad">{{ errorMessage }}</div>
-                  </div>
-                  <input type="number" class="form-control valid-control" name="cantidad" id="cantidad"
-                      formControlName="cantidad">
-                  <!-- Frontend errors -->
-                  <div
-                      *ngIf="(parteForm.controls.cantidad.errors) && (parteForm.controls.cantidad.touched) && (parteForm.controls.cantidad.dirty)">
-                    <div class="error-response" *ngIf="parteForm.controls.cantidad.errors.required === true">Debes
-                      ingresar la cantidad</div>
-                    <div class="error-response" *ngIf="parteForm.controls.cantidad.errors.mincantidadasignado !== null">La cantidad debe
-                      ser mayor a igual a la cantidad de partes ya asignadas {{ parte_min > 0 ? '(' + parte_min + ')' : '' }}</div>
-                  </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="alert alert-success alert-dismissible fade show" role="alert" *ngIf="((loggedUser !== null) && (['admin', 'agtcom'].includes(loggedUser.role.name))) && (oc.estadooc_id === 1)">
+                    La OC aun esta <strong>Pendiente</strong>
+                    <button type="button" class="ml-2 btn btn-light" aria-label="Activar OC" [disabled]="(loading === true)" (click)="startOC()"><i class="mdi mdi-thumb-up"></i> Activar OC</button>
                 </div>
-              </div>
-  
-              <div class="col-6">
-                <div class="form-group">
-                  <label for="tiempoentrega">Tiempo de entrega (en dias)</label>
-                  <!-- Backend errors -->
-                  <div class="alert alert-danger" *ngIf="(responseErrors.tiempoentrega)">
-                    <div *ngFor="let errorMessage of responseErrors.tiempoentrega">{{ errorMessage }}</div>
-                  </div>
-                  <input type="number" class="form-control valid-control" name="tiempoentrega" id="tiempoentrega"
-                      formControlName="tiempoentrega">
-                  <!-- Frontend errors -->
-                  <div
-                      *ngIf="(parteForm.controls.tiempoentrega.errors) && (parteForm.controls.tiempoentrega.touched) && (parteForm.controls.tiempoentrega.dirty)">
-                    <div class="error-response" *ngIf="parteForm.controls.tiempoentrega.errors.min !== null">El tiempo de
-                      entrega debe ser igual o mayor a 0</div>
-                  </div>
-                </div>
-              </div>
-              
-              <div class="col-12">
-                <div class="form-group">
-                  <label for="backorder">Backorder</label>
-                  <div class="custom-control custom-checkbox mb-3">
-                    <input type="checkbox" class="custom-control-input" id="backorder" name="backorder" formControlName="backorder">
-                    <label class="custom-control-label" for="backorder">Esta parte esta en Backorder</label>
-                  </div>
-                </div>
-              </div>
-  
-              <div class="col-12">
-                <div class="form-group">
-                  <button type="submit" [disabled]="(parteForm.invalid) || (loading === true)"
-                      class="btn btn-primary mr-2">
-                    <span *ngIf="loading === true"><i
-                          class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
-                    <span *ngIf="loading === false">Guardar</span>
-                  </button>
-                  <button type="button" class="btn btn-outline-primary" (click)="goTo_partesList();">
-                    Cancelar
-                  </button>
-                </div>
-              </div>
-  
-            </div>
-          </form>
-        </div>
-
-        <!-- Reject OC (dar baja) -->
-        <div [hidden]="(DISPLAYING_FORM !== 2)">
-          <h4 class="card-title">Dar de OC de baja</h4>
-          <p class="card-title-desc">Completa los siguientes campos para dar de baja la OC</p>
-
-          <form [formGroup]="darBajaOCForm" (ngSubmit)="submitFormDarBajaOC()" action="#">
-          
-            <div class="row">
-              
-              <div class="col-12">
-                <div class="form-group">
-                  <label class="control-label">Motivo de baja</label>
-                  <!-- Backend errors -->
-                  <div class="alert alert-danger" *ngIf="(responseErrors.motivobaja_id)">
-                    <div *ngFor="let errorMessage of responseErrors.motivobaja_id">{{ errorMessage }}</div>
-                  </div>
-                  <select class="form-control" name="motivobaja_id" id="motivobaja_id" formControlName="motivobaja_id">
-                    <option *ngFor="let motivoBaja of motivosBaja" [value]="motivoBaja.id">{{ motivoBaja.name }}</option>
-                  </select>
-                  <!-- Frontend errors -->
-                  <div
-                      *ngIf="(darBajaOCForm.controls.motivobaja_id.errors) && (darBajaOCForm.controls.motivobaja_id.touched) && (darBajaOCForm.controls.motivobaja_id.dirty)">
-                    <div class="error-response" *ngIf="darBajaOCForm.controls.motivobaja_id.errors.required === true">Debes
-                      seleccionar el motivo
+                <div>
+                    <span class="card-title">OC {{ oc.id !== null ? "#" + oc.id : '' }}</span>
+                    <div class="btn-group mr-1 mt-2 btn-right dropleft">
+                        <button [hidden]="(oc.cotizacion_id <= 0) || (oc.solicitud_id <= 0)" [disabled]="(loading === true)" type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="mdi mdi-chevron-left"></i> Referencias</button>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" [routerLink]="['/panel/cotizaciones/details', oc.cotizacion_id]">Ver Cotizacion</a>
+                            <a class="dropdown-item" [routerLink]="['/panel/solicitudes/details', oc.solicitud_id]">Ver Solicitud</a>
+                        </div>
                     </div>
-                    <div class="error-response" *ngIf="darBajaOCForm.controls.motivobaja_id.errors.minlength !== null">El motivo
-                      debe ser valida</div>
-                  </div>
                 </div>
-              </div>
+                <span class="badge" [class.badge-warning]="(oc.estadooc_id === 1)" [class.badge-primary]="(oc.estadooc_id === 2)" [class.badge-success]="(oc.estadooc_id === 3)" [class.badge-danger]="(oc.estadooc_id === 4)" *ngIf="(oc.estadooc_name !== null)">{{ oc.estadooc_name }}</span>
+                <p class="card-title-desc">Detalle de la OC</p>
+                <div class="row">
+                    <div class="col-4">
+                        <div class="form-group">
+                            <label class="control-label">Cliente</label>
+                            <br>
+                            <label>{{ oc.cliente_name }}</label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-group">
+                            <label class="control-label">Faena</label>
+                            <br>
+                            <label>{{ oc.faena_name }}</label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-group">
+                            <label class="control-label">Marca</label>
+                            <br>
+                            <label>{{ oc.marca_name }}</label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-group">
+                            <label class="control-label">Comprador</label>
+                            <br>
+                            <label>{{ oc.comprador_name ? oc.comprador_name : '' }}</label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-group">
+                            <label class="control-label">Proveedor</label>
+                            <br>
+                            <label>{{ oc.proveedor_name ? oc.proveedor_name : '' }}</label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-group">
+                            <label class="control-label">Creada en</label>
+                            <br>
+                            <label>{{ dateStringFormat(oc.created_at) + ((oc.dias >= 0) ? ((oc.dias == 1) ? ' (hace 1 dia)' : ((oc.dias > 1) ? ' (hace ' + oc.dias + ' dias)' : ' (hoy)')) : '') }}</label>
+                        </div>
+                    </div>
+                    <div class="col-12" *ngIf="oc.occliente_url !== null">
+                        <div class="form-group">
+                            <label class="control-label">Documento OC cliente</label>
+                            <br>
+                            <a href="{{oc.occliente_url}}" download="{{oc.occliente_filename}}" target="_blank" class="btn btn-light btn-label"><i class="bx bx-download label-icon"></i> Descargar</a>
+                        </div>
+                    </div>
+                </div>
 
-              <div class="col-12">
-                <div class="form-group">
-                  <button type="submit" [disabled]="(darBajaOCForm.invalid) || (loading === true)" class="btn btn-primary mr-2">
+                <hr>
+
+                <!-- Partes list -->
+                <div [hidden]="(DISPLAYING_FORM !== 0)">
+                    <h4 class="card-title">Lista de partes</h4>
+                    <p class="card-title-desc">Lista de partes en la OC</p>
+
+                    <div class="table-responsive">
+
+                        <table datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger" class="table table-hover table-bordered mb-2">
+                            <thead>
+                                <tr>
+                                    <th>Cantidad</th>
+                                    <th>N° Parte</th>
+                                    <th>Descripcion</th>
+                                    <th>Tiempo entrega</th>
+                                    <th>Dias estado</th>
+                                    <th>Estado</th>
+                                    <th>Opciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let parte of partes; index as i">
+                                    <td align="right">{{ parte.cantidad !== null ? parte.cantidad : "" }}</td>
+                                    <td align="center"><i class="bx bx-timer icon-table" *ngIf="(parte.backorder === true)"></i>{{ parte.nparte !== null ? parte.nparte : "" }}</td>
+                                    <td align="center">{{ parte.descripcion !== null ? parte.descripcion : "" }}</td>
+                                    <td align="right">{{ parte.tiempoentrega !== null ? parte.tiempoentrega + " dias" : "" }}</td>
+                                    <td align="right">{{ parte.statusdays !== null ? parte.statusdays + " dias" : ""}}</td>
+                                    <td align="center">{{ (parte.cantidad_entregado === parte.cantidad) ? 'Entregado' : ( (parte.cantidad_entregado > 0) ? 'Parcial' : ( (parte.cantidad_stock === 0) ? 'Sin stock' : 'Pendiente' ) ) }}</td>
+                                    <td align="center">
+                                        <button (click)="goTo_updateParte(i)" *ngIf="([1, 2].includes(oc.estadooc_id))" class="btn-table btn btn-secondary" title="Editar"><i class="bx bx-edit-alt"></i></button>
+                                        <!-- <button (click)="removeParte(parte)" *ngIf="([1, 2].includes(oc.estadooc_id))" class="btn-table btn btn-secondary" title="Eliminar"><i class="bx bx-trash-alt"></i></button> -->
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot *ngIf="((loggedUser !== null) && (['admin', 'seller', 'agtcom'].includes(loggedUser.role.name))) && (oc.estadooc_id === 1)">
+                                <!-- It's only shown when Oc is still 'Pendiente' -->
+                                <tr>
+                                    <td colspan="7" align="left">
+                                        <button type="button" class="btn btn-outline-primary mr-2" (click)="goTo_darBaja()" [disabled]="(loading === true)">
+                                          <i class="bx bx-unlink font-size-16 align-middle"></i> Dar OC de baja
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Parte edit -->
+                <div [hidden]="(DISPLAYING_FORM !== 1)">
+                    <h4 class="card-title">Editar parte</h4>
+                    <p class="card-title-desc">Modifica los siguientes campos para editar la parte en la OC</p>
+
+                    <form [formGroup]="parteForm" (ngSubmit)="updateParte()" action="#">
+                        <div class="row">
+
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <label for="cantidad">Cantidad</label>
+                                    <!-- Backend errors -->
+                                    <div class="alert alert-danger" *ngIf="(responseErrors.cantidad)">
+                                        <div *ngFor="let errorMessage of responseErrors.cantidad">{{ errorMessage }}</div>
+                                    </div>
+                                    <input type="number" class="form-control valid-control" name="cantidad" id="cantidad" formControlName="cantidad">
+                                    <!-- Frontend errors -->
+                                    <div *ngIf="(parteForm.controls.cantidad.errors) && (parteForm.controls.cantidad.touched) && (parteForm.controls.cantidad.dirty)">
+                                        <div class="error-response" *ngIf="parteForm.controls.cantidad.errors.required === true">Debes ingresar la cantidad</div>
+                                        <div class="error-response" *ngIf="parteForm.controls.cantidad.errors.mincantidadasignado !== null">La cantidad debe ser mayor a igual a la cantidad de partes ya asignadas {{ parte_min > 0 ? '(' + parte_min + ')' : '' }}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <label for="tiempoentrega">Tiempo de entrega (en dias)</label>
+                                    <!-- Backend errors -->
+                                    <div class="alert alert-danger" *ngIf="(responseErrors.tiempoentrega)">
+                                        <div *ngFor="let errorMessage of responseErrors.tiempoentrega">{{ errorMessage }}</div>
+                                    </div>
+                                    <input type="number" class="form-control valid-control" name="tiempoentrega" id="tiempoentrega" formControlName="tiempoentrega">
+                                    <!-- Frontend errors -->
+                                    <div *ngIf="(parteForm.controls.tiempoentrega.errors) && (parteForm.controls.tiempoentrega.touched) && (parteForm.controls.tiempoentrega.dirty)">
+                                        <div class="error-response" *ngIf="parteForm.controls.tiempoentrega.errors.min !== null">El tiempo de entrega debe ser igual o mayor a 0</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label for="backorder">Backorder</label>
+                                    <div class="custom-control custom-checkbox mb-3">
+                                        <input type="checkbox" class="custom-control-input" id="backorder" name="backorder" formControlName="backorder">
+                                        <label class="custom-control-label" for="backorder">Esta parte esta en Backorder</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <button type="submit" [disabled]="(parteForm.invalid) || (loading === true)" class="btn btn-primary mr-2">
+                                      <span *ngIf="loading === true"><i
+                                            class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
+                                      <span *ngIf="loading === false">Guardar</span>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-primary" (click)="goTo_partesList();">
+                                      Cancelar
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Reject OC (dar baja) -->
+                <div [hidden]="(DISPLAYING_FORM !== 2)">
+                    <h4 class="card-title">Dar de OC de baja</h4>
+                    <p class="card-title-desc">Completa los siguientes campos para dar de baja la OC</p>
+
+                    <form [formGroup]="darBajaOCForm" (ngSubmit)="submitFormDarBajaOC()" action="#">
+
+                        <div class="row">
+
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label class="control-label">Motivo de baja</label>
+                                    <!-- Backend errors -->
+                                    <div class="alert alert-danger" *ngIf="(responseErrors.motivobaja_id)">
+                                        <div *ngFor="let errorMessage of responseErrors.motivobaja_id">{{ errorMessage }}</div>
+                                    </div>
+                                    <select class="form-control" name="motivobaja_id" id="motivobaja_id" formControlName="motivobaja_id">
+                                      <option *ngFor="let motivoBaja of motivosBaja" [value]="motivoBaja.id">{{ motivoBaja.name }}</option>
+                                    </select>
+                                    <!-- Frontend errors -->
+                                    <div *ngIf="(darBajaOCForm.controls.motivobaja_id.errors) && (darBajaOCForm.controls.motivobaja_id.touched) && (darBajaOCForm.controls.motivobaja_id.dirty)">
+                                        <div class="error-response" *ngIf="darBajaOCForm.controls.motivobaja_id.errors.required === true">Debes seleccionar el motivo
+                                        </div>
+                                        <div class="error-response" *ngIf="darBajaOCForm.controls.motivobaja_id.errors.minlength !== null">El motivo debe ser valida</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <button type="submit" [disabled]="(darBajaOCForm.invalid) || (loading === true)" class="btn btn-primary mr-2">
+                                      <span *ngIf="loading === true"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
+                                      <span *ngIf="loading === false">Guardar</span>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-primary" [disabled]="(loading === true)" (click)="goTo_partesList()">
+                                      Cancelar
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+                <!-- Start OC -->
+                <div [hidden]="(DISPLAYING_FORM !== 3)">
+                    <h4 class="card-title">Procesar OC</h4>
+                    <p class="card-title-desc">Completa los siguientes campos para procesar la OC</p>
+
+                    <form [formGroup]="startOCForm" (ngSubmit)="submitFormStartOC()" action="#">
+
+                        <div class="row">
+
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label class="control-label">Proveedor</label>
+                                    <!-- Backend errors -->
+                                    <div class="alert alert-danger" *ngIf="(responseErrors.proveedor_id)">
+                                        <div *ngFor="let errorMessage of responseErrors.proveedor_id">{{ errorMessage }}</div>
+                                    </div>
+                                    <select class="form-control" name="proveedor_id" id="proveedor_id" formControlName="proveedor_id">
+                                      <option *ngFor="let proveedor of proveedores" [value]="proveedor.id">{{ proveedor.name }}</option>
+                                    </select>
+                                    <!-- Frontend errors -->
+                                    <div *ngIf="(startOCForm.controls.proveedor_id.errors) && (startOCForm.controls.proveedor_id.touched) && (startOCForm.controls.proveedor_id.dirty)">
+                                        <div class="error-response" *ngIf="startOCForm.controls.proveedor_id.errors.required === true">Debes seleccionar el proveedor
+                                        </div>
+                                        <div class="error-response" *ngIf="startOCForm.controls.proveedor_id.errors.minlength !== null">El proveedor debe ser valida</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <button type="submit" [disabled]="(startOCForm.invalid) || (loading === true)" class="btn btn-primary mr-2">
                     <span *ngIf="loading === true"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
                     <span *ngIf="loading === false">Guardar</span>
                   </button>
-                  <button type="button" class="btn btn-outline-primary" [disabled]="(loading === true)" (click)="goTo_partesList()">
+                                    <button type="button" class="btn btn-outline-primary" [disabled]="(loading === true)" (click)="goTo_partesList()">
                     Cancelar
                   </button>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </form>
+
                 </div>
-              </div>
-            
-            </div>
-  
-          </form>
 
-        </div>
-
-        <!-- Start OC -->
-        <div [hidden]="(DISPLAYING_FORM !== 3)">
-          <h4 class="card-title">Procesar OC</h4>
-          <p class="card-title-desc">Completa los siguientes campos para procesar la OC</p>
-
-          <form [formGroup]="startOCForm" (ngSubmit)="submitFormStartOC()" action="#">
-          
-            <div class="row">
-              
-              <div class="col-12">
-                <div class="form-group">
-                  <label class="control-label">Proveedor</label>
-                  <!-- Backend errors -->
-                  <div class="alert alert-danger" *ngIf="(responseErrors.proveedor_id)">
-                    <div *ngFor="let errorMessage of responseErrors.proveedor_id">{{ errorMessage }}</div>
-                  </div>
-                  <select class="form-control" name="proveedor_id" id="proveedor_id" formControlName="proveedor_id">
-                    <option *ngFor="let proveedor of proveedores" [value]="proveedor.id">{{ proveedor.name }}</option>
-                  </select>
-                  <!-- Frontend errors -->
-                  <div
-                      *ngIf="(startOCForm.controls.proveedor_id.errors) && (startOCForm.controls.proveedor_id.touched) && (startOCForm.controls.proveedor_id.dirty)">
-                    <div class="error-response" *ngIf="startOCForm.controls.proveedor_id.errors.required === true">Debes
-                      seleccionar el proveedor
+                <div class="row">
+                    <div class="col-12">
+                        <div class="form-buttons mt-2" [hidden]="(DISPLAYING_FORM !== 0)">
+                            <button [disabled]="(loading === true)" class="btn btn-light" (click)="goTo_back()">
+                              <span>Volver</span>
+                            </button>
+                        </div>
                     </div>
-                    <div class="error-response" *ngIf="startOCForm.controls.proveedor_id.errors.minlength !== null">El proveedor
-                      debe ser valida</div>
-                  </div>
                 </div>
-              </div>
 
-              <div class="col-12">
-                <div class="form-group">
-                  <button type="submit" [disabled]="(startOCForm.invalid) || (loading === true)" class="btn btn-primary mr-2">
-                    <span *ngIf="loading === true"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
-                    <span *ngIf="loading === false">Guardar</span>
-                  </button>
-                  <button type="button" class="btn btn-outline-primary" [disabled]="(loading === true)" (click)="goTo_partesList()">
-                    Cancelar
-                  </button>
-                </div>
-              </div>
-            
             </div>
-  
-          </form>
-
         </div>
+        <!-- end card -->
 
-        <div class="row">
-          <div class="col-12">
-            <div class="form-buttons mt-2" [hidden]="(DISPLAYING_FORM !== 0)">
-              <button [disabled]="(loading === true)" class="btn btn-light" (click)="goTo_back()">
-                <span>Volver</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-      </div>
     </div>
-    <!-- end card -->
-
-  </div>
 
 </div>
 <!-- end row -->

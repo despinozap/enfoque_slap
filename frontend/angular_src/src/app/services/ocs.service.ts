@@ -54,6 +54,22 @@ export class OcsService {
     return this.httpClient.get(endpoint);
   }
 
+  public removeParte(oc_id: number, parte_id: any): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/ocs/${oc_id}/partes/${parte_id}`;
+
+    let httpOptions = { 
+      method: 'DELETE',
+      headers:
+      {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    };
+    
+    return this.httpClient.delete(endpoint, httpOptions);
+  }
+
   public updateParte(oc_id: number, parte: any): Observable<any>
   {
     let endpoint: string = `${environment.ENDPOINT_BASE}/ocs/${oc_id}/partes`;
@@ -72,11 +88,22 @@ export class OcsService {
     return this.httpClient.put(endpoint, parte, httpOptions);
   }
 
-  public getOC(oc_id: number): Observable<any>
+  public getReportOc(data: any): Observable<any>
   {
-    let endpoint: string = `${environment.ENDPOINT_BASE}/ocs/${oc_id}`;
+    let endpoint: string = `${environment.ENDPOINT_BASE}/ocs/report`;
+
+    let httpOptions = { 
+      method: 'POST',
+      headers:
+      {
+        'Accept': 'application/json',
+        'enctype': 'multipart/form-data',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET,POST,OPTIONS,DELETE,PUT'
+      }
+    };
     
-    return this.httpClient.get(endpoint);
+    return this.httpClient.post(endpoint, data, httpOptions);
   }
 
   public getOCs(): Observable<any>

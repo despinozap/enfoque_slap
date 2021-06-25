@@ -1,6 +1,7 @@
 import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
+import { User } from 'src/app/interfaces/user';
 import { AuthService } from 'src/app/services/auth.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { OcsService } from 'src/app/services/ocs.service';
@@ -40,28 +41,24 @@ export class OcsListComponent implements OnInit, AfterViewInit {
 
   dtTrigger: Subject<any> = new Subject<any>();
 
+  loggedUser: User = null as any;
+  private subLoggedUser: any;
+  
   ocs: any[] = [];
   loading: boolean = false;
-  loggedUser: any = {
-    role_id: -1,
-  };
   
   constructor(
     private _authService: AuthService,
     private _ocsService: OcsService,
     private _utilsService: UtilsService
-  ) { 
-
-    this.loggedUser = {
-      role_id: -1,
-    };
+  ) {
   }
 
   ngOnInit(): void {
     //For loggedUser
     {
-      this._authService.loggedUser$.subscribe((data) => {
-        this.loggedUser = data.user;
+      this.subLoggedUser = this._authService.loggedUser$.subscribe((data) => {
+        this.loggedUser = data.user as User;
       });
       
       this._authService.notifyLoggedUser(this._authService.NOTIFICATION_RECEIVER_CONTENTPAGE);
@@ -79,6 +76,7 @@ export class OcsListComponent implements OnInit, AfterViewInit {
   }
 
   ngOnDestroy(): void {
+    this.subLoggedUser.unsubscribe();
     this.dtTrigger.unsubscribe();
   }
 
@@ -162,5 +160,4 @@ export class OcsListComponent implements OnInit, AfterViewInit {
   public moneyStringFormat(value: number): string {
     return this._utilsService.moneyStringFormat(value);
   }
-
 }

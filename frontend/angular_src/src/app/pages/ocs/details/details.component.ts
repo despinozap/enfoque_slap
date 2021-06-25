@@ -9,6 +9,7 @@ import { OcsService } from 'src/app/services/ocs.service';
 import { ProveedoresService } from 'src/app/services/proveedores.service';
 import { UtilsService } from 'src/app/services/utils.service';
 import { AuthService } from 'src/app/services/auth.service';
+import { User } from 'src/app/interfaces/user';
 
 /* SweetAlert2 */
 const Swal = require('../../../../assets/vendors/sweetalert2/sweetalert2.all.min.js');
@@ -32,9 +33,11 @@ export class OcsDetailsComponent implements OnInit {
     order: [[0, 'desc']]
   };
 
-  
   dtTrigger: Subject<any> = new Subject<any>();
   
+  loggedUser: User = null as any;
+  private subLoggedUser: any;
+
   oc: any = {
     id: -1,
     created_at: null,
@@ -89,10 +92,6 @@ export class OcsDetailsComponent implements OnInit {
     proveedor_id: new FormControl('', [Validators.required]),
   });
 
-  loggedUser: any = {
-    role_id: -1,
-  };
-
   constructor(
     private location: Location,
     private route: ActivatedRoute,
@@ -105,8 +104,8 @@ export class OcsDetailsComponent implements OnInit {
   ngOnInit(): void {
     //For loggedUser
     {
-      this._authService.loggedUser$.subscribe((data) => {
-        this.loggedUser = data.user;
+      this.subLoggedUser = this._authService.loggedUser$.subscribe((data) => {
+        this.loggedUser = data.user as User;
       });
       
       this._authService.notifyLoggedUser(this._authService.NOTIFICATION_RECEIVER_CONTENTPAGE);
@@ -129,6 +128,7 @@ export class OcsDetailsComponent implements OnInit {
 
   ngOnDestroy(): void {
     this.sub.unsubscribe();
+    this.subLoggedUser.unsubscribe();
     this.dtTrigger.unsubscribe();
   }
 
@@ -180,6 +180,7 @@ export class OcsDetailsComponent implements OnInit {
         statusDays = Math.floor(((new Date().getTime()) - (new Date(p.pivot.updated_at).getTime())) / (1000 * 60 * 60 * 24));
         this.partes.push(
           {
+            'id': p.id,
             'nparte': p.nparte,
             'descripcion': p.pivot.descripcion,
             'cantidad': p.pivot.cantidad,
@@ -211,18 +212,38 @@ export class OcsDetailsComponent implements OnInit {
     
     this.loading = true;
 
-    this._ocsService.getOC(this.oc.id)
+    let data = {
+      ocs: [this.oc.id]
+    };
+
+    this._ocsService.getReportOc(data)
     .subscribe(
       //Success request
       (response: any) => {
-        this.loadFormData(response.data);
-        this.renderDataTable(this.datatableElement_partes);
 
-        this.loading = false;
+        // Loads the first item
+        if(response.data.length > 0)
+        {
+          this.loadFormData(response.data[0]);
+          this.renderDataTable(this.datatableElement_partes);
+
+          this.loading = false;
+        }
+        else
+        {
+          NotificationsService.showToast(
+            'Error al cargar los datos de la OC',
+            NotificationsService.messageType.error
+          );
+
+          this.loading = false;
+          this.goTo_back();
+        }
+
       },
       //Error request
       (errorResponse: any) => {
-
+        console.log(errorResponse);
         switch(errorResponse.status)
         {
         
@@ -259,7 +280,7 @@ export class OcsDetailsComponent implements OnInit {
           default: //Unhandled error
           {
             NotificationsService.showToast(
-              'Error al cargar los datos de la solicitud',
+              'Error al cargar los datos de la OC',
               NotificationsService.messageType.error
             );
   
@@ -609,6 +630,7 @@ export class OcsDetailsComponent implements OnInit {
     this.motivosBaja = null as any;
     this.loadMotivosBaja();
 
+    this.responseErrors = [];
     this.DISPLAYING_FORM = 2;
   }
 
@@ -616,6 +638,7 @@ export class OcsDetailsComponent implements OnInit {
     this.proveedores = null as any;
     this.loadProveedores();
 
+    this.responseErrors = [];
     this.DISPLAYING_FORM = 3;
   }
 
@@ -722,6 +745,118 @@ export class OcsDetailsComponent implements OnInit {
 
   }
 
+  public removeParte(parte: any)
+  {
+    Swal.fire({
+      title: 'Eliminar parte',
+      text: `¿Realmente quieres eliminar la parte "${ parte.descripcion }" de la OC?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#555555',
+      confirmButtonText: 'Sí, continuar',
+      cancelButtonText: 'Cancelar',
+      allowOutsideClick: false
+    }).then((result: any) => {
+      if(result.isConfirmed)
+      {
+        Swal.queue([{
+          title: 'Eliminando..',
+          icon: 'warning',
+          showConfirmButton: false,
+          showCancelButton: false,
+          allowOutsideClick: false,
+          showLoaderOnConfirm: true,
+          preConfirm: () => {
+
+          }    
+        }]);
+
+        this._ocsService.removeParte(this.oc.id, parte.id)
+        .subscribe(
+          //Success request
+          (response: any) => {
+
+            this.loadOC();
+
+            NotificationsService.showToast(
+              response.message,
+              NotificationsService.messageType.success
+            );
+
+          },
+          //Error request
+          (errorResponse: any) => {
+            console.log(errorResponse);
+            switch(errorResponse.status)
+            {
+              case 400: //Bad request
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+              case 405: //Permission denied
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+              case 409: //Conflict
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+              case 412: //Object not found
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.warning
+                );
+
+                break;
+              }
+
+              case 500: //Internal server
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+              default: //Unhandled error
+              {
+                NotificationsService.showAlert(
+                  'Error al intentar eliminar la parte',
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+            }
+          }
+        );
+      }
+    });
+
+  } 
+
   public goTo_updateParte(index: number): void {
 
     this.parte_index = index;
@@ -730,6 +865,7 @@ export class OcsDetailsComponent implements OnInit {
     this.parteForm.controls.tiempoentrega.setValue(this.partes[this.parte_index].tiempoentrega);
     this.parteForm.controls.backorder.setValue(this.partes[this.parte_index].backorder);
 
+    this.responseErrors = [];
     this.DISPLAYING_FORM = 1;
   }
 
