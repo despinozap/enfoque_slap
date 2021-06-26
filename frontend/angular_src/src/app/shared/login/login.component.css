@@ -20,7 +20,7 @@
     border-color: rgba(42, 48, 66, 0.75);
 }
 
-#login-container form:not(.ng-invalid) .btn-primary:hover {
+#login-container form:not(.ng-invalid) .btn-primary:not(:disabled):hover {
     color: #fff;
     background-color: rgba(42, 48, 66, 0.9);
     border-color: rgba(42, 48, 66, 0.75);
