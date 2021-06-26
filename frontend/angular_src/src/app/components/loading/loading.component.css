@@ -1,0 +1,15 @@
+#loading-overlay {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    left: 0;
+    top: 0;
+    z-index: 1002;
+    /*z-index values => 1000: Content, 1001: Content + Menubar, 1002: Full screen*/
+    background: rgba(255, 255, 255, 0.75);
+    text-align: center;
+}
+
+#loading-overlay img {
+    margin-top: 20%;
+}

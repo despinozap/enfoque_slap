@@ -1,3 +1,9 @@
+<!-- Loading -->
+<div *ngIf="(loading === true)">
+    <app-loading></app-loading>
+</div>
+<!-- Loading ends -->
+
 <!-- start page title -->
 <div class="row">
     <div class="col-12">
@@ -24,9 +30,7 @@
                 <h4 class="card-title">Clientes</h4>
                 <p class="card-title-desc">Lista de clientes del sistema</p>
 
-                <table datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger"
-                    class="table table-bordered dt-responsive nowrap row-border hover"
-                    style="border-collapse: collapse; border-spacing: 0; width: 100%;">
+                <table datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger" class="table table-bordered dt-responsive nowrap row-border hover" style="border-collapse: collapse; border-spacing: 0; width: 100%;">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -37,8 +41,7 @@
                     </thead>
                     <tbody *ngIf="(loading === true)">
                         <tr>
-                            <td colspan="4" style="text-align: center;"><i
-                                    class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</td>
+                            <td colspan="4" style="text-align: center;"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</td>
                         </tr>
                     </tbody>
                     <tbody *ngIf="(loading === false)">
@@ -47,12 +50,9 @@
                             <td align="center">{{ cliente.name }}</td>
                             <td align="right">{{ cliente.faenas.length }}</td>
                             <td align="center">
-                                <a [routerLink]="[cliente.id, 'faenas']" class="btn-table btn btn-secondary"
-                                    title="Faenas"><i class="bx bx-sitemap"></i></a>
-                                <a [routerLink]="['edit', cliente.id]" class="btn-table btn btn-secondary"
-                                    title="Editar"><i class="bx bx-edit-alt"></i></a>
-                                <a [routerLink]="" (click)="removeCliente(cliente)" class="btn-table btn btn-secondary"
-                                    title="Eliminar"><i class="bx bx-trash-alt"></i></a>
+                                <a [routerLink]="[cliente.id, 'faenas']" class="btn-table btn btn-secondary" title="Faenas"><i class="bx bx-sitemap"></i></a>
+                                <a [routerLink]="['edit', cliente.id]" class="btn-table btn btn-secondary" title="Editar"><i class="bx bx-edit-alt"></i></a>
+                                <a [routerLink]="" (click)="removeCliente(cliente)" class="btn-table btn btn-secondary" title="Eliminar"><i class="bx bx-trash-alt"></i></a>
                             </td>
                         </tr>
                     </tbody>
@@ -61,5 +61,7 @@
 
             </div>
         </div>
-    </div> <!-- end col -->
-</div> <!-- end row -->
+    </div>
+    <!-- end col -->
+</div>
+<!-- end row -->

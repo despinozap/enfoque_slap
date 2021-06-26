@@ -1,82 +1,87 @@
+<!-- Loading -->
+<div *ngIf="(loading === true)">
+    <app-loading></app-loading>
+</div>
+<!-- Loading ends -->
+
 <!-- start page title -->
 <div class="row">
-  <div class="col-12">
-    <div class="page-title-box d-flex align-items-center justify-content-between">
-      <h4 class="mb-0 font-size-18">Lista de entregas</h4>
+    <div class="col-12">
+        <div class="page-title-box d-flex align-items-center justify-content-between">
+            <h4 class="mb-0 font-size-18">Lista de entregas</h4>
 
-      <div class="page-title-right">
-        <ol class="breadcrumb m-0">
-          <li class="breadcrumb-item">Entregas</li>
-          <li class="breadcrumb-item">Sucursal</li>
-          <li class="breadcrumb-item active">Lista de entregas</li>
-        </ol>
-      </div>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item">Entregas</li>
+                    <li class="breadcrumb-item">Sucursal</li>
+                    <li class="breadcrumb-item active">Lista de entregas</li>
+                </ol>
+            </div>
 
+        </div>
     </div>
-  </div>
 </div>
 <!-- end page title -->
 
 <div class="row">
-  <div class="col-12">
-    <div class="card">
-      <div class="card-body">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
 
-        <h4 class="card-title">Entregas</h4>
-        <p class="card-title-desc">Lista de entregas de la sucursal</p>
+                <h4 class="card-title">Entregas</h4>
+                <p class="card-title-desc">Lista de entregas de la sucursal</p>
 
-        <table datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger"
-            class="table table-bordered dt-responsive nowrap row-border hover"
-            style="border-collapse: collapse; border-spacing: 0; width: 100%;">
-          <thead>
-            <tr>
-              <th>N° Entrega</th>
-              <th>Fecha</th>
-              <th>OC</th>
-              <th>Faena</th>
-              <th>N° Documento</th>
-              <th>Partes</th>
-              <th>Entregado por</th>
-              <th>Comentario</th>
-              <th>Opciones</th>
-            </tr>
-          </thead>
-          <tbody *ngIf="(loading === true)">
-            <tr>
-              <td colspan="9" style="text-align: center;"><i
-                    class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</td>
-            </tr>
-          </tbody>
-          <tbody *ngIf="(loading === false)">
-            <tr *ngFor="let entrega of entregas">
-              <td align="center">{{ entrega.id }}</td>
-              <td align="center">{{ dateStringFormat(entrega.fecha) }}</td>
-              <td align="center">{{ entrega.oc.id }}</td>
-              <td align="center">{{ entrega.oc.cotizacion.solicitud.faena.name }}</td>
-              <td align="center">{{ entrega.ndocumento !== null ? entrega.ndocumento : '' }}</td>
-              <td align="right">{{ entrega.partes_total }}</td>
-              <td align="center">{{ entrega.responsable }}</td>
-              <td align="left">{{ entrega.comentario !== null ? entrega.comentario : '' }}</td>
-              <td align="center">
-                <a [routerLink]="['details', entrega.id]" class="btn-table btn btn-secondary" title="Detalle"><i
+                <table datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger" class="table table-bordered dt-responsive nowrap row-border hover" style="border-collapse: collapse; border-spacing: 0; width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>N° Entrega</th>
+                            <th>Fecha</th>
+                            <th>OC</th>
+                            <th>Faena</th>
+                            <th>N° Documento</th>
+                            <th>Partes</th>
+                            <th>Entregado por</th>
+                            <th>Comentario</th>
+                            <th>Opciones</th>
+                        </tr>
+                    </thead>
+                    <tbody *ngIf="(loading === true)">
+                        <tr>
+                            <td colspan="9" style="text-align: center;"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</td>
+                        </tr>
+                    </tbody>
+                    <tbody *ngIf="(loading === false)">
+                        <tr *ngFor="let entrega of entregas">
+                            <td align="center">{{ entrega.id }}</td>
+                            <td align="center">{{ dateStringFormat(entrega.fecha) }}</td>
+                            <td align="center">{{ entrega.oc.id }}</td>
+                            <td align="center">{{ entrega.oc.cotizacion.solicitud.faena.name }}</td>
+                            <td align="center">{{ entrega.ndocumento !== null ? entrega.ndocumento : '' }}</td>
+                            <td align="right">{{ entrega.partes_total }}</td>
+                            <td align="center">{{ entrega.responsable }}</td>
+                            <td align="left">{{ entrega.comentario !== null ? entrega.comentario : '' }}</td>
+                            <td align="center">
+                                <a [routerLink]="['details', entrega.id]" class="btn-table btn btn-secondary" title="Detalle"><i
                   class="bx bx-zoom-in"></i></a>
-                <a [routerLink]="['edit', entrega.id]" class="btn-table btn btn-secondary" title="Editar"><i class="bx bx-edit-alt"></i></a>
-                <a [routerLink]="" (click)="removeEntrega(entrega)" class="btn-table btn btn-secondary" title="Eliminar"><i class="bx bx-trash-alt"></i></a>
-              </td>
-            </tr>
-          </tbody>
-          <tfoot>
-            <tr>
-              <td colspan="9" align="left">
-                <button type="button" class="btn btn-outline-primary mr-2" (click)="goTo_newEntrega()" [disabled]="(loading === true)">
+                                <a [routerLink]="['edit', entrega.id]" class="btn-table btn btn-secondary" title="Editar"><i class="bx bx-edit-alt"></i></a>
+                                <a [routerLink]="" (click)="removeEntrega(entrega)" class="btn-table btn btn-secondary" title="Eliminar"><i class="bx bx-trash-alt"></i></a>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="9" align="left">
+                                <button type="button" class="btn btn-outline-primary mr-2" (click)="goTo_newEntrega()" [disabled]="(loading === true)">
                   <i class="bx bx-notepad font-size-16 align-middle"></i> Nueva entrega
                 </button>
-              </td>
-            </tr>
-          </tfoot>
-        </table>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
 
-      </div>
+            </div>
+        </div>
     </div>
-  </div> <!-- end col -->
-</div> <!-- end row -->
+    <!-- end col -->
+</div>
+<!-- end row -->

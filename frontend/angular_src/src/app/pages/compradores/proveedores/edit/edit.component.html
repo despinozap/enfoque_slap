@@ -1,179 +1,159 @@
+<!-- Loading -->
+<div *ngIf="(loading === true)">
+    <app-loading></app-loading>
+</div>
+<!-- Loading ends -->
+
 <!-- start page title -->
 <div class="row">
-	<div class="col-12">
-			<div class="page-title-box d-flex align-items-center justify-content-between">
-					<h4 class="mb-0 font-size-18">Editar proveedor</h4>
+    <div class="col-12">
+        <div class="page-title-box d-flex align-items-center justify-content-between">
+            <h4 class="mb-0 font-size-18">Editar proveedor</h4>
 
-					<div class="page-title-right">
-							<ol class="breadcrumb m-0">
-									<li class="breadcrumb-item">Comprador</li>
-                  <li class="breadcrumb-item">Proveedor</li>
-									<li class="breadcrumb-item active">Editar proveedor</li>
-							</ol>
-					</div>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item">Comprador</li>
+                    <li class="breadcrumb-item">Proveedor</li>
+                    <li class="breadcrumb-item active">Editar proveedor</li>
+                </ol>
+            </div>
 
-			</div>
-	</div>
+        </div>
+    </div>
 </div>
 <!-- end page title -->
 
 <div class="row">
-	<div class="col-12">
-		<div class="card">
-			<div class="card-body">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
 
-				<h4 class="card-title">Editar proveedor</h4>
-				<p class="card-title-desc">Completa los siguientes campos para editar el proveedor de sistema</p>
+                <h4 class="card-title">Editar proveedor</h4>
+                <p class="card-title-desc">Completa los siguientes campos para editar el proveedor de sistema</p>
 
-				<form [formGroup]="proveedorForm" (ngSubmit)="updateProveedor()" action="#">
-					<div class="row">
-						<div class="col-6">
-							<div class="form-group">
-								<label class="control-label" for="rut">RUT</label>
-								<!-- Backend errors -->
-								<div class="alert alert-danger" *ngIf="(responseErrors.rut)">
-									<div *ngFor="let errorMessage of responseErrors.rut">{{ errorMessage }}</div>
-								</div>
-								<input type="text" class="form-control valid-control" name="rut" id="rut"
-									formControlName="rut">
-								<!-- Frontend errors -->
-								<div
-									*ngIf="(proveedorForm.controls.rut.errors) && (proveedorForm.controls.rut.touched) && (proveedorForm.controls.rut.dirty)">
-									<div class="error-response" *ngIf="proveedorForm.controls.rut.errors.required === true">
-										El RUT es obligatorio
-									</div>
-									<div class="error-response"
-										*ngIf="proveedorForm.controls.rut.errors.minlength !== null">El RUT debe tener al
-										menos 1 caracter</div>
-								</div>
-							</div>
-						</div>
-						<div class="col-6">
-							<div class="form-group">
-								<label class="control-label" for="name">Nombre</label>
-								<!-- Backend errors -->
-								<div class="alert alert-danger" *ngIf="(responseErrors.name)">
-									<div *ngFor="let errorMessage of responseErrors.name">{{ errorMessage }}</div>
-								</div>
-								<input type="text" class="form-control valid-control" name="name" id="name"
-									formControlName="name">
-								<!-- Frontend errors -->
-								<div
-									*ngIf="(proveedorForm.controls.name.errors) && (proveedorForm.controls.name.touched) && (proveedorForm.controls.name.dirty)">
-									<div class="error-response" *ngIf="proveedorForm.controls.name.errors.required === true">
-										El nombre es obligatorio
-									</div>
-									<div class="error-response"
-										*ngIf="proveedorForm.controls.name.errors.minlength !== null">El nombre debe tener al
-										menos 4 caracteres</div>
-								</div>
-							</div>
-						</div>
-						<div class="col-6">
-							<div class="form-group">
-								<label class="control-label" for="address">Direccion</label>
-								<!-- Backend errors -->
-								<div class="alert alert-danger" *ngIf="(responseErrors.address)">
-									<div *ngFor="let errorMessage of responseErrors.address">{{ errorMessage }}</div>
-								</div>
-								<input type="text" class="form-control valid-control" name="address" id="address"
-									formControlName="address">
-								<!-- Frontend errors -->
-								<div
-									*ngIf="(proveedorForm.controls.address.errors) && (proveedorForm.controls.address.touched) && (proveedorForm.controls.address.dirty)">
-									<div class="error-response" *ngIf="proveedorForm.controls.address.errors.required === true">
-										La direccion es obligatoria
-									</div>
-									<div class="error-response"
-										*ngIf="proveedorForm.controls.address.errors.minlength !== null">La direccion debe tener al
-										menos 1 caracter</div>
-								</div>
-							</div>
-						</div>
-						<div class="col-6">
-							<div class="form-group">
-								<label class="control-label" for="city">Ciudad</label>
-								<!-- Backend errors -->
-								<div class="alert alert-danger" *ngIf="(responseErrors.city)">
-									<div *ngFor="let errorMessage of responseErrors.city">{{ errorMessage }}</div>
-								</div>
-								<input type="text" class="form-control valid-control" name="city" id="city"
-									formControlName="city">
-								<!-- Frontend errors -->
-								<div
-									*ngIf="(proveedorForm.controls.city.errors) && (proveedorForm.controls.city.touched) && (proveedorForm.controls.city.dirty)">
-									<div class="error-response" *ngIf="proveedorForm.controls.city.errors.required === true">
-										La ciudad es obligatoria
-									</div>
-									<div class="error-response"
-										*ngIf="proveedorForm.controls.city.errors.minlength !== null">La ciudad debe tener al
-										menos 1 caracter</div>
-								</div>
-							</div>
-						</div>
-						<div class="col-6">
-							<div class="form-group">
-								<label class="control-label" for="contact">Contacto (nombre persona)</label>
-								<!-- Backend errors -->
-								<div class="alert alert-danger" *ngIf="(responseErrors.contact)">
-									<div *ngFor="let errorMessage of responseErrors.contact">{{ errorMessage }}</div>
-								</div>
-								<input type="text" class="form-control valid-control" name="contact" id="contact"
-									formControlName="contact">
-								<!-- Frontend errors -->
-								<div
-									*ngIf="(proveedorForm.controls.contact.errors) && (proveedorForm.controls.contact.touched) && (proveedorForm.controls.contact.dirty)">
-									<div class="error-response" *ngIf="proveedorForm.controls.contact.errors.required === true">
-										El contacto es obligatorio
-									</div>
-									<div class="error-response"
-										*ngIf="proveedorForm.controls.contact.errors.minlength !== null">El contacto debe tener al
-										menos 1 caracter</div>
-								</div>
-							</div>
-						</div>
-						<div class="col-6">
-							<div class="form-group">
-								<label class="control-label" for="phone">Telefono</label>
-								<!-- Backend errors -->
-								<div class="alert alert-danger" *ngIf="(responseErrors.phone)">
-									<div *ngFor="let errorMessage of responseErrors.phone">{{ errorMessage }}</div>
-								</div>
-								<input type="text" class="form-control valid-control" name="phone" id="phone"
-									formControlName="phone">
-								<!-- Frontend errors -->
-								<div
-									*ngIf="(proveedorForm.controls.phone.errors) && (proveedorForm.controls.phone.touched) && (proveedorForm.controls.phone.dirty)">
-									<div class="error-response" *ngIf="proveedorForm.controls.phone.errors.required === true">
-										El telefono es obligatorio
-									</div>
-									<div class="error-response"
-										*ngIf="proveedorForm.controls.phone.errors.minlength !== null">El telefono debe tener al
-										menos 1 caracter</div>
-								</div>
-							</div>
-						</div>
-						<div class="col-12">
-							<div class="form-buttons mt-2">
-								<button type="submit" class="btn btn-primary mr-2"
-									[disabled]="(proveedorForm.invalid) || (loading === true)">
+                <form [formGroup]="proveedorForm" (ngSubmit)="updateProveedor()" action="#">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label class="control-label" for="rut">RUT</label>
+                                <!-- Backend errors -->
+                                <div class="alert alert-danger" *ngIf="(responseErrors.rut)">
+                                    <div *ngFor="let errorMessage of responseErrors.rut">{{ errorMessage }}</div>
+                                </div>
+                                <input type="text" class="form-control valid-control" name="rut" id="rut" formControlName="rut">
+                                <!-- Frontend errors -->
+                                <div *ngIf="(proveedorForm.controls.rut.errors) && (proveedorForm.controls.rut.touched) && (proveedorForm.controls.rut.dirty)">
+                                    <div class="error-response" *ngIf="proveedorForm.controls.rut.errors.required === true">
+                                        El RUT es obligatorio
+                                    </div>
+                                    <div class="error-response" *ngIf="proveedorForm.controls.rut.errors.minlength !== null">El RUT debe tener al menos 1 caracter</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label class="control-label" for="name">Nombre</label>
+                                <!-- Backend errors -->
+                                <div class="alert alert-danger" *ngIf="(responseErrors.name)">
+                                    <div *ngFor="let errorMessage of responseErrors.name">{{ errorMessage }}</div>
+                                </div>
+                                <input type="text" class="form-control valid-control" name="name" id="name" formControlName="name">
+                                <!-- Frontend errors -->
+                                <div *ngIf="(proveedorForm.controls.name.errors) && (proveedorForm.controls.name.touched) && (proveedorForm.controls.name.dirty)">
+                                    <div class="error-response" *ngIf="proveedorForm.controls.name.errors.required === true">
+                                        El nombre es obligatorio
+                                    </div>
+                                    <div class="error-response" *ngIf="proveedorForm.controls.name.errors.minlength !== null">El nombre debe tener al menos 4 caracteres</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label class="control-label" for="address">Direccion</label>
+                                <!-- Backend errors -->
+                                <div class="alert alert-danger" *ngIf="(responseErrors.address)">
+                                    <div *ngFor="let errorMessage of responseErrors.address">{{ errorMessage }}</div>
+                                </div>
+                                <input type="text" class="form-control valid-control" name="address" id="address" formControlName="address">
+                                <!-- Frontend errors -->
+                                <div *ngIf="(proveedorForm.controls.address.errors) && (proveedorForm.controls.address.touched) && (proveedorForm.controls.address.dirty)">
+                                    <div class="error-response" *ngIf="proveedorForm.controls.address.errors.required === true">
+                                        La direccion es obligatoria
+                                    </div>
+                                    <div class="error-response" *ngIf="proveedorForm.controls.address.errors.minlength !== null">La direccion debe tener al menos 1 caracter</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label class="control-label" for="city">Ciudad</label>
+                                <!-- Backend errors -->
+                                <div class="alert alert-danger" *ngIf="(responseErrors.city)">
+                                    <div *ngFor="let errorMessage of responseErrors.city">{{ errorMessage }}</div>
+                                </div>
+                                <input type="text" class="form-control valid-control" name="city" id="city" formControlName="city">
+                                <!-- Frontend errors -->
+                                <div *ngIf="(proveedorForm.controls.city.errors) && (proveedorForm.controls.city.touched) && (proveedorForm.controls.city.dirty)">
+                                    <div class="error-response" *ngIf="proveedorForm.controls.city.errors.required === true">
+                                        La ciudad es obligatoria
+                                    </div>
+                                    <div class="error-response" *ngIf="proveedorForm.controls.city.errors.minlength !== null">La ciudad debe tener al menos 1 caracter</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label class="control-label" for="contact">Contacto (nombre persona)</label>
+                                <!-- Backend errors -->
+                                <div class="alert alert-danger" *ngIf="(responseErrors.contact)">
+                                    <div *ngFor="let errorMessage of responseErrors.contact">{{ errorMessage }}</div>
+                                </div>
+                                <input type="text" class="form-control valid-control" name="contact" id="contact" formControlName="contact">
+                                <!-- Frontend errors -->
+                                <div *ngIf="(proveedorForm.controls.contact.errors) && (proveedorForm.controls.contact.touched) && (proveedorForm.controls.contact.dirty)">
+                                    <div class="error-response" *ngIf="proveedorForm.controls.contact.errors.required === true">
+                                        El contacto es obligatorio
+                                    </div>
+                                    <div class="error-response" *ngIf="proveedorForm.controls.contact.errors.minlength !== null">El contacto debe tener al menos 1 caracter</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label class="control-label" for="phone">Telefono</label>
+                                <!-- Backend errors -->
+                                <div class="alert alert-danger" *ngIf="(responseErrors.phone)">
+                                    <div *ngFor="let errorMessage of responseErrors.phone">{{ errorMessage }}</div>
+                                </div>
+                                <input type="text" class="form-control valid-control" name="phone" id="phone" formControlName="phone">
+                                <!-- Frontend errors -->
+                                <div *ngIf="(proveedorForm.controls.phone.errors) && (proveedorForm.controls.phone.touched) && (proveedorForm.controls.phone.dirty)">
+                                    <div class="error-response" *ngIf="proveedorForm.controls.phone.errors.required === true">
+                                        El telefono es obligatorio
+                                    </div>
+                                    <div class="error-response" *ngIf="proveedorForm.controls.phone.errors.minlength !== null">El telefono debe tener al menos 1 caracter</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-buttons mt-2">
+                                <button type="submit" class="btn btn-primary mr-2" [disabled]="(proveedorForm.invalid) || (loading === true)">
 									<span *ngIf="loading === true"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
 									<span *ngIf="loading === false">Guardar</span>
 								</button>
-								<button [disabled]="(loading === true)" class="btn btn-light"
-									(click)="goTo_proveedoresList()">
+                                <button [disabled]="(loading === true)" class="btn btn-light" (click)="goTo_proveedoresList()">
 									<span>Cancelar</span>
 								</button>
-							</div>
-						</div>
-					</div>
+                            </div>
+                        </div>
+                    </div>
 
-				</form>
+                </form>
 
-			</div>
-		</div>
-		<!-- end select2 -->
+            </div>
+        </div>
+        <!-- end select2 -->
 
-	</div>
+    </div>
 </div>
 <!-- end row -->

@@ -11,6 +11,7 @@ import { DataTablesModule } from 'angular-datatables';
 
 /* Shared */
 import { AuthService } from './services/auth.service';
+import { LoadingComponent } from './components/loading/loading.component';
 import { HomeComponent } from './shared/home/home.component';
 import { FooterComponent } from './shared/footer/footer.component';
 import { MenubarComponent } from './shared/menubar/menubar.component';
@@ -156,6 +157,8 @@ const routes: Routes = [
 @NgModule({
   declarations: [
     AppComponent,
+    LoadingComponent,
+    TestComponent,
     HomeComponent,
     FooterComponent,
     MenubarComponent,

@@ -1,80 +1,85 @@
+<!-- Loading -->
+<div *ngIf="(loading === true)">
+    <app-loading></app-loading>
+</div>
+<!-- Loading ends -->
+
 <!-- start page title -->
 <div class="row">
-  <div class="col-12">
-    <div class="page-title-box d-flex align-items-center justify-content-between">
-      <h4 class="mb-0 font-size-18">Lista de recepciones</h4>
+    <div class="col-12">
+        <div class="page-title-box d-flex align-items-center justify-content-between">
+            <h4 class="mb-0 font-size-18">Lista de recepciones</h4>
 
-      <div class="page-title-right">
-        <ol class="breadcrumb m-0">
-          <li class="breadcrumb-item">Recepciones</li>
-          <li class="breadcrumb-item">Comprador</li>
-          <li class="breadcrumb-item active">Lista de recepciones</li>
-        </ol>
-      </div>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item">Recepciones</li>
+                    <li class="breadcrumb-item">Comprador</li>
+                    <li class="breadcrumb-item active">Lista de recepciones</li>
+                </ol>
+            </div>
 
+        </div>
     </div>
-  </div>
 </div>
 <!-- end page title -->
 
 <div class="row">
-  <div class="col-12">
-    <div class="card">
-      <div class="card-body">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
 
-        <h4 class="card-title">Recepciones</h4>
-        <p class="card-title-desc">Lista de recepciones del comprador</p>
+                <h4 class="card-title">Recepciones</h4>
+                <p class="card-title-desc">Lista de recepciones del comprador</p>
 
-        <table datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger"
-            class="table table-bordered dt-responsive nowrap row-border hover"
-            style="border-collapse: collapse; border-spacing: 0; width: 100%;">
-          <thead>
-            <tr>
-              <th>N° Recepcion</th>
-              <th>Fecha</th>
-              <th>Proveedor</th>
-              <th>N° Documento</th>
-              <th>Partes</th>
-              <th>Recepcionado por</th>
-              <th>Comentario</th>
-              <th>Opciones</th>
-            </tr>
-          </thead>
-          <tbody *ngIf="(loading === true)">
-            <tr>
-              <td colspan="8" style="text-align: center;"><i
-                    class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</td>
-            </tr>
-          </tbody>
-          <tbody *ngIf="(loading === false)">
-            <tr *ngFor="let recepcion of recepciones">
-              <td align="center">{{ recepcion.id }}</td>
-              <td>{{ dateStringFormat(recepcion.fecha) }}</td>
-              <td align="center">{{ recepcion.sourceable.name }}</td>
-              <td align="center">{{ recepcion.ndocumento !== null ? recepcion.ndocumento : '' }}</td>
-              <td align="right">{{ recepcion.partes_total }}</td>
-              <td align="center">{{ recepcion.responsable }}</td>
-              <td align="left">{{ recepcion.comentario !== null ? recepcion.comentario : '' }}</td>
-              <td align="center">
-                <a [routerLink]="['details', recepcion.id]" class="btn-table btn btn-secondary" title="Detalle"><i
+                <table datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger" class="table table-bordered dt-responsive nowrap row-border hover" style="border-collapse: collapse; border-spacing: 0; width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>N° Recepcion</th>
+                            <th>Fecha</th>
+                            <th>Proveedor</th>
+                            <th>N° Documento</th>
+                            <th>Partes</th>
+                            <th>Recepcionado por</th>
+                            <th>Comentario</th>
+                            <th>Opciones</th>
+                        </tr>
+                    </thead>
+                    <tbody *ngIf="(loading === true)">
+                        <tr>
+                            <td colspan="8" style="text-align: center;"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</td>
+                        </tr>
+                    </tbody>
+                    <tbody *ngIf="(loading === false)">
+                        <tr *ngFor="let recepcion of recepciones">
+                            <td align="center">{{ recepcion.id }}</td>
+                            <td>{{ dateStringFormat(recepcion.fecha) }}</td>
+                            <td align="center">{{ recepcion.sourceable.name }}</td>
+                            <td align="center">{{ recepcion.ndocumento !== null ? recepcion.ndocumento : '' }}</td>
+                            <td align="right">{{ recepcion.partes_total }}</td>
+                            <td align="center">{{ recepcion.responsable }}</td>
+                            <td align="left">{{ recepcion.comentario !== null ? recepcion.comentario : '' }}</td>
+                            <td align="center">
+                                <a [routerLink]="['details', recepcion.id]" class="btn-table btn btn-secondary" title="Detalle"><i
                   class="bx bx-zoom-in"></i></a>
-                <a [routerLink]="['edit', recepcion.id]" class="btn-table btn btn-secondary" title="Editar"><i class="bx bx-edit-alt"></i></a>
-                <a [routerLink]="" (click)="removeRecepcion(recepcion)" class="btn-table btn btn-secondary" title="Eliminar"><i class="bx bx-trash-alt"></i></a>
-              </td>
-            </tr>
-          </tbody>
-          <tfoot>
-            <tr>
-              <td colspan="8" align="left">
-                <button type="button" class="btn btn-outline-primary mr-2" (click)="goTo_newRecepcion()" [disabled]="(loading === true)">
+                                <a [routerLink]="['edit', recepcion.id]" class="btn-table btn btn-secondary" title="Editar"><i class="bx bx-edit-alt"></i></a>
+                                <a [routerLink]="" (click)="removeRecepcion(recepcion)" class="btn-table btn btn-secondary" title="Eliminar"><i class="bx bx-trash-alt"></i></a>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="8" align="left">
+                                <button type="button" class="btn btn-outline-primary mr-2" (click)="goTo_newRecepcion()" [disabled]="(loading === true)">
                   <i class="bx bx-notepad font-size-16 align-middle"></i> Nueva recepcion
                 </button>
-              </td>
-            </tr>
-          </tfoot>
-        </table>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
 
-      </div>
+            </div>
+        </div>
     </div>
-  </div> <!-- end col -->
-</div> <!-- end row -->
+    <!-- end col -->
+</div>
+<!-- end row -->
