@@ -1,0 +1,27 @@
+#login-container .bg-soft-primary {
+    background-color: rgba(42, 48, 66, 0.4) !important;
+}
+
+#login-container .bg-soft-primary h5,
+#login-container .bg-soft-primary p {
+    color: #fff !important;
+}
+
+#login-container .btn-primary.disabled,
+#login-container .btn-primary:disabled {
+    color: #fff;
+    background-color: rgba(42, 48, 66, 0.25);
+    border-color: rgba(42, 48, 66, 0.25);
+}
+
+#login-container .btn-primary {
+    color: #fff;
+    background-color: rgba(42, 48, 66, 0.75);
+    border-color: rgba(42, 48, 66, 0.75);
+}
+
+#login-container .btn-primary:hover {
+    color: #fff;
+    background-color: rgba(42, 48, 66, 0.9);
+    border-color: rgba(42, 48, 66, 0.75);
+}
