@@ -7,20 +7,20 @@
     color: #fff !important;
 }
 
-#login-container .btn-primary.disabled,
-#login-container .btn-primary:disabled {
+#login-container form.ng-invalid .btn-primary.disabled,
+#login-container form.ng-invalid .btn-primary:disabled {
     color: #fff;
     background-color: rgba(42, 48, 66, 0.25);
     border-color: rgba(42, 48, 66, 0.25);
 }
 
-#login-container .btn-primary {
+#login-container form:not(.ng-invalid) .btn-primary {
     color: #fff;
     background-color: rgba(42, 48, 66, 0.75);
     border-color: rgba(42, 48, 66, 0.75);
 }
 
-#login-container .btn-primary:hover {
+#login-container form:not(.ng-invalid) .btn-primary:hover {
     color: #fff;
     background-color: rgba(42, 48, 66, 0.9);
     border-color: rgba(42, 48, 66, 0.75);
