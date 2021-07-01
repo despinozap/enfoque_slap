@@ -239,9 +239,9 @@ export class RecepcionesService {
     return this.httpClient.post(endpoint, recepcion, httpOptions);
   }
 
-  public getQueuePartes_comprador(comprador_id: number, proveedor_id: number): Observable<any>
+  public getQueueOcs_comprador(comprador_id: number, proveedor_id: number): Observable<any>
   {
-    let endpoint: string = `${environment.ENDPOINT_BASE}/compradores/${comprador_id}/proveedores/${proveedor_id}/queuepartes`;
+    let endpoint: string = `${environment.ENDPOINT_BASE}/compradores/${comprador_id}/queueocs/proveedores/${proveedor_id}`;
     
     return this.httpClient.get(endpoint);
   }

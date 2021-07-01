@@ -155,7 +155,7 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
     this.loading = true;
     this.recepcionForm.disable();
 
-    this._recepcionesService.getQueuePartes_comprador(this.comprador_id, this.recepcionForm.value.proveedor)
+    this._recepcionesService.getQueueOcs_comprador(this.comprador_id, this.recepcionForm.value.proveedor)
     .subscribe(
       //Success request
       (response: any) => {
