@@ -10,13 +10,12 @@ use Illuminate\Support\Facades\DB;
 
 use App\Models\Comprador;
 use App\Models\Sucursal;
-use App\Models\Parte;
+use App\Models\Proveedor;
+use App\Models\Oc;
 use App\Models\OcParte;
 use App\Models\Recepcion;
-use App\Models\ParteDespacho;
 use App\Models\OcParteRecepcion;
-use App\Models\Proveedor;
-use App\Models\OcParteDespacho;
+
 
 class RecepcionesController extends Controller
 {
@@ -127,7 +126,7 @@ class RecepcionesController extends Controller
         return $response;
     }
     
-    public function queuePartes_comprador($comprador_id, $proveedor_id)
+    public function queueOcs_comprador($comprador_id, $proveedor_id)
     {
         try
         {
@@ -138,79 +137,116 @@ class RecepcionesController extends Controller
                 {
                     if($proveedor = $comprador->proveedores->where('id', $proveedor_id)->first())
                     {
-                        $ocParteList = OcParte::select('oc_parte.*')
-                                        ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
-                                        ->where('ocs.proveedor_id', $proveedor->id)
-                                        ->whereIn('ocs.estadooc_id', [2, 3]) // Estadooc = 'En proceso' (2) or 'Cerrada' (3)
-                                        ->get();
+                        $ocList = Oc::select('ocs.*')
+                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                ->where('solicitudes.comprador_id', '=', $comprador->id) // For this Comprador
+                                ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                ->where('ocs.proveedor_id', '=', $proveedor->id)
+                                ->get();
 
 
-                        $cantidadesOc = $ocParteList->reduce(function($carry, $ocParte)
+                        $queueOcs = $ocList->filter(function($oc) use ($comprador)
                             {
-                                if(isset($carry[$ocParte->parte->id]))
+                                foreach($oc->partes as $parte)
                                 {
-                                    $carry[$ocParte->parte->id] += $ocParte->cantidad;
-                                }
-                                else
-                                {
-                                    $carry[$ocParte->parte->id] = $ocParte->cantidad;
-                                }
+                                    // If OcParte has less cantidad in Recepciones than total in OC
+                                    if($parte->pivot->getCantidadRecepcionado($comprador) < $parte->pivot->cantidad)
+                                    {
+                                        // Filter data to response
+                                        $oc->makeHidden([
+                                            'cotizacion_id',
+                                            'proveedor_id',
+                                            'filedata_id',
+                                            'estadooc_id',
+                                            'motivobaja_id',
+                                            'usdvalue',
+                                            'partes'
+                                        ]);
 
-                                return $carry;
-                            }, 
-                            array()
+                                        $oc->cotizacion->makeHidden([
+                                            'solicitud_id',
+                                            'estadocotizacion_id',
+                                            'motivorechazo_id',
+                                            'usdvalue',
+                                            'created_at',
+                                            'updated_at',
+                                            'partes_total',
+                                            'dias',
+                                            'monto',
+                                            'partes'
+                                        ]);
+
+                                        $oc->cotizacion->solicitud;
+                                        $oc->cotizacion->solicitud->makeHidden([
+                                            'sucursal_id',
+                                            'faena_id',
+                                            'marca_id',
+                                            'comprador_id',
+                                            'user_id',
+                                            'estadosolicitud_id',
+                                            'comentario',
+                                            'created_at',
+                                            'updated_at',
+                                            'partes_total',
+                                            'partes'
+                                        ]);
+
+                                        $oc->cotizacion->solicitud->sucursal;
+                                        $oc->cotizacion->solicitud->sucursal->makeHidden([
+                                            'type',
+                                            'rut',
+                                            'address',
+                                            'city',
+                                            'country_id',
+                                            'created_at',
+                                            'updated_at'
+                                        ]);
+
+                                        $oc->cotizacion->solicitud->sucursal->country;
+                                        $oc->cotizacion->solicitud->sucursal->country->makeHidden([
+                                            'created_at',
+                                            'updated_at'
+                                        ]);
+
+                                        $oc->cotizacion->solicitud->faena;
+                                        $oc->cotizacion->solicitud->faena->makeHidden([
+                                            'cliente_id',
+                                            'sucursal_id',
+                                            'rut',
+                                            'address',
+                                            'city',
+                                            'contact',
+                                            'phone',
+                                            'created_at',
+                                            'updated_at'
+                                        ]);
+
+                                        $oc->cotizacion->solicitud->faena->cliente;
+                                        $oc->cotizacion->solicitud->faena->cliente->makeHidden([
+                                            'country_id',
+                                            'created_at',
+                                            'updated_at'
+                                        ]);
+
+                                        $oc->cotizacion->solicitud->marca;
+                                        $oc->cotizacion->solicitud->marca->makeHidden([
+                                            'created_at',
+                                            'updated_at'
+                                        ]);
+
+                                        // Add to the filtered list
+                                        return true;
+                                    }
+                                }
+                            }
                         );
 
-                        $success = true;
-                        $queuePartes = array();
-
-                        foreach(array_keys($cantidadesOc) as $parteId)
-                        {
-                            if($parte = Parte::find($parteId))
-                            {
-                                // Get cantidad total in Recepciones at Comprador from Proveedor
-                                $cantidadPendiente = $cantidadesOc[$parteId] - $parte->getCantidadRecepcionado_sourceable($comprador, $proveedor);
-
-                                if($cantidadPendiente > 0)
-                                {
-                                    $parteData = [
-                                        "id" => $parte->id,
-                                        "nparte" => $parte->nparte,
-                                        "marca" => $parte->marca->makeHidden(['created_at', 'updated_at']),
-                                        "cantidad_pendiente" => $cantidadPendiente,
-                                        "cantidad_despachos" => $parte->getCantidadDespachado($comprador)
-                                    ];
-
-                                    array_push($queuePartes, $parteData);
-                                }
-                            }
-                            else
-                            {
-                                $response = HelpController::buildResponse(
-                                    500,
-                                    'Error al obtener una de las partes pendientes de recepcion',
-                                    null
-                                );
-
-                                $success = false;
-                                
-                                break;
-                            }
-                        }
-
-                        if($success === true)
-                        {
-                            $response = HelpController::buildResponse(
-                                200,
-                                null,
-                                $queuePartes
-                            );
-                        }
-                        else
-                        {
-                            // Response already given when success = false
-                        }
-                        
+                        $response = HelpController::buildResponse(
+                            200,
+                            null,
+                            $queueOcs
+                        );
                     }
                     else
                     {
@@ -234,7 +270,7 @@ class RecepcionesController extends Controller
             {
                 $response = HelpController::buildResponse(
                     405,
-                    'No tienes acceso a visualizar partes pendiente de recepcion',
+                    'No tienes acceso a visualizar OCs pendiente de recepcion',
                     null
                 );
             }
@@ -243,7 +279,7 @@ class RecepcionesController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al obtener partes pendiente de recepcion [!]',
+                'Error al obtener OCs pendiente de recepcion [!]',
                 null
             );
         }

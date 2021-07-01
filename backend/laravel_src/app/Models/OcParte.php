@@ -27,6 +27,24 @@ class OcParte extends Pivot
         return $this->belongsTo(Estadoocparte::class);
     }
 
+    public function getCantidadRecepcionado($recepcionable)
+    {
+        $ocParteRecepcionList = OcParteRecepcion::join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
+                                ->where('recepciones.recepcionable_type', '=', get_class($recepcionable))
+                                ->where('recepciones.recepcionable_id', '=', $recepcionable->id)
+                                ->where('recepcion_ocparte.ocparte_id', '=', $this->id)
+                                ->get();
+
+        $quantity = $ocParteRecepcionList->reduce(function($carry, $ocParteRecepcion) 
+            {
+                return $carry + $ocParteRecepcion->cantidad;
+            },
+            0
+        );
+
+        return $quantity;
+    }
+
     public function getCantidadEntregado()
     {
         $ocParteEntregaList = OcParteEntrega::where('entrega_ocparte.ocparte_id', '=', $this->id)->get();

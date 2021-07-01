@@ -30,16 +30,16 @@ class Despacho extends Model
         return $this->morphTo();
     }
 
-    public function partes()
+    public function ocpartes()
     {
-        return $this->belongsToMany(Parte::class, 'despacho_parte', 'despacho_id', 'parte_id')->withPivot(['cantidad'])->using(ParteDespacho::class)->withTimestamps();
+        return $this->belongsToMany(OcParte::class, 'despacho_ocparte', 'despacho_id', 'ocparte_id')->withPivot(['cantidad'])->withTimestamps();
     }
 
     public function getPartesTotalAttribute()
     {
-        $quantity = $this->partes->reduce(function($carry, $parte)
+        $quantity = $this->ocpartes->reduce(function($carry, $ocparte)
             {
-                return $carry + $parte->pivot->cantidad; 
+                return $carry + $ocparte->pivot->cantidad; 
             }, 
             0
         );

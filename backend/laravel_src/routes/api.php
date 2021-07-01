@@ -138,8 +138,13 @@ Route::middleware(['auth:api', 'cors'])->group(function()
     Route::post('/ocs/start/{id}', [OcsController::class, 'start']);
 
     // Recepciones (Comprador)
+    Route::get('/compradores/{comprador_id}/recepciones/queueocs/proveedores/{proveedor_id}', [RecepcionesController::class, 'queueOcs_comprador']);
+    Route::post('/compradores/{comprador_id}/recepciones', [RecepcionesController::class, 'store_comprador']);
+
+    /*
+    // Recepciones (Comprador)
     Route::get('/compradores/{id}/recepciones', [RecepcionesController::class, 'index_comprador']);
-    Route::get('/compradores/{comprador_id}/proveedores/{proveedor_id}/queuepartes', [RecepcionesController::class, 'queuePartes_comprador']);
+    Route::get('/compradores/{comprador_id}/proveedores/{proveedor_id}/queueocs', [RecepcionesController::class, 'queueOcs_comprador']);
     Route::post('/compradores/{comprador_id}/recepciones', [RecepcionesController::class, 'store_comprador']);
     Route::get('/compradores/{comprador_id}/recepciones/{id}', [RecepcionesController::class, 'show_comprador']);
     Route::get('/compradores/{comprador_id}/recepciones/{id}/prepare', [RecepcionesController::class, 'update_prepare_comprador']);
@@ -201,4 +206,5 @@ Route::middleware(['auth:api', 'cors'])->group(function()
     Route::get('/sucursales/{sucursal_id}/entregas/{id}/prepare', [EntregasController::class, 'update_prepare_sucursal']);
     Route::put('/sucursales/{sucursal_id}/entregas/{id}', [EntregasController::class, 'update_sucursal']);
     Route::delete('/sucursales/{sucursal_id}/entregas/{id}', [EntregasController::class, 'destroy_sucursal']);
+    */
 });

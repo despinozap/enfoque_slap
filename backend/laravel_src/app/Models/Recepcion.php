@@ -30,16 +30,16 @@ class Recepcion extends Model
         return $this->morphTo();
     }
 
-    public function partes()
+    public function ocpartes()
     {
-        return $this->belongsToMany(Parte::class, 'parte_recepcion', 'recepcion_id', 'parte_id')->withPivot(['cantidad'])->using(ParteRecepcion::class)->withTimestamps();
+        return $this->belongsToMany(OcParte::class, 'recepcion_ocparte', 'recepcion_id', 'ocparte_id')->withPivot(['cantidad'])->withTimestamps();
     }
 
     public function getPartesTotalAttribute()
     {
-        $quantity = $this->partes->reduce(function($carry, $parte)
+        $quantity = $this->ocpartes->reduce(function($carry, $ocparte)
             {
-                return $carry + $parte->pivot->cantidad; 
+                return $carry + $ocparte->pivot->cantidad; 
             }, 
             0
         );
