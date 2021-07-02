@@ -33,68 +33,84 @@ class RecepcionesController extends Controller
             {
                 if($comprador = Comprador::find($id))
                 {
-                    $comprador->makeHidden([
-                        'created_at', 
-                        'updated_at'
-                    ]);
-
-                    $comprador->recepciones;
-                    $comprador->recepciones = $comprador->recepciones->filter(function($recepcion)
+                    // Agente compra or Coordinador compra
+                    if(
+                        (in_array($user->role->name, ['agtcom', 'colcom'])) &&
+                        ($comprador->id !== $user->stationable->id)
+                    )
                     {
-                        $recepcion->partes_total;
-                        
-                        $recepcion->makeHidden([
-                            'sourceable_id', 
-                            'sourceable_type',
-                            'recepcionable_id', 
-                            'recepcionable_type', 
+                        //If Agente compra or Coordinador compra and doens't belong to Comprador
+                        $response = HelpController::buildResponse(
+                            405,
+                            'No tienes acceso a visualizar recepciones del comprador ingresado',
+                            null
+                        );
+                    }
+                    else
+                    {
+                        $comprador->makeHidden([
                             'created_at', 
                             'updated_at'
                         ]);
-                        
-                        $recepcion->partes;
-                        $recepcion->partes = $recepcion->partes->filter(function($parte)
+
+                        $comprador->recepciones;
+                        $comprador->recepciones = $comprador->recepciones->filter(function($recepcion)
                         {
-                            $parte->makeHidden([
-                                'marca_id',
-                                'created_at',
-                                'updated_at',
+                            $recepcion->partes_total;
+                            
+                            $recepcion->makeHidden([
+                                'sourceable_id', 
+                                'sourceable_type',
+                                'recepcionable_id', 
+                                'recepcionable_type', 
+                                'created_at', 
+                                'updated_at'
+                            ]);
+                            
+                            $recepcion->ocpartes;
+                            $recepcion->ocpartes = $recepcion->ocpartes->filter(function($ocParte)
+                            {
+                                $ocParte->makeHidden([
+                                    'oc_id',
+                                    'parte_id',
+                                    'estadoocparte_id',
+                                    'tiempoentrega',
+                                    'created_at',
+                                    'updated_at'
+                                ]);
+
+                                $ocParte->pivot->makeHidden([
+                                    'recepcion_id',
+                                    'ocparte_id',
+                                    'created_at',
+                                    'updated_at'
+                                ]);
+
+                                return $ocParte;
+                            });
+
+                            $recepcion->sourceable;
+                            $recepcion->sourceable->makeHidden([
+                                'comprador_id',
+                                'rut',
+                                'address',
+                                'city',
+                                'contact',
+                                'phone',
+                                'country',
+                                'created_at', 
+                                'updated_at'
                             ]);
 
-                            $parte->pivot->makeHidden([
-                                'parte_id',
-                                'recepcion_id',
-                                'created_at',
-                                'updated_at',
-                            ]);
-
-                            $parte->marca;
-                            $parte->marca->makeHidden(['created_at', 'updated_at']);
-
-                            return $parte;
+                            return $recepcion;
                         });
 
-                        $recepcion->sourceable;
-                        $recepcion->sourceable->makeHidden([
-                            'comprador_id',
-                            'rut',
-                            'address',
-                            'city',
-                            'contact',
-                            'phone',
-                            'country',
-                            'created_at', 
-                            'updated_at'
-                        ]);
-
-                        return $recepcion;
-                    });
-
-                    $response = HelpController::buildResponse(
-                        200,
-                        null,
-                        $comprador->recepciones
-                    );
+                        $response = HelpController::buildResponse(
+                            200,
+                            null,
+                            $comprador->recepciones
+                        );
+                    }
                 }   
                 else     
                 {
@@ -356,17 +372,16 @@ class RecepcionesController extends Controller
     }
 
 
-    public function store_comprador(Request $request, $comprador_id)
+    public function store_comprador(Request $request, $comprador_id, $oc_id)
     {
         try
         {
             $user = Auth::user();
             if($user->role->hasRoutepermission('compradores recepciones_store'))
             {
-                $validatorInput = $request->only('oc_id', 'fecha', 'ndocumento', 'responsable', 'comentario', 'partes');
+                $validatorInput = $request->only('fecha', 'ndocumento', 'responsable', 'comentario', 'partes');
             
                 $validatorRules = [
-                    'oc_id' => 'required|exists:ocs,id',
                     'fecha' => 'required|date_format:Y-m-d|before:tomorrow', // it includes today
                     'ndocumento' => 'nullable|min:1',
                     'responsable' => 'required|min:1',
@@ -377,8 +392,6 @@ class RecepcionesController extends Controller
                 ];
         
                 $validatorMessages = [
-                    'oc_id.required' => 'Debes ingresar la OC',
-                    'oc_id.exists' => 'La OC ingresada no existe',
                     'fecha.required' => 'Debes ingresar la fecha de recepcion',
                     'fecha.date_format' => 'El formato de fecha de recepcion es invalido',
                     'fecha.before' => 'La fecha debe ser igual o anterior a hoy',
@@ -419,7 +432,7 @@ class RecepcionesController extends Controller
                         {
                             // Administrador en Sucursal
                             case 'admin': {
-                                $oc = Oc::find($request->oc_id);
+                                $oc = Oc::find($oc_id);
 
                                 break;
                             }
@@ -429,6 +442,7 @@ class RecepcionesController extends Controller
                                 $oc = Oc::select('ocs.*')
                                     ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                     ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                    ->where('ocs.id', '=', $oc_id)
                                     ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
                                     ->where($comprador->id, '=', $user->stationable->id) // If user belongs to this Comprador
                                     ->first();
@@ -441,6 +455,7 @@ class RecepcionesController extends Controller
                                 $oc = Oc::select('ocs.*')
                                     ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                     ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                    ->where('ocs.id', '=', $oc_id)
                                     ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
                                     ->where($comprador->id, '=', $user->stationable->id) // If user belongs to this Comprador
                                     ->first();
