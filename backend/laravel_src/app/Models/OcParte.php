@@ -35,7 +35,7 @@ class OcParte extends Pivot
                             ->where('recepciones.recepcionable_id', '=', $recepcionable->id)
                             ->where('recepcion_ocparte.ocparte_id', '=', $this->id)
                             ->get();
-
+        
         $quantity = $ocParteRecepcionList->reduce(function($carry, $ocParteRecepcion) 
             {
                 return $carry + $ocParteRecepcion->cantidad;
@@ -46,24 +46,24 @@ class OcParte extends Pivot
         return $quantity;
     }
 
-    // public function getCantidadDespachado($despachable)
-    // {
-    //     $parteDespachoList = ParteDespacho::select('despacho_parte.*')
-    //                         ->join('despachos', 'despachos.id', '=', 'despacho_parte.despacho_id')
-    //                         ->where('despachos.despachable_type', '=', get_class($despachable))
-    //                         ->where('despachos.despachable_id', '=', $despachable->id)
-    //                         ->where('despacho_parte.parte_id', '=', $this->id)
-    //                         ->get();
+    public function getCantidadDespachado($despachable)
+    {
+        $ocParteDespachoList = OcParteDespacho::select('despacho_ocparte.*')
+                            ->join('despachos', 'despachos.id', '=', 'despacho_ocparte.despacho_id')
+                            ->where('despachos.despachable_type', '=', get_class($despachable))
+                            ->where('despachos.despachable_id', '=', $despachable->id)
+                            ->where('despacho_ocparte.ocparte_id', '=', $this->id)
+                            ->get();
 
-    //     $quantity = $parteDespachoList->reduce(function ($carry, $parteDespacho) 
-    //         {
-    //             return $carry + $parteDespacho->cantidad;
-    //         }, 
-    //         0
-    //     );
+        $quantity = $ocParteDespachoList->reduce(function($carry, $ocParteDespacho) 
+            {
+                return $carry + $ocParteDespacho->cantidad;
+            }, 
+            0
+        );
 
-    //     return $quantity;
-    // }
+        return $quantity;
+    }
 
 
     // public function getCantidadEntregado($sucursal)

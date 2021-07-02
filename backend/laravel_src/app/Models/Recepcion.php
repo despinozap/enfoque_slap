@@ -10,6 +10,7 @@ class Recepcion extends Model
     use HasFactory;
 
     protected $table = 'recepciones';
+    protected $fillable = ['fecha'];
     public $appends = ['partes_total'];
 
     /*
