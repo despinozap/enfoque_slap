@@ -19,11 +19,14 @@ class CreateDespachosTable extends Migration
             $table->string('despachable_type');
             $table->integer('destinable_id');
             $table->string('destinable_type');
+            $table->bigInteger('oc_id')->unsigned();
             $table->timestamp('fecha');
             $table->string('ndocumento')->nullable();
             $table->string('responsable');
             $table->longText('comentario')->nullable();
             $table->timestamps();
+
+            $table->foreign('oc_id')->references('id')->on('ocs')->onDelete('cascade');
         });
     }
 

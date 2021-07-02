@@ -30,6 +30,11 @@ class Recepcion extends Model
         return $this->morphTo();
     }
 
+    public function oc()
+    {
+        return $this->belongsTo(Oc::class);
+    }
+
     public function ocpartes()
     {
         return $this->belongsToMany(OcParte::class, 'recepcion_ocparte', 'recepcion_id', 'ocparte_id')->withPivot(['cantidad'])->withTimestamps();

@@ -66,6 +66,71 @@ class RecepcionesController extends Controller
                                 'created_at', 
                                 'updated_at'
                             ]);
+
+                            $recepcion->oc;
+                                $recepcion->oc->makeHidden([
+                                    'cotizacion_id',
+                                    'proveedor_id',
+                                    'filedata_id',
+                                    'motivobaja_id',
+                                    'estadooc_id', 
+                                    'usdvalue',
+                                    'partes_total',
+                                    'dias',
+                                    'monto',
+                                    'partes',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+
+                                $recepcion->oc->cotizacion;
+                                $recepcion->oc->cotizacion->makeHidden([
+                                    'solicitud_id',
+                                    'estadocotizacion_id',
+                                    'motivorechazo_id',
+                                    'usdvalue',
+                                    'partes_total',
+                                    'dias',
+                                    'monto',
+                                    'partes',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+
+                                $recepcion->oc->cotizacion->solicitud;
+                                $recepcion->oc->cotizacion->solicitud->makeHidden([
+                                    'sucursal_id',
+                                    'faena_id',
+                                    'marca_id',
+                                    'comprador_id',
+                                    'user_id',
+                                    'estadosolicitud_id',
+                                    'comentario',
+                                    'partes_total',
+                                    'partes',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+
+                                $recepcion->oc->cotizacion->solicitud->faena;
+                                $recepcion->oc->cotizacion->solicitud->faena->makeHidden([
+                                    'cliente_id',
+                                    'sucursal_id',
+                                    'rut',
+                                    'address',
+                                    'city',
+                                    'contact',
+                                    'phone',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+
+                                $recepcion->oc->cotizacion->solicitud->faena->cliente;
+                                $recepcion->oc->cotizacion->solicitud->faena->cliente->makeHidden([
+                                    'country_id',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
                             
                             $recepcion->ocpartes;
                             $recepcion->ocpartes = $recepcion->ocpartes->filter(function($ocParte)
@@ -481,6 +546,7 @@ class RecepcionesController extends Controller
                             $recepcion->recepcionable_id = $comprador->id;
                             $recepcion->recepcionable_type = get_class($comprador);
                             // Fill the data
+                            $recepcion->oc_id = $oc->id;
                             $recepcion->fecha = $request->fecha;
                             $recepcion->ndocumento = $request->ndocumento;
                             $recepcion->responsable = $request->responsable;
@@ -623,7 +689,7 @@ class RecepcionesController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al crear la recepcion [!]' . $e,
+                'Error al crear la recepcion [!]',
                 null
             );
         }
@@ -668,77 +734,167 @@ class RecepcionesController extends Controller
                 {
                     if($comprador = Comprador::find($comprador_id))
                     {
-                        if($recepcion = $comprador->recepciones->find($id))
+                        // Agente compra or Coordinador compra
+                        if(
+                            (in_array($user->role->name, ['agtcom', 'colcom'])) &&
+                            ($comprador->id !== $user->stationable->id)
+                        )
                         {
-                            $recepcion->makeHidden([
-                                'sourceable_id',
-                                'sourceable_type',
-                                'recepcionable_id',
-                                'recepcionable_type',
-                                'proveedor_id',
-                                'partes_total',
-                                'updated_at',
-                            ]);
-
-                            $recepcion->recepcionable;
-                            $recepcion->recepcionable->makeHidden([
-                                'rut',
-                                'address',
-                                'city',
-                                'contact',
-                                'phone',
-                                'country_id',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-
-                            $recepcion->sourceable;
-                            $recepcion->sourceable->makeHidden([
-                                'comprador_id',
-                                'rut',
-                                'address',
-                                'city',
-                                'contact',
-                                'phone',
-                                'country',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-
-                            $recepcion->partes;
-                            foreach($recepcion->partes as $parte)
-                            {                                
-                                $parte->makeHidden([
-                                    'marca_id',
+                            //If Agente compra or Coordinador compra and doens't belong to Comprador
+                            $response = HelpController::buildResponse(
+                                405,
+                                'No tienes acceso a visualizar recepciones del comprador ingresado',
+                                null
+                            );
+                        }
+                        else
+                        {
+                            if($recepcion = $comprador->recepciones->find($id))
+                            {
+                                $recepcion->makeHidden([
+                                    'sourceable_id',
+                                    'sourceable_type',
+                                    'recepcionable_id',
+                                    'recepcionable_type',
+                                    'proveedor_id',
+                                    'partes_total',
+                                    'updated_at',
+                                ]);
+    
+                                $recepcion->recepcionable;
+                                $recepcion->recepcionable->makeHidden([
+                                    'rut',
+                                    'address',
+                                    'city',
+                                    'contact',
+                                    'phone',
+                                    'country_id',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+    
+                                $recepcion->sourceable;
+                                $recepcion->sourceable->makeHidden([
+                                    'comprador_id',
+                                    'rut',
+                                    'address',
+                                    'city',
+                                    'contact',
+                                    'phone',
+                                    'country',
                                     'created_at', 
                                     'updated_at'
                                 ]);
 
-                                $parte->pivot->makeHidden([
-                                    'recepcion_id',
-                                    'parte_id',
-                                    'created_at',
-                                    'updated_at',
+                                $recepcion->oc;
+                                $recepcion->oc->makeHidden([
+                                    'cotizacion_id',
+                                    'proveedor_id',
+                                    'filedata_id',
+                                    'motivobaja_id',
+                                    'estadooc_id', 
+                                    'usdvalue',
+                                    'partes_total',
+                                    'dias',
+                                    'monto',
+                                    'partes',
+                                    'created_at', 
+                                    'updated_at'
                                 ]);
 
-                                $parte->marca;
-                                $parte->marca->makeHidden(['created_at', 'updated_at']);
-                            }
-                            
-                            $response = HelpController::buildResponse(
-                                200,
-                                null,
-                                $recepcion
-                            );
-                        }   
-                        else     
-                        {
-                            $response = HelpController::buildResponse(
-                                412,
-                                'La recepcion no existe',
-                                null
-                            );
-                        }                        
+                                $recepcion->oc->cotizacion;
+                                $recepcion->oc->cotizacion->makeHidden([
+                                    'solicitud_id',
+                                    'estadocotizacion_id',
+                                    'motivorechazo_id',
+                                    'usdvalue',
+                                    'partes_total',
+                                    'dias',
+                                    'monto',
+                                    'partes',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+
+                                $recepcion->oc->cotizacion->solicitud;
+                                $recepcion->oc->cotizacion->solicitud->makeHidden([
+                                    'sucursal_id',
+                                    'faena_id',
+                                    'marca_id',
+                                    'comprador_id',
+                                    'user_id',
+                                    'estadosolicitud_id',
+                                    'comentario',
+                                    'partes_total',
+                                    'partes',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+
+                                $recepcion->oc->cotizacion->solicitud->faena;
+                                $recepcion->oc->cotizacion->solicitud->faena->makeHidden([
+                                    'cliente_id',
+                                    'sucursal_id',
+                                    'rut',
+                                    'address',
+                                    'city',
+                                    'contact',
+                                    'phone',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+
+                                $recepcion->oc->cotizacion->solicitud->faena->cliente;
+                                $recepcion->oc->cotizacion->solicitud->faena->cliente->makeHidden([
+                                    'country_id',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+    
+                                $recepcion->ocpartes;
+                                foreach($recepcion->ocpartes as $ocParte)
+                                {                                
+                                    $ocParte->makeHidden([
+                                        'oc_id',
+                                        'parte_id',
+                                        'estadoocparte_id',
+                                        'tiempoentrega',
+                                        'created_at', 
+                                        'updated_at'
+                                    ]);
+    
+                                    $ocParte->pivot->makeHidden([
+                                        'recepcion_id',
+                                        'ocparte_id',
+                                        'created_at',
+                                        'updated_at',
+                                    ]);
+    
+                                    $ocParte->parte->makeHidden([
+                                        'marca_id',
+                                        'created_at', 
+                                        'updated_at'
+                                    ]);
+
+                                    $ocParte->parte->marca;
+                                    $ocParte->parte->marca->makeHidden(['created_at', 'updated_at']);
+                                }
+                                
+                                $response = HelpController::buildResponse(
+                                    200,
+                                    null,
+                                    $recepcion
+                                );
+                            }   
+                            else     
+                            {
+                                $response = HelpController::buildResponse(
+                                    412,
+                                    'La recepcion no existe',
+                                    null
+                                );
+                            }                        
+                        }
                     }
                     else
                     {

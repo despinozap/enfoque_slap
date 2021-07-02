@@ -141,7 +141,8 @@ Route::middleware(['auth:api', 'cors'])->group(function()
     Route::get('/compradores/{id}/recepciones', [RecepcionesController::class, 'index_comprador']);
     Route::get('/compradores/{comprador_id}/recepciones/queueocs/proveedores/{proveedor_id}', [RecepcionesController::class, 'queueOcs_comprador']);
     Route::post('/compradores/{comprador_id}/recepciones/ocs/{oc_id}', [RecepcionesController::class, 'store_comprador']);
-
+    Route::get('/compradores/{comprador_id}/recepciones/{id}', [RecepcionesController::class, 'show_comprador']);
+    
     /*
     // Recepciones (Comprador)
     Route::get('/compradores/{id}/recepciones', [RecepcionesController::class, 'index_comprador']);

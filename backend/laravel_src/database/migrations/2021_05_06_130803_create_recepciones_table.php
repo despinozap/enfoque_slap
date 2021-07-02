@@ -19,11 +19,14 @@ class CreateRecepcionesTable extends Migration
             $table->string('recepcionable_type');
             $table->integer('sourceable_id');
             $table->string('sourceable_type');
+            $table->bigInteger('oc_id')->unsigned();
             $table->timestamp('fecha');
             $table->string('ndocumento')->nullable();
             $table->string('responsable');
             $table->longText('comentario')->nullable();
             $table->timestamps();
+
+            $table->foreign('oc_id')->references('id')->on('ocs')->onDelete('cascade');
         });
     }
 
