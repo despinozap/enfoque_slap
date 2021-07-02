@@ -35,6 +35,9 @@
                     <thead>
                         <tr>
                             <th>N° Recepcion</th>
+                            <th>OC Interna</th>
+                            <th>OC Cliente</th>
+                            <th>Cliente</th>
                             <th>Fecha</th>
                             <th>Proveedor</th>
                             <th>N° Documento</th>
@@ -46,12 +49,15 @@
                     </thead>
                     <tbody *ngIf="(loading === true)">
                         <tr>
-                            <td colspan="8" style="text-align: center;"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</td>
+                            <td colspan="11" style="text-align: center;"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</td>
                         </tr>
                     </tbody>
                     <tbody *ngIf="(loading === false)">
                         <tr *ngFor="let recepcion of recepciones">
                             <td align="center">{{ recepcion.id }}</td>
+                            <td align="center">{{ recepcion.oc.id }}</td>
+                            <td align="center">{{ recepcion.oc.noccliente }}</td>
+                            <td align="center">{{ recepcion.oc.cotizacion.solicitud.faena.cliente.name }}</td>
                             <td>{{ dateStringFormat(recepcion.fecha) }}</td>
                             <td align="center">{{ recepcion.sourceable.name }}</td>
                             <td align="center">{{ recepcion.ndocumento !== null ? recepcion.ndocumento : '' }}</td>
@@ -60,7 +66,7 @@
                             <td align="left">{{ recepcion.comentario !== null ? recepcion.comentario : '' }}</td>
                             <td align="center">
                                 <a [routerLink]="['details', recepcion.id]" class="btn-table btn btn-secondary" title="Detalle"><i
-                  class="bx bx-zoom-in"></i></a>
+                                    class="bx bx-zoom-in"></i></a>
                                 <a [routerLink]="['edit', recepcion.id]" class="btn-table btn btn-secondary" title="Editar"><i class="bx bx-edit-alt"></i></a>
                                 <a [routerLink]="" (click)="removeRecepcion(recepcion)" class="btn-table btn btn-secondary" title="Eliminar"><i class="bx bx-trash-alt"></i></a>
                             </td>
@@ -68,10 +74,10 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="8" align="left">
+                            <td colspan="11" align="left">
                                 <button type="button" class="btn btn-outline-primary mr-2" (click)="goTo_newRecepcion()" [disabled]="(loading === true)">
-                  <i class="bx bx-notepad font-size-16 align-middle"></i> Nueva recepcion
-                </button>
+                                    <i class="bx bx-notepad font-size-16 align-middle"></i> Nueva recepcion
+                                </button>
                             </td>
                         </tr>
                     </tfoot>

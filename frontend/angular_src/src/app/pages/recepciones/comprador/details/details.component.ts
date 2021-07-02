@@ -31,13 +31,16 @@ export class RecepcionesCompradorDetailsComponent implements OnInit {
   comprador_id: number = 1;
   recepcion: any = {
     id: -1,
+    oc_id: -1,
+    oc_noccliente: null,
     fecha: null,
     ndocumento: null,
     responsable: null,
     comentario: null,
     created_at: null,
-    comprador_name: null,
     proveedor_name: null,
+    cliente_name: null,
+    faena_name: null
   };
   
   partes: any[] = [];
@@ -85,25 +88,29 @@ export class RecepcionesCompradorDetailsComponent implements OnInit {
 
   private loadFormData(recepcionData: any)
   { 
-    if(recepcionData['partes'].length > 0)
+    if(recepcionData.ocpartes.length > 0)
     {
       this.recepcion.id = recepcionData.id;
+      this.recepcion.oc_id = recepcionData.oc.id;
+      this.recepcion.oc_noccliente = recepcionData.oc.noccliente;
       this.recepcion.fecha = recepcionData.fecha;
       this.recepcion.ndocumento = recepcionData.ndocumento;
       this.recepcion.responsable = recepcionData.responsable;
       this.recepcion.comentario = recepcionData.comentario;
       this.recepcion.created_at = recepcionData.created_at;
-      this.recepcion.comprador_name = recepcionData.recepcionable.name;
       this.recepcion.proveedor_name = recepcionData.sourceable.name;
+      this.recepcion.cliente_name = recepcionData.oc.cotizacion.solicitud.faena.cliente.name;
+      this.recepcion.faena_name = recepcionData.oc.cotizacion.solicitud.faena.name;
       
       this.partes = [];
-      recepcionData.partes.forEach((parte: any) => {
+      recepcionData.ocpartes.forEach((ocParte: any) => {
         this.partes.push(
           {
-            'id': parte.id,
-            'nparte': parte.nparte,
-            'marca_name': parte.marca.name,
-            'cantidad': parte.pivot.cantidad
+            'id': ocParte.parte.id,
+            'nparte': ocParte.parte.nparte,
+            'descripcion': ocParte.descripcion,
+            'marca_name': ocParte.parte.marca.name,
+            'cantidad': ocParte.pivot.cantidad
           }
         )
       });
