@@ -37,9 +37,30 @@
                     <div class="row">
                         <div class="col-4">
                             <div class="form-group">
-                                <label class="control-label">Proveedor</label>
+                                <label class="control-label" for="name">OC Interna</label>
                                 <br>
-                                <label>{{ recepcion.proveedor_name !== null ? recepcion.proveedor_name : '' }}</label>
+                                <label>{{ recepcion.oc_id >= 0 ? recepcion.oc_id : '' }}</label>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-group">
+                                <label class="control-label" for="name">OC Cliente</label>
+                                <br>
+                                <label>{{ recepcion.oc_noccliente !== null ? recepcion.oc_noccliente : '' }}</label>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-group">
+                                <label class="control-label" for="name">Cliente</label>
+                                <br>
+                                <label>{{ recepcion.cliente_name !== null ? recepcion.cliente_name : '' }}</label>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-group">
+                                <label class="control-label" for="name">Faena</label>
+                                <br>
+                                <label>{{ recepcion.faena_name !== null ? recepcion.faena_name : '' }}</label>
                             </div>
                         </div>
                         <div class="col-4">
@@ -49,7 +70,7 @@
                                 <div class="alert alert-danger" *ngIf="(responseErrors.fecha)">
                                     <div *ngFor="let errorMessage of responseErrors.fecha">{{ errorMessage }}</div>
                                 </div>
-                                <input type="date" class="form-control valid-control" name="fecha" id="recepcion_fecha" max="{{ getDateToday() }}" formControlName="fecha">
+                                <input type="date" class="form-control valid-control" name="fecha" id="despacho_fecha" max="{{ getDateToday() }}" formControlName="fecha">
                                 <!-- Frontend errors -->
                                 <div *ngIf="(recepcionForm.controls.fecha.errors) && (recepcionForm.controls.fecha.touched) && (recepcionForm.controls.fecha.dirty)">
                                     <div class="error-response" *ngIf="recepcionForm.controls.fecha.errors.required === true">
@@ -76,7 +97,7 @@
                         </div>
                         <div class="col-4">
                             <div class="form-group">
-                                <label class="control-label" for="responsable">Recibido por</label>
+                                <label class="control-label" for="responsable">Recepcionado por</label>
                                 <!-- Backend errors -->
                                 <div class="alert alert-danger" *ngIf="(responseErrors.responsable)">
                                     <div *ngFor="let errorMessage of responseErrors.responsable">{{ errorMessage }}</div>
@@ -99,13 +120,12 @@
                         </div>
                     </div>
 
+                    <!-- Partes list -->
                     <div class="row">
 
                         <div class="col-12">
-
-                            <!-- Partes list -->
-                            <label class="control-label">Lista de partes pendientes de recepcion</label>
-                            <p class="card-title-desc">Completa las cantidades para las partes que se reciben</p>
+                            <label class="control-label">Lista de partes disponibles para entrega</label>
+                            <p class="card-title-desc">Completa las cantidades para las partes que se entregan</p>
 
                             <div class="table-responsive">
 
@@ -119,13 +139,16 @@
                                                 </div>
                                             </th>
                                             <th>N° Parte</th>
+                                            <th>Descripcion</th>
                                             <th>Marca</th>
                                             <th>Cantidad</th>
+                                            <th>Total</th>
+                                            <th>Pendiente</th>
                                         </tr>
                                     </thead>
                                     <tbody *ngIf="(loading === true)">
                                         <tr>
-                                            <td colspan="4" style="text-align: center;"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</td>
+                                            <td colspan="7" style="text-align: center;"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</td>
                                         </tr>
                                     </tbody>
                                     <tbody [hidden]="(loading === true)">
@@ -136,12 +159,15 @@
                                                     <label class="custom-control-label" for="chkParte-{{ i }}"></label>
                                                 </div>
                                             </td>
-                                            <td align="center">{{ parte.nparte !== null ? parte.nparte : '' }}</td>
-                                            <td align="center">{{ parte.marca.name !== null ? parte.marca.name : '' }}</td>
+                                            <td align="center"><i class="bx bx-timer icon-table" *ngIf="(parte.backorder === true)"></i>{{ parte.nparte !== null ? parte.nparte : '' }}</td>
+                                            <td align="center">{{ parte.descripcion !== null ? parte.descripcion : '' }}</td>
+                                            <td align="center">{{ parte.marca !== null ? parte.marca : '' }}</td>
                                             <td align="center">
-                                                <input class="form-control" type="number" name="" id="txtParte-{{ i }}-cantidad" min="{{parte.cantidad_despachos}}" max="{{parte.cantidad_max}}" value="{{ ((parte.checked === true) && (parte.cantidad !== null)) ? parte.cantidad : '' }}" (change)="updateParte_cantidad(parte, $event)"
+                                                <input class="form-control" type="number" name="" id="txtParte-{{ i }}-cantidad" min="{{parte.cantidad_min}}" max="{{parte.cantidad_pendiente}}" value="{{ (parte.cantidad !== null) && (parte.checked === true) ? parte.cantidad : '' }}" (change)="updateParte_cantidad(parte, $event)"
                                                     [disabled]="loading === true ? true : (parte.checked ? false : true)">
                                             </td>
+                                            <td align="right">{{ parte.cantidad_total !== null ? parte.cantidad_total : '' }}</td>
+                                            <td align="right">{{ parte.cantidad_pendiente !== null ? parte.cantidad_pendiente : '' }}</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -150,21 +176,21 @@
 
                     </div>
 
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="form-buttons mt-2">
-                                <button class="btn btn-primary mr-2" (click)="updateRecepcion()" [disabled]="(recepcionForm.invalid) || (loading === true) || (isCheckedItem(partes) === false)">
-                  <span *ngIf="loading === true"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
-                  <span *ngIf="loading === false">Guardar</span>
-                </button>
-                                <button [disabled]="(loading === true)" class="btn btn-light" (click)="goTo_recepcionesList()">
-                  <span>Cancelar</span>
-                </button>
-                            </div>
+                </form>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="form-buttons mt-2">
+                            <button class="btn btn-primary mr-2" (click)="updateRecepcion()" [disabled]="(recepcionForm.invalid) || (loading === true) || (isCheckedItem(partes) === false)">
+                                <span *ngIf="loading === true"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
+                                <span *ngIf="loading === false">Guardar</span>
+                            </button>
+                            <button [disabled]="(loading === true)" class="btn btn-light" (click)="goTo_recepcionesList()">
+                                <span>Cancelar</span>
+                            </button>
                         </div>
                     </div>
-
-                </form>
+                </div>
 
             </div>
         </div>

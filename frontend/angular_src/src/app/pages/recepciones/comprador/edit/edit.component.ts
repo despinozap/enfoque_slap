@@ -28,10 +28,19 @@ export class RecepcionesCompradorEditComponent implements OnInit {
   
   dtTrigger: Subject<any> = new Subject<any>();
 
+  comprador_id: number = 1;
   recepcion: any = {
     id: -1,
-    proveedor_id: -1,
+    oc_id: -1,
+    oc_noccliente: null,
+    fecha: null,
+    ndocumento: null,
+    responsable: null,
+    comentario: null,
+    created_at: null,
     proveedor_name: null,
+    cliente_name: null,
+    faena_name: null
   };
 
   partes: any[] = [];
@@ -46,7 +55,6 @@ export class RecepcionesCompradorEditComponent implements OnInit {
   });
 
   private sub: any;
-  comprador_id: number = 1;
   
   
   constructor(
@@ -87,65 +95,82 @@ export class RecepcionesCompradorEditComponent implements OnInit {
   }
 
   private loadFormData(recepcionData: any)
-  {
-    if(recepcionData.recepcion['partes'].length > 0)
+  { 
+    if(recepcionData.ocpartes.length > 0)
     {
-      // Load Recepcion data
-      this.recepcion.id = recepcionData.recepcion.id;
-      this.recepcion.proveedor_id = recepcionData.recepcion.sourceable.id;
-      this.recepcion.proveedor_name = recepcionData.recepcion.sourceable.name;
+      // All Partes in OC
+      this.partes = recepcionData.oc.partes.reduce((carry: any[], parte: any) => {
 
-      this.recepcionForm.controls.fecha.setValue(this.dateStringFormat(recepcionData.recepcion.fecha));
-      if(recepcionData.recepcion.ndocumento !== null)
-      {
-        this.recepcionForm.controls.documento.setValue(recepcionData.recepcion.ndocumento);
-      }
-      this.recepcionForm.controls.responsable.setValue(recepcionData.recepcion.responsable);
-      if(recepcionData.recepcion.comentario !== null)
-      {
-        this.recepcionForm.controls.comentario.setValue(recepcionData.recepcion.comentario);
-      }
-
-      // Load partes list from queue_partes
-      this.partes = recepcionData.queue_partes.reduce((carry: any[], parte: any) => {
-          carry.push({
-            id: parte.id,
-            nparte: parte.nparte,
-            marca: parte.marca,
-            cantidad_max: parte.cantidad_pendiente,
-            cantidad_despachos: parte.cantidad_despachos,
-            checked: false,
-            cantidad: 1,
-          });
-
+        carry.push({
+          id: parte.id,
+          nparte: parte.nparte,
+          descripcion: parte.pivot.descripcion,
+          marca: parte.marca.name,
+          backorder: parte.backorder > 0 ? true : false,
+          cantidad: parte.pivot.cantidad - parte.pivot.cantidad_recepcionado,
+          cantidad_total: parte.pivot.cantidad,
+          cantidad_recepcionado: parte.pivot.cantidad_recepcionado,
+          cantidad_pendiente: parte.pivot.cantidad - parte.pivot.cantidad_recepcionado,
+          cantidad_min: parte.pivot.cantidad_despachado - (parte.pivot.cantidad_recepcionado - parte.pivot.cantidad),
+          checked: false
+        });
+        
           return carry;
         },
         [] // Empty array
       );
 
-      let index: number;
-      let parte: any;
+      this.recepcion.id = recepcionData.id;
+      this.recepcion.oc_id = recepcionData.oc.id;
+      this.recepcion.oc_noccliente = recepcionData.oc.noccliente;
+      this.recepcion.fecha = recepcionData.fecha;
+      this.recepcion.ndocumento = recepcionData.ndocumento;
+      this.recepcion.responsable = recepcionData.responsable;
+      this.recepcion.comentario = recepcionData.comentario;
+      this.recepcion.created_at = recepcionData.created_at;
+      this.recepcion.proveedor_name = recepcionData.sourceable.name;
+      this.recepcion.cliente_name = recepcionData.oc.cotizacion.solicitud.faena.cliente.name;
+      this.recepcion.faena_name = recepcionData.oc.cotizacion.solicitud.faena.name;
 
-      // Update values with partes list in recepcion 
-      recepcionData.recepcion.partes.forEach((parteR: any) => {
-
-        index = this.partes.findIndex((parteQ) => {
-          return (parteR.id === parteQ.id);
+      this.recepcionForm.controls.fecha.setValue(this.dateStringFormat(recepcionData.fecha));
+      this.recepcionForm.controls.documento.setValue(recepcionData.ndocumento);
+      this.recepcionForm.controls.responsable.setValue(recepcionData.responsable);
+      this.recepcionForm.controls.comentario.setValue(recepcionData.comentario);
+      
+      // Load Partes in Recepcion
+      recepcionData.ocpartes.forEach((ocParte: any) => {
+        let index = this.partes.findIndex((p) => {
+          if(p.id === ocParte.parte.id)
+          {
+            return true;
+          }
+          else
+          {
+            return false;
+          }
         });
 
         if(index >= 0)
         {
+          // Update data for parte in Recepcion
           this.partes[index].checked = true;
-          this.partes[index].cantidad = parteR.pivot.cantidad;
+          this.partes[index].cantidad = ocParte.pivot.cantidad;
+          this.partes[index].cantidad_pendiente = this.partes[index].cantidad_pendiente + ocParte.pivot.cantidad;
+          this.partes[index].cantidad_recepcionado = this.partes[index].cantidad_recepcionado - ocParte.pivot.cantidad;
         }
-
       });
 
-      this.partes = this.partes.sort((p1, p2) => {
-        return p2.cantidad - p1.cantidad;
+      // Clean partes with no cantidad_pendiente in list
+      this.partes = this.partes.filter((parte: any) => {
+        if(parte.cantidad_pendiente > 0)
+        {
+          return true;
+        }
+        else
+        {
+          return false;
+        }
       });
-
-      this.renderDataTable(this.datatableElement_partes);
     }
     else
     {
@@ -167,9 +192,11 @@ export class RecepcionesCompradorEditComponent implements OnInit {
     .subscribe(
       //Success request
       (response: any) => {
-
-        this.loading = false;
         this.loadFormData(response.data);
+        this.renderDataTable(this.datatableElement_partes);
+
+        this.recepcionForm.enable();
+        this.loading = false;
       },
       //Error request
       (errorResponse: any) => {
@@ -270,7 +297,6 @@ export class RecepcionesCompradorEditComponent implements OnInit {
         //Error request
         (errorResponse: any) => {
 
-          console.log(errorResponse);
           switch (errorResponse.status) 
           {
             case 400: //Invalid request parameters
@@ -338,17 +364,13 @@ export class RecepcionesCompradorEditComponent implements OnInit {
   }
 
   public updateParte_cantidad(parte: any, evt: any): void {
-    if(
-        (isNaN(evt.target.value) === false) && 
-        (parseInt(evt.target.value) > 0) && 
-        (parseInt(evt.target.value) <= parte.cantidad_max) && 
-        (parseInt(evt.target.value) >= parte.cantidad_despachos))
+    if((isNaN(evt.target.value) === false) && (parseInt(evt.target.value) > 0) && (parseInt(evt.target.value) <= parte.cantidad_pendiente))
     {
-        parte.cantidad = parseInt(evt.target.value);
+      parte.cantidad = parseInt(evt.target.value);
     }
     else
     {
-      evt.target.value = parte.cantidad;
+      evt.target.value = parte.cantidad_pendiente;
     }
   }
 

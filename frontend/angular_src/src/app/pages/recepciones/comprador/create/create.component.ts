@@ -94,8 +94,6 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
     //Prevents throwing an error for var status changed while initialization
     setTimeout(() => {
         this.loadProveedores();
-
-        this.recepcionForm.controls.fecha.setValue(this.getDateToday());
       },
       100
     );
@@ -268,7 +266,7 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
             id: parte.id,
             nparte: parte.nparte,
             descripcion: parte.pivot.descripcion,
-            marca: parte.marca.name,
+            marca_name: parte.marca.name,
             backorder: parte.backorder > 0 ? true : false,
             cantidad: parte.cantidad - parte.cantidad_recepcionado,
             cantidad_total: parte.pivot.cantidad,
@@ -467,6 +465,7 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
   public goTo_recepcionForm(oc: any): void {
     this.oc = oc;
     this.loadData();
+    this.recepcionForm.controls.fecha.setValue(this.getDateToday());
 
     this.DISPLAYING_FORM = 1;
   }

@@ -257,7 +257,7 @@
                                             </td>
                                             <td align="center"><i class="bx bx-timer icon-table" *ngIf="(parte.backorder === true)"></i>{{ parte.nparte !== null ? parte.nparte : '' }}</td>
                                             <td align="center">{{ parte.descripcion !== null ? parte.descripcion : '' }}</td>
-                                            <td align="center">{{ parte.marca !== null ? parte.marca : '' }}</td>
+                                            <td align="center">{{ parte.marca_name !== null ? parte.marca_name : '' }}</td>
                                             <td align="center">
                                                 <input class="form-control" type="number" name="" id="txtParte-{{ i }}-cantidad" min="1" max="{{parte.cantidad_pendiente}}" value="{{ (parte.cantidad_pendiente !== null) && (parte.checked === true) ? parte.cantidad_pendiente : '' }}" (change)="updateParte_cantidad(parte, $event)"
                                                     [disabled]="loading === true ? true : (parte.checked ? false : true)">
@@ -289,7 +289,7 @@
                 </div>
 
             </div>
-            <!-- Entrega form-ends -->
+            <!-- Recepcion form-ends -->
 
         </div>
         <!-- end card -->
