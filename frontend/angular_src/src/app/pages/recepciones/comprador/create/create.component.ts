@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { Location } from '@angular/common';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
@@ -9,6 +9,8 @@ import { NotificationsService } from 'src/app/services/notifications.service';
 import { ProveedoresService } from 'src/app/services/proveedores.service';
 import { UtilsService } from 'src/app/services/utils.service';
 import { Router } from '@angular/router';
+import { User } from 'src/app/interfaces/user';
+import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-create',
@@ -16,10 +18,9 @@ import { Router } from '@angular/router';
   styleUrls: ['./create.component.css']
 })
 export class RecepcionesCompradorCreateComponent implements OnInit {
-
-  @ViewChild(DataTableDirective, {static: false})
-  datatableElement_partes: DataTableDirective = null as any;
-  dtOptions: any = {
+  @ViewChildren(DataTableDirective)
+  datatableELements: QueryList<DataTableDirective> = null as any;
+  dtOptionsOcs: any = {
     pagingType: 'full_numbers',
     pageLength: 10,
     language: {
@@ -27,28 +28,57 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
     },
     order: [[0, 'desc']]
   };
-
+  dtOptionsPartes: any = {
+    pagingType: 'full_numbers',
+    pageLength: 10,
+    language: {
+      url: '//cdn.datatables.net/plug-ins/1.10.22/i18n/Spanish.json'
+    },
+    columnDefs: [
+      { 
+        targets: [0, 3],
+        orderable: false
+      }
+    ],
+    order: [[1, 'desc']]
+  };
   
-  dtTrigger: Subject<any> = new Subject<any>();
-
-  proveedores: Array<Proveedor> = null as any;
+  dtTriggerOcs: Subject<any> = new Subject<any>();
+  dtTriggerPartes: Subject<any> = new Subject<any>();
+  
+  proveedores: any[] = [];
+  ocs: any[] = [];
   partes: any[] = [];
   loading: boolean = false;
   responseErrors: any = [];
 
-  recepcionForm: FormGroup = new FormGroup({
+  proveedorForm: FormGroup = new FormGroup({
     proveedor: new FormControl('', [Validators.required]),
+  });
+
+  recepcionForm: FormGroup = new FormGroup({
     fecha: new FormControl('', [Validators.required, Validators.minLength(1)]),
     documento: new FormControl(''),
     responsable: new FormControl('', [Validators.required, Validators.minLength(2)]),
     comentario: new FormControl(''),
   });
 
+  /*
+  *   Displayed form:
+  * 
+  *       0: OCs list
+  *       1: Entrega form
+  */
+  DISPLAYING_FORM: number = 0;
+
   comprador_id: number = 1;
+  oc: any = null;
+
 
   constructor(
     private location: Location,
     private router: Router,
+    private _authService: AuthService,
     private _proveedoresService: ProveedoresService,
     private _recepcionesService: RecepcionesService,
     private _utilsService: UtilsService
@@ -58,7 +88,8 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
   }
 
   ngAfterViewInit(): void {
-    this.dtTrigger.next();
+    this.dtTriggerOcs.next();
+    this.dtTriggerPartes.next();
 
     //Prevents throwing an error for var status changed while initialization
     setTimeout(() => {
@@ -71,9 +102,10 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
   }
 
   ngOnDestroy(): void {
-    this.dtTrigger.unsubscribe();
+    this.dtTriggerOcs.unsubscribe();
+    this.dtTriggerPartes.unsubscribe();
   }
-  
+
   private renderDataTable(dataTableElement: DataTableDirective, trigger: Subject<any>): void {
     dataTableElement.dtInstance.then((dtInstance: DataTables.Api) => {
       // Destroy the table first
@@ -82,11 +114,11 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
       trigger.next();
     });
   }
-  
+
   public loadProveedores(): void {
     
     this.loading = true;
-    this.recepcionForm.disable();
+    this.proveedorForm.disable();
 
     this._proveedoresService.getProveedores(this.comprador_id)
     .subscribe(
@@ -95,11 +127,10 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
 
         this.proveedores = response.data;
         this.loading = false;
-        this.recepcionForm.enable();
+        this.proveedorForm.enable();
       },
       //Error request
       (errorResponse: any) => {
-
         switch(errorResponse.status)
         {
         
@@ -150,34 +181,24 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
       }
     );
   }
-
-  public loadQueuePartes(): void {
+  
+  public loadOcs(): void {
+    
     this.loading = true;
-    this.recepcionForm.disable();
+    this.proveedorForm.disable();
 
-    this._recepcionesService.getQueueOcs_comprador(this.comprador_id, this.recepcionForm.value.proveedor)
+    this._recepcionesService.getQueueOcs_comprador(this.comprador_id, this.proveedorForm.value.proveedor)
     .subscribe(
       //Success request
       (response: any) => {
-        this.partes = response.data.reduce((carry: any[], parte: any) => {
-            carry.push({
-              id: parte.id,
-              nparte: parte.nparte,
-              marca: parte.marca,
-              cantidad_pendiente: parte.cantidad_pendiente,
-              checked: false,
-              cantidad: parte.cantidad_pendiente,
-            });
 
-            return carry;
-          },
-          [] // Empty array
-        );
-
-        this.renderDataTable(this.datatableElement_partes, this.dtTrigger);
+        // Ocs
+        this.ocs = response.data;
+        // Uses the first datatables instance
+        this.renderDataTable(this.datatableELements.first, this.dtTriggerOcs);
 
         this.loading = false;
-        this.recepcionForm.enable();
+        this.proveedorForm.enable();
       },
       //Error request
       (errorResponse: any) => {
@@ -218,7 +239,7 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
           default: //Unhandled error
           {
             NotificationsService.showToast(
-              'Error al cargar los datos de partes',
+              'Error al cargar los datos de las OCs',
               NotificationsService.messageType.error
             );
   
@@ -231,6 +252,42 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
         this.goTo_back();
       }
     );
+  }
+
+  public loadData(): void {
+  
+    this.loading = true;
+    this.recepcionForm.disable();
+
+    // Partes
+    this.partes = this.oc.partes.reduce((carry: any[], parte: any) => {
+
+        if((parte.pivot.cantidad - parte.pivot.cantidad_recepcionado) > 0)
+        {
+          carry.push({
+            id: parte.id,
+            nparte: parte.nparte,
+            descripcion: parte.pivot.descripcion,
+            marca: parte.marca.name,
+            backorder: parte.backorder > 0 ? true : false,
+            cantidad: parte.cantidad - parte.cantidad_recepcionado,
+            cantidad_total: parte.pivot.cantidad,
+            cantidad_recepcionado: parte.pivot.cantidad_recepcionado,
+            cantidad_pendiente: parte.pivot.cantidad - parte.pivot.cantidad_recepcionado,
+            checked: false
+          });
+        }
+      
+        return carry;
+      },
+      [] // Empty array
+    );
+
+    // Uses the second (and last) datatables instance
+    this.renderDataTable(this.datatableELements.last, this.dtTriggerPartes);
+
+    this.loading = false;
+    this.recepcionForm.enable();
   }
 
   public storeRecepcion(): void {
@@ -256,7 +313,6 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
     );
 
     let recepcion: any = {
-      proveedor_id: this.recepcionForm.value.proveedor,
       fecha: this.recepcionForm.value.fecha,
       ndocumento: this.recepcionForm.value.documento,
       responsable: this.recepcionForm.value.responsable,
@@ -264,7 +320,7 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
       partes: receivedPartes
     };
 
-    this._recepcionesService.storeRecepcion_comprador(this.comprador_id, recepcion)
+    this._recepcionesService.storeRecepcion_comprador(this.comprador_id, this.oc.id, recepcion)
       .subscribe(
         //Success request
         (response: any) => {
@@ -278,6 +334,7 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
         },
         //Error request
         (errorResponse: any) => {
+
           switch (errorResponse.status) 
           {
             case 400: //Invalid request parameters
@@ -297,7 +354,7 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
                 break;
               }
 
-            case 409: //Permission denied
+            case 409: //Conflict
               {
                 NotificationsService.showAlert(
                   errorResponse.error.message,
@@ -347,7 +404,7 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
   public updateParte_cantidad(parte: any, evt: any): void {
     if((isNaN(evt.target.value) === false) && (parseInt(evt.target.value) > 0) && (parseInt(evt.target.value) <= parte.cantidad_pendiente))
     {
-        parte.cantidad = parseInt(evt.target.value);
+      parte.cantidad = parseInt(evt.target.value);
     }
     else
     {
@@ -405,6 +462,19 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
 
   private dateStringFormat(value: string): string {
     return this._utilsService.dateStringFormat(value);
+  }
+
+  public goTo_recepcionForm(oc: any): void {
+    this.oc = oc;
+    this.loadData();
+
+    this.DISPLAYING_FORM = 1;
+  }
+
+  public goTo_ocsList(): void {
+    this.oc = null;
+    this.recepcionForm.reset();
+    this.DISPLAYING_FORM = 0;
   }
 
   public goTo_recepcionesList(): void {

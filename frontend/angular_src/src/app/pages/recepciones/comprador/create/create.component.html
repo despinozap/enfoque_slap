@@ -27,8 +27,104 @@
 
     <div class="col-12">
         <div class="card">
-            <div class="card-body">
 
+            <!-- OC selection -->
+            <div class="card-body" [hidden]="(DISPLAYING_FORM !== 0)">
+
+                <label class="control-label">Proveedor</label>
+                <p class="card-title-desc">Selecciona el proveedor de la nueva recepcion</p>
+                <div class="row">
+                    <div class="col-12">
+                        <form [formGroup]="proveedorForm" action="#">
+                            <div class="form-group">
+                                <!-- Backend errors -->
+                                <div class="alert alert-danger" *ngIf="(responseErrors.proveedor_id)">
+                                    <div *ngFor="let errorMessage of responseErrors.proveedor_id">{{ errorMessage }}</div>
+                                </div>
+                                <select class="form-control" name="proveedor" id="proveedor" formControlName="proveedor" (change)="loadOcs();">
+                                    <option *ngFor="let proveedor of proveedores" [value]="proveedor.id">{{ proveedor.name }}</option>
+                                </select>
+                                <!-- Frontend errors -->
+                                <div *ngIf="(proveedorForm.controls.proveedor.errors) && (proveedorForm.controls.proveedor.touched) && (proveedorForm.controls.proveedor.dirty)">
+                                    <div class="error-response" *ngIf="proveedorForm.controls.proveedor.errors.required === true">Debes seleccionar el proveedor
+                                    </div>
+                                    <div class="error-response" *ngIf="proveedorForm.controls.proveedor.errors.minlength !== null">El proveedor debe ser valido</div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <hr>
+
+                <label class="control-label">Lista de OCs</label>
+                <p class="card-title-desc">Selecciona la OC con partes pendiente para registrar una nueva recepcion</p>
+                <div class="row">
+
+                    <div class="col-12">
+
+                        <!-- OCs list -->
+                        <div class="table-responsive">
+
+                            <table datatable [dtOptions]="dtOptionsOcs" [dtTrigger]="dtTriggerOcs" class="table table-hover table-bordered mb-2">
+                                <thead>
+                                    <tr>
+                                        <th>N° OC Cliente</th>
+                                        <th>OC Interna</th>
+                                        <th>Cotizacion</th>
+                                        <th>Cliente</th>
+                                        <th>Faena</th>
+                                        <th>Marca</th>
+                                        <th>Partes</th>
+                                        <th>Dias</th>
+                                        <th>Opciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody *ngIf="(loading === true)">
+                                    <tr>
+                                        <td colspan="9" style="text-align: center;"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</td>
+                                    </tr>
+                                </tbody>
+                                <tbody [hidden]="(loading === true)">
+                                    <tr *ngFor="let oc of ocs; index as i">
+                                        <td align="center">{{ oc.noccliente ? oc.noccliente : '' }}</td>
+                                        <td align="center">{{ oc.id ? oc.id : '' }}</td>
+                                        <td align="center">{{ oc.cotizacion.id ? oc.cotizacion.id : ''}}</td>
+                                        <td align="center">{{ oc.cotizacion.solicitud.faena.cliente.name }}</td>
+                                        <td align="center">{{ oc.cotizacion.solicitud.faena.name }}</td>
+                                        <td align="center">{{ oc.cotizacion.solicitud.marca.name }}</td>
+                                        <td align="right">{{ oc.partes_total }}</td>
+                                        <td align="right">{{ oc.dias }}</td>
+                                        <td align="center">
+                                            <a class="btn-table btn btn-secondary" title="Seleccionar" (click)="goTo_recepcionForm(oc)"><i class="bx bx-log-in-circle"></i></a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="form-buttons mt-2">
+                            <button class="btn btn-primary mr-2" (click)="storeRecepcion()" [disabled]="(recepcionForm.invalid) || (loading === true) || (isCheckedItem(partes) === false)">
+                                <span *ngIf="loading === true"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
+                                <span *ngIf="loading === false">Guardar</span>
+                            </button>
+                            <button [disabled]="(loading === true)" class="btn btn-light" (click)="goTo_recepcionesList()">
+                                <span>Cancelar</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- OC selection-ends -->
+
+            <!-- Recepcion form -->
+            <div class="card-body" [hidden]="(DISPLAYING_FORM !== 1)">
                 <h4 class="card-title">Recepcion</h4>
                 <p class="card-title-desc">Completa los siguientes campos para registrar una nueva recepcion</p>
 
@@ -37,20 +133,30 @@
                     <div class="row">
                         <div class="col-4">
                             <div class="form-group">
-                                <label class="control-label">Proveedor</label>
-                                <!-- Backend errors -->
-                                <div class="alert alert-danger" *ngIf="(responseErrors.proveedor_id)">
-                                    <div *ngFor="let errorMessage of responseErrors.proveedor_id">{{ errorMessage }}</div>
-                                </div>
-                                <select class="form-control" name="proveedor" id="proveedor" formControlName="proveedor" (change)="loadQueuePartes()">
-                  <option *ngFor="let proveedor of proveedores" [value]="proveedor.id">{{ proveedor.name }}</option>
-                </select>
-                                <!-- Frontend errors -->
-                                <div *ngIf="(recepcionForm.controls.proveedor.errors) && (recepcionForm.controls.proveedor.touched) && (recepcionForm.controls.proveedor.dirty)">
-                                    <div class="error-response" *ngIf="recepcionForm.controls.proveedor.errors.required === true">Debes seleccionar el proveedor
-                                    </div>
-                                    <div class="error-response" *ngIf="recepcionForm.controls.proveedor.errors.minlength !== null">El proveedor debe ser valido</div>
-                                </div>
+                                <label class="control-label" for="name">OC Interna</label>
+                                <br>
+                                <label>{{ this.oc !== null ? this.oc.id : '' }}</label>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-group">
+                                <label class="control-label" for="name">OC Cliente</label>
+                                <br>
+                                <label>{{ this.oc !== null ? this.oc.noccliente : '' }}</label>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-group">
+                                <label class="control-label" for="name">Cliente</label>
+                                <br>
+                                <label>{{ this.oc !== null ? this.oc.cotizacion.solicitud.faena.cliente.name : '' }}</label>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-group">
+                                <label class="control-label" for="name">Faena</label>
+                                <br>
+                                <label>{{ this.oc !== null ? this.oc.cotizacion.solicitud.faena.name : '' }}</label>
                             </div>
                         </div>
                         <div class="col-4">
@@ -60,7 +166,7 @@
                                 <div class="alert alert-danger" *ngIf="(responseErrors.fecha)">
                                     <div *ngFor="let errorMessage of responseErrors.fecha">{{ errorMessage }}</div>
                                 </div>
-                                <input type="date" class="form-control valid-control" name="fecha" id="recepcion_fecha" max="{{ getDateToday() }}" formControlName="fecha">
+                                <input type="date" class="form-control valid-control" name="fecha" id="despacho_fecha" max="{{ getDateToday() }}" formControlName="fecha">
                                 <!-- Frontend errors -->
                                 <div *ngIf="(recepcionForm.controls.fecha.errors) && (recepcionForm.controls.fecha.touched) && (recepcionForm.controls.fecha.dirty)">
                                     <div class="error-response" *ngIf="recepcionForm.controls.fecha.errors.required === true">
@@ -73,8 +179,8 @@
                             <div class="form-group">
                                 <label class="control-label" for="documento">N° Guia despacho</label>
                                 <!-- Backend errors -->
-                                <div class="alert alert-danger" *ngIf="(responseErrors.documento)">
-                                    <div *ngFor="let errorMessage of responseErrors.documento">{{ errorMessage }}</div>
+                                <div class="alert alert-danger" *ngIf="(responseErrors.ndocumento)">
+                                    <div *ngFor="let errorMessage of responseErrors.ndocumento">{{ errorMessage }}</div>
                                 </div>
                                 <input type="text" class="form-control valid-control" name="documento" id="documento" formControlName="documento">
                                 <!-- Frontend errors -->
@@ -87,7 +193,7 @@
                         </div>
                         <div class="col-4">
                             <div class="form-group">
-                                <label class="control-label" for="responsable">Recibido por</label>
+                                <label class="control-label" for="responsable">Recepcionado por</label>
                                 <!-- Backend errors -->
                                 <div class="alert alert-danger" *ngIf="(responseErrors.responsable)">
                                     <div *ngFor="let errorMessage of responseErrors.responsable">{{ errorMessage }}</div>
@@ -110,17 +216,16 @@
                         </div>
                     </div>
 
+                    <!-- Partes list -->
                     <div class="row">
 
                         <div class="col-12">
-
-                            <!-- Partes list -->
-                            <label class="control-label">Lista de partes pendientes de recepcion</label>
-                            <p class="card-title-desc">Completa las cantidades para las partes que se reciben</p>
+                            <label class="control-label">Lista de partes disponibles para entrega</label>
+                            <p class="card-title-desc">Completa las cantidades para las partes que se entregan</p>
 
                             <div class="table-responsive">
 
-                                <table datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger" class="table table-hover table-bordered mb-2">
+                                <table datatable [dtOptions]="dtOptionsPartes" [dtTrigger]="dtTriggerPartes" class="table table-hover table-bordered mb-2">
                                     <thead>
                                         <tr>
                                             <th>
@@ -130,13 +235,16 @@
                                                 </div>
                                             </th>
                                             <th>N° Parte</th>
+                                            <th>Descripcion</th>
                                             <th>Marca</th>
                                             <th>Cantidad</th>
+                                            <th>Total</th>
+                                            <th>Pendiente</th>
                                         </tr>
                                     </thead>
                                     <tbody *ngIf="(loading === true)">
                                         <tr>
-                                            <td colspan="4" style="text-align: center;"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</td>
+                                            <td colspan="7" style="text-align: center;"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</td>
                                         </tr>
                                     </tbody>
                                     <tbody [hidden]="(loading === true)">
@@ -147,12 +255,15 @@
                                                     <label class="custom-control-label" for="chkParte-{{ i }}"></label>
                                                 </div>
                                             </td>
-                                            <td align="center">{{ parte.nparte !== null ? parte.nparte : '' }}</td>
-                                            <td align="center">{{ parte.marca.name !== null ? parte.marca.name : '' }}</td>
+                                            <td align="center"><i class="bx bx-timer icon-table" *ngIf="(parte.backorder === true)"></i>{{ parte.nparte !== null ? parte.nparte : '' }}</td>
+                                            <td align="center">{{ parte.descripcion !== null ? parte.descripcion : '' }}</td>
+                                            <td align="center">{{ parte.marca !== null ? parte.marca : '' }}</td>
                                             <td align="center">
-                                                <input class="form-control" type="number" name="" id="txtParte-{{ i }}-cantidad" min="1" max="parte.cantidad_pendiente" value="{{ ((parte.cantidad_pendiente !== null) && (parte.checked)) ? parte.cantidad_pendiente : '' }}" (change)="updateParte_cantidad(parte, $event)"
+                                                <input class="form-control" type="number" name="" id="txtParte-{{ i }}-cantidad" min="1" max="{{parte.cantidad_pendiente}}" value="{{ (parte.cantidad_pendiente !== null) && (parte.checked === true) ? parte.cantidad_pendiente : '' }}" (change)="updateParte_cantidad(parte, $event)"
                                                     [disabled]="loading === true ? true : (parte.checked ? false : true)">
                                             </td>
+                                            <td align="right">{{ parte.cantidad_total !== null ? parte.cantidad_total : '' }}</td>
+                                            <td align="right">{{ parte.cantidad_pendiente !== null ? parte.cantidad_pendiente : '' }}</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -161,23 +272,25 @@
 
                     </div>
 
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="form-buttons mt-2">
-                                <button class="btn btn-primary mr-2" (click)="storeRecepcion()" [disabled]="(recepcionForm.invalid) || (loading === true) || (isCheckedItem(partes) === false)">
-                  <span *ngIf="loading === true"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
-                  <span *ngIf="loading === false">Guardar</span>
-                </button>
-                                <button [disabled]="(loading === true)" class="btn btn-light" (click)="goTo_recepcionesList()">
-                  <span>Cancelar</span>
-                </button>
-                            </div>
-                        </div>
-                    </div>
-
                 </form>
 
+                <div class="row">
+                    <div class="col-12">
+                        <div class="form-buttons mt-2">
+                            <button class="btn btn-primary mr-2" (click)="storeRecepcion()" [disabled]="(recepcionForm.invalid) || (loading === true) || (isCheckedItem(partes) === false)">
+                                <span *ngIf="loading === true"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
+                                <span *ngIf="loading === false">Guardar</span>
+                            </button>
+                            <button [disabled]="(loading === true)" class="btn btn-light" (click)="goTo_ocsList()">
+                                <span>Cancelar</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
             </div>
+            <!-- Entrega form-ends -->
+
         </div>
         <!-- end card -->
 
