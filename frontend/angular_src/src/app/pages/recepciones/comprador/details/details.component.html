@@ -31,7 +31,11 @@
                 <div>
                     <span class="card-title">Recepcion {{ recepcion.id >= 0 ? "#" + recepcion.id : '' }}</span>
                     <div class="btn-group mr-1 mt-2 btn-right dropleft">
-                        <button [hidden]="(recepcion.oc_id <= 0)" [disabled]="(loading === true)" type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="mdi mdi-chevron-left"></i> Referencias</button>
+                        <button *ngIf="(loggedUser !== null) && (['admin', 'agtcom'].includes(this.loggedUser.role.name))" [hidden]="(recepcion.oc_id <= 0)" [disabled]="(loading === true)" type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+                            aria-expanded="false">
+                            <i class="mdi mdi-chevron-left"></i> 
+                            Referencias
+                        </button>
                         <div class="dropdown-menu">
                             <a class="dropdown-item" [routerLink]="['/panel/ocs/details', recepcion.oc_id]">Ver OC</a>
                         </div>

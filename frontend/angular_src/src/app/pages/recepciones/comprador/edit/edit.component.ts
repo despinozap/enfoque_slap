@@ -171,6 +171,11 @@ export class RecepcionesCompradorEditComponent implements OnInit {
           return false;
         }
       });
+
+      // Sort partes pushing checked ones to the top
+      this.partes = this.partes.sort((p1, p2) => {
+        return ((p2.checked === true) ? 1 : 0) - ((p1.checked === true) ? 1 : 0);
+      });
     }
     else
     {

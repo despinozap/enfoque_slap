@@ -6,6 +6,8 @@ import { Subject } from 'rxjs';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { RecepcionesService } from 'src/app/services/recepciones.service';
 import { UtilsService } from 'src/app/services/utils.service';
+import { User } from 'src/app/interfaces/user';
+import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-details',
@@ -43,20 +45,33 @@ export class RecepcionesCompradorDetailsComponent implements OnInit {
     faena_name: null
   };
   
+  private sub: any;
+  
+  loggedUser: User = null as any;
+  private subLoggedUser: any;
+  
   partes: any[] = [];
   loading: boolean = false;
   responseErrors: any = [];
 
-  private sub: any;
-
   constructor(
     private route: ActivatedRoute,
+    private _authService: AuthService,
     private _recepcionesService: RecepcionesService,
     private location: Location,
     private _utilsService: UtilsService,
   ) { }
 
   ngOnInit(): void {
+    //For loggedUser
+    {
+      this.subLoggedUser = this._authService.loggedUser$.subscribe((data) => {
+        this.loggedUser = data.user as User;
+      });
+      
+      this._authService.notifyLoggedUser(this._authService.NOTIFICATION_RECEIVER_CONTENTPAGE);
+    }
+
     this.sub = this.route.params.subscribe(params => {
       this.recepcion.id = params['id'];
     });
@@ -73,6 +88,7 @@ export class RecepcionesCompradorDetailsComponent implements OnInit {
   }
 
   ngOnDestroy(): void {
+    this.subLoggedUser.unsubscribe();
     this.sub.unsubscribe();
     this.dtTrigger.unsubscribe();
   }
