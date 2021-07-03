@@ -144,17 +144,9 @@ Route::middleware(['auth:api', 'cors'])->group(function()
     Route::get('/compradores/{comprador_id}/recepciones/{id}', [RecepcionesController::class, 'show_comprador']);
     Route::get('/compradores/{comprador_id}/recepciones/{id}/prepare', [RecepcionesController::class, 'update_prepare_comprador']);
     Route::put('/compradores/{comprador_id}/recepciones/{id}', [RecepcionesController::class, 'update_comprador']);
+    Route::delete('/compradores/{comprador_id}/recepciones/{id}', [RecepcionesController::class, 'destroy_comprador']);
     
     /*
-    // Recepciones (Comprador)
-    Route::get('/compradores/{id}/recepciones', [RecepcionesController::class, 'index_comprador']);
-    Route::get('/compradores/{comprador_id}/proveedores/{proveedor_id}/queueocs', [RecepcionesController::class, 'queueOcs_comprador']);
-    Route::post('/compradores/{comprador_id}/recepciones', [RecepcionesController::class, 'store_comprador']);
-    Route::get('/compradores/{comprador_id}/recepciones/{id}', [RecepcionesController::class, 'show_comprador']);
-    Route::get('/compradores/{comprador_id}/recepciones/{id}/prepare', [RecepcionesController::class, 'update_prepare_comprador']);
-    Route::put('/compradores/{comprador_id}/recepciones/{id}', [RecepcionesController::class, 'update_comprador']);
-    Route::delete('/compradores/{comprador_id}/recepciones/{id}', [RecepcionesController::class, 'destroy_comprador']);
-
     // Recepciones (Sucursal [centro])
     Route::get('/centrosdistribucion/{id}/recepciones', [RecepcionesController::class, 'index_centrodistribucion']);
     Route::get('/centrosdistribucion/{centrodistribucion_id}/compradores/{comprador_id}/queuepartes', [RecepcionesController::class, 'queuePartes_centrodistribucion']);
