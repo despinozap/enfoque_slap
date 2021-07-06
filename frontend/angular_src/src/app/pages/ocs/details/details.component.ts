@@ -445,8 +445,8 @@ export class OcsDetailsComponent implements OnInit {
 
   public startOC(): void{
     Swal.fire({
-      title: 'Iniciar proceso OC',
-      text: `¿Realmente quieres inciiar el proceso de la OC #${ this.oc.id }?`,
+      title: 'Activar OC',
+      text: `¿Realmente quieres activar proceso compra de la OC #${ this.oc.id }?`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
@@ -604,7 +604,7 @@ export class OcsDetailsComponent implements OnInit {
             default: //Unhandled error
               {
                 NotificationsService.showAlert(
-                  'Error al intentar iniciar el proceso de la OC',
+                  'Error al intentar activar el proceso de compra de la OC',
                   NotificationsService.messageType.error
                 );
 

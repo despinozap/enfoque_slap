@@ -180,7 +180,7 @@ export class CotizacionesListComponent implements OnInit, AfterViewInit {
       imageUrl: 'assets/images/icons/pdf.png',
       imageWidth: 88,
       imageHeight: 88,
-      text: 'Solicitiando información de reportabilidad ..',
+      text: 'Solicitando información de reportabilidad ..',
       showConfirmButton: false,
       showCancelButton: false,
       allowOutsideClick: false,
@@ -379,6 +379,9 @@ export class CotizacionesListComponent implements OnInit, AfterViewInit {
 
   public generateReportCotizacionPDF(cotizacion: any, last: boolean): void {  
 
+    // Go to top of page for report rendering
+    window.scroll(0,0);
+    
     // If report component was found
     if(this.reportCotizacion !== undefined)
     {
@@ -412,6 +415,8 @@ export class CotizacionesListComponent implements OnInit, AfterViewInit {
           {
             setTimeout(() => {
                 Swal.close();
+                // Render Cotizacion list again
+                this.renderDataTable(this.datatableElement_cotizaciones);
               },
               1000
             );

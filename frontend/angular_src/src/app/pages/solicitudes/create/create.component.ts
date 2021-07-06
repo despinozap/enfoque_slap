@@ -265,6 +265,7 @@ export class SolicitudesCreateComponent implements OnInit {
     {
       this.solicitudForm.controls.faena.setValue(solicitudData.faena.id);
       this.solicitudForm.controls.marca.setValue(solicitudData.marca.id);
+      this.solicitudForm.controls.comprador.setValue(solicitudData.comprador.id);
       this.solicitudForm.controls.comentario.setValue(solicitudData.comentario);
 
       this.partes = [];

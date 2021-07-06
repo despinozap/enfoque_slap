@@ -329,6 +329,9 @@ export class CotizacionesDetailsComponent implements OnInit, AfterViewInit {
 
   public generateReportCotizacionPDF(): void {  
 
+    // Go to top of page for report rendering
+    window.scroll(0,0);
+
     // If report component was found
     if(this.reportCotizacion !== undefined)
     {

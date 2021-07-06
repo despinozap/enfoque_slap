@@ -27,7 +27,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <div class="alert alert-success alert-dismissible fade show" role="alert" *ngIf="(loggedUser !== null) && (['admin', 'seller'].includes(this.loggedUser.role.name)) && (solicitud.estadosolicitud_id === 2)">
+                <div class="alert alert-success alert-dismissible fade show" role="alert" *ngIf="(loggedUser !== null) && (['admin', 'agtcom'].includes(this.loggedUser.role.name)) && (solicitud.estadosolicitud_id === 2)">
                     La lista de partes para esta solicitud esta <strong>completa</strong>
                     <button type="button" class="ml-2 btn btn-light" aria-label="Cerrar solicitud" [disabled]="(loading === true)" (click)="closeSolicitud()"><i class="mdi mdi-thumb-up"></i> Cerrar solicitud</button>
                 </div>
@@ -72,6 +72,13 @@
                         </div>
                     </div>
                     <div class="col-6">
+                        <div class="form-group">
+                            <label class="control-label">Ejecutivo</label>
+                            <br>
+                            <label>{{ solicitud.user_name }}</label>
+                        </div>
+                    </div>
+                    <div class="col-12">
                         <div class="form-group">
                             <label class="control-label">Comentario</label>
                             <br>

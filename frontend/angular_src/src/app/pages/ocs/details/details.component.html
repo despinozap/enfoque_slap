@@ -27,7 +27,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <div class="alert alert-success alert-dismissible fade show" role="alert" *ngIf="((loggedUser !== null) && (['admin', 'agtcom'].includes(loggedUser.role.name))) && (oc.estadooc_id === 1)">
+                <div class="alert alert-success alert-dismissible fade show" role="alert" *ngIf="(DISPLAYING_FORM === 0) && ((loggedUser !== null) && (['admin', 'agtcom'].includes(loggedUser.role.name))) && (oc.estadooc_id === 1)">
                     La OC aun esta <strong>Pendiente</strong>
                     <button type="button" class="ml-2 btn btn-light" aria-label="Activar OC" [disabled]="(loading === true)" (click)="startOC()"><i class="mdi mdi-thumb-up"></i> Activar OC</button>
                 </div>
@@ -125,12 +125,12 @@
                                     <td align="right">{{ parte.statusdays !== null ? parte.statusdays + " dias" : ""}}</td>
                                     <td align="center">{{ (parte.cantidad_entregado === parte.cantidad) ? 'Entregado' : ( (parte.cantidad_entregado > 0) ? 'Parcial' : ( (parte.cantidad_stock === 0) ? 'Sin stock' : 'Pendiente' ) ) }}</td>
                                     <td align="center">
-                                        <button (click)="goTo_updateParte(i)" *ngIf="([1, 2].includes(oc.estadooc_id))" class="btn-table btn btn-secondary" title="Editar"><i class="bx bx-edit-alt"></i></button>
+                                        <button (click)="goTo_updateParte(i)" *ngIf="((loggedUser !== null) && (['admin', 'agtcom'].includes(loggedUser.role.name))) && ([1, 2].includes(oc.estadooc_id))" class="btn-table btn btn-secondary" title="Editar"><i class="bx bx-edit-alt"></i></button>
                                         <!-- <button (click)="removeParte(parte)" *ngIf="([1, 2].includes(oc.estadooc_id))" class="btn-table btn btn-secondary" title="Eliminar"><i class="bx bx-trash-alt"></i></button> -->
                                     </td>
                                 </tr>
                             </tbody>
-                            <tfoot *ngIf="((loggedUser !== null) && (['admin', 'seller', 'agtcom'].includes(loggedUser.role.name))) && (oc.estadooc_id === 1)">
+                            <tfoot *ngIf="((loggedUser !== null) && (['admin', 'agtcom'].includes(loggedUser.role.name))) && (oc.estadooc_id === 1)">
                                 <!-- It's only shown when Oc is still 'Pendiente' -->
                                 <tr>
                                     <td colspan="7" align="left">
@@ -258,8 +258,8 @@
 
                 <!-- Start OC -->
                 <div [hidden]="(DISPLAYING_FORM !== 3)">
-                    <h4 class="card-title">Procesar OC</h4>
-                    <p class="card-title-desc">Completa los siguientes campos para procesar la OC</p>
+                    <h4 class="card-title">Activar OC</h4>
+                    <p class="card-title-desc">Selecciona el proveedor para activar la OC</p>
 
                     <form [formGroup]="startOCForm" (ngSubmit)="submitFormStartOC()" action="#">
 

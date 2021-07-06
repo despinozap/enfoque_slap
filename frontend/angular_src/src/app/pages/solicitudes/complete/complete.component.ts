@@ -40,7 +40,7 @@ export class SolicitudesCompleteComponent implements OnInit {
     faena_name: null,
     cliente_name: null,
     marca_name: null,
-    comprador_name: null,
+    user_name: null,
     estadosolicitud_id: -1,
     estadosolicitud_name: null,
     comentario: null
@@ -116,14 +116,14 @@ export class SolicitudesCompleteComponent implements OnInit {
   {
     if(solicitudData['partes'].length > 0)
     {
-      if((solicitudData.estadosolicitud.id === 1) || (solicitudData.estadosolicitud.id === 2)) // If is 'Pendiente' or 'Completada'
+      if((solicitudData.estadosolicitud.id === 1) || (solicitudData.estadosolicitud.id === 2)) // If is 'Pendiente' or 'Completa'
       {
         this.solicitud.id = solicitudData.id;
         this.solicitud.sucursal_name = solicitudData.sucursal.name;
         this.solicitud.faena_name = solicitudData.faena.name;
         this.solicitud.cliente_name = solicitudData.faena.cliente.name;
         this.solicitud.marca_name = solicitudData.marca.name;
-        this.solicitud.comprador_name = solicitudData.comprador.name;
+        this.solicitud.user_name = solicitudData.user.name;
         this.solicitud.estadosolicitud_id = solicitudData.estadosolicitud.id,
         this.solicitud.estadosolicitud_name = solicitudData.estadosolicitud.name;
         this.solicitud.comentario = solicitudData.comentario;
@@ -337,7 +337,7 @@ export class SolicitudesCompleteComponent implements OnInit {
 
           case 1: { // Export partes list to Excel
 
-            if(response.data.estadosolicitud.id === 2) // Completada on saving before Export to Excel
+            if(response.data.estadosolicitud.id === 2) // Completa on saving before Export to Excel
             {
               this.loading = false;
               this.loadFormData(response.data);
@@ -349,7 +349,7 @@ export class SolicitudesCompleteComponent implements OnInit {
               this.exportPartesToExcel();
               
               NotificationsService.showToast(
-                'Solicitud completada',
+                'Solicitud completa',
                 NotificationsService.messageType.success
               );
 

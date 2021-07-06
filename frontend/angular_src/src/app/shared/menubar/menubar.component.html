@@ -91,7 +91,7 @@
 
 
                 <!-- Comprador -->
-                <li class="menu-title" key="t-comprador">Comprador</li>
+                <!-- <li class="menu-title" key="t-comprador">Comprador</li>
                 <li>
                     <a href="javascript: void(0);" class="has-arrow waves-effect">
                         <i class="bx bx-log-in-circle"></i>
@@ -102,7 +102,7 @@
                         <li><a [routerLink]="['recepciones/comprador']" key="t-compradorrecepcioneslista">Lista de recepciones</a></li>
                     </ul>
                 </li>
-                <!-- <li>
+                <li>
                     <a href="javascript: void(0);" class="has-arrow waves-effect">
                         <i class="bx bx-log-out-circle"></i>
                         <span key="t-compradordespachos">Despachos</span>
@@ -319,18 +319,9 @@
                 <!-- General -->
                 <li class="menu-title" key="t-general">General</li>
                 <li>
-                    <a href="javascript: void(0);" class="has-arrow waves-effect">
+                    <a [routerLink]="['solicitudes']" class="waves-effect">
                         <i class="bx bx-list-ol"></i>
                         <span key="t-solicitudes">Solicitudes</span>
-                    </a>
-                    <ul class="sub-menu" aria-expanded="false">
-                        <li><a [routerLink]="['solicitudes']" key="t-solicitudeslista">Lista de solicitudes</a></li>
-                    </ul>
-                </li>
-                <li>
-                    <a [routerLink]="['cotizaciones']" class="waves-effect">
-                        <i class="bx bx-money"></i>
-                        <span key="t-cotizaciones">Cotizaciones</span>
                     </a>
                 </li>
                 <li>
