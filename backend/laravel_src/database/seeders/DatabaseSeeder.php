@@ -529,10 +529,10 @@ class DatabaseSeeder extends Seeder
         $user->email = 'seller@mail.com';
         $user->phone = '9012345678';
         $user->password = bcrypt('seller');
-        $user->role_id = 3; // Vendedor solicitante en Sucursal
+        $user->role_id = 3; // Vendedor
         $user->save();
 
-        // Agente de compra en Comprador
+        // Agente de compra
         $station = Comprador::find(1); // Comprador USA
         $user = new User();
         $user->stationable_type = get_class($station);
@@ -541,7 +541,7 @@ class DatabaseSeeder extends Seeder
         $user->email = 'agent@mail.com';
         $user->phone = '9012345678';
         $user->password = bcrypt('agent');
-        $user->role_id = 4; // Agente de compra en Comprador
+        $user->role_id = 4; // Agente de compra
         $user->save();
 
 
@@ -601,6 +601,9 @@ class DatabaseSeeder extends Seeder
         $marca->save();
         $marca = new Marca();
         $marca->name = 'Komatsu';
+        $marca->save();
+        $marca = new Marca();
+        $marca->name = 'CAT';
         $marca->save();
 
 
@@ -1112,6 +1115,112 @@ class DatabaseSeeder extends Seeder
                 }
 
             }
+        }
+
+        /*
+         *  Real cases
+         */
+        {
+            /*
+            *   Cliente: Collahuasi
+            */
+            $cliente = new Cliente();
+            $cliente->name = 'Collahuasi';
+            $cliente->country_id = 1; // Chile
+            $cliente->save();
+
+            $faena = new Faena();
+            $faena->cliente_id = $cliente->id;
+            $faena->sucursal_id = 2; // Delivered at Antofagasta
+            $faena->rut = '89.468.900- 5';
+            $faena->name = 'Cia Minera Dona Inés de Collahuasi SCM';
+            $faena->address = 'Av Andres Bello 2457';
+            $faena->city = 'Santiago';
+            $faena->contact = 'Veronica Gonzalez';
+            $faena->phone = '934359026';
+            $faena->save();
+            
+            /*
+            *   Cliente: Pucobre
+            */
+            $cliente = new Cliente();
+            $cliente->name = 'Pucobre';
+            $cliente->country_id = 1; // Chile
+            $cliente->save();
+
+            $faena = new Faena();
+            $faena->cliente_id = $cliente->id;
+            $faena->sucursal_id = 1; // Delivered at Santiago
+            $faena->rut = '96.561.560-1';
+            $faena->name = 'Soc Punta del Cobre S.A';
+            $faena->address = 'Rancagua 200';
+            $faena->city = 'Copiapo';
+            $faena->contact = 'Cristian Haro';
+            $faena->phone = '52229354';
+            $faena->save();
+
+            /*
+             *  Vendedores
+             */
+            // Vendedor: Abel Gonzalez Ortiz
+            $station = Sucursal::find(2); // Sucursal Antofagasta
+            $user = new User();
+            $user->stationable_type = get_class($station);
+            $user->stationable_id = $station->id;
+            $user->role_id = 3; // Vendedor
+            $user->email = 'agonzalez@americanparts.cl';
+            $user->name = 'Abel Gonzalez Ortiz';
+            $user->phone = '940427346';
+            $user->password = bcrypt('ventas');
+            $user->save();
+
+            // Vendedor: Boris Rozas Poblete
+            $station = Sucursal::find(2); // Sucursal Antofagasta
+            $user = new User();
+            $user->stationable_type = get_class($station);
+            $user->stationable_id = $station->id;
+            $user->role_id = 3; // Vendedor
+            $user->email = 'brozas@americanparts.cl';
+            $user->name = 'Boris Rozas Poblete';
+            $user->phone = '965099724';
+            $user->password = bcrypt('ventas');
+            $user->save();
+
+            // Vendedor: Ignacio Paredes Cortés
+            $station = Sucursal::find(2); // Sucursal Antofagasta
+            $user = new User();
+            $user->stationable_type = get_class($station);
+            $user->stationable_id = $station->id;
+            $user->role_id = 3; // Vendedor
+            $user->email = 'iparedes@americanparts.cl';
+            $user->name = 'Ignacio Paredes Cortés';
+            $user->phone = '991374253';
+            $user->password = bcrypt('ventas');
+            $user->save();
+
+            // Vendedor: Javier Lagos Rochefort
+            $station = Sucursal::find(2); // Sucursal Antofagasta
+            $user = new User();
+            $user->stationable_type = get_class($station);
+            $user->stationable_id = $station->id;
+            $user->role_id = 3; // Vendedor
+            $user->email = 'jlagos@americanparts.cl';
+            $user->name = 'Javier Lagos Rochefort';
+            $user->phone = '940958190';
+            $user->password = bcrypt('ventas');
+            $user->save();
+
+            // Vendedor: Ricardo Valdivieso Morales
+            $station = Sucursal::find(2); // Sucursal Antofagasta
+            $user = new User();
+            $user->stationable_type = get_class($station);
+            $user->stationable_id = $station->id;
+            $user->role_id = 3; // Vendedor
+            $user->email = 'rvaldivieso@americanparts.cl';
+            $user->name = 'Ricardo Valdivieso Morales';
+            $user->phone = '998823972';
+            $user->password = bcrypt('ventas');
+            $user->save();
         }
     }
 }

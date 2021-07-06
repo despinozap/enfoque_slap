@@ -14,7 +14,7 @@ class Role extends Model
      *      suadm: Super Administrator
      *      admin: Administrador
      *      seller: Vendedor
-     *      agtcom: Agente de compra en Comprador
+     *      agtcom: Agente de compra
      *      colcom: Coordinador Logistico comprador (bodega en Comprador)
      *      colsol: Coordinador Logistico solicitante (Bodega en Sucursal)
     */

@@ -1484,7 +1484,7 @@ class SolicitudesController extends Controller
                     {
                         if($solicitud->estadosolicitud_id === 2) // If Estadosolicitud = 'Completa'
                         {
-                            if($usdToClp = Parameter::all()->where('name', 'usd_to_clp')->first())
+                            if($usdToClpParam = Parameter::where('name', 'usd_to_clp')->first())
                             {
                                 DB::beginTransaction();
 
@@ -1494,7 +1494,7 @@ class SolicitudesController extends Controller
                                     $cotizacion = new Cotizacion();
                                     $cotizacion->solicitud_id = $solicitud->id;
                                     $cotizacion->estadocotizacion_id = 1; //Initial Estadocotizacion
-                                    $cotizacion->usdvalue = 760;
+                                    $cotizacion->usdvalue = $usdToClpParam->value;
 
                                     if($cotizacion->save())
                                     {
