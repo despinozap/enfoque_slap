@@ -54,21 +54,21 @@
                     </tbody>
                     <tbody *ngIf="(loading === false)">
                         <tr *ngFor="let recepcion of recepciones">
-                            <td align="center">{{ recepcion.id }}</td>
+                            <td align="center">{{ recepcion.recepcion.id }}</td>
                             <td align="center">{{ recepcion.oc.id }}</td>
                             <td align="center">{{ recepcion.oc.noccliente }}</td>
                             <td align="center">{{ recepcion.oc.cotizacion.solicitud.faena.cliente.name }}</td>
-                            <td>{{ dateStringFormat(recepcion.fecha) }}</td>
-                            <td align="center">{{ recepcion.sourceable.name }}</td>
-                            <td align="center">{{ recepcion.ndocumento !== null ? recepcion.ndocumento : '' }}</td>
-                            <td align="right">{{ recepcion.partes_total }}</td>
-                            <td align="center">{{ recepcion.responsable }}</td>
-                            <td align="left">{{ recepcion.comentario !== null ? recepcion.comentario : '' }}</td>
+                            <td>{{ dateStringFormat(recepcion.recepcion.fecha) }}</td>
+                            <td align="center">{{ recepcion.recepcion.sourceable.name }}</td>
+                            <td align="center">{{ recepcion.recepcion.ndocumento !== null ? recepcion.recepcion.ndocumento : '' }}</td>
+                            <td align="right">{{ recepcion.recepcion.partes_total }}</td>
+                            <td align="center">{{ recepcion.recepcion.responsable }}</td>
+                            <td align="left">{{ recepcion.recepcion.comentario !== null ? recepcion.recepcion.comentario : '' }}</td>
                             <td align="center">
-                                <a [routerLink]="['details', recepcion.id]" class="btn-table btn btn-secondary" title="Detalle"><i
+                                <a [routerLink]="['details', recepcion.recepcion.id]" class="btn-table btn btn-secondary" title="Detalle"><i
                                     class="bx bx-zoom-in"></i></a>
-                                <a [routerLink]="['edit', recepcion.id]" class="btn-table btn btn-secondary" title="Editar"><i class="bx bx-edit-alt"></i></a>
-                                <a [routerLink]="" (click)="removeRecepcion(recepcion)" class="btn-table btn btn-secondary" title="Eliminar"><i class="bx bx-trash-alt"></i></a>
+                                <a [routerLink]="['edit', recepcion.recepcion.id]" class="btn-table btn btn-secondary" title="Editar"><i class="bx bx-edit-alt"></i></a>
+                                <a [routerLink]="" (click)="removeRecepcion(recepcion.recepcion)" class="btn-table btn btn-secondary" title="Eliminar"><i class="bx bx-trash-alt"></i></a>
                             </td>
                         </tr>
                     </tbody>

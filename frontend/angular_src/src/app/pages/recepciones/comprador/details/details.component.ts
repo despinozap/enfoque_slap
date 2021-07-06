@@ -33,17 +33,19 @@ export class RecepcionesCompradorDetailsComponent implements OnInit {
   comprador_id: number = 1;
   recepcion: any = {
     id: -1,
-    oc_id: -1,
-    oc_noccliente: null,
+    proveedor_name: null,
     fecha: null,
     ndocumento: null,
     responsable: null,
     comentario: null,
-    created_at: null,
-    proveedor_name: null,
+    created_at: null    
+  };
+  oc: any = {
+    id: -1,
+    noccliente: null,
     cliente_name: null,
     faena_name: null
-  };
+  }
   
   private sub: any;
   
@@ -104,22 +106,23 @@ export class RecepcionesCompradorDetailsComponent implements OnInit {
 
   private loadFormData(recepcionData: any)
   { 
-    if(recepcionData.ocpartes.length > 0)
+    if(recepcionData.recepcion.ocpartes.length > 0)
     {
-      this.recepcion.id = recepcionData.id;
-      this.recepcion.oc_id = recepcionData.oc.id;
-      this.recepcion.oc_noccliente = recepcionData.oc.noccliente;
-      this.recepcion.fecha = recepcionData.fecha;
-      this.recepcion.ndocumento = recepcionData.ndocumento;
-      this.recepcion.responsable = recepcionData.responsable;
-      this.recepcion.comentario = recepcionData.comentario;
-      this.recepcion.created_at = recepcionData.created_at;
-      this.recepcion.proveedor_name = recepcionData.sourceable.name;
-      this.recepcion.cliente_name = recepcionData.oc.cotizacion.solicitud.faena.cliente.name;
-      this.recepcion.faena_name = recepcionData.oc.cotizacion.solicitud.faena.name;
+      this.recepcion.id = recepcionData.recepcion.id;
+      this.recepcion.proveedor_name = recepcionData.recepcion.sourceable.name;
+      this.recepcion.fecha = recepcionData.recepcion.fecha;
+      this.recepcion.ndocumento = recepcionData.recepcion.ndocumento;
+      this.recepcion.responsable = recepcionData.recepcion.responsable;
+      this.recepcion.comentario = recepcionData.recepcion.comentario;
+      this.recepcion.created_at = recepcionData.recepcion.created_at;
+      
+      this.oc.id = recepcionData.oc.id;
+      this.oc.noccliente = recepcionData.oc.noccliente;
+      this.oc.cliente_name = recepcionData.oc.cotizacion.solicitud.faena.cliente.name;
+      this.oc.faena_name = recepcionData.oc.cotizacion.solicitud.faena.name;
       
       this.partes = [];
-      recepcionData.ocpartes.forEach((ocParte: any) => {
+      recepcionData.recepcion.ocpartes.forEach((ocParte: any) => {
         this.partes.push(
           {
             'id': ocParte.parte.id,

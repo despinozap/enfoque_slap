@@ -78,7 +78,6 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
   constructor(
     private location: Location,
     private router: Router,
-    private _authService: AuthService,
     private _proveedoresService: ProveedoresService,
     private _recepcionesService: RecepcionesService,
     private _utilsService: UtilsService
@@ -268,7 +267,7 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
             descripcion: parte.pivot.descripcion,
             marca_name: parte.marca.name,
             backorder: parte.backorder > 0 ? true : false,
-            cantidad: parte.cantidad - parte.cantidad_recepcionado,
+            cantidad: parte.pivot.cantidad - parte.pivot.cantidad_recepcionado,
             cantidad_total: parte.pivot.cantidad,
             cantidad_recepcionado: parte.pivot.cantidad_recepcionado,
             cantidad_pendiente: parte.pivot.cantidad - parte.pivot.cantidad_recepcionado,
@@ -293,11 +292,12 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
     this.loading = true;
     this.responseErrors = [];
 
-    let receivedPartes = this.partes.reduce((carry, parte) => 
+    let receivedOcs = this.partes.reduce((carry: any[], parte: any) => 
       {
         if(parte.checked === true)
         {
-          carry.push(
+          // Add parte to the only one OC in carry
+          carry[0].partes.push(
             {
               id: parte.id,
               cantidad: parte.cantidad
@@ -306,19 +306,26 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
         }
       
         return carry;
-      }, 
-      []
+      },
+      // Initialize array including an only one OC 
+      [
+        {
+          id: this.oc.id,
+          partes: []
+        }
+      ]
     );
 
     let recepcion: any = {
+      proveedor_id: this.proveedorForm.value.proveedor,
       fecha: this.recepcionForm.value.fecha,
       ndocumento: this.recepcionForm.value.documento,
       responsable: this.recepcionForm.value.responsable,
       comentario: this.recepcionForm.value.comentario,
-      partes: receivedPartes
+      ocs: receivedOcs
     };
 
-    this._recepcionesService.storeRecepcion_comprador(this.comprador_id, this.oc.id, recepcion)
+    this._recepcionesService.storeRecepcion_comprador(this.comprador_id, recepcion)
       .subscribe(
         //Success request
         (response: any) => {
@@ -337,7 +344,20 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
           {
             case 400: //Invalid request parameters
               {
-                this.responseErrors = errorResponse.error.message;
+                if(
+                    (errorResponse.error.message.proveedor_id !== undefined) && 
+                    (errorResponse.error.message.proveedor_id.length > 0)
+                )
+                {
+                  NotificationsService.showAlert(
+                    errorResponse.error.message.proveedor_id[0],
+                    NotificationsService.messageType.error
+                  );
+                }
+                else
+                {
+                  this.responseErrors = errorResponse.error.message;
+                }
 
                 break;
               }

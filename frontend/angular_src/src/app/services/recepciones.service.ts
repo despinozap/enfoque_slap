@@ -223,9 +223,9 @@ export class RecepcionesService {
     return this.httpClient.get(endpoint);
   }
 
-  public storeRecepcion_comprador(comprador_id: number, oc_id: number, recepcion: any): Observable<any>
+  public storeRecepcion_comprador(comprador_id: number, recepcion: any): Observable<any>
   {
-    let endpoint: string = `${environment.ENDPOINT_BASE}/compradores/${comprador_id}/recepciones/ocs/${oc_id}`;
+    let endpoint: string = `${environment.ENDPOINT_BASE}/compradores/${comprador_id}/recepciones`;
 
     let httpOptions = { 
       method: 'POST',

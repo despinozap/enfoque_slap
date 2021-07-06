@@ -31,17 +31,19 @@ export class RecepcionesCompradorEditComponent implements OnInit {
   comprador_id: number = 1;
   recepcion: any = {
     id: -1,
-    oc_id: -1,
-    oc_noccliente: null,
     fecha: null,
     ndocumento: null,
     responsable: null,
     comentario: null,
     created_at: null,
     proveedor_name: null,
+  };
+  oc: any = {
+    id: -1,
+    noccliente: null,
     cliente_name: null,
     faena_name: null
-  };
+  }
 
   partes: any[] = [];
   loading: boolean = false;
@@ -96,7 +98,7 @@ export class RecepcionesCompradorEditComponent implements OnInit {
 
   private loadFormData(recepcionData: any)
   { 
-    if(recepcionData.ocpartes.length > 0)
+    if(recepcionData.recepcion.ocpartes.length > 0)
     {
       // All Partes in OC
       this.partes = recepcionData.oc.partes.reduce((carry: any[], parte: any) => {
@@ -120,25 +122,26 @@ export class RecepcionesCompradorEditComponent implements OnInit {
         [] // Empty array
       );
 
-      this.recepcion.id = recepcionData.id;
-      this.recepcion.oc_id = recepcionData.oc.id;
-      this.recepcion.oc_noccliente = recepcionData.oc.noccliente;
-      this.recepcion.fecha = recepcionData.fecha;
-      this.recepcion.ndocumento = recepcionData.ndocumento;
-      this.recepcion.responsable = recepcionData.responsable;
-      this.recepcion.comentario = recepcionData.comentario;
-      this.recepcion.created_at = recepcionData.created_at;
-      this.recepcion.proveedor_name = recepcionData.sourceable.name;
-      this.recepcion.cliente_name = recepcionData.oc.cotizacion.solicitud.faena.cliente.name;
-      this.recepcion.faena_name = recepcionData.oc.cotizacion.solicitud.faena.name;
+      this.recepcion.id = recepcionData.recepcion.id;
+      this.recepcion.proveedor_name = recepcionData.recepcion.sourceable.name;
+      this.recepcion.fecha = recepcionData.recepcion.fecha;
+      this.recepcion.ndocumento = recepcionData.recepcion.ndocumento;
+      this.recepcion.responsable = recepcionData.recepcion.responsable;
+      this.recepcion.comentario = recepcionData.recepcion.comentario;
+      this.recepcion.created_at = recepcionData.recepcion.created_at;
+      
+      this.oc.id = recepcionData.oc.id;
+      this.oc.noccliente = recepcionData.oc.noccliente;
+      this.oc.cliente_name = recepcionData.oc.cotizacion.solicitud.faena.cliente.name;
+      this.oc.faena_name = recepcionData.oc.cotizacion.solicitud.faena.name;
 
-      this.recepcionForm.controls.fecha.setValue(this.dateStringFormat(recepcionData.fecha));
-      this.recepcionForm.controls.documento.setValue(recepcionData.ndocumento);
-      this.recepcionForm.controls.responsable.setValue(recepcionData.responsable);
-      this.recepcionForm.controls.comentario.setValue(recepcionData.comentario);
+      this.recepcionForm.controls.fecha.setValue(this.dateStringFormat(recepcionData.recepcion.fecha));
+      this.recepcionForm.controls.documento.setValue(recepcionData.recepcion.ndocumento);
+      this.recepcionForm.controls.responsable.setValue(recepcionData.recepcion.responsable);
+      this.recepcionForm.controls.comentario.setValue(recepcionData.recepcion.comentario);
       
       // Load Partes in Recepcion
-      recepcionData.ocpartes.forEach((ocParte: any) => {
+      recepcionData.recepcion.ocpartes.forEach((ocParte: any) => {
         let index = this.partes.findIndex((p) => {
           if(p.id === ocParte.parte.id)
           {
@@ -262,11 +265,12 @@ export class RecepcionesCompradorEditComponent implements OnInit {
     this.loading = true;
     this.responseErrors = [];
 
-    let receivedPartes = this.partes.reduce((carry, parte) => 
+    let receivedOcs = this.partes.reduce((carry: any[], parte: any) => 
       {
         if(parte.checked === true)
         {
-          carry.push(
+          // Add parte to the only one OC in carry
+          carry[0].partes.push(
             {
               id: parte.id,
               cantidad: parte.cantidad
@@ -275,8 +279,14 @@ export class RecepcionesCompradorEditComponent implements OnInit {
         }
       
         return carry;
-      }, 
-      []
+      },
+      // Initialize array including an only one OC 
+      [
+        {
+          id: this.oc.id,
+          partes: []
+        }
+      ]
     );
 
     let recepcion: any = {
@@ -284,7 +294,7 @@ export class RecepcionesCompradorEditComponent implements OnInit {
       ndocumento: this.recepcionForm.value.documento,
       responsable: this.recepcionForm.value.responsable,
       comentario: this.recepcionForm.value.comentario,
-      partes: receivedPartes
+      ocs: receivedOcs
     };
 
     this._recepcionesService.updateRecepcion_comprador(this.comprador_id, this.recepcion.id, recepcion)
