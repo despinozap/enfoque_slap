@@ -1154,7 +1154,7 @@ class OcsController extends Controller
                                 {
                                     $response = HelpController::buildResponse(
                                         200,
-                                        'Proceso de OC iniciado',
+                                        'Proceso de compra activado',
                                         null
                                     );
                                 }
@@ -1162,7 +1162,7 @@ class OcsController extends Controller
                                 {
                                     $response = HelpController::buildResponse(
                                         500,
-                                        'Error al iniciar el proceso de la OC',
+                                        'Error al activar el proceso de compra de la OC',
                                         null
                                     );   
                                 }
@@ -1197,7 +1197,7 @@ class OcsController extends Controller
             {
                 $response = HelpController::buildResponse(
                     405,
-                    'No tienes acceso a iniciar procesos de OCs',
+                    'No tienes acceso a activar procesos de compra de OCs',
                     null
                 );
             }
@@ -1206,7 +1206,7 @@ class OcsController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al iniciar el proceso de la OC [!]',
+                'Error al activar el proceso de compra de la OC [!]',
                 null
             );
         }

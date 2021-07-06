@@ -88,7 +88,6 @@ class DatabaseSeeder extends Seeder
             'cotizaciones report',
             'cotizaciones approve',
             'cotizaciones reject',
-            'cotizaciones close',
             'cotizaciones destroy',
             //Ocs
             'ocs index',
@@ -247,7 +246,6 @@ class DatabaseSeeder extends Seeder
                 'cotizaciones report',
                 'cotizaciones approve',
                 'cotizaciones reject',
-                'cotizaciones close',
                 'cotizaciones destroy',
                 //Ocs
                 'ocs index',
@@ -342,19 +340,16 @@ class DatabaseSeeder extends Seeder
                 'solicitudes store',
                 'solicitudes show',
                 'solicitudes update',
-                'solicitudes close',
                 'solicitudes destroy',
                 //Cotizaciones
                 'cotizaciones index',
                 'cotizaciones report',
                 'cotizaciones approve',
                 'cotizaciones reject',
-                'cotizaciones close',
                 //Ocs
                 'ocs index',
                 'ocs report',
                 'ocs update',
-                'ocs reject',
                 'ocs close'
             ];
 
@@ -386,9 +381,7 @@ class DatabaseSeeder extends Seeder
                 'solicitudes index',
                 'solicitudes show',
                 'solicitudes complete',
-                //Cotizaciones
-                'cotizaciones index',
-                'cotizaciones report',
+                'solicitudes close',
                 //Ocs
                 'ocs index',
                 'ocs report',
@@ -631,7 +624,7 @@ class DatabaseSeeder extends Seeder
         $estadosolicitud->name = 'Pendiente';
         $estadosolicitud->save();
         $estadosolicitud = new Estadosolicitud();
-        $estadosolicitud->name = 'Completada';
+        $estadosolicitud->name = 'Completa';
         $estadosolicitud->save();
         $estadosolicitud = new Estadosolicitud();
         $estadosolicitud->name = 'Cerrada';

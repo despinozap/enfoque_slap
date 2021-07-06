@@ -1309,7 +1309,7 @@ class SolicitudesController extends Controller
     
                             if($completed === true)
                             {
-                                $solicitud->estadosolicitud_id = 2; // Completada
+                                $solicitud->estadosolicitud_id = 2; // Completa
                             }
                             else
                             {
@@ -1390,7 +1390,7 @@ class SolicitudesController extends Controller
     
                                 $response = HelpController::buildResponse(
                                     200,
-                                    ($completed === true) ? 'Solicitud completada' : 'Solicitud actualizada',
+                                    ($completed === true) ? 'Solicitud completa' : 'Solicitud actualizada',
                                     $solicitud
                                 );
                             }
@@ -1482,7 +1482,7 @@ class SolicitudesController extends Controller
                     }
                     else
                     {
-                        if($solicitud->estadosolicitud_id === 2) // If Estadosolicitud = 'Completada'
+                        if($solicitud->estadosolicitud_id === 2) // If Estadosolicitud = 'Completa'
                         {
                             if($usdToClp = Parameter::all()->where('name', 'usd_to_clp')->first())
                             {
