@@ -795,7 +795,7 @@ export class SolicitudesCompleteComponent implements OnInit {
       (parte.flete !== null)
     )
     {
-      return (parte.costo * (1 + (parte.margen / 100))) + (parte.flete);
+      return parte.costo + ((parte.costo / 100) * parte.margen) + parte.flete;
     }
     else
     {

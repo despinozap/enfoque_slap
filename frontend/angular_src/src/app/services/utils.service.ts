@@ -130,10 +130,9 @@ export class UtilsService {
   public moneyStringFormat(value: number): string {
     if(!isNaN(value))
     {
-      let sValue = value.toString();
-      let dotIndex = sValue.indexOf('.');
+      let sValue = value.toFixed(2);
 
-      let index = (dotIndex >= 0) ? dotIndex : sValue.length; 
+      let index = sValue.length - 3; 
 
       let response = '';
       let counter = 0;
@@ -148,7 +147,7 @@ export class UtilsService {
         }
       }
 
-      return (dotIndex > 0) ? response + sValue.substring(dotIndex, sValue.length) : response;
+      return response + sValue.substring(sValue.length - 3, sValue.length);
     }
     else
     {

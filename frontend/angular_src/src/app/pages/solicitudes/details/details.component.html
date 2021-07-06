@@ -117,7 +117,7 @@
                                 <td align="right" *ngIf="(loggedUser !== null) && (['admin', 'agtcom'].includes(loggedUser.role.name))">{{ parte.peso !== null ? parte.peso + " lb" : "" }}</td>
                                 <td align="right" *ngIf="(loggedUser !== null) && (['admin', 'agtcom'].includes(loggedUser.role.name))">{{ parte.flete !== null ? "$" + moneyStringFormat(parte.flete) : "" }}</td>
                                 <td align="right">{{ parte.tiempoentrega !== null ? parte.tiempoentrega + " dias" : "" }}</td>
-                                <td align="right">{{ parte.monto !== null ? "$" + moneyStringFormat(parte.monto) : "" }}</td>
+                                <td align="right">{{ parte.monto !== null ? "$" + moneyStringFormat(parte.monto * parte.cantidad) : "" }}</td>
                             </tr>
                         </tbody>
                         <tfoot>
