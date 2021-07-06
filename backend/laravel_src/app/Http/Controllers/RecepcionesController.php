@@ -33,149 +33,200 @@ class RecepcionesController extends Controller
             {
                 if($comprador = Comprador::find($id))
                 {
-                    // Agente compra or Coordinador compra
-                    if(
-                        (in_array($user->role->name, ['agtcom', 'colcom'])) &&
-                        ($comprador->id !== $user->stationable->id)
-                    )
-                    {
-                        //If Agente compra or Coordinador compra and doens't belong to Comprador
-                        $response = HelpController::buildResponse(
-                            405,
-                            'No tienes acceso a visualizar recepciones del comprador ingresado',
-                            null
-                        );
-                    }
-                    else
-                    {
-                        $comprador->makeHidden([
-                            'created_at', 
-                            'updated_at'
-                        ]);
+                    $recepciones = null;
+                    $oc = null;
 
-                        $comprador->recepciones;
-                        $comprador->recepciones = $comprador->recepciones->filter(function($recepcion)
+                    switch($user->role->name)
+                    {
+                        // Administrador
+                        case 'admin': {
+
+                            $recepciones = Recepcion::all();
+
+                            break;
+                        }
+
+                        // Vendedor
+                        case 'seller': {
+
+                            $recepciones = Recepcion::all();
+
+                            break;
+                        }
+
+                        // Agente de compra
+                        case 'agtcom': {
+
+                            $recepciones = Recepcion::all();
+
+                            break;
+                        }
+
+                        default:
                         {
-                            $recepcion->partes_total;
-                            
-                            $recepcion->makeHidden([
-                                'sourceable_id', 
-                                'sourceable_type',
-                                'recepcionable_id', 
-                                'recepcionable_type', 
-                                'oc_id',
-                                'created_at', 
-                                'updated_at'
-                            ]);
+                            break;
+                        }
+                    }
 
-                            $recepcion->oc;
-                            $recepcion->oc->makeHidden([
-                                'cotizacion_id',
-                                'proveedor_id',
-                                'filedata_id',
-                                'motivobaja_id',
-                                'estadooc_id', 
-                                'usdvalue',
-                                'partes_total',
-                                'dias',
-                                'monto',
-                                'partes',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-
-                            $recepcion->oc->cotizacion;
-                            $recepcion->oc->cotizacion->makeHidden([
-                                'solicitud_id',
-                                'estadocotizacion_id',
-                                'motivorechazo_id',
-                                'usdvalue',
-                                'partes_total',
-                                'dias',
-                                'monto',
-                                'partes',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-
-                            $recepcion->oc->cotizacion->solicitud;
-                            $recepcion->oc->cotizacion->solicitud->makeHidden([
-                                'sucursal_id',
-                                'faena_id',
-                                'marca_id',
-                                'comprador_id',
-                                'user_id',
-                                'estadosolicitud_id',
-                                'comentario',
-                                'partes_total',
-                                'partes',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-
-                            $recepcion->oc->cotizacion->solicitud->faena;
-                            $recepcion->oc->cotizacion->solicitud->faena->makeHidden([
-                                'cliente_id',
-                                'sucursal_id',
-                                'rut',
-                                'address',
-                                'city',
-                                'contact',
-                                'phone',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-
-                            $recepcion->oc->cotizacion->solicitud->faena->cliente;
-                            $recepcion->oc->cotizacion->solicitud->faena->cliente->makeHidden([
-                                'country_id',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-                            
-                            $recepcion->ocpartes;
-                            $recepcion->ocpartes = $recepcion->ocpartes->filter(function($ocParte)
+                    if($recepciones !== null)
+                    {
+                        $data = $recepciones->reduce(function($carry, $recepcion)
                             {
-                                $ocParte->makeHidden([
-                                    'oc_id',
-                                    'parte_id',
-                                    'estadoocparte_id',
-                                    'tiempoentrega',
-                                    'created_at',
-                                    'updated_at'
-                                ]);
+                                if($carry !== null)
+                                {
+                                    if($ocParte = $recepcion->ocpartes->first())
+                                    {   
+                                        $recepcion->partes_total;
+                                        
+                                        $recepcion->makeHidden([
+                                            'sourceable_id', 
+                                            'sourceable_type',
+                                            'recepcionable_id', 
+                                            'recepcionable_type', 
+                                            'oc_id',
+                                            'created_at', 
+                                            'updated_at'
+                                        ]);
+    
+                                        $recepcion->ocpartes;
+                                        $recepcion->ocpartes = $recepcion->ocpartes->filter(function($ocParte)
+                                        {
+                                            $ocParte->makeHidden([
+                                                'oc_id',
+                                                'parte_id',
+                                                'estadoocparte_id',
+                                                'tiempoentrega',
+                                                'oc',
+                                                'created_at',
+                                                'updated_at'
+                                            ]);
+        
+                                            $ocParte->pivot->makeHidden([
+                                                'recepcion_id',
+                                                'ocparte_id',
+                                                'created_at',
+                                                'updated_at'
+                                            ]);
+        
+                                            return $ocParte;
+                                        });
+        
+                                        $recepcion->sourceable;
+                                        $recepcion->sourceable->makeHidden([
+                                            'comprador_id',
+                                            'rut',
+                                            'address',
+                                            'city',
+                                            'contact',
+                                            'phone',
+                                            'country',
+                                            'created_at', 
+                                            'updated_at'
+                                        ]);
+    
+                                        // Takes the OC from first OcParte as reference
+                                        $oc = $ocParte->oc;
+                                        $oc->makeHidden([
+                                            'cotizacion_id',
+                                            'proveedor_id',
+                                            'filedata_id',
+                                            'motivobaja_id',
+                                            'estadooc_id', 
+                                            'usdvalue',
+                                            'partes_total',
+                                            'dias',
+                                            'monto',
+                                            'partes',
+                                            'created_at', 
+                                            'updated_at'
+                                        ]);
+        
+                                        $oc->cotizacion;
+                                        $oc->cotizacion->makeHidden([
+                                            'solicitud_id',
+                                            'estadocotizacion_id',
+                                            'motivorechazo_id',
+                                            'usdvalue',
+                                            'partes_total',
+                                            'dias',
+                                            'monto',
+                                            'partes',
+                                            'created_at', 
+                                            'updated_at'
+                                        ]);
+        
+                                        $oc->cotizacion->solicitud;
+                                        $oc->cotizacion->solicitud->makeHidden([
+                                            'sucursal_id',
+                                            'faena_id',
+                                            'marca_id',
+                                            'comprador_id',
+                                            'user_id',
+                                            'estadosolicitud_id',
+                                            'comentario',
+                                            'partes_total',
+                                            'partes',
+                                            'created_at', 
+                                            'updated_at'
+                                        ]);
+        
+                                        $oc->cotizacion->solicitud->faena;
+                                        $oc->cotizacion->solicitud->faena->makeHidden([
+                                            'cliente_id',
+                                            'sucursal_id',
+                                            'rut',
+                                            'address',
+                                            'city',
+                                            'contact',
+                                            'phone',
+                                            'created_at', 
+                                            'updated_at'
+                                        ]);
+        
+                                        $oc->cotizacion->solicitud->faena->cliente;
+                                        $oc->cotizacion->solicitud->faena->cliente->makeHidden([
+                                            'country_id',
+                                            'created_at', 
+                                            'updated_at'
+                                        ]);
+                                        
+                                        array_push(
+                                            $carry, 
+                                            array(
+                                                'recepcion' => $recepcion,
+                                                'oc' => $oc
+                                            )
+                                        );
+                                    }
+                                    // If there was no OcParte found in Recepcion
+                                    else
+                                    {
+                                        // Set response as null to break the loop
+                                        $carry = null;
+                                    }
+                                }
 
-                                $ocParte->pivot->makeHidden([
-                                    'recepcion_id',
-                                    'ocparte_id',
-                                    'created_at',
-                                    'updated_at'
-                                ]);
-
-                                return $ocParte;
-                            });
-
-                            $recepcion->sourceable;
-                            $recepcion->sourceable->makeHidden([
-                                'comprador_id',
-                                'rut',
-                                'address',
-                                'city',
-                                'contact',
-                                'phone',
-                                'country',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-
-                            return $recepcion;
-                        });
-
-                        $response = HelpController::buildResponse(
-                            200,
-                            null,
-                            $comprador->recepciones
+                                return $carry;
+                            },
+                            array()
                         );
+
+                        if($data !== null)
+                        {
+                            $response = HelpController::buildResponse(
+                                200,
+                                null,
+                                $data
+                            );
+                        }
+                        else
+                        {
+                            $response = HelpController::buildResponse(
+                                500,
+                                'Error al obtener la lista de recepciones',
+                                null
+                            );
+                        }
                     }
                 }   
                 else     
@@ -207,7 +258,7 @@ class RecepcionesController extends Controller
             
         return $response;
     }
-    
+
     public function queueOcs_comprador($comprador_id, $proveedor_id)
     {
         try
@@ -437,41 +488,50 @@ class RecepcionesController extends Controller
         return $response;
     }
 
-
-    public function store_comprador(Request $request, $comprador_id, $oc_id)
+    public function store_comprador(Request $request, $comprador_id)
     {
         try
         {
             $user = Auth::user();
             if($user->role->hasRoutepermission('compradores recepciones_store'))
             {
-                $validatorInput = $request->only('fecha', 'ndocumento', 'responsable', 'comentario', 'partes');
+                $validatorInput = $request->only('proveedor_id', 'fecha', 'ndocumento', 'responsable', 'comentario', 'ocs');
             
                 $validatorRules = [
+                    'proveedor_id' => 'required|exists:proveedores,id',
                     'fecha' => 'required|date_format:Y-m-d|before:tomorrow', // it includes today
                     'ndocumento' => 'nullable|min:1',
                     'responsable' => 'required|min:1',
                     'comentario' => 'sometimes|nullable',
-                    'partes' => 'required|array|min:1',
-                    'partes.*.id'  => 'required|exists:partes,id',
-                    'partes.*.cantidad'  => 'required|numeric|min:1',
+                    'ocs' => 'required|array|min:1',
+                    'ocs.*.id'  => 'required|exists:ocs,id',
+                    'ocs.*.partes' => 'required|array|min:1',
+                    'ocs.*.partes.*.id'  => 'required|exists:partes,id',
+                    'ocs.*.partes.*.cantidad'  => 'required|numeric|min:1',
                 ];
         
                 $validatorMessages = [
+                    'proveedor_id.required' => 'Debes seleccionar el proveedor',
+                    'proveedor_id.exists' => 'El proveedor no existe',
                     'fecha.required' => 'Debes ingresar la fecha de recepcion',
                     'fecha.date_format' => 'El formato de fecha de recepcion es invalido',
                     'fecha.before' => 'La fecha debe ser igual o anterior a hoy',
                     'ndocumento.min' => 'El numero de documento debe tener al menos un digito',
                     'responsable.required' => 'Debes ingresar el nombre de la persona que recibe',
                     'responsable.min' => 'El nombre de la persona que recibe debe tener al menos un digito',
-                    'partes.required' => 'Debes seleccionar las partes recepcionadas',
-                    'partes.array' => 'Lista de partes recepcionadas invalida',
-                    'partes.min' => 'La recepcion debe contener al menos 1 parte recepcionada',
-                    'partes.*.id.required' => 'La lista de partes recepcionadas es invalida',
-                    'partes.*.id.exists' => 'La parte recepcionada ingresada no existe',
-                    'partes.*.cantidad.required' => 'Debes ingresar la cantidad para la parte recepcionada',
-                    'partes.*.cantidad.numeric' => 'La cantidad para la parte recepcionada debe ser numerica',
-                    'partes.*.cantidad.min' => 'La cantidad para la parte recepcionada debe ser mayor a 0',
+                    'ocs.required' => 'Debes seleccionar las partes recepcionadas',
+                    'ocs.array' => 'Lista de partes recepcionadas invalida',
+                    'ocs.min' => 'La recepcion debe contener al menos 1 parte recepcionada',
+                    'ocs.*.id.required' => 'Debes seleccionar la OC a recepcionar',
+                    'ocs.*.id.exists' => 'La OC ingresada no existe',
+                    'ocs.*.partes.required' => 'Debes seleccionar las partes recepcionadas',
+                    'ocs.*.partes.array' => 'Lista de partes recepcionadas invalida',
+                    'ocs.*.partes.min' => 'La recepcion debe contener al menos 1 parte recepcionada',
+                    'ocs.*.partes.*.id.required' => 'La lista de partes recepcionadas es invalida',
+                    'ocs.*.partes.*.id.exists' => 'La parte recepcionada ingresada no existe',
+                    'ocs.*.partes.*.cantidad.required' => 'Debes ingresar la cantidad para la parte recepcionada',
+                    'ocs.*.partes.*.cantidad.numeric' => 'La cantidad para la parte recepcionada debe ser numerica',
+                    'ocs.*.partes.*.cantidad.min' => 'La cantidad para la parte recepcionada debe ser mayor a 0',
                 ];
         
                 $validator = Validator::make(
@@ -488,126 +548,195 @@ class RecepcionesController extends Controller
                         null
                     );
                 }
+                else if(($comprador = Comprador::find($comprador_id)) === null)
+                {
+                    $response = HelpController::buildResponse(
+                        412,
+                        'El comprador no existe',
+                        null
+                    );
+                }
+                else if(($proveedor = $comprador->proveedores->find($request->proveedor_id)) === null)
+                {
+                    $response = HelpController::buildResponse(
+                        412,
+                        'El proveedor seleccionado no existe para el comprador',
+                        null
+                    );
+                }
                 else        
                 {
-                    if($comprador = Comprador::find($comprador_id))
+                    // Clean OC and partes list in request
+                    $ocList = array();
+                    foreach($request->ocs as $oc)
                     {
-                        $oc = null;
-
-                        switch($user->role->name)
+                        if((in_array($oc['id'], array_keys($ocList))) === false)
                         {
-                            // Administrador en Sucursal
-                            case 'admin': {
-                                $oc = Oc::find($oc_id);
-
-                                break;
-                            }
-
-                            // Agente de compra en Comprador
-                            case 'agtcom': {
-                                $oc = Oc::select('ocs.*')
-                                    ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
-                                    ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                    ->where('ocs.id', '=', $oc_id)
-                                    ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
-                                    ->where($comprador->id, '=', $user->stationable->id) // If user belongs to this Comprador
-                                    ->first();
-
-                                break;
-                            }
-
-                            // Coordinador logistico en Comprador
-                            case 'colcom': {
-                                $oc = Oc::select('ocs.*')
-                                    ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
-                                    ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                    ->where('ocs.id', '=', $oc_id)
-                                    ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
-                                    ->where($comprador->id, '=', $user->stationable->id) // If user belongs to this Comprador
-                                    ->first();
-
-                                break;
-                            }
-
-                            default: {
-                                break;
-                            }
+                            $ocList[$oc['id']] = array();
                         }
 
-
-                        if($oc !== null)
+                        foreach($oc['partes'] as $parte)
                         {
-                            DB::beginTransaction();
-
-                            $recepcion = new Recepcion();
-                            // Set the morph source for Recepcion as Proveedor
-                            $recepcion->sourceable_id = $oc->proveedor->id;
-                            $recepcion->sourceable_type = get_class($oc->proveedor);
-                            // Set the morph for Recepcion as Comprador
-                            $recepcion->recepcionable_id = $comprador->id;
-                            $recepcion->recepcionable_type = get_class($comprador);
-                            // Fill the data
-                            $recepcion->oc_id = $oc->id;
-                            $recepcion->fecha = $request->fecha;
-                            $recepcion->ndocumento = $request->ndocumento;
-                            $recepcion->responsable = $request->responsable;
-                            $recepcion->comentario = $request->comentario;
-
-                            if($recepcion->save())
+                            if(in_array($parte['id'], array_keys($ocList[$oc['id']])))
                             {
-                                $success = true;
+                                $ocList[$oc['id']][$parte['id']] += $parte['cantidad'];
+                            }
+                            else
+                            {
+                                $ocList[$oc['id']][$parte['id']] = $parte['cantidad'];
+                            }
+                        }
+                    }
 
-                                // Clean partes list from request
-                                $parteList = array();
-                                foreach($request->partes as $parte)
-                                {
-                                    if(in_array($parte['id'], array_keys($parteList)))
-                                    {
-                                        $parteList[$parte['id']] = $parteList[$parte['id']] + $parte['cantidad'];
-                                    }
-                                    else
-                                    {
-                                        $parteList[$parte['id']] = $parte['cantidad'];
-                                    }
-                                }
+                    if(count($ocList) > 1)
+                    {
+                        // If there were sent more than 1 OC
+                        $response = HelpController::buildResponse(
+                            409,
+                            'No puedes recepcionar mas de 1 OC por proveedor',
+                            null
+                        );
+                    }
+                    else
+                    {
+                        DB::beginTransaction();
 
-                                foreach(array_keys($parteList) as $parteId)
+                        $recepcion = new Recepcion();
+                        // Set the morph source for Recepcion as Proveedor
+                        $recepcion->sourceable_id = $proveedor->id;
+                        $recepcion->sourceable_type = get_class($proveedor);
+                        // Set the morph for Recepcion as Comprador
+                        $recepcion->recepcionable_id = $comprador->id;
+                        $recepcion->recepcionable_type = get_class($comprador);
+                        // Fill the data
+                        $recepcion->fecha = $request->fecha;
+                        $recepcion->ndocumento = $request->ndocumento;
+                        $recepcion->responsable = $request->responsable;
+                        $recepcion->comentario = $request->comentario;
+
+                        if($recepcion->save())
+                        {
+                            $success = true;
+
+                            // This list has only 1 item
+                            foreach(array_keys($ocList) as $ocId)
+                            {      
+                                // If success wasn't broken yet, continue
+                                if($success === true)
                                 {
-                                    if($p = $oc->partes->find($parteId))
+                                    $oc = null;
+            
+                                    switch($user->role->name)
                                     {
-                                        $cantidadRecepcionado = $p->pivot->getCantidadRecepcionado($comprador);
-                                        if($cantidadRecepcionado < $p->pivot->cantidad)
+                                        // Administrador en Sucursal
+                                        case 'admin': {
+                                            $oc = Oc::select('ocs.*')
+                                                ->where('ocs.id', '=', $ocId)
+                                                ->first();
+            
+                                            break;
+                                        }
+            
+                                        // Agente de compra en Comprador
+                                        case 'agtcom': {
+                                            $oc = Oc::select('ocs.*')
+                                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                ->where('ocs.id', '=', $ocId)
+                                                ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
+                                                ->where($comprador->id, '=', $user->stationable->id) // If user belongs to this Comprador
+                                                ->first();
+            
+                                            break;
+                                        }
+            
+                                        // Coordinador logistico en Comprador
+                                        case 'colcom': {
+                                            $oc = Oc::select('ocs.*')
+                                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                ->where('ocs.id', '=', $ocId)
+                                                ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
+                                                ->where($comprador->id, '=', $user->stationable->id) // If user belongs to this Comprador
+                                                ->first();
+            
+                                            break;
+                                        }
+            
+                                        default: {
+                                            break;
+                                        }
+                                    }
+            
+                                    if($oc !== null)
+                                    {
+                                        if($oc->proveedor->id === $proveedor->id)
                                         {
-                                            if(($cantidadRecepcionado + $parte['cantidad']) <= $p->pivot->cantidad)
+                                            foreach(array_keys($ocList[$oc->id]) as $parteId)
                                             {
-                                                $recepcion->ocpartes()->attach(
-                                                    array(
-                                                        $p->pivot->id => array(
-                                                            "cantidad" => $parte['cantidad']
-                                                        )
-                                                    )
-                                                );
-                                            }
-                                            else
-                                            {
-                                                // If the received parts are more than waiting in queue
-                                                $response = HelpController::buildResponse(
-                                                    409,
-                                                    'La cantidad ingresada para la parte "' . $p->nparte . '" es mayor a la cantidad de pendiente de recepcion',
-                                                    null
-                                                );
-            
-                                                $success = false;
-            
-                                                break;
+                                                if($p = $oc->partes->find($parteId))
+                                                {
+                                                    $cantidadRecepcionado = $p->pivot->getCantidadRecepcionado($comprador);
+                                                    if($cantidadRecepcionado < $p->pivot->cantidad)
+                                                    {
+                                                        if(($cantidadRecepcionado + $ocList[$oc->id][$parteId]) <= $p->pivot->cantidad)
+                                                        {
+                                                            $recepcion->ocpartes()->attach(
+                                                                array(
+                                                                    $p->pivot->id => array(
+                                                                        "cantidad" => $ocList[$oc->id][$parteId]
+                                                                    )
+                                                                )
+                                                            );
+                                                        }
+                                                        else
+                                                        {
+                                                            // If the received parts are more than waiting in queue
+                                                            $response = HelpController::buildResponse(
+                                                                409,
+                                                                'La cantidad ingresada para la parte "' . $p->nparte . '" es mayor a la cantidad de pendiente de recepcion',
+                                                                null
+                                                            );
+                        
+                                                            $success = false;
+                        
+                                                            break;
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        // If the entered parte isn't in queue
+                                                        $response = HelpController::buildResponse(
+                                                            409,
+                                                            'La parte "' . $p->nparte . '" no tiene partes pendiente de recepcion',
+                                                            null
+                                                        );
+                    
+                                                        $success = false;
+                    
+                                                        break;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    //If the entered parte isn't in the OC
+                                                    $response = HelpController::buildResponse(
+                                                        409,
+                                                        'Una de las partes ingresadas no existe en la OC',
+                                                        null
+                                                    );
+                
+                                                    $success = false;
+                
+                                                    break;
+                                                }
                                             }
                                         }
                                         else
                                         {
-                                            // If the entered parte isn't in queue
                                             $response = HelpController::buildResponse(
                                                 409,
-                                                'La parte "' . $p->nparte . '" no tiene partes pendiente de recepcion',
+                                                'La OC no pertenece al proveedor ingresado',
                                                 null
                                             );
         
@@ -618,62 +747,61 @@ class RecepcionesController extends Controller
                                     }
                                     else
                                     {
-                                        //If the entered parte isn't in the OC
-                                        $response = HelpController::buildResponse(
-                                            409,
-                                            'Una de las partes ingresadas no existe en la OC',
-                                            null
-                                        );
-    
+                                        if(Oc::find($ocId))
+                                        {
+                                            $response = HelpController::buildResponse(
+                                                405,
+                                                'No tienes acceso a registrar recepciones para la OC',
+                                                null
+                                            );
+                                        }
+                                        else
+                                        {
+                                            $response = HelpController::buildResponse(
+                                                412,
+                                                'La OC ingresada no existe',
+                                                null
+                                            );
+                                        }
+                                        
                                         $success = false;
-    
+        
                                         break;
                                     }
                                 }
-
-                                if($success === true)
-                                {
-                                    DB::commit();
-                                        
-                                    $response = HelpController::buildResponse(
-                                        201,
-                                        'Recepcion creada',
-                                        null
-                                    );
-                                }
+                                // If success was already broken
                                 else
                                 {
-                                    DB::rollback();
-                                }
+                                    // Break the higher loop
+                                    break;
+                                }                    
+                            }
 
+                            if($success === true)
+                            {
+                                DB::commit();
+                                    
+                                $response = HelpController::buildResponse(
+                                    201,
+                                    'Recepcion creada',
+                                    null
+                                );
                             }
                             else
                             {
                                 DB::rollback();
-
-                                $response = HelpController::buildResponse(
-                                    500,
-                                    'Error al crear la recepcion',
-                                    null
-                                );
                             }
                         }
                         else
-                        {
+                        {       
+                            DB::rollback();
+
                             $response = HelpController::buildResponse(
-                                412,
-                                'La OC ingresada no existe',
+                                500,
+                                'Error al crear la recepcion',
                                 null
                             );
-                        }                      
-                    }
-                    else
-                    {
-                        $response = HelpController::buildResponse(
-                            412,
-                            'El comprador no existe',
-                            null
-                        );
+                        }
                     }
                 }
             }
@@ -697,7 +825,6 @@ class RecepcionesController extends Controller
         
         return $response;
     }
-
 
     public function show_comprador($comprador_id, $id)
     {
@@ -735,23 +862,55 @@ class RecepcionesController extends Controller
                 {
                     if($comprador = Comprador::find($comprador_id))
                     {
-                        // Agente compra or Coordinador compra
-                        if(
-                            (in_array($user->role->name, ['agtcom', 'colcom'])) &&
-                            ($comprador->id !== $user->stationable->id)
-                        )
+                        $recepcion = null;
+
+                        switch($user->role->name)
                         {
-                            //If Agente compra or Coordinador compra and doens't belong to Comprador
-                            $response = HelpController::buildResponse(
-                                405,
-                                'No tienes acceso a visualizar recepciones del comprador ingresado',
-                                null
-                            );
+                            // Administrador en Sucursal
+                            case 'admin': {
+                                $recepcion = Recepcion::find($id);
+
+                                break;
+                            }
+
+                            // Agente de compra en Comprador
+                            case 'agtcom': {
+                                $recepcion = Recepcion::select('recepciones.*')
+                                            ->join('ocs', 'ocs.id', '=', 'recepciones.oc_id')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->where('recepciones.id', '=', $id)
+                                            ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
+                                            ->where($comprador->id, '=', $user->stationable->id) // If user belongs to this Comprador
+                                            ->first();
+
+                                break;
+                            }
+
+                            // Coordinador logistico en Comprador
+                            case 'colcom': {
+                                $recepcion = Recepcion::select('recepciones.*')
+                                            ->join('ocs', 'ocs.id', '=', 'recepciones.oc_id')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->where('recepciones.id', '=', $id)
+                                            ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
+                                            ->where($comprador->id, '=', $user->stationable->id) // If user belongs to this Comprador
+                                            ->first();
+
+                                break;
+                            }
+
+                            default: {
+                                break;
+                            }
                         }
-                        else
+
+                        
+                        if($recepcion !== null)
                         {
-                            if($recepcion = $comprador->recepciones->find($id))
-                            {
+                            if($ocParte = $recepcion->ocpartes->first())
+                            {   
                                 $recepcion->makeHidden([
                                     'sourceable_id',
                                     'sourceable_type',
@@ -788,71 +947,6 @@ class RecepcionesController extends Controller
                                     'updated_at'
                                 ]);
 
-                                $recepcion->oc;
-                                $recepcion->oc->makeHidden([
-                                    'cotizacion_id',
-                                    'proveedor_id',
-                                    'filedata_id',
-                                    'motivobaja_id',
-                                    'estadooc_id', 
-                                    'usdvalue',
-                                    'partes_total',
-                                    'dias',
-                                    'monto',
-                                    'partes',
-                                    'created_at', 
-                                    'updated_at'
-                                ]);
-
-                                $recepcion->oc->cotizacion;
-                                $recepcion->oc->cotizacion->makeHidden([
-                                    'solicitud_id',
-                                    'estadocotizacion_id',
-                                    'motivorechazo_id',
-                                    'usdvalue',
-                                    'partes_total',
-                                    'dias',
-                                    'monto',
-                                    'partes',
-                                    'created_at', 
-                                    'updated_at'
-                                ]);
-
-                                $recepcion->oc->cotizacion->solicitud;
-                                $recepcion->oc->cotizacion->solicitud->makeHidden([
-                                    'sucursal_id',
-                                    'faena_id',
-                                    'marca_id',
-                                    'comprador_id',
-                                    'user_id',
-                                    'estadosolicitud_id',
-                                    'comentario',
-                                    'partes_total',
-                                    'partes',
-                                    'created_at', 
-                                    'updated_at'
-                                ]);
-
-                                $recepcion->oc->cotizacion->solicitud->faena;
-                                $recepcion->oc->cotizacion->solicitud->faena->makeHidden([
-                                    'cliente_id',
-                                    'sucursal_id',
-                                    'rut',
-                                    'address',
-                                    'city',
-                                    'contact',
-                                    'phone',
-                                    'created_at', 
-                                    'updated_at'
-                                ]);
-
-                                $recepcion->oc->cotizacion->solicitud->faena->cliente;
-                                $recepcion->oc->cotizacion->solicitud->faena->cliente->makeHidden([
-                                    'country_id',
-                                    'created_at', 
-                                    'updated_at'
-                                ]);
-    
                                 $recepcion->ocpartes;
                                 foreach($recepcion->ocpartes as $ocParte)
                                 {                                
@@ -861,6 +955,7 @@ class RecepcionesController extends Controller
                                         'parte_id',
                                         'estadoocparte_id',
                                         'tiempoentrega',
+                                        'oc',
                                         'created_at', 
                                         'updated_at'
                                     ]);
@@ -877,25 +972,118 @@ class RecepcionesController extends Controller
                                         'created_at', 
                                         'updated_at'
                                     ]);
-
+    
                                     $ocParte->parte->marca;
                                     $ocParte->parte->marca->makeHidden(['created_at', 'updated_at']);
                                 }
+    
+                                // Takes the OC from first OcParte as reference
+                                $oc = $ocParte->oc;
+                                $oc->makeHidden([
+                                    'cotizacion_id',
+                                    'proveedor_id',
+                                    'filedata_id',
+                                    'motivobaja_id',
+                                    'estadooc_id', 
+                                    'usdvalue',
+                                    'partes_total',
+                                    'dias',
+                                    'monto',
+                                    'partes',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+    
+                                $oc->cotizacion;
+                                $oc->cotizacion->makeHidden([
+                                    'solicitud_id',
+                                    'estadocotizacion_id',
+                                    'motivorechazo_id',
+                                    'usdvalue',
+                                    'partes_total',
+                                    'dias',
+                                    'monto',
+                                    'partes',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+    
+                                $oc->cotizacion->solicitud;
+                                $oc->cotizacion->solicitud->makeHidden([
+                                    'sucursal_id',
+                                    'faena_id',
+                                    'marca_id',
+                                    'comprador_id',
+                                    'user_id',
+                                    'estadosolicitud_id',
+                                    'comentario',
+                                    'partes_total',
+                                    'partes',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+    
+                                $oc->cotizacion->solicitud->faena;
+                                $oc->cotizacion->solicitud->faena->makeHidden([
+                                    'cliente_id',
+                                    'sucursal_id',
+                                    'rut',
+                                    'address',
+                                    'city',
+                                    'contact',
+                                    'phone',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+    
+                                $oc->cotizacion->solicitud->faena->cliente;
+                                $oc->cotizacion->solicitud->faena->cliente->makeHidden([
+                                    'country_id',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+                                
+                                $data = array(
+                                    'recepcion' => $recepcion,
+                                    'oc' => $oc
+                                );
                                 
                                 $response = HelpController::buildResponse(
                                     200,
                                     null,
-                                    $recepcion
+                                    $data
+                                );   
+                            }
+                            // If there was no OcParte found in Recepcion
+                            else
+                            {
+                                $response = HelpController::buildResponse(
+                                    500,
+                                    'Error al obtener la recepcion',
+                                    null
                                 );
-                            }   
-                            else     
+                            }                  
+                        }
+                        // If wasn't catched
+                        else
+                        {
+                            // If it exists, then it's forbidden
+                            if(Recepcion::find($id))
+                            {
+                                $response = HelpController::buildResponse(
+                                    405,
+                                    'No tienes acceso a visualizar la recepcion',
+                                    null
+                                );
+                            }
+                            else
                             {
                                 $response = HelpController::buildResponse(
                                     412,
                                     'La recepcion no existe',
                                     null
                                 );
-                            }                        
+                            }
                         }
                     }
                     else
@@ -928,7 +1116,6 @@ class RecepcionesController extends Controller
         
         return $response;
     }
-
 
     /**
      * It retrieves all the required info for
@@ -1017,168 +1204,186 @@ class RecepcionesController extends Controller
 
                         if($recepcion !== null)
                         {
-                            $recepcion->makeHidden([
-                                'sourceable_id',
-                                'sourceable_type',
-                                'recepcionable_id',
-                                'recepcionable_type',
-                                'oc_id',
-                                'proveedor_id',
-                                'partes_total',
-                                'updated_at',
-                            ]);
-
-                            $recepcion->recepcionable;
-                            $recepcion->recepcionable->makeHidden([
-                                'rut',
-                                'address',
-                                'city',
-                                'contact',
-                                'phone',
-                                'country_id',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-
-                            $recepcion->sourceable;
-                            $recepcion->sourceable->makeHidden([
-                                'comprador_id',
-                                'rut',
-                                'address',
-                                'city',
-                                'contact',
-                                'phone',
-                                'country',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-
-                            $recepcion->oc;
-                            $recepcion->oc->makeHidden([
-                                'cotizacion_id',
-                                'proveedor_id',
-                                'filedata_id',
-                                'motivobaja_id',
-                                'estadooc_id', 
-                                'usdvalue',
-                                'partes_total',
-                                'dias',
-                                'monto',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-
-                            $recepcion->oc->cotizacion;
-                            $recepcion->oc->cotizacion->makeHidden([
-                                'solicitud_id',
-                                'estadocotizacion_id',
-                                'motivorechazo_id',
-                                'usdvalue',
-                                'partes_total',
-                                'dias',
-                                'monto',
-                                'partes',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-
-                            $recepcion->oc->cotizacion->solicitud;
-                            $recepcion->oc->cotizacion->solicitud->makeHidden([
-                                'sucursal_id',
-                                'faena_id',
-                                'marca_id',
-                                'comprador_id',
-                                'user_id',
-                                'estadosolicitud_id',
-                                'comentario',
-                                'partes_total',
-                                'partes',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-
-                            $recepcion->oc->cotizacion->solicitud->faena;
-                            $recepcion->oc->cotizacion->solicitud->faena->makeHidden([
-                                'cliente_id',
-                                'sucursal_id',
-                                'rut',
-                                'address',
-                                'city',
-                                'contact',
-                                'phone',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-
-                            $recepcion->oc->cotizacion->solicitud->faena->cliente;
-                            $recepcion->oc->cotizacion->solicitud->faena->cliente->makeHidden([
-                                'country_id',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-
-                            foreach($recepcion->oc->partes as $parte)
-                            {
-                                $parte->makeHidden([
-                                    'marca_id',
-                                    'created_at', 
-                                    'updated_at'
-                                ]);
-
-                                $parte->marca;
-                                $parte->marca->makeHidden([
-                                    'created_at', 
-                                    'updated_at'
-                                ]);
-
-                                $parte->pivot->cantidad_recepcionado = $parte->pivot->getCantidadRecepcionado($comprador);
-                                $parte->pivot->cantidad_despachado = $parte->pivot->getCantidadDespachado($comprador);
-
-                                $parte->pivot->makeHidden([
+                            if($ocParte = $recepcion->ocpartes->first())
+                            { 
+                                $recepcion->makeHidden([
+                                    'sourceable_id',
+                                    'sourceable_type',
+                                    'recepcionable_id',
+                                    'recepcionable_type',
                                     'oc_id',
-                                    'parte_id',
-                                    'estadoocparte_id',
-                                    'created_at',
-                                    'updated_at'
-                                ]);
-                            }
-
-                            $recepcion->ocpartes;
-
-                            foreach($recepcion->ocpartes as $ocParte)
-                            {                                
-                                $ocParte->makeHidden([
-                                    'oc_id',
-                                    'parte_id',
-                                    'estadoocparte_id',
-                                    'descripcion',
-                                    'cantidad',
-                                    'tiempoentrega',
-                                    'backorder',
-                                    'created_at', 
-                                    'updated_at'
-                                ]);
-
-                                $ocParte->pivot->makeHidden([
-                                    'recepcion_id',
-                                    'ocparte_id',
-                                    'created_at',
+                                    'proveedor_id',
+                                    'partes_total',
                                     'updated_at',
                                 ]);
-
-                                $ocParte->parte->makeHidden([
-                                    'nparte',
-                                    'marca_id',
+    
+                                $recepcion->recepcionable;
+                                $recepcion->recepcionable->makeHidden([
+                                    'rut',
+                                    'address',
+                                    'city',
+                                    'contact',
+                                    'phone',
+                                    'country_id',
                                     'created_at', 
                                     'updated_at'
                                 ]);
+    
+                                $recepcion->sourceable;
+                                $recepcion->sourceable->makeHidden([
+                                    'comprador_id',
+                                    'rut',
+                                    'address',
+                                    'city',
+                                    'contact',
+                                    'phone',
+                                    'country',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+
+                                $recepcion->ocpartes;
+                                foreach($recepcion->ocpartes as $ocParte)
+                                {                                
+                                    $ocParte->makeHidden([
+                                        'oc_id',
+                                        'parte_id',
+                                        'estadoocparte_id',
+                                        'descripcion',
+                                        'cantidad',
+                                        'tiempoentrega',
+                                        'backorder',
+                                        'oc',
+                                        'created_at', 
+                                        'updated_at'
+                                    ]);
+    
+                                    $ocParte->pivot->makeHidden([
+                                        'recepcion_id',
+                                        'ocparte_id',
+                                        'created_at',
+                                        'updated_at',
+                                    ]);
+    
+                                    $ocParte->parte->makeHidden([
+                                        'nparte',
+                                        'marca_id',
+                                        'created_at', 
+                                        'updated_at'
+                                    ]);
+                                }
+    
+                                // Takes the OC from first OcParte as reference
+                                $oc = $ocParte->oc;
+                                $oc->makeHidden([
+                                    'cotizacion_id',
+                                    'proveedor_id',
+                                    'filedata_id',
+                                    'motivobaja_id',
+                                    'estadooc_id', 
+                                    'usdvalue',
+                                    'partes_total',
+                                    'dias',
+                                    'monto',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+    
+                                $oc->cotizacion;
+                                $oc->cotizacion->makeHidden([
+                                    'solicitud_id',
+                                    'estadocotizacion_id',
+                                    'motivorechazo_id',
+                                    'usdvalue',
+                                    'partes_total',
+                                    'dias',
+                                    'monto',
+                                    'partes',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+    
+                                $oc->cotizacion->solicitud;
+                                $oc->cotizacion->solicitud->makeHidden([
+                                    'sucursal_id',
+                                    'faena_id',
+                                    'marca_id',
+                                    'comprador_id',
+                                    'user_id',
+                                    'estadosolicitud_id',
+                                    'comentario',
+                                    'partes_total',
+                                    'partes',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+    
+                                $oc->cotizacion->solicitud->faena;
+                                $oc->cotizacion->solicitud->faena->makeHidden([
+                                    'cliente_id',
+                                    'sucursal_id',
+                                    'rut',
+                                    'address',
+                                    'city',
+                                    'contact',
+                                    'phone',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+    
+                                $oc->cotizacion->solicitud->faena->cliente;
+                                $oc->cotizacion->solicitud->faena->cliente->makeHidden([
+                                    'country_id',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+    
+                                foreach($oc->partes as $parte)
+                                {
+                                    $parte->makeHidden([
+                                        'marca_id',
+                                        'created_at', 
+                                        'updated_at'
+                                    ]);
+    
+                                    $parte->marca;
+                                    $parte->marca->makeHidden([
+                                        'created_at', 
+                                        'updated_at'
+                                    ]);
+    
+                                    $parte->pivot->cantidad_recepcionado = $parte->pivot->getCantidadRecepcionado($comprador);
+                                    $parte->pivot->cantidad_despachado = $parte->pivot->getCantidadDespachado($comprador);
+    
+                                    $parte->pivot->makeHidden([
+                                        'oc_id',
+                                        'parte_id',
+                                        'estadoocparte_id',
+                                        'created_at',
+                                        'updated_at'
+                                    ]);
+                                }
+    
+                                $data = array(
+                                    'recepcion' => $recepcion,
+                                    'oc' => $oc
+                                );
+                                
+                                $response = HelpController::buildResponse(
+                                    200,
+                                    null,
+                                    $data
+                                );   
                             }
-                            
-                            $response = HelpController::buildResponse(
-                                200,
-                                null,
-                                $recepcion
-                            );
+                            // If there was no OcParte found in Recepcion
+                            else
+                            {
+                                $response = HelpController::buildResponse(
+                                    500,
+                                    'Error al obtener la recepcion',
+                                    null
+                                );
+                            }  
                         }   
                         else     
                         {
@@ -1186,7 +1391,7 @@ class RecepcionesController extends Controller
                             {
                                 $response = HelpController::buildResponse(
                                     405,
-                                    'No tienes acceso a actualizar esta recepcion',
+                                    'No tienes acceso a actualizar la recepcion',
                                     null
                                 );
                             }
@@ -1194,7 +1399,7 @@ class RecepcionesController extends Controller
                             {
                                 $response = HelpController::buildResponse(
                                     412,
-                                    'La recepcion ingresada no existe',
+                                    'La recepcion no existe',
                                     null
                                 );
                             }
@@ -1231,7 +1436,6 @@ class RecepcionesController extends Controller
         return $response;
     }
 
-
     public function update_comprador(Request $request, $comprador_id, $id)
     {
         try
@@ -1239,16 +1443,18 @@ class RecepcionesController extends Controller
             $user = Auth::user();
             if($user->role->hasRoutepermission('compradores recepciones_update'))
             {
-                $validatorInput = $request->only('fecha', 'ndocumento', 'responsable', 'comentario', 'partes');
+                $validatorInput = $request->only('fecha', 'ndocumento', 'responsable', 'comentario', 'ocs');
             
                 $validatorRules = [
                     'fecha' => 'required|date_format:Y-m-d|before:tomorrow', // it includes today
                     'ndocumento' => 'nullable|min:1',
                     'responsable' => 'required|min:1',
                     'comentario' => 'sometimes|nullable',
-                    'partes' => 'required|array|min:1',
-                    'partes.*.id'  => 'required|exists:partes,id',
-                    'partes.*.cantidad'  => 'required|numeric|min:1',
+                    'ocs' => 'required|array|min:1',
+                    'ocs.*.id'  => 'required|exists:ocs,id',
+                    'ocs.*.partes' => 'required|array|min:1',
+                    'ocs.*.partes.*.id'  => 'required|exists:partes,id',
+                    'ocs.*.partes.*.cantidad'  => 'required|numeric|min:1',
                 ];
         
                 $validatorMessages = [
@@ -1258,14 +1464,19 @@ class RecepcionesController extends Controller
                     'ndocumento.min' => 'El numero de documento debe tener al menos un digito',
                     'responsable.required' => 'Debes ingresar el nombre de la persona que recibe',
                     'responsable.min' => 'El nombre de la persona que recibe debe tener al menos un digito',
-                    'partes.required' => 'Debes seleccionar las partes recepcionadas',
-                    'partes.array' => 'Lista de partes recepcionadas invalida',
-                    'partes.min' => 'La recepcion debe contener al menos 1 parte recepcionada',
-                    'partes.*.id.required' => 'La lista de partes recepcionadas es invalida',
-                    'partes.*.id.exists' => 'La parte recepcionada ingresada no existe',
-                    'partes.*.cantidad.required' => 'Debes ingresar la cantidad para la parte recepcionada',
-                    'partes.*.cantidad.numeric' => 'La cantidad para la parte recepcionada debe ser numerica',
-                    'partes.*.cantidad.min' => 'La cantidad para la parte recepcionada debe ser mayor a 0',
+                    'ocs.required' => 'Debes seleccionar las partes recepcionadas',
+                    'ocs.array' => 'Lista de partes recepcionadas invalida',
+                    'ocs.min' => 'La recepcion debe contener al menos 1 parte recepcionada',
+                    'ocs.*.id.required' => 'Debes seleccionar la OC a recepcionar',
+                    'ocs.*.id.exists' => 'La OC ingresada no existe',
+                    'ocs.*.partes.required' => 'Debes seleccionar las partes recepcionadas',
+                    'ocs.*.partes.array' => 'Lista de partes recepcionadas invalida',
+                    'ocs.*.partes.min' => 'La recepcion debe contener al menos 1 parte recepcionada',
+                    'ocs.*.partes.*.id.required' => 'La lista de partes recepcionadas es invalida',
+                    'ocs.*.partes.*.id.exists' => 'La parte recepcionada ingresada no existe',
+                    'ocs.*.partes.*.cantidad.required' => 'Debes ingresar la cantidad para la parte recepcionada',
+                    'ocs.*.partes.*.cantidad.numeric' => 'La cantidad para la parte recepcionada debe ser numerica',
+                    'ocs.*.partes.*.cantidad.min' => 'La cantidad para la parte recepcionada debe ser mayor a 0',
                 ];
         
                 $validator = Validator::make(
@@ -1282,55 +1493,130 @@ class RecepcionesController extends Controller
                         null
                     );
                 }
+                else if(($comprador = Comprador::find($comprador_id)) === null)
+                {
+                    $response = HelpController::buildResponse(
+                        412,
+                        'El comprador no existe',
+                        null
+                    );
+                }
                 else        
                 {
-                    if($comprador = Comprador::find($comprador_id))
+                    $recepcion = null;
+
+                    switch($user->role->name)
                     {
-                        $recepcion = null;
+                        // Administrador en Sucursal
+                        case 'admin': {
+                            $recepcion = Recepcion::find($id);
 
-                        switch($user->role->name)
+                            break;
+                        }
+
+                        // Agente de compra en Comprador
+                        case 'agtcom': {
+                            $recepcion = Recepcion::select('recepciones.*')
+                                        ->join('ocs', 'ocs.id', '=', 'recepciones.oc_id')
+                                        ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                        ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                        ->where('recepciones.id', '=', $id)
+                                        ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
+                                        ->where($comprador->id, '=', $user->stationable->id) // If user belongs to this Comprador
+                                        ->first();
+
+                            break;
+                        }
+
+                        // Coordinador logistico en Comprador
+                        case 'colcom': {
+                            $recepcion = Recepcion::select('recepciones.*')
+                                        ->join('ocs', 'ocs.id', '=', 'recepciones.oc_id')
+                                        ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                        ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                        ->where('recepciones.id', '=', $id)
+                                        ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
+                                        ->where($comprador->id, '=', $user->stationable->id) // If user belongs to this Comprador
+                                        ->first();
+
+                            break;
+                        }
+
+                        default: {
+                            break;
+                        }
+                    }
+
+                    if($recepcion !== null)
+                    {
+                        // Clean OC and partes list in request and store on diffList for validations and ocList for sync
+                        $diffList = array();
+                        $ocList = array();
+                        foreach($request->ocs as $oc)
                         {
-                            // Administrador en Sucursal
-                            case 'admin': {
-                                $recepcion = Recepcion::find($id);
-
-                                break;
+                            if((in_array($oc['id'], array_keys($diffList))) === false)
+                            {
+                                $diffList[$oc['id']] = array();
+                                $ocList[$oc['id']] = array();
                             }
 
-                            // Agente de compra en Comprador
-                            case 'agtcom': {
-                                $recepcion = Recepcion::select('recepciones.*')
-                                            ->join('ocs', 'ocs.id', '=', 'recepciones.oc_id')
-                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
-                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                            ->where('recepciones.id', '=', $id)
-                                            ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
-                                            ->where($comprador->id, '=', $user->stationable->id) // If user belongs to this Comprador
-                                            ->first();
-
-                                break;
-                            }
-
-                            // Coordinador logistico en Comprador
-                            case 'colcom': {
-                                $recepcion = Recepcion::select('recepciones.*')
-                                            ->join('ocs', 'ocs.id', '=', 'recepciones.oc_id')
-                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
-                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                            ->where('recepciones.id', '=', $id)
-                                            ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
-                                            ->where($comprador->id, '=', $user->stationable->id) // If user belongs to this Comprador
-                                            ->first();
-
-                                break;
-                            }
-
-                            default: {
-                                break;
+                            foreach($oc['partes'] as $parte)
+                            {
+                                if(in_array($parte['id'], array_keys($diffList[$oc['id']])))
+                                {
+                                    $diffList[$oc['id']][$parte['id']] += $parte['cantidad'];
+                                    $ocList[$oc['id']][$parte['id']] += $parte['cantidad'];
+                                }
+                                else
+                                {
+                                    $diffList[$oc['id']][$parte['id']] = $parte['cantidad'];
+                                    $ocList[$oc['id']][$parte['id']] = $parte['cantidad'];
+                                }
                             }
                         }
 
-                        if($recepcion !== null)
+                        // For each OcParte in Recepcion
+                        foreach($recepcion->ocpartes as $ocParte)
+                        {
+                            // If OC isn't in the OC list yet
+                            if((in_array($ocParte->oc->id, array_keys($diffList))) === false)
+                            {
+                                /*  Add the OC. Also the Parte wasn't there either
+                                 *  so it's gonna be removed. Then add it with negative cantidad
+                                 *  and don't add it on the ocList (for sync)
+                                */
+
+                                $diffList[$ocParte->oc->id] = array(
+                                    $ocParte->parte->id => ($ocParte->pivot->cantidad * -1)
+                                );
+                            }
+                            // If OC was already in the list
+                            else
+                            {
+                                // If the Parte is already in list, it's kept in Recepcion
+                                if((in_array($ocParte->parte->id, array_keys($diffList[$ocParte->oc->id]))) === true)
+                                {
+                                    // Add the diff cantidad with cantidad given in request - old cantidad
+                                    $diffList[$ocParte->oc->id][$ocParte->parte->id] -= $ocParte->pivot->cantidad;
+                                }
+                                // If the OcParte isn't in the list, it's going to be removed and don't add it on the ocList (for sync)
+                                else
+                                {
+                                    $diffList[$ocParte->oc->id][$ocParte->parte->id] = ($ocParte->pivot->cantidad * -1);
+                                }
+                            }
+                        }
+
+                        if(count($diffList) > 1)
+                        {
+                            // If there were sent more than 1 OC
+                            $response = HelpController::buildResponse(
+                                409,
+                                'No puedes recepcionar mas de 1 OC por proveedor',
+                                null
+                            );
+                        }
+                        else
                         {
                             DB::beginTransaction();
 
@@ -1341,96 +1627,158 @@ class RecepcionesController extends Controller
                             {
                                 $success = true;
 
-                                // Clean partes list from request
-                                $parteList = array();
-                                foreach($request->partes as $parte)
-                                {
-                                    if(in_array($parte['id'], array_keys($parteList)))
+                                $syncData = [];
+                                // This list has only 1 item
+                                foreach(array_keys($diffList) as $ocId)
+                                {      
+                                    // If success wasn't broken yet, continue
+                                    if($success === true)
                                     {
-                                        $parteList[$parte['id']] = $parteList[$parte['id']] + $parte['cantidad'];
-                                    }
-                                    else
-                                    {
-                                        $parteList[$parte['id']] = $parte['cantidad'];
-                                    }
-                                }
-
-                                // Diff partes list, using partes list from request as base
-                                $diffList = array_replace([], $parteList);
-                                foreach($recepcion->ocpartes as $ocParte)
-                                {
-                                    // If OcParte is still in Recepcion
-                                    if(isset($diffList[$ocParte->parte->id]))
-                                    {
-                                        // Calc diff using new cantidad - old cantidad
-                                        $diffList[$ocParte->parte->id] = $diffList[$ocParte->parte->id] - $ocParte->pivot->cantidad;
-                                    }
-                                    // If OcParte isn't in Recepcion anymore
-                                    else
-                                    {
-                                        // Set diff as old cantidad in negative
-                                        $diffList[$ocParte->parte->id] = ($ocParte->pivot->cantidad * -1);
-                                    }
-                                }
-
-                                $syncData = array();
-                                foreach(array_keys($diffList) as $parteId)
-                                {
-                                    // If parte is in the OC
-                                    if($parte = $recepcion->oc->partes->find($parteId))
-                                    {   
-                                        // Calc new cantidad with cantidad in Recepciones + diff (may be negative)
-                                        $newCantidad = $parte->pivot->getCantidadRecepcionado($comprador) + $diffList[$parteId];
-                                        
-                                        // If new cantidad is more than in the OC
-                                        if($newCantidad > $parte->pivot->cantidad)
+                                        $oc = null;
+                
+                                        switch($user->role->name)
                                         {
-                                            $response = HelpController::buildResponse(
-                                                409,
-                                                'La cantidad para la parte "' . $parte->nparte . '" es mayor al total en la OC',
-                                                null
-                                            );
-
-                                            $success = false;
-
-                                            break;
+                                            // Administrador en Sucursal
+                                            case 'admin': {
+                                                $oc = Oc::select('ocs.*')
+                                                    ->where('ocs.id', '=', $ocId)
+                                                    ->first();
+                
+                                                break;
+                                            }
+                
+                                            // Agente de compra en Comprador
+                                            case 'agtcom': {
+                                                $oc = Oc::select('ocs.*')
+                                                    ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                    ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                    ->where('ocs.id', '=', $ocId)
+                                                    ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
+                                                    ->where($comprador->id, '=', $user->stationable->id) // If user belongs to this Comprador
+                                                    ->first();
+                
+                                                break;
+                                            }
+                
+                                            // Coordinador logistico en Comprador
+                                            case 'colcom': {
+                                                $oc = Oc::select('ocs.*')
+                                                    ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                    ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                    ->where('ocs.id', '=', $ocId)
+                                                    ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
+                                                    ->where($comprador->id, '=', $user->stationable->id) // If user belongs to this Comprador
+                                                    ->first();
+                
+                                                break;
+                                            }
+                
+                                            default: {
+                                                break;
+                                            }
                                         }
-                                        // If new cantidad is less than in Despachos
-                                        else if($newCantidad < $parte->pivot->getCantidadDespachado($comprador))
+                
+                                        if($oc !== null)
                                         {
-                                            $response = HelpController::buildResponse(
-                                                409,
-                                                'La cantidad para la parte "' . $parte->nparte . '" es menor a la ya despachada',
-                                                null
-                                            );
+                                            foreach(array_keys($diffList[$oc->id]) as $parteId)
+                                            {
+                                                if($p = $oc->partes->find($parteId))
+                                                {
+                                                    // Calc new cantidad with cantidad in Recepciones + diff (negative when removing)
+                                                    $newCantidad = $p->pivot->getCantidadRecepcionado($comprador) + $diffList[$oc->id][$parteId];
 
-                                            $success = false;
-
-                                            break;
+                                                    // If new cantidad in Recepciones is equal or less than total in OC
+                                                    if($newCantidad <= $p->pivot->cantidad)
+                                                    {
+                                                        // If new cantidad in Recepciones is equal or more than total in Despachos
+                                                        if($newCantidad >= $p->pivot->getCantidadDespachado($comprador))
+                                                        {
+                                                            // If OC is in the request
+                                                            if(in_array($oc->id, array_keys($ocList)) === true)
+                                                            {
+                                                                // If Parte is in the request for the OC
+                                                                if(in_array($parteId, array_keys($ocList[$oc->id])) === true)
+                                                                {
+                                                                    // Add the OcParte to syunc using the ID which is unique
+                                                                    $syncData[$p->pivot->id] = array(
+                                                                        'cantidad' => $ocList[$oc->id][$parteId]
+                                                                    );
+                                                                }
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            // If the received parts are more than waiting in queue
+                                                            $response = HelpController::buildResponse(
+                                                                409,
+                                                                'La cantidad ingresada para la parte "' . $p->nparte . '" es mayor a la cantidad ya despachada',
+                                                                null
+                                                            );
+                        
+                                                            $success = false;
+                        
+                                                            break;
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        // If the received parts are more than waiting in queue
+                                                        $response = HelpController::buildResponse(
+                                                            409,
+                                                            'La cantidad ingresada para la parte "' . $p->nparte . '" es mayor a la cantidad de pendiente de recepcion en la OC: ' . $oc->id,
+                                                            null
+                                                        );
+                    
+                                                        $success = false;
+                    
+                                                        break;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    //If the entered parte isn't in the OC
+                                                    $response = HelpController::buildResponse(
+                                                        409,
+                                                        'Una de las partes ingresadas no existe en la OC: ' . $oc->id,
+                                                        null
+                                                    );
+                
+                                                    $success = false;
+                
+                                                    break;
+                                                }
+                                            }
                                         }
                                         else
                                         {
-                                            if(isset($parteList[$parte->id]))
+                                            if(Oc::find($ocId))
                                             {
-                                                $syncData[$parte->pivot->id] =  array(
-                                                    'cantidad' => $parteList[$parte->id]
+                                                $response = HelpController::buildResponse(
+                                                    405,
+                                                    'No tienes acceso a actualizar recepciones para la OC: ' . $ocId,
+                                                    null
                                                 );
                                             }
+                                            else
+                                            {
+                                                $response = HelpController::buildResponse(
+                                                    412,
+                                                    'La OC: ' . $ocId . ' no existe',
+                                                    null
+                                                );
+                                            }
+                                            
+                                            $success = false;
+            
+                                            break;
                                         }
                                     }
+                                    // If success was already broken
                                     else
                                     {
-                                        // If the entered parte isn't in the OC
-                                        $response = HelpController::buildResponse(
-                                            409,
-                                            'Una de las partes ingresadas no existe en la OC',
-                                            null
-                                        );
-    
-                                        $success = false;
-    
+                                        // Break the higher loop
                                         break;
-                                    }
+                                    }                    
                                 }
 
                                 if(($success === true) && ($recepcion->ocpartes()->sync($syncData)))
@@ -1438,7 +1786,7 @@ class RecepcionesController extends Controller
                                     DB::commit();
                                         
                                     $response = HelpController::buildResponse(
-                                        200,
+                                        201,
                                         'Recepcion actualizada',
                                         null
                                     );
@@ -1447,10 +1795,9 @@ class RecepcionesController extends Controller
                                 {
                                     DB::rollback();
                                 }
-
                             }
                             else
-                            {
+                            {       
                                 DB::rollback();
 
                                 $response = HelpController::buildResponse(
@@ -1460,34 +1807,26 @@ class RecepcionesController extends Controller
                                 );
                             }
                         }
+                    }
+                    else     
+                    {
+                        if(Recepcion::find($id))
+                        {
+                            $response = HelpController::buildResponse(
+                                405,
+                                'No tienes acceso a actualizar la recepcion',
+                                null
+                            );
+                        }
                         else
                         {
-                            if(Recepcion::find($id))
-                            {
-                                $response = HelpController::buildResponse(
-                                    405,
-                                    'No tienes acceso a actualizar esta recepcion',
-                                    null
-                                );
-                            }
-                            else
-                            {
-                                $response = HelpController::buildResponse(
-                                    412,
-                                    'La recepcion ingresada no existe',
-                                    null
-                                );
-                            }
-                        }                      
-                    }
-                    else
-                    {
-                        $response = HelpController::buildResponse(
-                            412,
-                            'El comprador no existe',
-                            null
-                        );
-                    }
+                            $response = HelpController::buildResponse(
+                                412,
+                                'La recepcion no existe',
+                                null
+                            );
+                        }
+                    }  
                 }
             }
             else
@@ -1511,7 +1850,6 @@ class RecepcionesController extends Controller
         return $response;
     }
 
-    
     public function destroy_comprador($comprador_id, $id)
     {
         try
@@ -1567,59 +1905,163 @@ class RecepcionesController extends Controller
 
                     if($recepcion !== null)
                     {
-                        $success = true;
+                        $ocList = array();
 
+                        // For each OcParte in Recepcion
                         foreach($recepcion->ocpartes as $ocParte)
                         {
-                            // Calc new cantidad with cantidad in Recepciones + cantidad in Recepcion
-                            $newCantidad = $ocParte->getCantidadRecepcionado($comprador) + $ocParte->pivot->cantidad;
-                                        
-                            // If new cantidad is less than in Despachos
-                            if($newCantidad < $ocParte->getCantidadDespachado($comprador))
+                            // If OC isn't in the OC list yet
+                            if((in_array($ocParte->oc->id, array_keys($ocList))) === false)
                             {
-                                $response = HelpController::buildResponse(
-                                    409,
-                                    'La parte "' . $ocParte->parte->nparte . '" tiene cantidades ya despachadas',
-                                    null
+                                // Add the OC and add the Parte with negative cantidad for removing
+                                $ocList[$ocParte->oc->id] = array(
+                                    $ocParte->parte->id => ($ocParte->pivot->cantidad * -1)
                                 );
-    
-                                $success = false;
-    
-                                break;
+                            }
+                            // If OC was already in the list
+                            else
+                            {
+                                // Add the Parte with negative cantidad for removing
+                                $ocList[$ocParte->oc->id][$ocParte->parte->id] = ($ocParte->pivot->cantidad * -1);
                             }
                         }
 
-                        if($success === true)
-                        {
-                            if($recepcion->delete())
+                        $success = true;
+                        foreach(array_keys($ocList) as $ocId)
+                        {      
+                            // If success wasn't broken yet, continue
+                            if($success === true)
                             {
-                                $response = HelpController::buildResponse(
-                                    200,
-                                    'Recepcion eliminada',
-                                    null
-                                );
+                                $oc = null;
+        
+                                switch($user->role->name)
+                                {
+                                    // Administrador en Sucursal
+                                    case 'admin': {
+                                        $oc = Oc::select('ocs.*')
+                                            ->where('ocs.id', '=', $ocId)
+                                            ->first();
+        
+                                        break;
+                                    }
+        
+                                    // Agente de compra en Comprador
+                                    case 'agtcom': {
+                                        $oc = Oc::select('ocs.*')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->where('ocs.id', '=', $ocId)
+                                            ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
+                                            ->where($comprador->id, '=', $user->stationable->id) // If user belongs to this Comprador
+                                            ->first();
+        
+                                        break;
+                                    }
+        
+                                    // Coordinador logistico en Comprador
+                                    case 'colcom': {
+                                        $oc = Oc::select('ocs.*')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->where('ocs.id', '=', $ocId)
+                                            ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
+                                            ->where($comprador->id, '=', $user->stationable->id) // If user belongs to this Comprador
+                                            ->first();
+        
+                                        break;
+                                    }
+        
+                                    default: {
+                                        break;
+                                    }
+                                }
+        
+                                if($oc !== null)
+                                {
+                                    foreach(array_keys($ocList[$oc->id]) as $parteId)
+                                    {
+                                        if($p = $oc->partes->find($parteId))
+                                        {
+                                            // Calc new cantidad with cantidad in Recepciones + diff (negative when removing)
+                                            $newCantidad = $p->pivot->getCantidadRecepcionado($comprador) + $ocList[$oc->id][$parteId];
+
+                                            // If new cantidad in Recepciones is less than total in Despachos
+                                            if($newCantidad < $p->pivot->getCantidadDespachado($comprador))
+                                            {
+                                                // If the received parts are more than waiting in queue
+                                                $response = HelpController::buildResponse(
+                                                    409,
+                                                    'La parte "' . $p->nparte . '" ya tiene partes despachadas en la OC: ' . $oc->id,
+                                                    null
+                                                );
+            
+                                                $success = false;
+            
+                                                break;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            $response = HelpController::buildResponse(
+                                                500,
+                                                'Error al eliminar la recepcion',
+                                                null
+                                            );
+        
+                                            $success = false;
+        
+                                            break;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    if(Oc::find($ocId))
+                                    {
+                                        $response = HelpController::buildResponse(
+                                            405,
+                                            'No tienes acceso a eliminar recepciones para la OC: ' . $ocId,
+                                            null
+                                        );
+                                    }
+                                    else
+                                    {
+                                        $response = HelpController::buildResponse(
+                                            412,
+                                            'La OC: ' . $ocId . ' no existe',
+                                            null
+                                        );
+                                    }
+                                    
+                                    $success = false;
+    
+                                    break;
+                                }
                             }
+                            // If success was already broken
                             else
                             {
-                                $response = HelpController::buildResponse(
-                                    500,
-                                    'Error al eliminar la recepcion',
-                                    null
-                                );
-                            }
+                                // Break the higher loop
+                                break;
+                            }                    
                         }
-                        else
-                        {
-                            // Response already given
+
+                        if(($success === true) && ($recepcion->delete()))
+                        {  
+                            $response = HelpController::buildResponse(
+                                200,
+                                'Recepcion eliminada',
+                                null
+                            );
                         }
                     }
-                    else
+                    else     
                     {
                         if(Recepcion::find($id))
                         {
                             $response = HelpController::buildResponse(
                                 405,
-                                'No tienes acceso a eliminar esta recepcion',
+                                'No tienes acceso a eliminar la recepcion',
                                 null
                             );
                         }
@@ -1627,11 +2069,11 @@ class RecepcionesController extends Controller
                         {
                             $response = HelpController::buildResponse(
                                 412,
-                                'La recepcion ingresada no existe',
+                                'La recepcion no existe',
                                 null
                             );
                         }
-                    }                      
+                    }                  
                 }
                 else
                 {
@@ -1662,3131 +2104,4 @@ class RecepcionesController extends Controller
         
         return $response;
     }
-
-    /*
-     *  Sucursal (centro)
-     */
-
-    public function index_centrodistribucion($id)
-    {
-        try
-        {
-            $user = Auth::user();
-            if($user->role->hasRoutepermission('centrosdistribucion recepciones_index'))
-            {
-                if($centrodistribucion = Sucursal::where('id', $id)->where('type', 'centro')->first())
-                {
-                    $centrodistribucion->makeHidden([
-                        'created_at', 
-                        'updated_at'
-                    ]);
-
-                    $centrodistribucion->recepciones;
-                    $centrodistribucion->recepciones = $centrodistribucion->recepciones->filter(function($recepcion)
-                    {
-                        $recepcion->partes_total;
-                        
-                        $recepcion->makeHidden([
-                            'sourceable_id', 
-                            'sourceable_type',
-                            'recepcionable_id', 
-                            'recepcionable_type', 
-                            'created_at', 
-                            'updated_at'
-                        ]);
-                        
-                        $recepcion->partes;
-                        $recepcion->partes = $recepcion->partes->filter(function($parte)
-                        {
-                            $parte->makeHidden([
-                                'marca_id',
-                                'created_at',
-                                'updated_at',
-                            ]);
-
-                            $parte->pivot->makeHidden([
-                                'parte_id',
-                                'recepcion_id',
-                                'created_at',
-                                'updated_at',
-                            ]);
-
-                            $parte->marca;
-                            $parte->marca->makeHidden(['created_at', 'updated_at']);
-
-                            return $parte;
-                        });
-
-                        $recepcion->sourceable;
-                        $recepcion->sourceable->makeHidden([
-                            'rut',
-                            'address',
-                            'city',
-                            'contact',
-                            'phone',
-                            'country_id',
-                            'created_at', 
-                            'updated_at'
-                        ]);
-
-                        $recepcion->sourceable->country;
-                        $recepcion->sourceable->country->makeHidden(['created_at', 'updated_at']);
-
-                        return $recepcion;
-                    });
-
-                    $response = HelpController::buildResponse(
-                        200,
-                        null,
-                        $centrodistribucion->recepciones
-                    );
-                }   
-                else     
-                {
-                    $response = HelpController::buildResponse(
-                        412,
-                        'El centro de distribucion no existe',
-                        null
-                    );
-                }
-            }
-            else
-            {
-                $response = HelpController::buildResponse(
-                    405,
-                    'No tienes acceso a visualizar recepciones de centro de distribucion',
-                    null
-                );
-            }
-        }
-        catch(\Exception $e)
-        {
-            $response = HelpController::buildResponse(
-                500,
-                'Error al obtener las recepciones del centro de distribucion [!]',
-                null
-            );
-        }
-            
-        return $response;
-    }
-
-
-    public function queuePartes_centrodistribucion($centrodistribucion_id, $comprador_id)
-    {
-        try
-        {
-            $user = Auth::user();
-            if($user->role->hasRoutepermission('centrosdistribucion recepciones_store'))
-            {
-                if($centrodistribucion = Sucursal::where('id', $centrodistribucion_id)->where('type', 'centro')->first())
-                {
-                    if($comprador = Comprador::find($comprador_id))
-                    {
-                        // Gets all the partes in Despacho to the Sucursal (centro) from the Comprador
-                        $parteDespachoList = ParteDespacho::select('despacho_parte.*')
-                                            ->join('despachos', 'despachos.id', '=', 'despacho_parte.despacho_id')
-                                            ->where('despachos.despachable_type', get_class($comprador))
-                                            ->where('despachos.despachable_id', $comprador->id) // From the Compador
-                                            ->where('despachos.destinable_type', get_class($centrodistribucion))
-                                            ->where('despachos.destinable_id', $centrodistribucion->id) // To the Sucursal
-                                            ->get();
-
-
-                        $cantidadesDespacho = $parteDespachoList->reduce(function($carry, $parteDespacho)
-                            {
-                                if(isset($carry[$parteDespacho->parte->id]))
-                                {
-                                    $carry[$parteDespacho->parte->id] += $parteDespacho->cantidad;
-                                }
-                                else
-                                {
-                                    $carry[$parteDespacho->parte->id] = $parteDespacho->cantidad;
-                                }
-
-                                return $carry;
-                            }, 
-                            array()
-                        );
-
-                        $success = true;
-                        $queuePartes = array();
-
-                        foreach(array_keys($cantidadesDespacho) as $parteId)
-                        {
-                            if($parte = Parte::find($parteId))
-                            {
-                                // Get cantidad total in Recepciones at Sucursal (centro) from Comprador
-                                $cantidadPendiente = $cantidadesDespacho[$parteId] - $parte->getCantidadRecepcionado_sourceable($centrodistribucion, $comprador);
-
-                                if($cantidadPendiente > 0)
-                                {
-                                    $parteData = [
-                                        "id" => $parte->id,
-                                        "nparte" => $parte->nparte,
-                                        "marca" => $parte->marca->makeHidden(['created_at', 'updated_at']),
-                                        "cantidad_pendiente" => $cantidadPendiente,
-                                        "cantidad_despachos" => $parte->getCantidadDespachado($centrodistribucion)
-                                    ];
-
-                                    array_push($queuePartes, $parteData);
-                                }
-                            }
-                            else
-                            {
-                                $response = HelpController::buildResponse(
-                                    500,
-                                    'Error al obtener una de las partes pendientes de recepcion',
-                                    null
-                                );
-
-                                $success = false;
-                                
-                                break;
-                            }
-                        }
-
-                        if($success === true)
-                        {
-                            $response = HelpController::buildResponse(
-                                200,
-                                null,
-                                $queuePartes
-                            );
-                        }
-                        else
-                        {
-                            // Response already given when success = false
-                        }
-                        
-                    }
-                    else
-                    {
-                        $response = HelpController::buildResponse(
-                            412,
-                            'El comprador no existe',
-                            null
-                        );
-                    }
-                }   
-                else     
-                {
-                    $response = HelpController::buildResponse(
-                        412,
-                        'El centro de distribucion no existe',
-                        null
-                    );
-                }
-            }
-            else
-            {
-                $response = HelpController::buildResponse(
-                    405,
-                    'No tienes acceso a visualizar partes pendiente de recepcion',
-                    null
-                );
-            }
-        }
-        catch(\Exception $e)
-        {
-            $response = HelpController::buildResponse(
-                500,
-                'Error al obtener partes pendiente de recepcion [!]',
-                null
-            );
-        }
-            
-        return $response;
-    }
-
-
-    public function store_centrodistribucion(Request $request, $centrodistribucion_id)
-    {
-        try
-        {
-            $user = Auth::user();
-            if($user->role->hasRoutepermission('centrosdistribucion recepciones_store'))
-            {
-                $validatorInput = $request->only('comprador_id', 'fecha', 'ndocumento', 'responsable', 'comentario', 'partes');
-            
-                $validatorRules = [
-                    'comprador_id' => 'required|exists:compradores,id',
-                    'fecha' => 'required|date_format:Y-m-d|before:tomorrow', // it includes today
-                    'ndocumento' => 'nullable|min:1',
-                    'responsable' => 'required|min:1',
-                    'comentario' => 'sometimes|nullable',
-                    'partes' => 'required|array|min:1',
-                    'partes.*.id'  => 'required|exists:partes,id',
-                    'partes.*.cantidad'  => 'required|numeric|min:1',
-                ];
-        
-                $validatorMessages = [
-                    'comprador_id.required' => 'Debes ingresar el comprador',
-                    'comprador_id.exists' => 'El comprador ingresado no existe',
-                    'fecha.required' => 'Debes ingresar la fecha de recepcion',
-                    'fecha.date_format' => 'El formato de fecha de recepcion es invalido',
-                    'fecha.before' => 'La fecha debe ser igual o anterior a hoy',
-                    'ndocumento.min' => 'El numero de documento debe tener al menos un digito',
-                    'responsable.required' => 'Debes ingresar el nombre de la persona que recibe',
-                    'responsable.min' => 'El nombre de la persona que recibe debe tener al menos un digito',
-                    'partes.required' => 'Debes seleccionar las partes recepcionadas',
-                    'partes.array' => 'Lista de partes recepcionadas invalida',
-                    'partes.min' => 'La recepcion debe contener al menos 1 parte recepcionada',
-                    'partes.*.id.required' => 'La lista de partes recepcionadas es invalida',
-                    'partes.*.id.exists' => 'La parte recepcionada ingresada no existe',
-                    'partes.*.cantidad.required' => 'Debes ingresar la cantidad para la parte recepcionada',
-                    'partes.*.cantidad.numeric' => 'La cantidad para la parte recepcionada debe ser numerica',
-                    'partes.*.cantidad.min' => 'La cantidad para la parte recepcionada debe ser mayor a 0',
-                ];
-        
-                $validator = Validator::make(
-                    $validatorInput,
-                    $validatorRules,
-                    $validatorMessages
-                );
-        
-                if ($validator->fails()) 
-                {
-                    $response = HelpController::buildResponse(
-                        400,
-                        $validator->errors(),
-                        null
-                    );
-                }
-                else        
-                {
-                    if($centrodistribucion = Sucursal::where('id', $centrodistribucion_id)->where('type', 'centro')->first())
-                    {
-                        if($comprador = Comprador::find($request->comprador_id))
-                        {
-                            DB::beginTransaction();
-
-                            $recepcion = new Recepcion();
-                            // Set the morph source for Recepcion as Comprador
-                            $recepcion->sourceable_id = $comprador->id;
-                            $recepcion->sourceable_type = get_class($comprador);
-                            // Set the morph for Recepcion as Sucursal (centro)
-                            $recepcion->recepcionable_id = $centrodistribucion->id;
-                            $recepcion->recepcionable_type = get_class($centrodistribucion);
-                            // Fill the data
-                            $recepcion->fecha = $request->fecha;
-                            $recepcion->ndocumento = $request->ndocumento;
-                            $recepcion->responsable = $request->responsable;
-                            $recepcion->comentario = $request->comentario;
-
-                            if($recepcion->save())
-                            {
-                                $success = true;
-
-                                $cantidades = array_reduce($request->partes, function($carry, $parte)
-                                    {
-                                        $carry[$parte['id']] = $parte['cantidad'];
-
-                                        return $carry;
-                                    },
-                                    array()
-                                );
-
-                                // For each parte sent, gets the ParteDespacho list for Sucursal from the selected Comprador
-                                if($parteDespachoList = ParteDespacho::select('despacho_parte.*')
-                                                ->join('despachos', 'despachos.id', '=', 'despacho_parte.despacho_id')
-                                                ->where('despachos.despachable_type', get_class($comprador))
-                                                ->where('despachos.despachable_id', $comprador->id) // From Comprador
-                                                ->where('despachos.destinable_type', get_class($centrodistribucion))
-                                                ->where('despachos.destinable_id', $centrodistribucion->id) // To Sucursal
-                                                ->get()
-                                )
-                                {
-                                    if($parteDespachoList->count() > 0)
-                                    {
-                                        $cantidadesDespacho = $parteDespachoList->reduce(function($carry, $parteDespacho)
-                                            {
-                                                if(isset($carry[$parteDespacho->parte->id]))
-                                                {
-                                                    $carry[$parteDespacho->parte->id] += $parteDespacho->cantidad;
-                                                }
-                                                else
-                                                {
-                                                    $carry[$parteDespacho->parte->id] = $parteDespacho->cantidad;
-                                                }
-
-                                                return $carry;
-                                            }, 
-                                            array()
-                                        );
-
-                                        $success = true;
-                                        foreach(array_keys($cantidades) as $parteId)
-                                        {
-                                            if($parte = Parte::find($parteId))
-                                            {
-                                                if(isset($cantidadesDespacho[$parte->id]))
-                                                {
-                                                    // Get cantidad total in Recepciones at Sucursal from Comprador
-                                                    $cantidadPendiente = $cantidadesDespacho[$parte->id] - $parte->getCantidadRecepcionado_sourceable($centrodistribucion, $comprador);
-
-                                                    if($cantidadPendiente > 0)
-                                                    {
-                                                        if($cantidades[$parte->id] <= $cantidadPendiente)
-                                                        {
-
-                                                            $recepcion->partes()->attach(
-                                                                array(
-                                                                    $parte->id => array(
-                                                                        "cantidad" => $cantidades[$parte->id]
-                                                                    )
-                                                                )
-                                                            );
-
-                                                        }
-                                                        else
-                                                        {
-                                                            // If the received parts are more than waiting in queue
-                                                            $response = HelpController::buildResponse(
-                                                                409,
-                                                                'La cantidad ingresada para la parte "' . $parte->nparte . '" es mayor a la cantidad de pendiente de recepcion',
-                                                                null
-                                                            );
-                        
-                                                            $success = false;
-                        
-                                                            break;
-                                                        }
-                                                    }
-                                                    else
-                                                    {
-                                                        // If the entered parte isn't in queue
-                                                        $response = HelpController::buildResponse(
-                                                            409,
-                                                            'La parte "' . $parte->nparte . '" no tiene partes pendiente de recepcion',
-                                                            null
-                                                        );
-                    
-                                                        $success = false;
-                    
-                                                        break;
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    // If the entered parte isn't in queue
-                                                    $response = HelpController::buildResponse(
-                                                        409,
-                                                        'La parte "' . $parte->nparte . '" no tiene partes pendiente de recepcion',
-                                                        null
-                                                    );
-                
-                                                    $success = false;
-                
-                                                    break;
-                                                }
-                                            }
-                                            else
-                                            {
-                                                $response = HelpController::buildResponse(
-                                                    500,
-                                                    'Error al obtener una de las partes pendientes de recepcion',
-                                                    null
-                                                );
-                
-                                                $success = false;
-                                                
-                                                break;
-                                            }                                   
-                                        }
-                                    }
-                                    else
-                                    {
-                                        // If there aren't OcParte waiting for the entered Parte
-                                        $response = HelpController::buildResponse(
-                                            409,
-                                            'No se han encontrado partes para recepcionar desde el comprador seleccionado',
-                                            null
-                                        );
-    
-                                        $success = false;
-                                    }
-                                }
-                                else
-                                {
-                                    $response = HelpController::buildResponse(
-                                        500,
-                                        'Error al obtener las partes pendiente de recepcion',
-                                        null
-                                    );
-
-                                    $success = false;
-                                }
-
-                                if($success === true)
-                                {
-                                    DB::commit();
-                                        
-                                    $response = HelpController::buildResponse(
-                                        201,
-                                        'Recepcion creada',
-                                        null
-                                    );
-                                }
-                                else
-                                {
-                                    DB::rollback();
-                                }
-
-                            }
-                            else
-                            {
-                                DB::rollback();
-
-                                $response = HelpController::buildResponse(
-                                    500,
-                                    'Error al crear la recepcion',
-                                    null
-                                );
-                            }
-                        }
-                        else
-                        {
-                            $response = HelpController::buildResponse(
-                                412,
-                                'El comprador no existe',
-                                null
-                            );
-                        }                      
-                    }
-                    else
-                    {
-                        $response = HelpController::buildResponse(
-                            412,
-                            'El centro de distribucion no existe',
-                            null
-                        );
-                    }
-                }
-            }
-            else
-            {
-                $response = HelpController::buildResponse(
-                    405,
-                    'No tienes acceso a registrar recepciones para centro de distribucion',
-                    null
-                );
-            }
-        }
-        catch(\Exception $e)
-        {
-            $response = HelpController::buildResponse(
-                500,
-                'Error al crear la recepcion [!]',
-                null
-            );
-        }
-        
-        return $response;
-    }
-
-
-    public function show_centrodistribucion($centrodistribucion_id, $id)
-    {
-        try
-        {
-            $user = Auth::user();
-            if($user->role->hasRoutepermission('centrosdistribucion recepciones_show'))
-            {
-                $validatorInput = ['recepcion_id' => $id];
-            
-                $validatorRules = [
-                    'recepcion_id' => 'required|exists:recepciones,id,recepcionable_id,' . $centrodistribucion_id . ',recepcionable_type,' . get_class(new Sucursal()),
-                ];
-        
-                $validatorMessages = [
-                    'recepcion_id.required' => 'Debes ingresar la recepcion',
-                    'recepcion_id.exists' => 'La recepcion ingresada no existe para el centro de distribucion',                    
-                ];
-        
-                $validator = Validator::make(
-                    $validatorInput,
-                    $validatorRules,
-                    $validatorMessages
-                );
-        
-                if ($validator->fails()) 
-                {
-                    $response = HelpController::buildResponse(
-                        400,
-                        $validator->errors(),
-                        null
-                    );
-                }
-                else        
-                {
-                    if($centrodistribucion = Sucursal::where('id', $centrodistribucion_id)->where('type', 'centro')->first())
-                    {
-                        if($recepcion = $centrodistribucion->recepciones->find($id))
-                        {
-                            $recepcion->makeHidden([
-                                'sourceable_id',
-                                'sourceable_type',
-                                'recepcionable_id',
-                                'recepcionable_type',
-                                'partes_total',
-                                'updated_at',
-                            ]);
-
-                            $recepcion->recepcionable;
-                            $recepcion->recepcionable->makeHidden([
-                                'rut',
-                                'address',
-                                'city',
-                                'contact',
-                                'phone',
-                                'country_id',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-
-                            $recepcion->sourceable;
-                            $recepcion->sourceable->makeHidden([
-                                'comprador_id',
-                                'rut',
-                                'address',
-                                'city',
-                                'contact',
-                                'phone',
-                                'country_id',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-
-                            $recepcion->sourceable->country;
-                            $recepcion->sourceable->country->makeHidden([
-                                'created_at', 
-                                'updated_at'
-                            ]);
-
-                            $recepcion->partes;
-                            foreach($recepcion->partes as $parte)
-                            {                                
-                                $parte->makeHidden([
-                                    'marca_id',
-                                    'created_at', 
-                                    'updated_at'
-                                ]);
-
-                                $parte->pivot->makeHidden([
-                                    'recepcion_id',
-                                    'parte_id',
-                                    'created_at',
-                                    'updated_at',
-                                ]);
-
-                                $parte->marca;
-                                $parte->marca->makeHidden(['created_at', 'updated_at']);
-                            }
-                            
-                            $response = HelpController::buildResponse(
-                                200,
-                                null,
-                                $recepcion
-                            );
-                        }   
-                        else     
-                        {
-                            $response = HelpController::buildResponse(
-                                412,
-                                'La recepcion no existe',
-                                null
-                            );
-                        }                        
-                    }
-                    else
-                    {
-                        $response = HelpController::buildResponse(
-                            412,
-                            'El centro de distribucion no existe',
-                            null
-                        );
-                    }
-                }
-            }
-            else
-            {
-                $response = HelpController::buildResponse(
-                    405,
-                    'No tienes acceso a visualizar recepciones de centro de distribucion',
-                    null
-                );
-            }
-        }
-        catch(\Exception $e)
-        {
-            $response = HelpController::buildResponse(
-                500,
-                'Error al obtener la recepcion [!]',
-                null
-            );
-        }
-        
-        return $response;
-    }
-
-
-    /**
-     * It retrieves all the required info for
-     * selecting data and updating a Recepcion for Sucursal (centro)
-     * 
-     */
-    public function update_prepare_centrodistribucion($centrodistribucion_id, $id)
-    {
-        try
-        {
-            $user = Auth::user();
-            if($user->role->hasRoutepermission('centrosdistribucion recepciones_update'))
-            {
-                $validatorInput = ['recepcion_id' => $id];
-            
-                $validatorRules = [
-                    'recepcion_id' => 'required|exists:recepciones,id,recepcionable_id,' . $centrodistribucion_id . ',recepcionable_type,' . get_class(new Sucursal()),
-                ];
-        
-                $validatorMessages = [
-                    'recepcion_id.required' => 'Debes ingresar la recepcion',
-                    'recepcion_id.exists' => 'La recepcion ingresada no existe para el centro de distribucion',                    
-                ];
-        
-                $validator = Validator::make(
-                    $validatorInput,
-                    $validatorRules,
-                    $validatorMessages
-                );
-        
-                if ($validator->fails()) 
-                {
-                    $response = HelpController::buildResponse(
-                        400,
-                        $validator->errors(),
-                        null
-                    );
-                }
-                else        
-                {
-                    if($centrodistribucion = Sucursal::where('id', $centrodistribucion_id)->where('type', 'centro')->first())
-                    {
-                        if($recepcion = $centrodistribucion->recepciones->find($id))
-                        {
-                            $recepcion->makeHidden([
-                                'recepcionable_id',
-                                'recepcionable_type',
-                                'sourceable_id',
-                                'sourceable_type',
-                                'partes_total',
-                                'updated_at',
-                            ]);
-
-                            $recepcion->recepcionable;
-                            $recepcion->recepcionable->makeHidden([
-                                'rut',
-                                'address',
-                                'city',
-                                'contact',
-                                'phone',
-                                'country_id',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-
-                            $recepcion->sourceable;
-                            $recepcion->sourceable->makeHidden([
-                                'comprador_id',
-                                'rut',
-                                'address',
-                                'city',
-                                'contact',
-                                'phone',
-                                'country_id',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-
-                            $recepcion->sourceable->country;
-                            $recepcion->sourceable->country->makeHidden([
-                                'created_at', 
-                                'updated_at'
-                            ]);
-
-                            $recepcion->partes;
-                            foreach($recepcion->partes as $parte)
-                            {                                
-                                $parte->makeHidden([
-                                    'marca_id',
-                                    'created_at', 
-                                    'updated_at'
-                                ]);
-
-                                $parte->pivot->makeHidden([
-                                    'recepcion_id',
-                                    'parte_id',
-                                    'created_at',
-                                    'updated_at',
-                                ]);
-
-                                $parte->marca;
-                                $parte->marca->makeHidden(['created_at', 'updated_at']);
-                            }
-
-                            if(get_class($recepcion->sourceable) === get_class(new Comprador()))
-                            {
-                                // Gets all the partes in Despacho to the Sucursal from the Comprador
-                                $parteDespachoList = ParteDespacho::select('despacho_parte.*')
-                                                    ->join('despachos', 'despachos.id', '=', 'despacho_parte.despacho_id')
-                                                    ->where('despachos.despachable_type', get_class($recepcion->sourceable))
-                                                    ->where('despachos.despachable_id', $recepcion->sourceable->id) // From the Comprador
-                                                    ->where('despachos.destinable_type', get_class($centrodistribucion))
-                                                    ->where('despachos.destinable_id', $centrodistribucion->id) // To the Sucursal
-                                                    ->get();
-                                                    
-
-                                if($parteDespachoList !== null)
-                                {
-                                    $cantidadesDespacho = $parteDespachoList->reduce(function($carry, $parteDespacho)
-                                        {
-                                            if(isset($carry[$parteDespacho->parte->id]))
-                                            {
-                                                $carry[$parteDespacho->parte->id] += $parteDespacho->cantidad;
-                                            }
-                                            else
-                                            {
-                                                $carry[$parteDespacho->parte->id] = $parteDespacho->cantidad;
-                                            }
-    
-                                            return $carry;
-                                        }, 
-                                        array()
-                                    );
-
-                                    $success = true;
-                                    $queuePartes = array();
-    
-                                    foreach(array_keys($cantidadesDespacho) as $parteId)
-                                    {
-                                        if($parte = Parte::find($parteId))
-                                        {
-                                            // Get cantidad total in Recepciones at Sucursal (centro) from Comprador
-                                            $cantidadPendiente = $cantidadesDespacho[$parteId] - $parte->getCantidadRecepcionado_sourceable($centrodistribucion, $recepcion->sourceable);
-                                            $cantidadDespachos = 0;
-
-                                            // If the Parte is already in the Recepcion, then add the cantidad to queue calc in Despachos if already taken
-                                            if($p = $recepcion->partes->find($parte->id))
-                                            {
-                                                $cantidadPendiente = $cantidadPendiente + $p->pivot->cantidad;
-                                                $cantidadDespachos = $parte->getCantidadEntregado($centrodistribucion) + $parte->getCantidadDespachado($centrodistribucion) - ($parte->getCantidadRecepcionado($centrodistribucion) - $p->pivot->cantidad);
-                                                $cantidadDespachos = $cantidadDespachos >= 0 ? $cantidadDespachos : 0;
-                                            }
-
-                                            if($cantidadPendiente > 0)
-                                            {
-                                                $parteData = [
-                                                    "id" => $parte->id,
-                                                    "nparte" => $parte->nparte,
-                                                    "marca" => $parte->marca->makeHidden(['created_at', 'updated_at']),
-                                                    "cantidad_pendiente" => $cantidadPendiente,
-                                                    "cantidad_despachos" => $cantidadDespachos
-                                                ];
-    
-                                                array_push($queuePartes, $parteData);
-                                            }
-                                        }
-                                        else
-                                        {
-                                            $response = HelpController::buildResponse(
-                                                500,
-                                                'Error al obtener una de las partes pendientes de recepcion',
-                                                null
-                                            );
-    
-                                            $success = false;
-                                            
-                                            break;
-                                        }
-                                    }
-
-                                    if($success === true)
-                                    {
-                                        $data = [
-                                            'recepcion' => $recepcion,
-                                            'queue_partes' => $queuePartes
-                                        ];
-        
-                                        $response = HelpController::buildResponse(
-                                            200,
-                                            null,
-                                            $data
-                                        );
-                                    }
-                                    else
-                                    {
-                                        $response = HelpController::buildResponse(
-                                            500,
-                                            'Error al obtener partes pendiente de recepcion',
-                                            null
-                                        );
-                                    }
-                                }
-                                else
-                                {
-                                    $response = HelpController::buildResponse(
-                                        500,
-                                        'Error al obtener partes pendiente de recepcion',
-                                        null
-                                    );
-                                }
-                            }
-                            else
-                            {
-                                $response = HelpController::buildResponse(
-                                    500,
-                                    'Error al obtener el comprador de la recepcion',
-                                    null
-                                );
-                            }
-                        }   
-                        else     
-                        {
-                            $response = HelpController::buildResponse(
-                                412,
-                                'La recepcion no existe',
-                                null
-                            );
-                        }                        
-                    }
-                    else
-                    {
-                        $response = HelpController::buildResponse(
-                            412,
-                            'El centro de distribucion no existe',
-                            null
-                        );
-                    }
-                }
-            }
-            else
-            {
-                $response = HelpController::buildResponse(
-                    405,
-                    'No tienes acceso a actualizar recepciones de centro de distribucion',
-                    null
-                );
-            }
-        }
-        catch(\Exception $e)
-        {
-            $response = HelpController::buildResponse(
-                500,
-                'Error al obtener la recepcion [!]',
-                null
-            );
-        }
-        
-        return $response;
-    }
-
-
-    public function update_centrodistribucion(Request $request, $centrodistribucion_id, $id)
-    {
-        try
-        {
-            $user = Auth::user();
-            if($user->role->hasRoutepermission('centrosdistribucion recepciones_update'))
-            {
-                $validatorInput = $request->only('fecha', 'ndocumento', 'responsable', 'comentario', 'partes');
-            
-                $validatorRules = [
-                    'fecha' => 'required|date_format:Y-m-d|before:tomorrow', // it includes today
-                    'ndocumento' => 'nullable|min:1',
-                    'responsable' => 'required|min:1',
-                    'comentario' => 'sometimes|nullable',
-                    'partes' => 'required|array|min:1',
-                    'partes.*.id'  => 'required|exists:partes,id',
-                    'partes.*.cantidad'  => 'required|numeric|min:1',
-                    'partes.*.comentario'  => 'sometimes|nullable'
-                ];
-        
-                $validatorMessages = [
-                    'fecha.required' => 'Debes ingresar la fecha de recepcion',
-                    'fecha.date_format' => 'El formato de fecha de recepcion es invalido',
-                    'fecha.before' => 'La fecha debe ser igual o anterior a hoy',
-                    'ndocumento.min' => 'El numero de documento debe tener al menos un digito',
-                    'responsable.required' => 'Debes ingresar el nombre de la persona que recepciona',
-                    'responsable.min' => 'El nombre de la persona que recepciona debe tener al menos un digito',
-                    'partes.required' => 'Debes seleccionar las partes recepcionadas',
-                    'partes.array' => 'Lista de partes recepcionadas invalida',
-                    'partes.min' => 'La recepcion debe contener al menos 1 parte recepcionada',
-                    'partes.*.id.required' => 'La lista de partes recepcionadas es invalida',
-                    'partes.*.id.exists' => 'La parte recepcionada ingresada no existe',
-                    'partes.*.cantidad.required' => 'Debes ingresar la cantidad para la parte recepcionada',
-                    'partes.*.cantidad.numeric' => 'La cantidad para la parte recepcionada debe ser numerica',
-                    'partes.*.cantidad.min' => 'La cantidad para la parte recepcionada debe ser mayor a 0',
-                ];
-        
-                $validator = Validator::make(
-                    $validatorInput,
-                    $validatorRules,
-                    $validatorMessages
-                );
-        
-                if ($validator->fails()) 
-                {
-                    $response = HelpController::buildResponse(
-                        400,
-                        $validator->errors(),
-                        null
-                    );
-                }
-                else        
-                {
-                    if($centrodistribucion = Sucursal::where('id', $centrodistribucion_id)->where('type', 'centro')->first())
-                    {
-                        if($recepcion = $centrodistribucion->recepciones->find($id))
-                        {
-                            DB::beginTransaction();
-
-                            // Fill the data
-                            $recepcion->fecha = $request->fecha;
-                            $recepcion->ndocumento = $request->ndocumento;
-                            $recepcion->responsable = $request->responsable;
-                            $recepcion->comentario = $request->comentario;
-
-                            if($recepcion->save())
-                            {
-                                // Gets all the partes in Despacho to the Sucursal (centro) from the Comprador
-                                if(
-                                    $parteDespachoList = ParteDespacho::select('despacho_parte.*')
-                                                        ->join('despachos', 'despachos.id', '=', 'despacho_parte.despacho_id')
-                                                        ->where('despachos.despachable_type', get_class($recepcion->sourceable))
-                                                        ->where('despachos.despachable_id', $recepcion->sourceable->id) // From the Comprador
-                                                        ->where('despachos.destinable_type', get_class($centrodistribucion))
-                                                        ->where('despachos.destinable_id', $centrodistribucion->id) // To the Sucursal
-                                                        ->get()
-                                )
-                                {
-                                    if($parteDespachoList->count() > 0)
-                                    {
-                                        $despachoCantidades = $parteDespachoList->reduce(function($carry, $parteDespacho)
-                                            {
-                                                if(isset($carry[$parteDespacho->parte->id]))
-                                                {
-                                                    $carry[$parteDespacho->parte->id] += $parteDespacho->cantidad;
-                                                }
-                                                else
-                                                {
-                                                    $carry[$parteDespacho->parte->id] = $parteDespacho->cantidad;
-                                                }
-
-                                                return $carry;
-                                            }, 
-                                            array()
-                                        );
-
-                                        // Get new cantidades array
-                                        $newCantidades = array_reduce($request->partes, function($carry, $parte)
-                                            {
-                                                $carry[$parte['id']] = $parte['cantidad'];
-
-                                                return $carry;
-                                            },
-                                            array()
-                                        );
-
-
-                                        // Get previous cantidades array
-                                        $previousCantidades = $recepcion->partes->reduce(function($carry, $parte)
-                                            {
-                                                if(isset($carry[$parte->id]))
-                                                {
-                                                    // If parte is already in the list, adds the cantidad in ParteRecepcion to the total
-                                                    $carry[$parte->id] += $parte->pivot->cantidad;
-                                                }
-                                                else
-                                                {
-                                                    // If parte is not in the list, inserts the parte to the list
-                                                    $carry[$parte->id] = $parte->pivot->cantidad;
-                                                }
-
-                                                return $carry;
-                                            },
-                                            array()
-                                        );
-
-                                        // Define diff cantidades array between the previous and the new one
-                                        $diffCantidades = array();
-                                        // For all the previous partes
-                                        foreach(array_keys($previousCantidades) as $parteId)
-                                        {
-                                            if(isset($newCantidades[$parteId]))
-                                            {
-                                                // If it comes in the new list, sets the new cantidad
-                                                $diffCantidades[$parteId] = $newCantidades[$parteId] - $previousCantidades[$parteId];
-                                            }
-                                            else
-                                            {
-                                                // If it doesn't come, rest the previous cantidad as negative (the ParteRecepcion will be removed)
-                                                $diffCantidades[$parteId] = $previousCantidades[$parteId] * -1;
-                                            }
-                                        }
-
-                                        // If there are new partes weren't catched in previous list, then add them to the diff list
-                                        foreach(array_keys($newCantidades) as $parteId)
-                                        {
-                                            // If the new parte isn't in the diff list
-                                            if(!isset($diffCantidades[$parteId]))
-                                            {
-                                                // Add the new parte to the diff list
-                                                $diffCantidades[$parteId] = $newCantidades[$parteId];
-                                            }
-                                        }
-
-                                        $success = true;
-
-                                        // For all the partes in diff list
-                                        foreach(array_keys($diffCantidades) as $parteId)
-                                        {
-                                            if(isset($despachoCantidades[$parteId]))
-                                            {
-                                                // If we are removing parts from the recepcion
-                                                if($diffCantidades[$parteId] < 0)
-                                                {       
-                                                    if($parte = $recepcion->partes->find($parteId))
-                                                    {
-                                                        // Calc pendiente using cantidad in Despachos - cantidad in Recepciones for Sucursal (centro) - diff (negative sum)
-                                                        $cantidadPendiente = $despachoCantidades[$parteId] - $parte->getCantidadRecepcionado_sourceable($centrodistribucion, $recepcion->sourceable) - $diffCantidades[$parteId];
-                                                        if($cantidadPendiente >= 0)
-                                                        {
-                                                            // Calc stock using cantidad in Recepciones for Sucursal (centro) - diff (negative sum)  - cantidad in Entregas - cantidad in Despachos
-                                                            $cantidadStock = $parte->getCantidadRecepcionado($centrodistribucion) + $diffCantidades[$parteId] - $parte->getCantidadEntregado($centrodistribucion) - $parte->getCantidadDespachado($centrodistribucion);                          
-                                                            if($cantidadStock >= 0)
-                                                            {
-                                                                // If cantidad the same than in previousCantidad, we're removing the ParteRecepcion
-                                                                if($previousCantidades[$parteId] === abs($diffCantidades[$parteId]))
-                                                                {
-                                                                    if(!$recepcion->partes()->detach($parteId))
-                                                                    {
-                                                                        $response = HelpController::buildResponse(
-                                                                            500,
-                                                                            'Error al eliminar una parte de la recepcion',
-                                                                            null
-                                                                        );
-                                    
-                                                                        $success = false;
-                                    
-                                                                        break;
-                                                                    }
-                                                                }
-                                                                else
-                                                                {
-                                                                    // Set new cantidad adding the negative diff
-                                                                    $parte->pivot->cantidad = $parte->pivot->cantidad + $diffCantidades[$parteId];
-                                                                    if(!$parte->pivot->save())
-                                                                    {
-                                                                        $response = HelpController::buildResponse(
-                                                                            500,
-                                                                            'Error al actualizar una parte de la recepcion',
-                                                                            null
-                                                                        );
-                                    
-                                                                        $success = false;
-                                    
-                                                                        break;
-                                                                    }
-                                                                }
-                                                            }
-                                                            else
-                                                            {
-                                                                // If the received parts are more than waiting in queue
-                                                                $response = HelpController::buildResponse(
-                                                                    409,
-                                                                    'La cantidad ingresada para la parte "' . $parte->nparte . '" es menor a la cantidad ya despachada',
-                                                                    null
-                                                                );
-                            
-                                                                $success = false;
-                            
-                                                                break;
-                                                            }
-                                                        }
-                                                        else
-                                                        {
-                                                            // If the received parts are more than waiting in queue
-                                                            $response = HelpController::buildResponse(
-                                                                409,
-                                                                'La cantidad ingresada para la parte "' . $parte->nparte . '" es mayor a la cantidad pendiente de recepcion',
-                                                                null
-                                                            );
-                        
-                                                            $success = false;
-                        
-                                                            break;
-                                                        }
-                                                        
-                                                    }
-                                                    else
-                                                    {
-                                                        $response = HelpController::buildResponse(
-                                                            500,
-                                                            'Error al obtener una de las partes pendientes de recepcion',
-                                                            null
-                                                        );
-            
-                                                        $success = false;
-            
-                                                        break;
-                                                    }
-                                                }
-                                                // If we are adding more parts to the recepcion
-                                                else if($diffCantidades[$parteId] > 0)
-                                                {
-                                                    // If the Parte is kept in Recepcion
-                                                    if(isset($previousCantidades[$parteId]))
-                                                    {
-                                                        if($parte = $recepcion->partes->find($parteId))
-                                                        {
-                                                            // Calc pendiente using cantidad in Despachos - cantidad in Recepciones for Sucursal (centro) - diff
-                                                            $cantidadPendiente = $despachoCantidades[$parteId] - $parte->getCantidadRecepcionado_sourceable($centrodistribucion, $recepcion->sourceable) - $diffCantidades[$parteId];
-                                                            if($cantidadPendiente >= 0)
-                                                            {
-                                                                // Calc stock using cantidad in Recepciones for Sucursal (centro) + diff - cantidad in Entregas - cantidad in Despachos
-                                                                $cantidadStock = $parte->getCantidadRecepcionado($centrodistribucion) + $diffCantidades[$parteId] - $parte->getCantidadEntregado($centrodistribucion) - $parte->getCantidadDespachado($centrodistribucion);                          
-                                                                if($cantidadStock >= 0)
-                                                                {
-                                                                    // Set new cantidad adding the negative diff
-                                                                    $parte->pivot->cantidad = $parte->pivot->cantidad + $diffCantidades[$parteId];
-                                                                    if(!$parte->pivot->save())
-                                                                    {
-                                                                        $response = HelpController::buildResponse(
-                                                                            500,
-                                                                            'Error al actualizar una parte de la recepcion',
-                                                                            null
-                                                                        );
-                                    
-                                                                        $success = false;
-                                    
-                                                                        break;
-                                                                    }
-                                                                }
-                                                                else
-                                                                {
-                                                                    // If the received parts are more than waiting in queue
-                                                                    $response = HelpController::buildResponse(
-                                                                        409,
-                                                                        'La cantidad ingresada para la parte "' . $parte->nparte . '" es menor a la cantidad ya despachada',
-                                                                        null
-                                                                    );
-                                
-                                                                    $success = false;
-                                
-                                                                    break;
-                                                                }
-                                                            }
-                                                            else
-                                                            {
-                                                                // If the received parts are more than waiting in queue
-                                                                $response = HelpController::buildResponse(
-                                                                    409,
-                                                                    'La cantidad ingresada para la parte "' . $parte->nparte . '" es mayor a la cantidad pendiente de recepcion',
-                                                                    null
-                                                                );
-                            
-                                                                $success = false;
-                            
-                                                                break;
-                                                            }
-                                                            
-                                                        }
-                                                        else
-                                                        {
-                                                            $response = HelpController::buildResponse(
-                                                                500,
-                                                                'Error al obtener una de las partes pendientes de recepcion',
-                                                                null
-                                                            );
-                
-                                                            $success = false;
-                
-                                                            break;
-                                                        }
-                                                    }
-                                                    // If is a new Parte in Recepcion
-                                                    else
-                                                    {
-                                                        if($parte = Parte::find($parteId))
-                                                        {
-                                                            // Calc pendiente using cantidad in Despachos - cantidad in Recepciones from Comprador - diff
-                                                            $cantidadPendiente = $despachoCantidades[$parteId] - $parte->getCantidadRecepcionado_sourceable($centrodistribucion, $recepcion->sourceable) - $diffCantidades[$parteId];
-                                                            if($cantidadPendiente >= 0)
-                                                            {
-                                                                // Calc stock using cantidad in Recepciones for Sucursal (centro) + diff - cantidad in Entregas - cantidad ni Despachos
-                                                                $cantidadStock = $parte->getCantidadRecepcionado($centrodistribucion) + $diffCantidades[$parteId] - $parte->getCantidadEntregado($centrodistribucion) - $parte->getCantidadDespachado($centrodistribucion);                          
-                                                                if($cantidadStock >= 0)
-                                                                {
-                                                                    // Add the new Parte to Recepcion
-                                                                    $recepcion->partes()->attach(
-                                                                        array(
-                                                                            $parteId => array(
-                                                                                "cantidad" => $diffCantidades[$parteId] // For a new Parte, diff contains the full cantidad
-                                                                            )
-                                                                        )
-                                                                    );
-                                                                }
-                                                                else
-                                                                {
-                                                                    // If the received parts are more than waiting in queue
-                                                                    $response = HelpController::buildResponse(
-                                                                        409,
-                                                                        'La cantidad ingresada para la parte "' . $parte->nparte . '" es menor a la cantidad ya despachada',
-                                                                        null
-                                                                    );
-                                
-                                                                    $success = false;
-                                
-                                                                    break;
-                                                                }
-                                                            }
-                                                            else
-                                                            {
-                                                                // If the received parts are more than waiting in queue
-                                                                $response = HelpController::buildResponse(
-                                                                    409,
-                                                                    'La cantidad ingresada para la parte "' . $parte->nparte . '" es mayor a la cantidad pendiente de recepcion',
-                                                                    null
-                                                                );
-                            
-                                                                $success = false;
-                            
-                                                                break;
-                                                            }
-                                                            
-                                                        }
-                                                        else
-                                                        {
-                                                            $response = HelpController::buildResponse(
-                                                                500,
-                                                                'Error al obtener una de las partes pendientes de recepcion',
-                                                                null
-                                                            );
-                
-                                                            $success = false;
-                
-                                                            break;
-                                                        }
-                                                    }
-                                                }
-                                                // If the have the same quantity, nothing changes (diff = 0)
-                                                else
-                                                {
-                                                    //Do nothing, continue the loop
-                                                }
-                                            }
-                                            else
-                                            {
-                                                $response = HelpController::buildResponse(
-                                                    500,
-                                                    'Error al obtener una de las partes pendientes de recepcion',
-                                                    null
-                                                );
-    
-                                                $success = false;
-    
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    else
-                                    {
-                                        // If there aren't OcParte waiting for the entered Parte
-                                        $response = HelpController::buildResponse(
-                                            409,
-                                            'No se han encontrado partes para recepcionar',
-                                            null
-                                        );
-
-                                        $success = false;
-                                    }
-                                }
-                                else
-                                {
-                                    $response = HelpController::buildResponse(
-                                        500,
-                                        'Error al obtener las partes pendiente de recepcion',
-                                        null
-                                    );
-
-                                    $success = false;
-                                
-                                }
-
-                                if($success === true)
-                                {
-                                    DB::commit();
-                                    
-                                    $response = HelpController::buildResponse(
-                                        200,
-                                        'Recepcion actualizada',
-                                        null
-                                    );
-                                }
-                                else
-                                {
-                                    DB::rollback();
-
-                                    // The response error message was already set when success = false
-                                }
-
-                            }
-                            else
-                            {
-                                DB::rollback();
-
-                                $response = HelpController::buildResponse(
-                                    500,
-                                    'Error al actualizar la recepcion',
-                                    null
-                                );
-                            }
-                        }
-                        else
-                        {
-                            $response = HelpController::buildResponse(
-                                412,
-                                'La recepcion no existe',
-                                null
-                            );
-                        }
-                        
-                    }
-                    else
-                    {
-                        $response = HelpController::buildResponse(
-                            412,
-                            'El centro de distribucion no existe',
-                            null
-                        );
-                    }
-                }
-            }
-            else
-            {
-                $response = HelpController::buildResponse(
-                    405,
-                    'No tienes acceso a actualizar recepciones para centro de distribucion',
-                    null
-                );
-            }
-        }
-        catch(\Exception $e)
-        {
-            $response = HelpController::buildResponse(
-                500,
-                'Error al actualizar la recepcion [!]',
-                null
-            );
-        }
-        
-        return $response;
-    }
-
-
-    public function destroy_centrodistribucion($centrodistribucion_id, $id)
-    {
-        try
-        {
-            $user = Auth::user();
-            if($user->role->hasRoutepermission('centrosdistribucion recepciones_destroy'))
-            {
-                if($centrodistribucion = Sucursal::where('id', $centrodistribucion_id)->where('type', 'centro')->first())
-                {
-                    if($recepcion = $centrodistribucion->recepciones->find($id))
-                    {
-                        // Check if Recepcion was sourceable by a Comprador
-                        if(get_class($recepcion->sourceable) === get_class(new Comprador()))
-                        {
-                            DB::beginTransaction();
-
-                            $success = true;
-
-                            // For all the partes in diff list
-                            foreach($recepcion->partes as $parte)
-                            {                                                                       
-                                // Calc stock using cantidad in Recepciones for Sucursal (centro) - cantidad in Recepcion - cantidad in Entregas - cantidad in Despachos
-                                $cantidadStock = $parte->getCantidadRecepcionado($centrodistribucion) - $parte->pivot->cantidad - $parte->getCantidadEntregado($centrodistribucion) - $parte->getCantidadDespachado($centrodistribucion);                          
-                                if($cantidadStock >= 0)
-                                {
-                                    if(!$recepcion->partes()->detach($parte->id))
-                                    {
-                                        $response = HelpController::buildResponse(
-                                            500,
-                                            'Error al eliminar una parte de la recepcion',
-                                            null
-                                        );
-    
-                                        $success = false;
-    
-                                        break;
-                                    }
-                                }
-                                else
-                                {
-                                    $response = HelpController::buildResponse(
-                                        409,
-                                        'La parte "' . $parte->nparte . '" tiene cantidades que ya fueron despachadas por el centro de distribucion',
-                                        null
-                                    );
-
-                                    $success = false;
-
-                                    break;
-                                }
-                            }
-
-                            if($success === true)
-                            {
-                                if($recepcion->delete())
-                                {
-                                    DB::commit();
-
-                                    $response = HelpController::buildResponse(
-                                        200,
-                                        'Recepcion eliminada',
-                                        null
-                                    );
-                                }
-                                else
-                                {
-                                    DB::rollback();
-                                    
-                                    $response = HelpController::buildResponse(
-                                        500,
-                                        'Error al eliminar la recepcion',
-                                        null
-                                    );
-                                }
-                            }
-                            else
-                            {
-                                DB::rollback();
-
-                                // The response error message was already set when success = false
-                            }
-                        }
-                        else
-                        {
-                            $response = HelpController::buildResponse(
-                                500,
-                                'Error al obtener la recepcion',
-                                null
-                            );
-                        }
-                    }
-                    else
-                    {
-                        $response = HelpController::buildResponse(
-                            412,
-                            'La recepcion no existe',
-                            null
-                        );
-                    }
-                    
-                }
-                else
-                {
-                    $response = HelpController::buildResponse(
-                        412,
-                        'El centro de distribucion no existe',
-                        null
-                    );
-                }
-            }
-            else
-            {
-                $response = HelpController::buildResponse(
-                    405,
-                    'No tienes acceso a eliminar recepciones para centro de distribucion',
-                    null
-                );
-            }
-        }
-        catch(\Exception $e)
-        {
-            $response = HelpController::buildResponse(
-                500,
-                'Error al eliminar la recepcion [!]' . $e,
-                null
-            );
-        }
-        
-        return $response;
-    }
-
-    /*
-     *  Sucursal
-     */
-
-    public function index_sucursal($id)
-    {
-        try
-        {
-            $user = Auth::user();
-            if($user->role->hasRoutepermission('sucursales recepciones_index'))
-            {
-                if($sucursal = Sucursal::where('id', $id)->where('type', 'sucursal')->first())
-                {
-                    $sucursal->makeHidden([
-                        'created_at', 
-                        'updated_at'
-                    ]);
-
-                    $sucursal->recepciones;
-                    $sucursal->recepciones = $sucursal->recepciones->filter(function($recepcion)
-                    {
-                        $recepcion->partes_total;
-                        
-                        $recepcion->makeHidden([
-                            'sourceable_id', 
-                            'sourceable_type',
-                            'recepcionable_id', 
-                            'recepcionable_type', 
-                            'created_at', 
-                            'updated_at'
-                        ]);
-                        
-                        $recepcion->partes;
-                        $recepcion->partes = $recepcion->partes->filter(function($parte)
-                        {
-                            $parte->makeHidden([
-                                'marca_id',
-                                'created_at',
-                                'updated_at',
-                            ]);
-
-                            $parte->pivot->makeHidden([
-                                'parte_id',
-                                'recepcion_id',
-                                'created_at',
-                                'updated_at',
-                            ]);
-
-                            $parte->marca;
-                            $parte->marca->makeHidden(['created_at', 'updated_at']);
-
-                            return $parte;
-                        });
-
-                        $recepcion->sourceable;
-                        $recepcion->sourceable->makeHidden([
-                            'type',
-                            'rut',
-                            'address',
-                            'city',
-                            'contact',
-                            'phone',
-                            'country_id',
-                            'created_at', 
-                            'updated_at'
-                        ]);
-
-                        return $recepcion;
-                    });
-
-                    $response = HelpController::buildResponse(
-                        200,
-                        null,
-                        $sucursal->recepciones
-                    );
-                }   
-                else     
-                {
-                    $response = HelpController::buildResponse(
-                        412,
-                        'La sucursal no existe',
-                        null
-                    );
-                }
-            }
-            else
-            {
-                $response = HelpController::buildResponse(
-                    405,
-                    'No tienes acceso a visualizar recepciones de sucursal',
-                    null
-                );
-            }
-        }
-        catch(\Exception $e)
-        {
-            $response = HelpController::buildResponse(
-                500,
-                'Error al obtener las recepciones de la sucursal [!]',
-                null
-            );
-        }
-            
-        return $response;
-    }
-
-
-    public function queuePartes_sucursal($sucursal_id, $centrodistribucion_id)
-    {
-        try
-        {
-            $user = Auth::user();
-            if($user->role->hasRoutepermission('sucursales recepciones_store'))
-            {
-                if($sucursal = Sucursal::where('id', $sucursal_id)
-                            ->where('type', 'sucursal')
-                            ->first()
-                )
-                {
-                    if($centrodistribucion = Sucursal::where('id', $centrodistribucion_id)
-                                            ->where('type', 'centro')
-                                            ->where('country_id', '=', $sucursal->country_id)
-                                            ->first()
-                    )
-                    {
-                        // Gets all the partes in Despacho to the Sucursal from the Sucursal (centro)
-                        $parteDespachoList = ParteDespacho::select('despacho_parte.*')
-                                            ->join('despachos', 'despachos.id', '=', 'despacho_parte.despacho_id')
-                                            ->where('despachos.despachable_type', get_class($centrodistribucion))
-                                            ->where('despachos.despachable_id', $centrodistribucion->id) // From the Sucursal (centro)
-                                            ->where('despachos.destinable_type', get_class($sucursal))
-                                            ->where('despachos.destinable_id', $sucursal->id) // To the Sucursal
-                                            ->get();
-
-
-                        $cantidadesDespacho = $parteDespachoList->reduce(function($carry, $parteDespacho)
-                            {
-                                if(isset($carry[$parteDespacho->parte->id]))
-                                {
-                                    $carry[$parteDespacho->parte->id] += $parteDespacho->cantidad;
-                                }
-                                else
-                                {
-                                    $carry[$parteDespacho->parte->id] = $parteDespacho->cantidad;
-                                }
-
-                                return $carry;
-                            }, 
-                            array()
-                        );
-
-                        $success = true;
-                        $queuePartes = array();
-
-                        foreach(array_keys($cantidadesDespacho) as $parteId)
-                        {
-                            if($parte = Parte::find($parteId))
-                            {
-                                // Get cantidad total in Recepciones at Sucursal from Sucursal (centro)
-                                $cantidadPendiente = $cantidadesDespacho[$parteId] - $parte->getCantidadRecepcionado_sourceable($sucursal, $centrodistribucion);
-
-                                if($cantidadPendiente > 0)
-                                {
-                                    $parteData = [
-                                        "id" => $parte->id,
-                                        "nparte" => $parte->nparte,
-                                        "marca" => $parte->marca->makeHidden(['created_at', 'updated_at']),
-                                        "cantidad_pendiente" => $cantidadPendiente,
-                                        "cantidad_despachos" => $parte->getCantidadDespachado($sucursal) + $parte->getCantidadEntregado($sucursal) 
-                                    ];
-
-                                    array_push($queuePartes, $parteData);
-                                }
-                            }
-                            else
-                            {
-                                $response = HelpController::buildResponse(
-                                    500,
-                                    'Error al obtener una de las partes pendientes de recepcion',
-                                    null
-                                );
-
-                                $success = false;
-                                
-                                break;
-                            }
-                        }
-
-                        if($success === true)
-                        {
-                            $response = HelpController::buildResponse(
-                                200,
-                                null,
-                                $queuePartes
-                            );
-                        }
-                        else
-                        {
-                            // Response already given when success = false
-                        }
-                        
-                    }
-                    else
-                    {
-                        $response = HelpController::buildResponse(
-                            412,
-                            'El centro de distribucion no existe',
-                            null
-                        );
-                    }
-                }   
-                else     
-                {
-                    $response = HelpController::buildResponse(
-                        412,
-                        'La sucursal no existe',
-                        null
-                    );
-                }
-            }
-            else
-            {
-                $response = HelpController::buildResponse(
-                    405,
-                    'No tienes acceso a visualizar partes pendiente de recepcion',
-                    null
-                );
-            }
-        }
-        catch(\Exception $e)
-        {
-            $response = HelpController::buildResponse(
-                500,
-                'Error al obtener partes pendiente de recepcion [!]',
-                null
-            );
-        }
-            
-        return $response;
-    }
-
-
-    public function store_sucursal(Request $request, $sucursal_id)
-    {
-        try
-        {
-            $user = Auth::user();
-            if($user->role->hasRoutepermission('sucursales recepciones_store'))
-            {
-                $validatorInput = $request->only('sucursal_id', 'fecha', 'ndocumento', 'responsable', 'comentario', 'partes');
-            
-                $validatorRules = [
-                    'sucursal_id' => 'required|exists:sucursales,id,type,"centro"', // Source is Sucursal (centro)
-                    'fecha' => 'required|date_format:Y-m-d|before:tomorrow', // it includes today
-                    'ndocumento' => 'nullable|min:1',
-                    'responsable' => 'required|min:1',
-                    'comentario' => 'sometimes|nullable',
-                    'partes' => 'required|array|min:1',
-                    'partes.*.id'  => 'required|exists:partes,id',
-                    'partes.*.cantidad'  => 'required|numeric|min:1',
-                ];
-        
-                $validatorMessages = [
-                    'sucursal_id.required' => 'Debes ingresar el centro de distribucion',
-                    'sucursal_id.exists' => 'El centro de distribucion ingresado no existe',
-                    'fecha.required' => 'Debes ingresar la fecha de recepcion',
-                    'fecha.date_format' => 'El formato de fecha de recepcion es invalido',
-                    'fecha.before' => 'La fecha debe ser igual o anterior a hoy',
-                    'ndocumento.min' => 'El numero de documento debe tener al menos un digito',
-                    'responsable.required' => 'Debes ingresar el nombre de la persona que recibe',
-                    'responsable.min' => 'El nombre de la persona que recibe debe tener al menos un digito',
-                    'partes.required' => 'Debes seleccionar las partes recepcionadas',
-                    'partes.array' => 'Lista de partes recepcionadas invalida',
-                    'partes.min' => 'La recepcion debe contener al menos 1 parte recepcionada',
-                    'partes.*.id.required' => 'La lista de partes recepcionadas es invalida',
-                    'partes.*.id.exists' => 'La parte recepcionada ingresada no existe',
-                    'partes.*.cantidad.required' => 'Debes ingresar la cantidad para la parte recepcionada',
-                    'partes.*.cantidad.numeric' => 'La cantidad para la parte recepcionada debe ser numerica',
-                    'partes.*.cantidad.min' => 'La cantidad para la parte recepcionada debe ser mayor a 0',
-                ];
-        
-                $validator = Validator::make(
-                    $validatorInput,
-                    $validatorRules,
-                    $validatorMessages
-                );
-        
-                if ($validator->fails()) 
-                {
-                    $response = HelpController::buildResponse(
-                        400,
-                        $validator->errors(),
-                        null
-                    );
-                }
-                else        
-                {
-                    if($sucursal = Sucursal::where('id', $sucursal_id)
-                            ->where('type', 'sucursal')
-                            ->first()
-                    )
-                    {
-                        if($centrodistribucion = Sucursal::where('id', $request->sucursal_id)
-                                                ->where('type', 'centro')
-                                                ->where('country_id', '=', $sucursal->country_id)
-                                                ->first()
-                        )
-                        {
-                            DB::beginTransaction();
-
-                            $recepcion = new Recepcion();
-                            // Set the morph source for Recepcion as Sucursal (centro)
-                            $recepcion->sourceable_id = $centrodistribucion->id;
-                            $recepcion->sourceable_type = get_class($centrodistribucion);
-                            // Set the morph for Recepcion as Sucursal
-                            $recepcion->recepcionable_id = $sucursal->id;
-                            $recepcion->recepcionable_type = get_class($sucursal);
-                            // Fill the data
-                            $recepcion->fecha = $request->fecha;
-                            $recepcion->ndocumento = $request->ndocumento;
-                            $recepcion->responsable = $request->responsable;
-                            $recepcion->comentario = $request->comentario;
-
-                            if($recepcion->save())
-                            {
-                                $success = true;
-
-                                $cantidades = array_reduce($request->partes, function($carry, $parte)
-                                    {
-                                        $carry[$parte['id']] = $parte['cantidad'];
-
-                                        return $carry;
-                                    },
-                                    array()
-                                );
-
-                                // For each parte sent, gets the ParteDespacho list for Sucursal from the selected Sucursal (centro)
-                                if($parteDespachoList = ParteDespacho::select('despacho_parte.*')
-                                                ->join('despachos', 'despachos.id', '=', 'despacho_parte.despacho_id')
-                                                ->where('despachos.despachable_type', get_class($centrodistribucion))
-                                                ->where('despachos.despachable_id', $centrodistribucion->id) // From Sucursal (centro)
-                                                ->where('despachos.destinable_type', get_class($sucursal))
-                                                ->where('despachos.destinable_id', $sucursal->id) // To Sucursal
-                                                ->get()
-                                )
-                                {
-                                    if($parteDespachoList->count() > 0)
-                                    {
-                                        $cantidadesDespacho = $parteDespachoList->reduce(function($carry, $parteDespacho)
-                                            {
-                                                if(isset($carry[$parteDespacho->parte->id]))
-                                                {
-                                                    $carry[$parteDespacho->parte->id] += $parteDespacho->cantidad;
-                                                }
-                                                else
-                                                {
-                                                    $carry[$parteDespacho->parte->id] = $parteDespacho->cantidad;
-                                                }
-
-                                                return $carry;
-                                            }, 
-                                            array()
-                                        );
-
-                                        $success = true;
-                                        foreach(array_keys($cantidades) as $parteId)
-                                        {
-                                            if($parte = Parte::find($parteId))
-                                            {
-                                                if(isset($cantidadesDespacho[$parte->id]))
-                                                {
-                                                    // Get cantidad total in Recepciones at Sucursal from Sucursal (centro)
-                                                    $cantidadPendiente = $cantidadesDespacho[$parte->id] - $parte->getCantidadRecepcionado_sourceable($sucursal, $centrodistribucion);
-
-                                                    if($cantidadPendiente > 0)
-                                                    {
-                                                        if($cantidades[$parte->id] <= $cantidadPendiente)
-                                                        {
-
-                                                            $recepcion->partes()->attach(
-                                                                array(
-                                                                    $parte->id => array(
-                                                                        "cantidad" => $cantidades[$parte->id]
-                                                                    )
-                                                                )
-                                                            );
-
-                                                        }
-                                                        else
-                                                        {
-                                                            // If the received parts are more than waiting in queue
-                                                            $response = HelpController::buildResponse(
-                                                                409,
-                                                                'La cantidad ingresada para la parte "' . $parte->nparte . '" es mayor a la cantidad de pendiente de recepcion',
-                                                                null
-                                                            );
-                        
-                                                            $success = false;
-                        
-                                                            break;
-                                                        }
-                                                    }
-                                                    else
-                                                    {
-                                                        // If the entered parte isn't in queue
-                                                        $response = HelpController::buildResponse(
-                                                            409,
-                                                            'La parte "' . $parte->nparte . '" no tiene partes pendiente de recepcion',
-                                                            null
-                                                        );
-                    
-                                                        $success = false;
-                    
-                                                        break;
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    // If the entered parte isn't in queue
-                                                    $response = HelpController::buildResponse(
-                                                        409,
-                                                        'La parte "' . $parte->nparte . '" no tiene partes pendiente de recepcion',
-                                                        null
-                                                    );
-                
-                                                    $success = false;
-                
-                                                    break;
-                                                }
-                                            }
-                                            else
-                                            {
-                                                $response = HelpController::buildResponse(
-                                                    500,
-                                                    'Error al obtener una de las partes pendientes de recepcion',
-                                                    null
-                                                );
-                
-                                                $success = false;
-                                                
-                                                break;
-                                            }                                   
-                                        }
-                                    }
-                                    else
-                                    {
-                                        // If there aren't OcParte waiting for the entered Parte
-                                        $response = HelpController::buildResponse(
-                                            409,
-                                            'No se han encontrado partes para recepcionar desde el centro de distribucion seleccionado',
-                                            null
-                                        );
-    
-                                        $success = false;
-                                    }
-                                }
-                                else
-                                {
-                                    $response = HelpController::buildResponse(
-                                        500,
-                                        'Error al obtener las partes pendiente de recepcion',
-                                        null
-                                    );
-
-                                    $success = false;
-                                }
-
-                                if($success === true)
-                                {
-                                    DB::commit();
-                                        
-                                    $response = HelpController::buildResponse(
-                                        201,
-                                        'Recepcion creada',
-                                        null
-                                    );
-                                }
-                                else
-                                {
-                                    DB::rollback();
-                                }
-
-                            }
-                            else
-                            {
-                                DB::rollback();
-
-                                $response = HelpController::buildResponse(
-                                    500,
-                                    'Error al crear la recepcion',
-                                    null
-                                );
-                            }
-                        }
-                        else
-                        {
-                            $response = HelpController::buildResponse(
-                                412,
-                                'El centro de distribucion no existe',
-                                null
-                            );
-                        }                      
-                    }
-                    else
-                    {
-                        $response = HelpController::buildResponse(
-                            412,
-                            'La sucursal no existe',
-                            null
-                        );
-                    }
-                }
-            }
-            else
-            {
-                $response = HelpController::buildResponse(
-                    405,
-                    'No tienes acceso a registrar recepciones para sucursal',
-                    null
-                );
-            }
-        }
-        catch(\Exception $e)
-        {
-            $response = HelpController::buildResponse(
-                500,
-                'Error al crear la recepcion [!]',
-                null
-            );
-        }
-        
-        return $response;
-    }
-
-
-    public function show_sucursal($sucursal_id, $id)
-    {
-        try
-        {
-            $user = Auth::user();
-            if($user->role->hasRoutepermission('sucursales recepciones_show'))
-            {
-                $validatorInput = ['recepcion_id' => $id];
-            
-                $validatorRules = [
-                    'recepcion_id' => 'required|exists:recepciones,id,recepcionable_id,' . $sucursal_id . ',recepcionable_type,' . get_class(new Sucursal()),
-                ];
-        
-                $validatorMessages = [
-                    'recepcion_id.required' => 'Debes ingresar la recepcion',
-                    'recepcion_id.exists' => 'La recepcion ingresada no existe para la sucursal',                    
-                ];
-        
-                $validator = Validator::make(
-                    $validatorInput,
-                    $validatorRules,
-                    $validatorMessages
-                );
-        
-                if ($validator->fails()) 
-                {
-                    $response = HelpController::buildResponse(
-                        400,
-                        $validator->errors(),
-                        null
-                    );
-                }
-                else        
-                {
-                    if($sucursal = Sucursal::where('id', $sucursal_id)->where('type', 'sucursal')->first())
-                    {
-                        if($recepcion = $sucursal->recepciones->find($id))
-                        {
-                            $recepcion->makeHidden([
-                                'sourceable_id',
-                                'sourceable_type',
-                                'recepcionable_id',
-                                'recepcionable_type',
-                                'partes_total',
-                                'updated_at',
-                            ]);
-
-                            $recepcion->recepcionable;
-                            $recepcion->recepcionable->makeHidden([
-                                'type',
-                                'rut',
-                                'address',
-                                'city',
-                                'contact',
-                                'phone',
-                                'country_id',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-
-                            $recepcion->sourceable;
-                            $recepcion->sourceable->makeHidden([
-                                'type',
-                                'rut',
-                                'address',
-                                'city',
-                                'contact',
-                                'phone',
-                                'country_id',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-
-                            $recepcion->partes;
-                            foreach($recepcion->partes as $parte)
-                            {                                
-                                $parte->makeHidden([
-                                    'marca_id',
-                                    'created_at', 
-                                    'updated_at'
-                                ]);
-
-                                $parte->pivot->makeHidden([
-                                    'recepcion_id',
-                                    'parte_id',
-                                    'created_at',
-                                    'updated_at',
-                                ]);
-
-                                $parte->marca;
-                                $parte->marca->makeHidden(['created_at', 'updated_at']);
-                            }
-                            
-                            $response = HelpController::buildResponse(
-                                200,
-                                null,
-                                $recepcion
-                            );
-                        }   
-                        else     
-                        {
-                            $response = HelpController::buildResponse(
-                                412,
-                                'La recepcion no existe',
-                                null
-                            );
-                        }                        
-                    }
-                    else
-                    {
-                        $response = HelpController::buildResponse(
-                            412,
-                            'La sucursal no existe',
-                            null
-                        );
-                    }
-                }
-            }
-            else
-            {
-                $response = HelpController::buildResponse(
-                    405,
-                    'No tienes acceso a visualizar recepciones de sucursal',
-                    null
-                );
-            }
-        }
-        catch(\Exception $e)
-        {
-            $response = HelpController::buildResponse(
-                500,
-                'Error al obtener la recepcion [!]',
-                null
-            );
-        }
-        
-        return $response;
-    }
-
-
-    /**
-     * It retrieves all the required info for
-     * selecting data and updating a Recepcion for Sucursal
-     * 
-     */
-    public function update_prepare_sucursal($sucursal_id, $id)
-    {
-        try
-        {
-            $user = Auth::user();
-            if($user->role->hasRoutepermission('sucursales recepciones_update'))
-            {
-                $validatorInput = ['recepcion_id' => $id];
-            
-                $validatorRules = [
-                    'recepcion_id' => 'required|exists:recepciones,id,recepcionable_id,' . $sucursal_id . ',recepcionable_type,' . get_class(new Sucursal()),
-                ];
-        
-                $validatorMessages = [
-                    'recepcion_id.required' => 'Debes ingresar la recepcion',
-                    'recepcion_id.exists' => 'La recepcion ingresada no existe para la sucursal',                    
-                ];
-        
-                $validator = Validator::make(
-                    $validatorInput,
-                    $validatorRules,
-                    $validatorMessages
-                );
-        
-                if ($validator->fails()) 
-                {
-                    $response = HelpController::buildResponse(
-                        400,
-                        $validator->errors(),
-                        null
-                    );
-                }
-                else        
-                {
-                    if($sucursal = Sucursal::where('id', $sucursal_id)->where('type', 'sucursal')->first())
-                    {
-                        if($recepcion = $sucursal->recepciones->find($id))
-                        {
-                            $recepcion->makeHidden([
-                                'recepcionable_id',
-                                'recepcionable_type',
-                                'sourceable_id',
-                                'sourceable_type',
-                                'partes_total',
-                                'updated_at',
-                            ]);
-
-                            $recepcion->recepcionable;
-                            $recepcion->recepcionable->makeHidden([
-                                'type',
-                                'rut',
-                                'address',
-                                'city',
-                                'contact',
-                                'phone',
-                                'country_id',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-
-                            $recepcion->sourceable;
-                            $recepcion->sourceable->makeHidden([
-                                'type',
-                                'rut',
-                                'address',
-                                'city',
-                                'contact',
-                                'phone',
-                                'country_id',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-
-                            $recepcion->partes;
-                            foreach($recepcion->partes as $parte)
-                            {                                
-                                $parte->makeHidden([
-                                    'marca_id',
-                                    'created_at', 
-                                    'updated_at'
-                                ]);
-
-                                $parte->pivot->makeHidden([
-                                    'recepcion_id',
-                                    'parte_id',
-                                    'created_at',
-                                    'updated_at',
-                                ]);
-
-                                $parte->marca;
-                                $parte->marca->makeHidden(['created_at', 'updated_at']);
-                            }
-
-                            if(get_class($recepcion->sourceable) === get_class(new Sucursal()))
-                            {
-                                // Gets all the partes in Despacho to the Sucursal (centro) from the Sucursal
-                                $parteDespachoList = ParteDespacho::select('despacho_parte.*')
-                                                    ->join('despachos', 'despachos.id', '=', 'despacho_parte.despacho_id')
-                                                    ->where('despachos.despachable_type', get_class($recepcion->sourceable))
-                                                    ->where('despachos.despachable_id', $recepcion->sourceable->id) // From the Sucursal (centro)
-                                                    ->where('despachos.destinable_type', get_class($sucursal))
-                                                    ->where('despachos.destinable_id', $sucursal->id) // To the Sucursal
-                                                    ->get();
-                                                    
-
-                                if($parteDespachoList !== null)
-                                {
-                                    $cantidadesDespacho = $parteDespachoList->reduce(function($carry, $parteDespacho)
-                                        {
-                                            if(isset($carry[$parteDespacho->parte->id]))
-                                            {
-                                                $carry[$parteDespacho->parte->id] += $parteDespacho->cantidad;
-                                            }
-                                            else
-                                            {
-                                                $carry[$parteDespacho->parte->id] = $parteDespacho->cantidad;
-                                            }
-    
-                                            return $carry;
-                                        }, 
-                                        array()
-                                    );
-
-                                    $success = true;
-                                    $queuePartes = array();
-    
-                                    foreach(array_keys($cantidadesDespacho) as $parteId)
-                                    {
-                                        if($parte = Parte::find($parteId))
-                                        {
-                                            // Get cantidad total in Recepciones at Sucursal from Sucursal (centro)
-                                            $cantidadPendiente = $cantidadesDespacho[$parteId] - $parte->getCantidadRecepcionado_sourceable($sucursal, $recepcion->sourceable);
-                                            $cantidadDespachos = 0;
-
-                                            // If the Parte is already in the Recepcion, then add the cantidad to queue calc in Entregas if already taken
-                                            if($p = $recepcion->partes->find($parte->id))
-                                            {
-                                                $cantidadPendiente = $cantidadPendiente + $p->pivot->cantidad;
-                                                $cantidadDespachos = $parte->getCantidadEntregado($sucursal) - ($parte->getCantidadRecepcionado($sucursal) - $p->pivot->cantidad);
-                                                $cantidadDespachos = $cantidadDespachos >= 0 ? $cantidadDespachos : 0;
-                                            }
-
-                                            if($cantidadPendiente > 0)
-                                            {
-                                                $parteData = [
-                                                    "id" => $parte->id,
-                                                    "nparte" => $parte->nparte,
-                                                    "marca" => $parte->marca->makeHidden(['created_at', 'updated_at']),
-                                                    "cantidad_pendiente" => $cantidadPendiente,
-                                                    "cantidad_despachos" => $cantidadDespachos
-                                                ];
-    
-                                                array_push($queuePartes, $parteData);
-                                            }
-                                        }
-                                        else
-                                        {
-                                            $response = HelpController::buildResponse(
-                                                500,
-                                                'Error al obtener una de las partes pendientes de recepcion',
-                                                null
-                                            );
-    
-                                            $success = false;
-                                            
-                                            break;
-                                        }
-                                    }
-
-                                    if($success === true)
-                                    {
-                                        $data = [
-                                            'recepcion' => $recepcion,
-                                            'queue_partes' => $queuePartes
-                                        ];
-        
-                                        $response = HelpController::buildResponse(
-                                            200,
-                                            null,
-                                            $data
-                                        );
-                                    }
-                                    else
-                                    {
-                                        $response = HelpController::buildResponse(
-                                            500,
-                                            'Error al obtener partes pendiente de recepcion',
-                                            null
-                                        );
-                                    }
-                                }
-                                else
-                                {
-                                    $response = HelpController::buildResponse(
-                                        500,
-                                        'Error al obtener partes pendiente de recepcion',
-                                        null
-                                    );
-                                }
-                            }
-                            else
-                            {
-                                $response = HelpController::buildResponse(
-                                    500,
-                                    'Error al obtener el centro de distribucion de la recepcion',
-                                    null
-                                );
-                            }
-                        }   
-                        else     
-                        {
-                            $response = HelpController::buildResponse(
-                                412,
-                                'La recepcion no existe',
-                                null
-                            );
-                        }                        
-                    }
-                    else
-                    {
-                        $response = HelpController::buildResponse(
-                            412,
-                            'La sucursal no existe',
-                            null
-                        );
-                    }
-                }
-            }
-            else
-            {
-                $response = HelpController::buildResponse(
-                    405,
-                    'No tienes acceso a actualizar recepciones de sucursal',
-                    null
-                );
-            }
-        }
-        catch(\Exception $e)
-        {
-            $response = HelpController::buildResponse(
-                500,
-                'Error al obtener la recepcion [!]',
-                null
-            );
-        }
-        
-        return $response;
-    }
-
-
-    public function update_sucursal(Request $request, $sucursal_id, $id)
-    {
-        try
-        {
-            $user = Auth::user();
-            if($user->role->hasRoutepermission('sucursales recepciones_update'))
-            {
-                $validatorInput = $request->only('fecha', 'ndocumento', 'responsable', 'comentario', 'partes');
-            
-                $validatorRules = [
-                    'fecha' => 'required|date_format:Y-m-d|before:tomorrow', // it includes today
-                    'ndocumento' => 'nullable|min:1',
-                    'responsable' => 'required|min:1',
-                    'comentario' => 'sometimes|nullable',
-                    'partes' => 'required|array|min:1',
-                    'partes.*.id'  => 'required|exists:partes,id',
-                    'partes.*.cantidad'  => 'required|numeric|min:1',
-                    'partes.*.comentario'  => 'sometimes|nullable'
-                ];
-        
-                $validatorMessages = [
-                    'fecha.required' => 'Debes ingresar la fecha de recepcion',
-                    'fecha.date_format' => 'El formato de fecha de recepcion es invalido',
-                    'fecha.before' => 'La fecha debe ser igual o anterior a hoy',
-                    'ndocumento.min' => 'El numero de documento debe tener al menos un digito',
-                    'responsable.required' => 'Debes ingresar el nombre de la persona que recepciona',
-                    'responsable.min' => 'El nombre de la persona que recepciona debe tener al menos un digito',
-                    'partes.required' => 'Debes seleccionar las partes recepcionadas',
-                    'partes.array' => 'Lista de partes recepcionadas invalida',
-                    'partes.min' => 'La recepcion debe contener al menos 1 parte recepcionada',
-                    'partes.*.id.required' => 'La lista de partes recepcionadas es invalida',
-                    'partes.*.id.exists' => 'La parte recepcionada ingresada no existe',
-                    'partes.*.cantidad.required' => 'Debes ingresar la cantidad para la parte recepcionada',
-                    'partes.*.cantidad.numeric' => 'La cantidad para la parte recepcionada debe ser numerica',
-                    'partes.*.cantidad.min' => 'La cantidad para la parte recepcionada debe ser mayor a 0',
-                ];
-        
-                $validator = Validator::make(
-                    $validatorInput,
-                    $validatorRules,
-                    $validatorMessages
-                );
-        
-                if ($validator->fails()) 
-                {
-                    $response = HelpController::buildResponse(
-                        400,
-                        $validator->errors(),
-                        null
-                    );
-                }
-                else        
-                {
-                    if($sucursal = Sucursal::where('id', $sucursal_id)->where('type', 'sucursal')->first())
-                    {
-                        if($recepcion = $sucursal->recepciones->find($id))
-                        {
-                            DB::beginTransaction();
-
-                            // Fill the data
-                            $recepcion->fecha = $request->fecha;
-                            $recepcion->ndocumento = $request->ndocumento;
-                            $recepcion->responsable = $request->responsable;
-                            $recepcion->comentario = $request->comentario;
-
-                            if($recepcion->save())
-                            {
-                                // Gets all the partes in Despacho to the Sucursal from the Sucursal (centro)
-                                if(
-                                    $parteDespachoList = ParteDespacho::select('despacho_parte.*')
-                                                        ->join('despachos', 'despachos.id', '=', 'despacho_parte.despacho_id')
-                                                        ->where('despachos.despachable_type', get_class($recepcion->sourceable))
-                                                        ->where('despachos.despachable_id', $recepcion->sourceable->id) // From the Sucursal (centro)
-                                                        ->where('despachos.destinable_type', get_class($sucursal))
-                                                        ->where('despachos.destinable_id', $sucursal->id) // To the Sucursal
-                                                        ->get()
-                                )
-                                {
-                                    if($parteDespachoList->count() > 0)
-                                    {
-                                        $despachoCantidades = $parteDespachoList->reduce(function($carry, $parteDespacho)
-                                            {
-                                                if(isset($carry[$parteDespacho->parte->id]))
-                                                {
-                                                    $carry[$parteDespacho->parte->id] += $parteDespacho->cantidad;
-                                                }
-                                                else
-                                                {
-                                                    $carry[$parteDespacho->parte->id] = $parteDespacho->cantidad;
-                                                }
-
-                                                return $carry;
-                                            }, 
-                                            array()
-                                        );
-
-                                        // Get new cantidades array
-                                        $newCantidades = array_reduce($request->partes, function($carry, $parte)
-                                            {
-                                                $carry[$parte['id']] = $parte['cantidad'];
-
-                                                return $carry;
-                                            },
-                                            array()
-                                        );
-
-
-                                        // Get previous cantidades array
-                                        $previousCantidades = $recepcion->partes->reduce(function($carry, $parte)
-                                            {
-                                                if(isset($carry[$parte->id]))
-                                                {
-                                                    // If parte is already in the list, adds the cantidad in ParteRecepcion to the total
-                                                    $carry[$parte->id] += $parte->pivot->cantidad;
-                                                }
-                                                else
-                                                {
-                                                    // If parte is not in the list, inserts the parte to the list
-                                                    $carry[$parte->id] = $parte->pivot->cantidad;
-                                                }
-
-                                                return $carry;
-                                            },
-                                            array()
-                                        );
-
-                                        // Define diff cantidades array between the previous and the new one
-                                        $diffCantidades = array();
-                                        // For all the previous partes
-                                        foreach(array_keys($previousCantidades) as $parteId)
-                                        {
-                                            if(isset($newCantidades[$parteId]))
-                                            {
-                                                // If it comes in the new list, sets the new cantidad
-                                                $diffCantidades[$parteId] = $newCantidades[$parteId] - $previousCantidades[$parteId];
-                                            }
-                                            else
-                                            {
-                                                // If it doesn't come, rest the previous cantidad as negative (the ParteRecepcion will be removed)
-                                                $diffCantidades[$parteId] = $previousCantidades[$parteId] * -1;
-                                            }
-                                        }
-
-                                        // If there are new partes weren't catched in previous list, then add them to the diff list
-                                        foreach(array_keys($newCantidades) as $parteId)
-                                        {
-                                            // If the new parte isn't in the diff list
-                                            if(!isset($diffCantidades[$parteId]))
-                                            {
-                                                // Add the new parte to the diff list
-                                                $diffCantidades[$parteId] = $newCantidades[$parteId];
-                                            }
-                                        }
-
-                                        $success = true;
-
-                                        // For all the partes in diff list
-                                        foreach(array_keys($diffCantidades) as $parteId)
-                                        {
-                                            if(isset($despachoCantidades[$parteId]))
-                                            {
-                                                // If we are removing parts from the recepcion
-                                                if($diffCantidades[$parteId] < 0)
-                                                {       
-                                                    if($parte = $recepcion->partes->find($parteId))
-                                                    {
-                                                        // Calc pendiente using cantidad in Despachos - cantidad in Recepciones for Sucursal - diff (negative sum)
-                                                        $cantidadPendiente = $despachoCantidades[$parteId] - $parte->getCantidadRecepcionado_sourceable($sucursal, $recepcion->sourceable) - $diffCantidades[$parteId];
-                                                        if($cantidadPendiente >= 0)
-                                                        {
-                                                            // Calc stock using cantidad in Recepciones for Sucursal - diff (negative sum)  - cantidad in Entregas
-                                                            $cantidadStock = $parte->getCantidadRecepcionado($sucursal) + $diffCantidades[$parteId] - $parte->getCantidadEntregado($sucursal);                          
-                                                            if($cantidadStock >= 0)
-                                                            {
-                                                                // If cantidad the same than in previousCantidad, we're removing the ParteRecepcion
-                                                                if($previousCantidades[$parteId] === abs($diffCantidades[$parteId]))
-                                                                {
-                                                                    if(!$recepcion->partes()->detach($parteId))
-                                                                    {
-                                                                        $response = HelpController::buildResponse(
-                                                                            500,
-                                                                            'Error al eliminar una parte de la recepcion',
-                                                                            null
-                                                                        );
-                                    
-                                                                        $success = false;
-                                    
-                                                                        break;
-                                                                    }
-                                                                }
-                                                                else
-                                                                {
-                                                                    // Set new cantidad adding the negative diff
-                                                                    $parte->pivot->cantidad = $parte->pivot->cantidad + $diffCantidades[$parteId];
-                                                                    if(!$parte->pivot->save())
-                                                                    {
-                                                                        $response = HelpController::buildResponse(
-                                                                            500,
-                                                                            'Error al actualizar una parte de la recepcion',
-                                                                            null
-                                                                        );
-                                    
-                                                                        $success = false;
-                                    
-                                                                        break;
-                                                                    }
-                                                                }
-                                                            }
-                                                            else
-                                                            {
-                                                                // If the received parts are more than waiting in queue
-                                                                $response = HelpController::buildResponse(
-                                                                    409,
-                                                                    'La cantidad ingresada para la parte "' . $parte->nparte . '" es menor a la cantidad ya despachada',
-                                                                    null
-                                                                );
-                            
-                                                                $success = false;
-                            
-                                                                break;
-                                                            }
-                                                        }
-                                                        else
-                                                        {
-                                                            // If the received parts are more than waiting in queue
-                                                            $response = HelpController::buildResponse(
-                                                                409,
-                                                                'La cantidad ingresada para la parte "' . $parte->nparte . '" es mayor a la cantidad pendiente de recepcion',
-                                                                null
-                                                            );
-                        
-                                                            $success = false;
-                        
-                                                            break;
-                                                        }
-                                                        
-                                                    }
-                                                    else
-                                                    {
-                                                        $response = HelpController::buildResponse(
-                                                            500,
-                                                            'Error al obtener una de las partes pendientes de recepcion',
-                                                            null
-                                                        );
-            
-                                                        $success = false;
-            
-                                                        break;
-                                                    }
-                                                }
-                                                // If we are adding more parts to the recepcion
-                                                else if($diffCantidades[$parteId] > 0)
-                                                {
-                                                    // If the Parte is kept in Recepcion
-                                                    if(isset($previousCantidades[$parteId]))
-                                                    {
-                                                        if($parte = $recepcion->partes->find($parteId))
-                                                        {
-                                                            // Calc pendiente using cantidad in Despachos - cantidad in Recepciones for Sucursal - diff
-                                                            $cantidadPendiente = $despachoCantidades[$parteId] - $parte->getCantidadRecepcionado_sourceable($sucursal, $recepcion->sourceable) - $diffCantidades[$parteId];
-                                                            if($cantidadPendiente >= 0)
-                                                            {
-                                                                // Calc stock using cantidad in Recepciones for Sucursal + diff - cantidad in Entregas
-                                                                $cantidadStock = $parte->getCantidadRecepcionado($sucursal) + $diffCantidades[$parteId] - $parte->getCantidadEntregado($sucursal);                          
-                                                                if($cantidadStock >= 0)
-                                                                {
-                                                                    // Set new cantidad adding the negative diff
-                                                                    $parte->pivot->cantidad = $parte->pivot->cantidad + $diffCantidades[$parteId];
-                                                                    if(!$parte->pivot->save())
-                                                                    {
-                                                                        $response = HelpController::buildResponse(
-                                                                            500,
-                                                                            'Error al actualizar una parte de la recepcion',
-                                                                            null
-                                                                        );
-                                    
-                                                                        $success = false;
-                                    
-                                                                        break;
-                                                                    }
-                                                                }
-                                                                else
-                                                                {
-                                                                    // If the received parts are more than waiting in queue
-                                                                    $response = HelpController::buildResponse(
-                                                                        409,
-                                                                        'La cantidad ingresada para la parte "' . $parte->nparte . '" es menor a la cantidad ya despachada',
-                                                                        null
-                                                                    );
-                                
-                                                                    $success = false;
-                                
-                                                                    break;
-                                                                }
-                                                            }
-                                                            else
-                                                            {
-                                                                // If the received parts are more than waiting in queue
-                                                                $response = HelpController::buildResponse(
-                                                                    409,
-                                                                    'La cantidad ingresada para la parte "' . $parte->nparte . '" es mayor a la cantidad pendiente de recepcion',
-                                                                    null
-                                                                );
-                            
-                                                                $success = false;
-                            
-                                                                break;
-                                                            }
-                                                            
-                                                        }
-                                                        else
-                                                        {
-                                                            $response = HelpController::buildResponse(
-                                                                500,
-                                                                'Error al obtener una de las partes pendientes de recepcion',
-                                                                null
-                                                            );
-                
-                                                            $success = false;
-                
-                                                            break;
-                                                        }
-                                                    }
-                                                    // If is a new Parte in Recepcion
-                                                    else
-                                                    {
-                                                        if($parte = Parte::find($parteId))
-                                                        {
-                                                            // Calc pendiente using cantidad in Despachos - cantidad in Recepciones from Sucursal (centro) - diff
-                                                            $cantidadPendiente = $despachoCantidades[$parteId] - $parte->getCantidadRecepcionado_sourceable($sucursal, $recepcion->sourceable) - $diffCantidades[$parteId];
-                                                            if($cantidadPendiente >= 0)
-                                                            {
-                                                                // Calc stock using cantidad in Recepciones for Sucursal (centro) + diff - cantidad in Entregas
-                                                                $cantidadStock = $parte->getCantidadRecepcionado($sucursal) + $diffCantidades[$parteId] - $parte->getCantidadEntregado($sucursal);                          
-                                                                if($cantidadStock >= 0)
-                                                                {
-                                                                    // Add the new Parte to Recepcion
-                                                                    $recepcion->partes()->attach(
-                                                                        array(
-                                                                            $parteId => array(
-                                                                                "cantidad" => $diffCantidades[$parteId] // For a new Parte, diff contains the full cantidad
-                                                                            )
-                                                                        )
-                                                                    );
-                                                                }
-                                                                else
-                                                                {
-                                                                    // If the received parts are more than waiting in queue
-                                                                    $response = HelpController::buildResponse(
-                                                                        409,
-                                                                        'La cantidad ingresada para la parte "' . $parte->nparte . '" es menor a la cantidad ya despachada',
-                                                                        null
-                                                                    );
-                                
-                                                                    $success = false;
-                                
-                                                                    break;
-                                                                }
-                                                            }
-                                                            else
-                                                            {
-                                                                // If the received parts are more than waiting in queue
-                                                                $response = HelpController::buildResponse(
-                                                                    409,
-                                                                    'La cantidad ingresada para la parte "' . $parte->nparte . '" es mayor a la cantidad pendiente de recepcion',
-                                                                    null
-                                                                );
-                            
-                                                                $success = false;
-                            
-                                                                break;
-                                                            }
-                                                            
-                                                        }
-                                                        else
-                                                        {
-                                                            $response = HelpController::buildResponse(
-                                                                500,
-                                                                'Error al obtener una de las partes pendientes de recepcion',
-                                                                null
-                                                            );
-                
-                                                            $success = false;
-                
-                                                            break;
-                                                        }
-                                                    }
-                                                }
-                                                // If the have the same quantity, nothing changes (diff = 0)
-                                                else
-                                                {
-                                                    //Do nothing, continue the loop
-                                                }
-                                            }
-                                            else
-                                            {
-                                                $response = HelpController::buildResponse(
-                                                    500,
-                                                    'Error al obtener una de las partes pendientes de recepcion',
-                                                    null
-                                                );
-    
-                                                $success = false;
-    
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    else
-                                    {
-                                        // If there aren't OcParte waiting for the entered Parte
-                                        $response = HelpController::buildResponse(
-                                            409,
-                                            'No se han encontrado partes para recepcionar',
-                                            null
-                                        );
-
-                                        $success = false;
-                                    }
-                                }
-                                else
-                                {
-                                    $response = HelpController::buildResponse(
-                                        500,
-                                        'Error al obtener las partes pendiente de recepcion',
-                                        null
-                                    );
-
-                                    $success = false;
-                                
-                                }
-
-                                if($success === true)
-                                {
-                                    DB::commit();
-                                    
-                                    $response = HelpController::buildResponse(
-                                        200,
-                                        'Recepcion actualizada',
-                                        null
-                                    );
-                                }
-                                else
-                                {
-                                    DB::rollback();
-
-                                    // The response error message was already set when success = false
-                                }
-
-                            }
-                            else
-                            {
-                                DB::rollback();
-
-                                $response = HelpController::buildResponse(
-                                    500,
-                                    'Error al actualizar la recepcion',
-                                    null
-                                );
-                            }
-                        }
-                        else
-                        {
-                            $response = HelpController::buildResponse(
-                                412,
-                                'La recepcion no existe',
-                                null
-                            );
-                        }
-                        
-                    }
-                    else
-                    {
-                        $response = HelpController::buildResponse(
-                            412,
-                            'La sucursal no existe',
-                            null
-                        );
-                    }
-                }
-            }
-            else
-            {
-                $response = HelpController::buildResponse(
-                    405,
-                    'No tienes acceso a actualizar recepciones para sucursal',
-                    null
-                );
-            }
-        }
-        catch(\Exception $e)
-        {
-            $response = HelpController::buildResponse(
-                500,
-                'Error al actualizar la recepcion [!]',
-                null
-            );
-        }
-        
-        return $response;
-    }
-
-
-    public function destroy_sucursal($sucursal_id, $id)
-    {
-        try
-        {
-            $user = Auth::user();
-            if($user->role->hasRoutepermission('sucursales recepciones_destroy'))
-            {
-                if($sucursal = Sucursal::where('id', $sucursal_id)->where('type', 'sucursal')->first())
-                {
-                    if($recepcion = $sucursal->recepciones->find($id))
-                    {
-                        // Check if Recepcion was sourceable by a Sucursal (centro)
-                        if(get_class($recepcion->sourceable) === get_class(new Sucursal()))
-                        {
-                            DB::beginTransaction();
-
-                            $success = true;
-
-                            // For all the partes in diff list
-                            foreach($recepcion->partes as $parte)
-                            {                                                                       
-                                // Calc stock using cantidad in Recepciones for Sucursal - cantidad in Recepcion - cantidad in Entregas
-                                $cantidadStock = $parte->getCantidadRecepcionado($sucursal) - $parte->pivot->cantidad - $parte->getCantidadEntregado($sucursal);                          
-                                if($cantidadStock >= 0)
-                                {
-                                    if(!$recepcion->partes()->detach($parte->id))
-                                    {
-                                        $response = HelpController::buildResponse(
-                                            500,
-                                            'Error al eliminar una parte de la recepcion',
-                                            null
-                                        );
-    
-                                        $success = false;
-    
-                                        break;
-                                    }
-                                }
-                                else
-                                {
-                                    $response = HelpController::buildResponse(
-                                        409,
-                                        'La parte "' . $parte->nparte . '" tiene cantidades que ya fueron despachadas por la sucursal',
-                                        null
-                                    );
-
-                                    $success = false;
-
-                                    break;
-                                }
-                            }
-
-                            if($success === true)
-                            {
-                                if($recepcion->delete())
-                                {
-                                    DB::commit();
-
-                                    $response = HelpController::buildResponse(
-                                        200,
-                                        'Recepcion eliminada',
-                                        null
-                                    );
-                                }
-                                else
-                                {
-                                    DB::rollback();
-                                    
-                                    $response = HelpController::buildResponse(
-                                        500,
-                                        'Error al eliminar la recepcion',
-                                        null
-                                    );
-                                }
-                            }
-                            else
-                            {
-                                DB::rollback();
-
-                                // The response error message was already set when success = false
-                            }
-                        }
-                        else
-                        {
-                            $response = HelpController::buildResponse(
-                                500,
-                                'Error al obtener la recepcion',
-                                null
-                            );
-                        }
-                    }
-                    else
-                    {
-                        $response = HelpController::buildResponse(
-                            412,
-                            'La recepcion no existe',
-                            null
-                        );
-                    }
-                    
-                }
-                else
-                {
-                    $response = HelpController::buildResponse(
-                        412,
-                        'La sucursal no existe',
-                        null
-                    );
-                }
-            }
-            else
-            {
-                $response = HelpController::buildResponse(
-                    405,
-                    'No tienes acceso a eliminar recepciones para sucursal',
-                    null
-                );
-            }
-        }
-        catch(\Exception $e)
-        {
-            $response = HelpController::buildResponse(
-                500,
-                'Error al eliminar la recepcion [!]',
-                null
-            );
-        }
-        
-        return $response;
-    }
-
 }

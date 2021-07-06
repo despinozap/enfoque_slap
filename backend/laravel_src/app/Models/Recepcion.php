@@ -10,8 +10,8 @@ class Recepcion extends Model
     use HasFactory;
 
     protected $table = 'recepciones';
-    protected $fillable = ['fecha'];
-    public $appends = ['partes_total'];
+    protected $appends = ['partes_total'];
+    protected $fillable = ['fecha', 'ndocumento', 'responsable', 'comentario'];
 
     /*
      *  The Recepcion's source.
@@ -29,11 +29,6 @@ class Recepcion extends Model
     public function recepcionable()
     {
         return $this->morphTo();
-    }
-
-    public function oc()
-    {
-        return $this->belongsTo(Oc::class);
     }
 
     public function ocpartes()
