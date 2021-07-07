@@ -3,6 +3,8 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
+import { User } from 'src/app/interfaces/user';
+import { AuthService } from 'src/app/services/auth.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { SolicitudesService } from 'src/app/services/solicitudes.service';
 import { UtilsService } from 'src/app/services/utils.service';
@@ -33,6 +35,9 @@ export class SolicitudesCompleteComponent implements OnInit {
 
   
   dtTrigger: Subject<any> = new Subject<any>();
+  
+  loggedUser: User = null as any;
+  private subLoggedUser: any;
   
   solicitud: any = {
     id: null,
@@ -78,11 +83,21 @@ export class SolicitudesCompleteComponent implements OnInit {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
+    private _authService: AuthService,
     private _solicitudesService: SolicitudesService,
     private _utilsService: UtilsService
   ) { }
 
   ngOnInit(): void {
+    //For loggedUser
+    {
+      this.subLoggedUser = this._authService.loggedUser$.subscribe((data) => {
+        this.loggedUser = data.user as User;
+      });
+      
+      this._authService.notifyLoggedUser(this._authService.NOTIFICATION_RECEIVER_CONTENTPAGE);
+    }
+
     this.sub = this.route.params.subscribe(params => {
       this.solicitud.id = params['id'];
     });
@@ -99,6 +114,7 @@ export class SolicitudesCompleteComponent implements OnInit {
   }
 
   ngOnDestroy() {
+    this.subLoggedUser.unsubscribe();
     this.sub.unsubscribe();
     this.dtTrigger.unsubscribe();
   }
@@ -302,7 +318,11 @@ export class SolicitudesCompleteComponent implements OnInit {
   }
 
   public loadSolicitud(afterExecutedAction: number): void {
-    
+    /*
+     *  AfterExecutionAction:
+     *    0: Nothing
+     *    1: Export to Excel 
+     */
     this.loading = true;
 
     this._solicitudesService.getSolicitud(this.solicitud.id)
@@ -446,6 +466,8 @@ export class SolicitudesCompleteComponent implements OnInit {
         //Success request
         (response: any) => {
 
+          this.dataUpdated = false;
+
           switch(afterExecutedAction)
           {
           
@@ -453,12 +475,27 @@ export class SolicitudesCompleteComponent implements OnInit {
 
               this.loading = false;
 
-              NotificationsService.showToast(
-                response.message,
-                NotificationsService.messageType.success
-              );
+              // If Solicitud is now completed
+              if(response.data.solicitud.estadosolicitud.id === 2) // Estadosolicitud = 'Completa'
+              {
+                // Load solicitud data and stay in page for closing
+                this.loadFormData(response.data.solicitud);
+                // Ask for closing solicitud right away
+                let question = 'Se ha completado la solicitud. ¿La desea cerrar inmediatamente?';
+                this.closeSolicitud(question);
 
-              this.goTo_solicitudesList();
+              }
+              // If Solicitud isn't completed yet
+              else
+              {
+                // Notify success update and go back to list
+                NotificationsService.showToast(
+                  response.message,
+                  NotificationsService.messageType.success
+                );
+  
+                this.goTo_solicitudesList();
+              }
               
               break;
             }
@@ -544,6 +581,105 @@ export class SolicitudesCompleteComponent implements OnInit {
           this.loading = false;
         }
       );
+  }
+
+  public closeSolicitud(question: string | null): void{
+    Swal.fire({
+      title: 'Cerrar solicitud',
+      text: question !== null ? question : `¿Realmente quieres cerrar la solicitud #${ this.solicitud.id }?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#555555',
+      confirmButtonText: 'Sí, continuar',
+      cancelButtonText: 'Cancelar',
+      allowOutsideClick: false
+    }).then((result: any) => {
+      if(result.isConfirmed)
+      {
+        Swal.queue([{
+          title: 'Cerrando..',
+          icon: 'warning',
+          showConfirmButton: false,
+          showCancelButton: false,
+          allowOutsideClick: false,
+          showLoaderOnConfirm: true,
+          preConfirm: () => {
+
+          }    
+        }]);
+
+        this._solicitudesService.closeSolicitud(this.solicitud.id)
+        .subscribe(
+          //Success request
+          (response: any) => {
+
+            NotificationsService.showToast(
+              response.message,
+              NotificationsService.messageType.success
+            );
+
+            this.goTo_solicitudesList();
+          },
+          //Error request
+          (errorResponse: any) => {
+
+            switch(errorResponse.status)
+            {
+              case 400: //Object not found
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.warning
+                );
+
+                break;
+              }
+
+              case 405: //Permission denied
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+              case 409: //Conflict
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+              case 500: //Internal server
+              {
+                NotificationsService.showAlert(
+                  errorResponse.error.message,
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+
+              default: //Unhandled error
+              {
+                NotificationsService.showAlert(
+                  'Error al intentar cerrar la solicitud',
+                  NotificationsService.messageType.error
+                );
+
+                break;
+              }
+            }
+          }
+        );
+      }
+    });
   }
 
   public submitFormParte(): void {
