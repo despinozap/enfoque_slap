@@ -1388,10 +1388,14 @@ class SolicitudesController extends Controller
                                     $parte->marca->makeHidden(['created_at', 'updated_at']);
                                 }
     
+                                $data = [
+                                    "solicitud" => $solicitud
+                                ];
+
                                 $response = HelpController::buildResponse(
                                     200,
-                                    ($completed === true) ? 'Solicitud completa' : 'Solicitud actualizada',
-                                    $solicitud
+                                    'Solicitud actualizada',
+                                    $data
                                 );
                             }
                             else
