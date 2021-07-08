@@ -350,7 +350,12 @@ class DatabaseSeeder extends Seeder
                 'ocs index',
                 'ocs report',
                 'ocs update',
-                'ocs close'
+                'ocs close',
+                //Compradores
+                'compradores recepciones_index',
+                'compradores recepciones_show',
+                'compradores despachos_index',
+                'compradores despachos_show',
             ];
 
             $routePermissionIds = [];
@@ -389,7 +394,18 @@ class DatabaseSeeder extends Seeder
                 'ocs update',
                 'ocs reject',
                 //Proveedores
-                'proveedores index'
+                'proveedores index',
+                //Compradores
+                'compradores recepciones_index',
+                'compradores recepciones_store',
+                'compradores recepciones_show',
+                'compradores recepciones_update',
+                'compradores recepciones_destroy',
+                'compradores despachos_index',
+                'compradores despachos_store',
+                'compradores despachos_show',
+                'compradores despachos_update',
+                'compradores despachos_destroy',
             ];
 
             $routePermissionIds = [];
@@ -415,7 +431,21 @@ class DatabaseSeeder extends Seeder
             $routePermissionNames = [
                 //Loggedactions
                 'loggedactions index',
-                'loggedactions store'
+                'loggedactions store',
+                //Ocs
+                'ocs index',
+                'ocs report',
+                //Compradores
+                'compradores recepciones_index',
+                'compradores recepciones_store',
+                'compradores recepciones_show',
+                'compradores recepciones_update',
+                'compradores recepciones_destroy',
+                'compradores despachos_index',
+                'compradores despachos_store',
+                'compradores despachos_show',
+                'compradores despachos_update',
+                'compradores despachos_destroy'
             ];
 
             $routePermissionIds = [];
@@ -635,36 +665,6 @@ class DatabaseSeeder extends Seeder
 
 
         /*
-        *   Solicitudes
-        */
-        {
-            for($i = 0; $i <= 20; $i++)
-            {
-                $solicitud = new Solicitud();
-                $solicitud->sucursal_id = rand(1, 2);
-                $solicitud->faena_id = 1;
-                $solicitud->marca_id = 1;
-                $solicitud->comprador_id = 1;
-                $solicitud->user_id = 2;
-                $solicitud->estadosolicitud_id = 1;
-                $solicitud->comentario = 'Testing comment for SolicitudTest0' . ($i + 1);
-                $solicitud->save();
-
-                $solicitud->partes()->attach([ 
-                    1 => [
-                        'cantidad' => rand(1, 300),
-                        'descripcion' => 'DescriptionParte-Rand' . rand(100, 999)
-                    ],
-                    2 => [
-                        'cantidad' => rand(1, 300),
-                        'descripcion' => 'DescriptionParte-Rand' . rand(100, 999)
-                    ]
-                ]);
-            } 
-        }
-
-
-        /*
         *   Estado cotizaciones
         */
         $estadocotizacion = new Estadocotizacion();
@@ -693,76 +693,6 @@ class DatabaseSeeder extends Seeder
         $motivorechazo = new Motivorechazo();
         $motivorechazo->name = 'Tiempo';
         $motivorechazo->save();
-
-
-        /*
-        *   Cotizaciones
-        */
-        {
-            $success = true;
-
-            DB::beginTransaction();
-            foreach(Solicitud::where('solicitudes.id', '>=', 4)->get() as $solicitud)
-            {
-                $solicitud->estadosolicitud_id = 3; // Cerrada
-                if($solicitud->save())
-                {
-                    $cotizacion = new Cotizacion();
-                    $cotizacion->solicitud_id = $solicitud->id;
-                    $cotizacion->estadocotizacion_id = 1; //Initial Estadocotizacion
-                    $cotizacion->usdvalue = 760;
-
-                    if($cotizacion->save())
-                    {
-                        //Attaching each Parte to the Cotizacion
-                        $syncData = [];
-                        foreach($solicitud->partes as $parte)
-                        {
-                            $syncData[$parte->id] =  array(
-                                'descripcion' => $parte->pivot->descripcion,
-                                'cantidad' => $parte->pivot->cantidad,
-                                'costo' => rand(1, 250),
-                                'margen' => rand(15, 75),
-                                'tiempoentrega' => rand(0, 40),
-                                'peso' => rand(5, 700),
-                                'flete' => rand(20, 100),
-                                'monto' => rand(2, 900),
-                                'backorder' => rand(0, 1),
-                            );
-                        }
-        
-                        // Fill randomly Partes for Cotizacion and update values on Solicitud
-                        if((!$solicitud->partes()->sync($syncData)) || (!$cotizacion->partes()->sync($syncData)))
-                        {
-                            $success = false;
-
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        $success = false;
-
-                        break;
-                    }
-                }
-                else
-                {
-                    $success = false;
-
-                    break;
-                }
-            }
-
-            if($success === true)
-            {
-                DB::commit();
-            }
-            else
-            {
-                DB::rollback();
-            }
-        }
 
 
         /*
@@ -832,11 +762,105 @@ class DatabaseSeeder extends Seeder
         $estadoocparte->name = 'Entregado';
         $estadoocparte->save();
 
-        
-
         /*
-        *   OCs
+        *   Testing data
         */
+        /*
+        // Solicitudes
+        {
+            for($i = 0; $i <= 20; $i++)
+            {
+                $solicitud = new Solicitud();
+                $solicitud->sucursal_id = rand(1, 2);
+                $solicitud->faena_id = 1;
+                $solicitud->marca_id = 1;
+                $solicitud->comprador_id = 1;
+                $solicitud->user_id = 2;
+                $solicitud->estadosolicitud_id = 1;
+                $solicitud->comentario = 'Testing comment for SolicitudTest0' . ($i + 1);
+                $solicitud->save();
+
+                $solicitud->partes()->attach([ 
+                    1 => [
+                        'cantidad' => rand(1, 300),
+                        'descripcion' => 'DescriptionParte-Rand' . rand(100, 999)
+                    ],
+                    2 => [
+                        'cantidad' => rand(1, 300),
+                        'descripcion' => 'DescriptionParte-Rand' . rand(100, 999)
+                    ]
+                ]);
+            } 
+        }
+
+        // Cotizaciones
+        {
+            $success = true;
+
+            DB::beginTransaction();
+            foreach(Solicitud::where('solicitudes.id', '>=', 4)->get() as $solicitud)
+            {
+                $solicitud->estadosolicitud_id = 3; // Cerrada
+                if($solicitud->save())
+                {
+                    $cotizacion = new Cotizacion();
+                    $cotizacion->solicitud_id = $solicitud->id;
+                    $cotizacion->estadocotizacion_id = 1; //Initial Estadocotizacion
+                    $cotizacion->usdvalue = 760;
+
+                    if($cotizacion->save())
+                    {
+                        //Attaching each Parte to the Cotizacion
+                        $syncData = [];
+                        foreach($solicitud->partes as $parte)
+                        {
+                            $syncData[$parte->id] =  array(
+                                'descripcion' => $parte->pivot->descripcion,
+                                'cantidad' => $parte->pivot->cantidad,
+                                'costo' => rand(1, 250),
+                                'margen' => rand(15, 75),
+                                'tiempoentrega' => rand(0, 40),
+                                'peso' => rand(5, 700),
+                                'flete' => rand(20, 100),
+                                'monto' => rand(2, 900),
+                                'backorder' => rand(0, 1),
+                            );
+                        }
+        
+                        // Fill randomly Partes for Cotizacion and update values on Solicitud
+                        if((!$solicitud->partes()->sync($syncData)) || (!$cotizacion->partes()->sync($syncData)))
+                        {
+                            $success = false;
+
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        $success = false;
+
+                        break;
+                    }
+                }
+                else
+                {
+                    $success = false;
+
+                    break;
+                }
+            }
+
+            if($success === true)
+            {
+                DB::commit();
+            }
+            else
+            {
+                DB::rollback();
+            }
+        }
+        
+        // OCs
         {
             // Create
             foreach(Cotizacion::where('cotizaciones.id', '>=', 8)->get() as $cotizacion)
@@ -914,9 +938,7 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        /*
-         *  Solicitud American Parts, OC Interna: 228.SG
-         */
+        // Solicitud American Parts, OC Interna: 228.SG
         {
             // Solicitud
             {
@@ -1117,8 +1139,11 @@ class DatabaseSeeder extends Seeder
             }
         }
 
+        */
+
+
         /*
-         *  Real cases
+         *  Demo data
          */
         {
             /*

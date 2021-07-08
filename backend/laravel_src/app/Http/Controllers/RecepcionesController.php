@@ -35,13 +35,27 @@ class RecepcionesController extends Controller
                 {
                     $recepciones = null;
                     $oc = null;
+                    $forbidden = false;
 
                     switch($user->role->name)
                     {
+
                         // Administrador
                         case 'admin': {
 
-                            $recepciones = Recepcion::all();
+                            // Get only Recepciones containing OcPartes from OCs generated from its same country
+                            $recepciones = Recepcion::select('recepciones.*')
+                                        ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                        ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                        ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                        ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                        ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                        ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                        ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                        ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
+                                        ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->groupBy('recepciones.id')
+                                        ->get();
 
                             break;
                         }
@@ -49,7 +63,19 @@ class RecepcionesController extends Controller
                         // Vendedor
                         case 'seller': {
 
-                            $recepciones = Recepcion::all();
+                            // Get only Recepciones containing OcPartes from belonging OCs generated from its same Sucursal
+                            $recepciones = Recepcion::select('recepciones.*')
+                                        ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                        ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                        ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                        ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                        ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                        ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                        ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
+                                        ->where('solicitudes.sucursal_id', '=', $user->stationable->id) // Same Sucursal as user station
+                                        ->where('solicitudes.user_id', '=', $user->id) // Belonging to user
+                                        ->groupBy('recepciones.id')
+                                        ->get();
 
                             break;
                         }
@@ -57,7 +83,88 @@ class RecepcionesController extends Controller
                         // Agente de compra
                         case 'agtcom': {
 
-                            $recepciones = Recepcion::all();
+                            // If user belongs to this Comprador
+                            if(
+                                (get_class($user->stationable) === get_class($comprador)) &&
+                                ($user->stationable->id === $comprador->id)
+                            )
+                            {
+                                // Get only Recepciones at its Comprador
+                                $recepciones = Recepcion::select('recepciones.*')
+                                            ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                            ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
+                                            ->get();
+                            }
+                            else
+                            {
+                                // Set as forbidden
+                                $forbidden = true;
+                            }
+
+                            break;
+                        }
+
+                        // Coordinador logistico at Comprador
+                        case 'colcom': {
+
+                            // If user belongs to this Comprador
+                            if(
+                                (get_class($user->stationable) === get_class($comprador)) &&
+                                ($user->stationable->id === $comprador->id)
+                            )
+                            {
+                                // Get only Recepciones at its Comprador
+                                $recepciones = Recepcion::select('recepciones.*')
+                                            ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                            ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
+                                            ->get();
+                            }
+                            else
+                            {
+                                // Set as forbidden
+                                $forbidden = true;
+                            }
+
+                            break;
+                        }
+
+                        // Coordinador logistico at Sucursal (or Centro)
+                        case 'colsol': {
+
+                            // If user belongs to Sucursal (centro)
+                            if($user->stationable->type === 'centro')
+                            {
+                                // Get only Recepciones containing OcPartes from OCs generated from its same country
+                                $recepciones = Recepcion::select('recepciones.*')
+                                            ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                            ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                            ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
+                                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->groupBy('recepciones.id')
+                                            ->get();
+                            }
+                            // If user belongs to Sucursal
+                            else if($user->stationable->type === 'sucursal')
+                            {
+                                // Get only Recepciones containing OcPartes from OCs generated from its same Sucursal
+                                $recepciones = Recepcion::select('recepciones.*')
+                                            ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                            ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                            ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
+                                            ->where('solicitudes.sucursal_id', '=', $user->stationable->id) // Same Sucursal as user station
+                                            ->groupBy('recepciones.id')
+                                            ->get();
+                            }
+                            
 
                             break;
                         }
@@ -83,7 +190,6 @@ class RecepcionesController extends Controller
                                             'sourceable_type',
                                             'recepcionable_id', 
                                             'recepcionable_type', 
-                                            'oc_id',
                                             'created_at', 
                                             'updated_at'
                                         ]);
@@ -228,6 +334,22 @@ class RecepcionesController extends Controller
                             );
                         }
                     }
+                    else if($forbidden === true)
+                    {
+                        $response = HelpController::buildResponse(
+                            405,
+                            'No tienes acceso a visualizar las recepciones',
+                            null
+                        );
+                    }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            500,
+                            'Error al obtener la lista de recepciones',
+                            null
+                        );
+                    }
                 }   
                 else     
                 {
@@ -271,19 +393,23 @@ class RecepcionesController extends Controller
                     if($proveedor = $comprador->proveedores->where('id', $proveedor_id)->first())
                     {
                         $ocList = null;
+                        $forbidden = false;
 
                         switch($user->role->name)
                         {
                             // Administrador
                             case 'admin': {
 
+                                // Get only OCs for the Comprador assigned to Proveedor and generated from its same country
                                 $ocList = Oc::select('ocs.*')
-                                    ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
-                                    ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                    ->where('solicitudes.comprador_id', '=', $comprador->id) // For this Comprador
-                                    ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
-                                    ->where('ocs.proveedor_id', '=', $proveedor->id)
-                                    ->get();
+                                        ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                        ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                        ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                        ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                        ->where('ocs.proveedor_id', '=', $proveedor->id)
+                                        ->where('solicitudes.comprador_id', '=', $comprador->id) // For this Comprador
+                                        ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->get();
 
                                 break;
                             }
@@ -291,13 +417,53 @@ class RecepcionesController extends Controller
                             // Agente de compra
                             case 'agtcom': {
 
-                                $ocList = Oc::select('ocs.*')
-                                    ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
-                                    ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                    ->where('solicitudes.comprador_id', '=', $comprador->id) // For this Comprador
-                                    ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
-                                    ->where('ocs.proveedor_id', '=', $proveedor->id)
-                                    ->get();
+                                // If user belongs to this Comprador
+                                if(
+                                    (get_class($user->stationable) === get_class($comprador)) &&
+                                    ($user->stationable->id === $comprador->id)
+                                )
+                                {
+                                    // Get list
+                                    $ocList = Oc::select('ocs.*')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->where('solicitudes.comprador_id', '=', $comprador->id) // For this Comprador
+                                            ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                            ->where('ocs.proveedor_id', '=', $proveedor->id)
+                                            ->get();
+                                }
+                                else
+                                {
+                                    // Set as forbidden
+                                    $forbidden = true;
+                                }
+
+                                break;
+                            }
+
+                            // Coordinador logistico at Comprador
+                            case 'colcom': {
+
+                                // If user belongs to this Comprador
+                                if(
+                                    (get_class($user->stationable) === get_class($comprador)) &&
+                                    ($user->stationable->id === $comprador->id)
+                                )
+                                {
+                                    // Get list
+                                    $ocList = Oc::select('ocs.*')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->where('solicitudes.comprador_id', '=', $comprador->id) // For this Comprador
+                                            ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                            ->where('ocs.proveedor_id', '=', $proveedor->id)
+                                            ->get();
+                                }
+                                else
+                                {
+                                    // Set as forbidden
+                                    $forbidden = true;
+                                }
 
                                 break;
                             }
@@ -440,6 +606,14 @@ class RecepcionesController extends Controller
                                 $queueOcs
                             );
                         }
+                        else if($forbidden === true)
+                        {
+                            $response = HelpController::buildResponse(
+                                405,
+                                'No tienes acceso a visualizar las OCs pendiente de recepcion',
+                                null
+                            );
+                        }
                         else
                         {
                             $response = HelpController::buildResponse(
@@ -480,7 +654,7 @@ class RecepcionesController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al obtener OCs pendiente de recepcion [!]' . $e,
+                'Error al obtener OCs pendiente de recepcion [!]',
                 null
             );
         }
@@ -504,7 +678,7 @@ class RecepcionesController extends Controller
                     'responsable' => 'required|min:1',
                     'comentario' => 'sometimes|nullable',
                     'ocs' => 'required|array|min:1',
-                    'ocs.*.id'  => 'required|exists:ocs,id',
+                    'ocs.*.id'  => 'required',
                     'ocs.*.partes' => 'required|array|min:1',
                     'ocs.*.partes.*.id'  => 'required|exists:partes,id',
                     'ocs.*.partes.*.cantidad'  => 'required|numeric|min:1',
@@ -523,7 +697,6 @@ class RecepcionesController extends Controller
                     'ocs.array' => 'Lista de partes recepcionadas invalida',
                     'ocs.min' => 'La recepcion debe contener al menos 1 parte recepcionada',
                     'ocs.*.id.required' => 'Debes seleccionar la OC a recepcionar',
-                    'ocs.*.id.exists' => 'La OC ingresada no existe',
                     'ocs.*.partes.required' => 'Debes seleccionar las partes recepcionadas',
                     'ocs.*.partes.array' => 'Lista de partes recepcionadas invalida',
                     'ocs.*.partes.min' => 'La recepcion debe contener al menos 1 parte recepcionada',
@@ -628,37 +801,59 @@ class RecepcionesController extends Controller
             
                                     switch($user->role->name)
                                     {
-                                        // Administrador en Sucursal
+                                        // Administrador
                                         case 'admin': {
+
                                             $oc = Oc::select('ocs.*')
-                                                ->where('ocs.id', '=', $ocId)
+                                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                                ->where('ocs.id', '=', $ocId) // For this Oc
+                                                ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                ->where('ocs.proveedor_id', '=', $proveedor->id)
+                                                ->where('solicitudes.comprador_id', '=', $comprador->id) // For this Comprador
+                                                ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                                 ->first();
             
                                             break;
                                         }
             
-                                        // Agente de compra en Comprador
+                                        // Agente de compra
                                         case 'agtcom': {
-                                            $oc = Oc::select('ocs.*')
-                                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
-                                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                                ->where('ocs.id', '=', $ocId)
-                                                ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
-                                                ->where($comprador->id, '=', $user->stationable->id) // If user belongs to this Comprador
-                                                ->first();
+
+                                            // If user belongs to this Comprador
+                                            if(
+                                                (get_class($user->stationable) === get_class($comprador)) &&
+                                                ($user->stationable->id === $comprador->id)
+                                            )
+                                            {
+                                                $oc = Oc::select('ocs.*')
+                                                    ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                    ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                    ->where('ocs.id', '=', $ocId)
+                                                    ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
+                                                    ->first();
+                                            }
             
                                             break;
                                         }
             
-                                        // Coordinador logistico en Comprador
+                                        // Coordinador logistico at Comprador
                                         case 'colcom': {
-                                            $oc = Oc::select('ocs.*')
-                                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
-                                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                                ->where('ocs.id', '=', $ocId)
-                                                ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
-                                                ->where($comprador->id, '=', $user->stationable->id) // If user belongs to this Comprador
-                                                ->first();
+                                            
+                                            // If user belongs to this Comprador
+                                            if(
+                                                (get_class($user->stationable) === get_class($comprador)) &&
+                                                ($user->stationable->id === $comprador->id)
+                                            )
+                                            {
+                                                $oc = Oc::select('ocs.*')
+                                                    ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                    ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                    ->where('ocs.id', '=', $ocId)
+                                                    ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
+                                                    ->first();
+                                            }
             
                                             break;
                                         }
@@ -818,7 +1013,7 @@ class RecepcionesController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al crear la recepcion [!]',
+                'Error al crear la recepcion [!]' . $e,
                 null
             );
         }
@@ -866,46 +1061,132 @@ class RecepcionesController extends Controller
 
                         switch($user->role->name)
                         {
-                            // Administrador en Sucursal
+                            // Administrador
                             case 'admin': {
-                                $recepcion = Recepcion::find($id);
+                                
+                                // Only if Recepcion contains OcPartes from OCs generated from its same country
+                                $recepcion = Recepcion::select('recepciones.*')
+                                            ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                            ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->where('recepciones.id', '=', $id) // For this Recepcion
+                                            ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                            ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
+                                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->first();
 
                                 break;
                             }
 
-                            // Agente de compra en Comprador
+                            // Vendedor
+                            case 'seller': {
+
+                                // Get only Recepciones containing OcPartes from belonging OCs generated from its same Sucursal
+                                $recepcion = Recepcion::select('recepciones.*')
+                                            ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                            ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->where('recepciones.id', '=', $id) // For this Recepcion
+                                            ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                            ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
+                                            ->where('solicitudes.sucursal_id', '=', $user->stationable->id) // Same Sucursal as user station
+                                            ->where('solicitudes.user_id', '=', $user->id) // Belonging to user
+                                            ->first();
+
+                                break;
+                            }
+
+                            // Agente de compra
                             case 'agtcom': {
-                                $recepcion = Recepcion::select('recepciones.*')
-                                            ->join('ocs', 'ocs.id', '=', 'recepciones.oc_id')
-                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
-                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                            ->where('recepciones.id', '=', $id)
-                                            ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
-                                            ->where($comprador->id, '=', $user->stationable->id) // If user belongs to this Comprador
-                                            ->first();
+
+                                // If user belongs to this Comprador
+                                if(
+                                    (get_class($user->stationable) === get_class($comprador)) &&
+                                    ($user->stationable->id === $comprador->id)
+                                )
+                                {
+                                    // Only if Recepcion was received at Comprador
+                                    $recepcion = Recepcion::select('recepciones.*')
+                                                ->where('recepciones.id', '=', $id) // For this Recepcion
+                                                ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                                ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
+                                                ->first();
+                                }
 
                                 break;
                             }
 
-                            // Coordinador logistico en Comprador
+                            // Coordinador logistico at Comprador
                             case 'colcom': {
-                                $recepcion = Recepcion::select('recepciones.*')
-                                            ->join('ocs', 'ocs.id', '=', 'recepciones.oc_id')
-                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
-                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                            ->where('recepciones.id', '=', $id)
-                                            ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
-                                            ->where($comprador->id, '=', $user->stationable->id) // If user belongs to this Comprador
-                                            ->first();
+
+                                // If user belongs to this Comprador
+                                if(
+                                    (get_class($user->stationable) === get_class($comprador)) &&
+                                    ($user->stationable->id === $comprador->id)
+                                )
+                                {
+                                    // Only if Recepcion was received at Comprador
+                                    $recepcion = Recepcion::select('recepciones.*')
+                                                ->where('recepciones.id', '=', $id) // For this Recepcion
+                                                ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                                ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
+                                                ->first();
+                                }
 
                                 break;
                             }
+
+                            // Coordinador logistico at Sucursal (or Centro)
+                            case 'colsol': {
+
+                                // If user belongs to Sucursal (centro)
+                                if($user->stationable->type === 'centro')
+                                {
+                                    // Only if Recepcion contains OcPartes from OCs generated from its same country
+                                    $recepcion = Recepcion::select('recepciones.*')
+                                                ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                                ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                                ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                                ->where('recepciones.id', '=', $id) // For this Recepcion
+                                                ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                                ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
+                                                ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                                ->first();
+                                }
+                                // If user belongs to Sucursal
+                                else if($user->stationable->type === 'sucursal')
+                                {
+                                    // Get only Recepciones containing OcPartes from OCs generated from its same Sucursal
+                                    $recepcion = Recepcion::select('recepciones.*')
+                                                ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                                ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                                ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                ->where('recepciones.id', '=', $id) // For this Recepcion
+                                                ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                                ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
+                                                ->where('solicitudes.sucursal_id', '=', $user->stationable->id) // Same Sucursal as user station
+                                                ->first();
+                                }
+                                
+
+                                break;
+                            }
+                            
 
                             default: {
                                 break;
                             }
                         }
-
                         
                         if($recepcion !== null)
                         {
@@ -916,7 +1197,6 @@ class RecepcionesController extends Controller
                                     'sourceable_type',
                                     'recepcionable_id',
                                     'recepcionable_type',
-                                    'oc_id',
                                     'proveedor_id',
                                     'partes_total',
                                     'updated_at',
@@ -1067,15 +1347,17 @@ class RecepcionesController extends Controller
                         // If wasn't catched
                         else
                         {
-                            // If it exists, then it's forbidden
+                            // If Recepcion exists
                             if(Recepcion::find($id))
                             {
+                                // It was filtered, so it's forbidden
                                 $response = HelpController::buildResponse(
                                     405,
                                     'No tienes acceso a visualizar la recepcion',
                                     null
                                 );
                             }
+                            // It doesn't exist
                             else
                             {
                                 $response = HelpController::buildResponse(
@@ -1162,40 +1444,66 @@ class RecepcionesController extends Controller
 
                         switch($user->role->name)
                         {
-                            // Administrador en Sucursal
+                            // Administrador
                             case 'admin': {
-                                $recepcion = Recepcion::find($id);
+                                
+                                // Only if Recepcion contains OcPartes from OCs generated from its same country
+                                $recepcion = Recepcion::select('recepciones.*')
+                                            ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                            ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->where('recepciones.id', '=', $id) // For this Recepcion
+                                            ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                            ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
+                                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->first();
 
                                 break;
                             }
 
-                            // Agente de compra en Comprador
+                            // Agente de compra
                             case 'agtcom': {
-                                $recepcion = Recepcion::select('recepciones.*')
-                                            ->join('ocs', 'ocs.id', '=', 'recepciones.oc_id')
-                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
-                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                            ->where('recepciones.id', '=', $id)
-                                            ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
-                                            ->where($comprador->id, '=', $user->stationable->id) // If user belongs to this Comprador
-                                            ->first();
+
+                                // If user belongs to this Comprador
+                                if(
+                                    (get_class($user->stationable) === get_class($comprador)) &&
+                                    ($user->stationable->id === $comprador->id)
+                                )
+                                {
+                                    // Only if Recepcion was received at Comprador
+                                    $recepcion = Recepcion::select('recepciones.*')
+                                                ->where('recepciones.id', '=', $id) // For this Recepcion
+                                                ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                                ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
+                                                ->first();
+                                }
 
                                 break;
                             }
 
-                            // Coordinador logistico en Comprador
+                            // Coordinador logistico at Comprador
                             case 'colcom': {
-                                $recepcion = Recepcion::select('recepciones.*')
-                                            ->join('ocs', 'ocs.id', '=', 'recepciones.oc_id')
-                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
-                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                            ->where('recepciones.id', '=', $id)
-                                            ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
-                                            ->where($comprador->id, '=', $user->stationable->id) // If user belongs to this Comprador
-                                            ->first();
+
+                                // If user belongs to this Comprador
+                                if(
+                                    (get_class($user->stationable) === get_class($comprador)) &&
+                                    ($user->stationable->id === $comprador->id)
+                                )
+                                {
+                                    // Only if Recepcion was received at Comprador
+                                    $recepcion = Recepcion::select('recepciones.*')
+                                                ->where('recepciones.id', '=', $id) // For this Recepcion
+                                                ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                                ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
+                                                ->first();
+                                }
 
                                 break;
                             }
+                            
 
                             default: {
                                 break;
@@ -1211,7 +1519,6 @@ class RecepcionesController extends Controller
                                     'sourceable_type',
                                     'recepcionable_id',
                                     'recepcionable_type',
-                                    'oc_id',
                                     'proveedor_id',
                                     'partes_total',
                                     'updated_at',
@@ -1507,37 +1814,62 @@ class RecepcionesController extends Controller
 
                     switch($user->role->name)
                     {
-                        // Administrador en Sucursal
+                        // Administrador
                         case 'admin': {
-                            $recepcion = Recepcion::find($id);
+                            
+                            // Only if Recepcion contains OcPartes from OCs generated from its same country
+                            $recepcion = Recepcion::select('recepciones.*')
+                                        ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                        ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                        ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                        ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                        ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                        ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                        ->where('recepciones.id', '=', $id) // For this Recepcion
+                                        ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                        ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
+                                        ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->first();
 
                             break;
                         }
 
-                        // Agente de compra en Comprador
+                        // Agente de compra
                         case 'agtcom': {
-                            $recepcion = Recepcion::select('recepciones.*')
-                                        ->join('ocs', 'ocs.id', '=', 'recepciones.oc_id')
-                                        ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
-                                        ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                        ->where('recepciones.id', '=', $id)
-                                        ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
-                                        ->where($comprador->id, '=', $user->stationable->id) // If user belongs to this Comprador
-                                        ->first();
+
+                            // If user belongs to this Comprador
+                            if(
+                                (get_class($user->stationable) === get_class($comprador)) &&
+                                ($user->stationable->id === $comprador->id)
+                            )
+                            {
+                                // Only if Recepcion was received at Comprador
+                                $recepcion = Recepcion::select('recepciones.*')
+                                            ->where('recepciones.id', '=', $id) // For this Recepcion
+                                            ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                            ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
+                                            ->first();
+                            }
 
                             break;
                         }
 
-                        // Coordinador logistico en Comprador
+                        // Coordinador logistico at Comprador
                         case 'colcom': {
-                            $recepcion = Recepcion::select('recepciones.*')
-                                        ->join('ocs', 'ocs.id', '=', 'recepciones.oc_id')
-                                        ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
-                                        ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                        ->where('recepciones.id', '=', $id)
-                                        ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
-                                        ->where($comprador->id, '=', $user->stationable->id) // If user belongs to this Comprador
-                                        ->first();
+
+                            // If user belongs to this Comprador
+                            if(
+                                (get_class($user->stationable) === get_class($comprador)) &&
+                                ($user->stationable->id === $comprador->id)
+                            )
+                            {
+                                // Only if Recepcion was received at Comprador
+                                $recepcion = Recepcion::select('recepciones.*')
+                                            ->where('recepciones.id', '=', $id) // For this Recepcion
+                                            ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                            ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
+                                            ->first();
+                            }
 
                             break;
                         }
@@ -1863,37 +2195,62 @@ class RecepcionesController extends Controller
 
                     switch($user->role->name)
                     {
-                        // Administrador en Sucursal
+                        // Administrador
                         case 'admin': {
-                            $recepcion = Recepcion::find($id);
+                            
+                            // Only if Recepcion contains OcPartes from OCs generated from its same country
+                            $recepcion = Recepcion::select('recepciones.*')
+                                        ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                        ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                        ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                        ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                        ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                        ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                        ->where('recepciones.id', '=', $id) // For this Recepcion
+                                        ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                        ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
+                                        ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->first();
 
                             break;
                         }
 
-                        // Agente de compra en Comprador
+                        // Agente de compra
                         case 'agtcom': {
-                            $recepcion = Recepcion::select('recepciones.*')
-                                        ->join('ocs', 'ocs.id', '=', 'recepciones.oc_id')
-                                        ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
-                                        ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                        ->where('recepciones.id', '=', $id)
-                                        ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
-                                        ->where($comprador->id, '=', $user->stationable->id) // If user belongs to this Comprador
-                                        ->first();
+
+                            // If user belongs to this Comprador
+                            if(
+                                (get_class($user->stationable) === get_class($comprador)) &&
+                                ($user->stationable->id === $comprador->id)
+                            )
+                            {
+                                // Only if Recepcion was received at Comprador
+                                $recepcion = Recepcion::select('recepciones.*')
+                                            ->where('recepciones.id', '=', $id) // For this Recepcion
+                                            ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                            ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
+                                            ->first();
+                            }
 
                             break;
                         }
 
-                        // Coordinador logistico en Comprador
+                        // Coordinador logistico at Comprador
                         case 'colcom': {
-                            $recepcion = Recepcion::select('recepciones.*')
-                                        ->join('ocs', 'ocs.id', '=', 'recepciones.oc_id')
-                                        ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
-                                        ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                        ->where('recepciones.id', '=', $id)
-                                        ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
-                                        ->where($comprador->id, '=', $user->stationable->id) // If user belongs to this Comprador
-                                        ->first();
+
+                            // If user belongs to this Comprador
+                            if(
+                                (get_class($user->stationable) === get_class($comprador)) &&
+                                ($user->stationable->id === $comprador->id)
+                            )
+                            {
+                                // Only if Recepcion was received at Comprador
+                                $recepcion = Recepcion::select('recepciones.*')
+                                            ->where('recepciones.id', '=', $id) // For this Recepcion
+                                            ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                            ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
+                                            ->first();
+                            }
 
                             break;
                         }
