@@ -91,7 +91,7 @@
 
 
                 <!-- Comprador -->
-                <!-- <li class="menu-title" key="t-comprador">Comprador</li>
+                <li class="menu-title" key="t-comprador">Comprador</li>
                 <li>
                     <a href="javascript: void(0);" class="has-arrow waves-effect">
                         <i class="bx bx-log-in-circle"></i>
@@ -111,7 +111,7 @@
                         <li><a [routerLink]="['despachos/comprador/create']" key="t-compradordespachosnuevo">Nuevo despacho</a></li>
                         <li><a [routerLink]="['despachos/comprador']" key="t-compradordespachoslista">Lista de despachos</a></li>
                     </ul>
-                </li> -->
+                </li>
 
                 <!-- Centro distribucion -->
                 <!-- <li class="menu-title" key="t-centrodistribucion">Centro distribucion</li>
@@ -171,7 +171,7 @@
 
             </ul>
 
-            <!-- Role: Vendedor solicitante en Centro distribucion [seller - centro] -->
+            <!-- Role: Vendedor at Sucursal (centro) [seller - centro] -->
             <ul class="metismenu list-unstyled" id="side-menu" *ngIf="(loggedUser !== null) && (loggedUser.role.name === 'seller') && (loggedUser.stationable.type === 'centro')">
 
                 <!-- Menu -->
@@ -205,6 +205,21 @@
                     <a [routerLink]="['ocs']" class="waves-effect">
                         <i class="bx bx-hive"></i>
                         <span key="t-ocs">OCs</span>
+                    </a>
+                </li>
+
+                <!-- Comprador -->
+                <li class="menu-title" key="t-comprador">Comprador</li>
+                <li>
+                    <a [routerLink]="['recepciones/comprador']" class="waves-effect">
+                        <i class="bx bx-log-in-circle"></i>
+                        <span key="t-compradorrecepcioneslista">Lista de recepciones</span>
+                    </a>
+                </li>
+                <li>
+                    <a [routerLink]="['despachos/comprador']" class="waves-effect">
+                        <i class="bx bx-log-out-circle"></i>
+                        <span key="t-compradordespachoslista">Lista de despachos</span>
                     </a>
                 </li>
 
@@ -243,7 +258,7 @@
 
             </ul>
 
-            <!-- Role: Vendedor solicitante en Sucursal [seller - sucursal] -->
+            <!-- Role: Vendedor at Sucursal [seller - sucursal] -->
             <ul class="metismenu list-unstyled" id="side-menu" *ngIf="(loggedUser !== null) && (loggedUser.role.name === 'seller') && (loggedUser.stationable.type === 'sucursal')">
 
                 <!-- Menu -->
@@ -280,6 +295,21 @@
                     </a>
                 </li>
 
+                <!-- Comprador -->
+                <li class="menu-title" key="t-comprador">Comprador</li>
+                <li>
+                    <a [routerLink]="['recepciones/comprador']" class="waves-effect">
+                        <i class="bx bx-log-in-circle"></i>
+                        <span key="t-compradorrecepcioneslista">Lista de recepciones</span>
+                    </a>
+                </li>
+                <li>
+                    <a [routerLink]="['despachos/comprador']" class="waves-effect">
+                        <i class="bx bx-log-out-circle"></i>
+                        <span key="t-compradordespachoslista">Lista de despachos</span>
+                    </a>
+                </li>
+
                 <!-- Sucursal -->
                 <!-- <li class="menu-title" key="t-sucursal">Sucursal</li>
                 <li>
@@ -304,7 +334,7 @@
 
             </ul>
 
-            <!-- Role: Agente de compras en Comprador [agtcom] -->
+            <!-- Role: Agente de compras at Comprador [agtcom] -->
             <ul class="metismenu list-unstyled" id="side-menu" *ngIf="(loggedUser !== null) && (loggedUser.role.name === 'agtcom')">
 
                 <!-- Menu -->
@@ -332,7 +362,7 @@
                 </li>
 
                 <!-- Comprador -->
-                <!-- <li class="menu-title" key="t-comprador">Comprador</li>
+                <li class="menu-title" key="t-comprador">Comprador</li>
                 <li>
                     <a href="javascript: void(0);" class="has-arrow waves-effect">
                         <i class="bx bx-log-in-circle"></i>
@@ -352,7 +382,111 @@
                         <li><a [routerLink]="['despachos/comprador/create']" key="t-compradordespachosnuevo">Nuevo despacho</a></li>
                         <li><a [routerLink]="['despachos/comprador']" key="t-compradordespachoslista">Lista de despachos</a></li>
                     </ul>
-                </li> -->
+                </li>
+
+            </ul>
+
+            <!-- Role: Coordinador logistico at Comprador [colcom] -->
+            <ul class="metismenu list-unstyled" id="side-menu" *ngIf="(loggedUser !== null) && (loggedUser.role.name === 'colcom')">
+
+                <!-- Menu -->
+                <li class="menu-title" key="t-menu">Menu</li>
+                <li>
+                    <a [routerLink]="['']" class="waves-effect">
+                        <i class="bx bx-home-circle"></i>
+                        <span key="t-menudashboard">Dashboard</span>
+                    </a>
+                </li>
+
+                <!-- General -->
+                <li class="menu-title" key="t-general">General</li>
+
+                <!-- Comprador -->
+                <li class="menu-title" key="t-comprador">Comprador</li>
+                <li>
+                    <a href="javascript: void(0);" class="has-arrow waves-effect">
+                        <i class="bx bx-log-in-circle"></i>
+                        <span key="t-compradorrecepciones">Recepciones</span>
+                    </a>
+                    <ul class="sub-menu" aria-expanded="false">
+                        <li><a [routerLink]="['recepciones/comprador/create']" key="t-compradorrecepcionesnuevo">Nueva recepcion</a></li>
+                        <li><a [routerLink]="['recepciones/comprador']" key="t-compradorrecepcioneslista">Lista de recepciones</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="javascript: void(0);" class="has-arrow waves-effect">
+                        <i class="bx bx-log-out-circle"></i>
+                        <span key="t-compradordespachos">Despachos</span>
+                    </a>
+                    <ul class="sub-menu" aria-expanded="false">
+                        <li><a [routerLink]="['despachos/comprador/create']" key="t-compradordespachosnuevo">Nuevo despacho</a></li>
+                        <li><a [routerLink]="['despachos/comprador']" key="t-compradordespachoslista">Lista de despachos</a></li>
+                    </ul>
+                </li>
+
+            </ul>
+
+            <!-- Role: Coordinador logistico at Sucursal (centro) [seller - centro] -->
+            <ul class="metismenu list-unstyled" id="side-menu" *ngIf="(loggedUser !== null) && (loggedUser.role.name === 'colsol') && (loggedUser.stationable.type === 'centro')">
+
+                <!-- Menu -->
+                <li class="menu-title" key="t-menu">Menu</li>
+                <li>
+                    <a [routerLink]="['']" class="waves-effect">
+                        <i class="bx bx-home-circle"></i>
+                        <span key="t-menudashboard">Dashboard</span>
+                    </a>
+                </li>
+
+                <!-- General -->
+                <li class="menu-title" key="t-general">General</li>
+
+                <!-- Comprador -->
+                <li class="menu-title" key="t-comprador">Comprador</li>
+                <li>
+                    <a [routerLink]="['recepciones/comprador']" class="waves-effect">
+                        <i class="bx bx-log-in-circle"></i>
+                        <span key="t-compradorrecepcioneslista">Lista de recepciones</span>
+                    </a>
+                </li>
+                <li>
+                    <a [routerLink]="['despachos/comprador']" class="waves-effect">
+                        <i class="bx bx-log-out-circle"></i>
+                        <span key="t-compradordespachoslista">Lista de despachos</span>
+                    </a>
+                </li>
+
+            </ul>
+
+            <!-- Role: Coordinador logistico at Sucursal [seller - sucursal] -->
+            <ul class="metismenu list-unstyled" id="side-menu" *ngIf="(loggedUser !== null) && (loggedUser.role.name === 'colsol') && (loggedUser.stationable.type === 'sucursal')">
+
+                <!-- Menu -->
+                <li class="menu-title" key="t-menu">Menu</li>
+                <li>
+                    <a [routerLink]="['']" class="waves-effect">
+                        <i class="bx bx-home-circle"></i>
+                        <span key="t-menudashboard">Dashboard</span>
+                    </a>
+                </li>
+
+                <!-- General -->
+                <li class="menu-title" key="t-general">General</li>
+
+                <!-- Comprador -->
+                <li class="menu-title" key="t-comprador">Comprador</li>
+                <li>
+                    <a [routerLink]="['recepciones/comprador']" class="waves-effect">
+                        <i class="bx bx-log-in-circle"></i>
+                        <span key="t-compradorrecepcioneslista">Lista de recepciones</span>
+                    </a>
+                </li>
+                <li>
+                    <a [routerLink]="['despachos/comprador']" class="waves-effect">
+                        <i class="bx bx-log-out-circle"></i>
+                        <span key="t-compradordespachoslista">Lista de despachos</span>
+                    </a>
+                </li>
 
             </ul>
 

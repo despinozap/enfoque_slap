@@ -67,15 +67,15 @@
                             <td align="center">
                                 <a [routerLink]="['details', recepcion.recepcion.id]" class="btn-table btn btn-secondary" title="Detalle"><i
                                     class="bx bx-zoom-in"></i></a>
-                                <a [routerLink]="['edit', recepcion.recepcion.id]" class="btn-table btn btn-secondary" title="Editar"><i class="bx bx-edit-alt"></i></a>
-                                <a [routerLink]="" (click)="removeRecepcion(recepcion.recepcion)" class="btn-table btn btn-secondary" title="Eliminar"><i class="bx bx-trash-alt"></i></a>
+                                <a [routerLink]="['edit', recepcion.recepcion.id]" class="btn-table btn btn-secondary" *ngIf="(loggedUser !== null) && (['admin', 'agtcom', 'colcom'].includes(loggedUser.role.name))" title="Editar"><i class="bx bx-edit-alt"></i></a>
+                                <a [routerLink]="" (click)="removeRecepcion(recepcion.recepcion)" class="btn-table btn btn-secondary" *ngIf="(loggedUser !== null) && (['admin', 'agtcom', 'colcom'].includes(loggedUser.role.name))" title="Eliminar"><i class="bx bx-trash-alt"></i></a>
                             </td>
                         </tr>
                     </tbody>
                     <tfoot>
                         <tr>
                             <td colspan="11" align="left">
-                                <button type="button" class="btn btn-outline-primary mr-2" (click)="goTo_newRecepcion()" [disabled]="(loading === true)">
+                                <button type="button" class="btn btn-outline-primary mr-2" (click)="goTo_newRecepcion()" *ngIf="(loggedUser !== null) && (['admin', 'agtcom', 'colcom'].includes(loggedUser.role.name))" [disabled]="(loading === true)">
                                     <i class="bx bx-notepad font-size-16 align-middle"></i> Nueva recepcion
                                 </button>
                             </td>
