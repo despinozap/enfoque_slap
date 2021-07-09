@@ -148,8 +148,9 @@ Route::middleware(['auth:api', 'cors'])->group(function()
     
     // Despachos (Comprador)
     Route::get('/compradores/{id}/despachos', [DespachosController::class, 'index_comprador']);
-    // Route::get('/compradores/{comprador_id}/despachos/prepare', [DespachosController::class, 'store_prepare_comprador']);
-    // Route::post('/compradores/{id}/despachos', [DespachosController::class, 'store_comprador']);
+    Route::get('/compradores/{comprador_id}/despachos/prepare', [DespachosController::class, 'store_prepare_comprador']);
+    Route::get('/compradores/{comprador_id}/despachos/queueocpartes/centrosdistribucion/{centrodistribucion_id}', [DespachosController::class, 'queueOcPartes_comprador']);
+    Route::post('/compradores/{id}/despachos', [DespachosController::class, 'store_comprador']);
     // Route::get('/compradores/{comprador_id}/despachos/{id}', [DespachosController::class, 'show_comprador']);
     // Route::get('/compradores/{comprador_id}/despachos/{id}/prepare', [DespachosController::class, 'update_prepare_comprador']);
     // Route::put('/compradores/{comprador_id}/despachos/{id}', [DespachosController::class, 'update_comprador']);

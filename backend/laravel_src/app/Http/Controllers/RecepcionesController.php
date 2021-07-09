@@ -778,7 +778,7 @@ class RecepcionesController extends Controller
                         // Set the morph source for Recepcion as Proveedor
                         $recepcion->sourceable_id = $proveedor->id;
                         $recepcion->sourceable_type = get_class($proveedor);
-                        // Set the morph for Recepcion as Comprador
+                        // Set the morph destination for Recepcion as Comprador
                         $recepcion->recepcionable_id = $comprador->id;
                         $recepcion->recepcionable_type = get_class($comprador);
                         // Fill the data
@@ -1013,7 +1013,7 @@ class RecepcionesController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al crear la recepcion [!]' . $e,
+                'Error al crear la recepcion [!]',
                 null
             );
         }
