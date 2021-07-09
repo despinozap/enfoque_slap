@@ -20,7 +20,258 @@ class DespachosController extends Controller
     /*
      *  Compradores 
      */
-    
+    public function index_comprador($id)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('compradores despachos_index'))
+            {
+                if($comprador = Comprador::find($id))
+                {
+                    $despachos = null;
+                    $forbidden = false;
+
+                    switch($user->role->name)
+                    {
+
+                        // Administrador
+                        case 'admin': {
+
+                            // Get only Despachos containing OcPartes from OCs generated from its same country
+                            $despachos = Despacho::select('despachos.*')
+                                        ->join('despacho_ocparte', 'despacho_ocparte.despacho_id', '=', 'despachos.id')
+                                        ->join('oc_parte', 'oc_parte.id', '=', 'despacho_ocparte.ocparte_id')
+                                        ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                        ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                        ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                        ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                        ->where('despachos.despachable_type', '=', get_class($comprador))
+                                        ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
+                                        ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->groupBy('despachos.id')
+                                        ->get();
+
+                            break;
+                        }
+
+                        // Vendedor
+                        case 'seller': {
+
+                            // Get only Despachos containing OcPartes from belonging OCs generated from its same Sucursal
+                            $despachos = Despacho::select('despachos.*')
+                                        ->join('despacho_ocparte', 'despacho_ocparte.despacho_id', '=', 'despachos.id')
+                                        ->join('oc_parte', 'oc_parte.id', '=', 'despacho_ocparte.ocparte_id')
+                                        ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                        ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                        ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                        ->where('despachos.despachable_type', '=', get_class($comprador))
+                                        ->where('despachos.despachable_id', '=', $comprador->id) // Received at Comprador
+                                        ->where('solicitudes.sucursal_id', '=', $user->stationable->id) // Same Sucursal as user station
+                                        ->where('solicitudes.user_id', '=', $user->id) // Belonging to user
+                                        ->groupBy('despachos.id')
+                                        ->get();
+
+                            break;
+                        }
+
+                        // Agente de compra
+                        case 'agtcom': {
+
+                            // If user belongs to this Comprador
+                            if(
+                                (get_class($user->stationable) === get_class($comprador)) &&
+                                ($user->stationable->id === $comprador->id)
+                            )
+                            {
+                                // Get only Despachos from its Comprador
+                                $despachos = Despacho::select('despachos.*')
+                                            ->where('despachos.despachable_type', '=', get_class($comprador))
+                                            ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
+                                            ->get();
+                            }
+                            else
+                            {
+                                // Set as forbidden
+                                $forbidden = true;
+                            }
+
+                            break;
+                        }
+
+                        // Coordinador logistico at Comprador
+                        case 'colcom': {
+
+                            // If user belongs to this Comprador
+                            if(
+                                (get_class($user->stationable) === get_class($comprador)) &&
+                                ($user->stationable->id === $comprador->id)
+                            )
+                            {
+                                // Get only Despachos from its Comprador
+                                $despachos = Despacho::select('despachos.*')
+                                            ->where('despachos.despachable_type', '=', get_class($comprador))
+                                            ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
+                                            ->get();
+                            }
+                            else
+                            {
+                                // Set as forbidden
+                                $forbidden = true;
+                            }
+
+                            break;
+                        }
+
+                        // Coordinador logistico at Sucursal (or Centro)
+                        case 'colsol': {
+
+                            // If user belongs to Sucursal (centro)
+                            if($user->stationable->type === 'centro')
+                            {
+                                // Get only Despachos containing OcPartes from OCs generated from its same country
+                                $despachos = Despacho::select('despachos.*')
+                                            ->join('despacho_ocparte', 'despacho_ocparte.despacho_id', '=', 'despachos.id')
+                                            ->join('oc_parte', 'oc_parte.id', '=', 'despacho_ocparte.ocparte_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->where('despachos.despachable_type', '=', get_class($comprador))
+                                            ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
+                                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->groupBy('despachos.id')
+                                            ->get();
+                            }
+                            // If user belongs to Sucursal
+                            else if($user->stationable->type === 'sucursal')
+                            {
+                                // Get only Despachos containing OcPartes from belonging OCs generated from its same Sucursal
+                                $despachos = Despacho::select('despachos.*')
+                                            ->join('despacho_ocparte', 'despacho_ocparte.despacho_id', '=', 'despachos.id')
+                                            ->join('oc_parte', 'oc_parte.id', '=', 'despacho_ocparte.ocparte_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->where('despachos.despachable_type', '=', get_class($comprador))
+                                            ->where('despachos.despachable_id', '=', $comprador->id) // Received at Comprador
+                                            ->where('solicitudes.sucursal_id', '=', $user->stationable->id) // Same Sucursal as user station
+                                            ->groupBy('despachos.id')
+                                            ->get();
+                            }
+                            
+
+                            break;
+                        }
+
+                        default:
+                        {
+                            break;
+                        }
+                    }
+
+                    if($despachos !== null)
+                    {
+                        $despachos = $despachos->map(function($despacho)
+                            {
+                                $despacho->partes_total;
+                                        
+                                $despacho->makeHidden([
+                                    'despachable_id', 
+                                    'despachable_type',
+                                    'destinable_id', 
+                                    'destinable_type', 
+                                    'ocpartes',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+
+                                $despacho->despachable;
+                                $despacho->despachable->makeHidden([
+                                    'rut',
+                                    'address',
+                                    'city',
+                                    'contact',
+                                    'phone',
+                                    'country_id',
+                                    'created_at',
+                                    'updated_at',
+                                ]);
+
+                                $despacho->destinable;
+                                $despacho->destinable->makeHidden([
+                                    'type',
+                                    'rut',
+                                    'address',
+                                    'city',
+                                    'country_id',
+                                    'created_at',
+                                    'updated_at',
+                                ]);
+
+                                $despacho->destinable->country;
+                                $despacho->destinable->country->makeHidden([
+                                    'created_at',
+                                    'updated_at',
+                                ]);
+
+                                return $despacho;
+                            }
+                        );
+
+                        $response = HelpController::buildResponse(
+                            200,
+                            null,
+                            $despachos
+                        );
+                    }
+                    else if($forbidden === true)
+                    {
+                        $response = HelpController::buildResponse(
+                            405,
+                            'No tienes acceso a visualizar los despachos',
+                            null
+                        );
+                    }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            500,
+                            'Error al obtener la lista de despachos',
+                            null
+                        );
+                    }
+                }   
+                else     
+                {
+                    $response = HelpController::buildResponse(
+                        412,
+                        'El comprador no existe',
+                        null
+                    );
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a visualizar despachos de compradores',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al obtener los despachos del comprador [!]',
+                null
+            );
+        }
+            
+        return $response;
+    }
+
     public function store_prepare_comprador($comprador_id)
     {
         try
@@ -851,6 +1102,1481 @@ class DespachosController extends Controller
             $response = HelpController::buildResponse(
                 500,
                 'Error al crear el despacho [!]' . $e,
+                null
+            );
+        }
+        
+        return $response;
+    }
+
+    public function show_comprador($comprador_id, $id)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('compradores despachos_show'))
+            {
+                $validatorInput = ['despacho_id' => $id];
+            
+                $validatorRules = [
+                    'despacho_id' => 'required|exists:despachos,id,despachable_id,' . $comprador_id . ',despachable_type,' . get_class(new Comprador()),
+                ];
+        
+                $validatorMessages = [
+                    'despacho_id.required' => 'Debes ingresar el despacho',
+                    'despacho_id.exists' => 'El despacho ingresado no existe para el comprador',                    
+                ];
+        
+                $validator = Validator::make(
+                    $validatorInput,
+                    $validatorRules,
+                    $validatorMessages
+                );
+        
+                if ($validator->fails()) 
+                {
+                    $response = HelpController::buildResponse(
+                        400,
+                        $validator->errors(),
+                        null
+                    );
+                }
+                else        
+                {
+                    if($comprador = Comprador::find($comprador_id))
+                    {
+                        $despacho = null;
+
+                        switch($user->role->name)
+                        {
+                            // Administrador
+                            case 'admin': {
+                                
+                                // Only if Despacho contains OcPartes from OCs generated from its same country
+                                $despacho = Despacho::select('despachos.*')
+                                            ->join('despacho_ocparte', 'despacho_ocparte.despacho_id', '=', 'despachos.id')
+                                            ->join('oc_parte', 'oc_parte.id', '=', 'despacho_ocparte.ocparte_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->where('despachos.id', '=', $id) // For this Despacho
+                                            ->where('despachos.despachable_type', '=', get_class($comprador))
+                                            ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
+                                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->first();
+
+                                break;
+                            }
+
+                            // Vendedor
+                            case 'seller': {
+
+                                // Only if Despacho contains OcPartes from belonging OCs generated from its same Sucursal
+                                $despacho = Despacho::select('despachos.*')
+                                            ->join('despacho_ocparte', 'despacho_ocparte.despacho_id', '=', 'despachos.id')
+                                            ->join('oc_parte', 'oc_parte.id', '=', 'despacho_ocparte.ocparte_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->where('despachos.id', '=', $id) // For this Despacho
+                                            ->where('despachos.despachable_type', '=', get_class($comprador))
+                                            ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
+                                            ->where('solicitudes.sucursal_id', '=', $user->stationable->id) // Same Sucursal as user station
+                                            ->where('solicitudes.user_id', '=', $user->id) // Belonging to user
+                                            ->first();
+
+                                break;
+                            }
+
+                            // Agente de compra
+                            case 'agtcom': {
+
+                                // If user belongs to this Comprador
+                                if(
+                                    (get_class($user->stationable) === get_class($comprador)) &&
+                                    ($user->stationable->id === $comprador->id)
+                                )
+                                {
+                                    // Only if Despacho was dispatched by Comprador
+                                    $despacho = Despacho::select('despachos.*')
+                                                ->where('despachos.id', '=', $id) // For this Despacho
+                                                ->where('despachos.despachable_type', '=', get_class($comprador))
+                                                ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
+                                                ->first();
+                                }
+
+                                break;
+                            }
+
+                            // Coordinador logistico at Comprador
+                            case 'colcom': {
+
+                                // If user belongs to this Comprador
+                                if(
+                                    (get_class($user->stationable) === get_class($comprador)) &&
+                                    ($user->stationable->id === $comprador->id)
+                                )
+                                {
+                                    // Only if Despacho was dispatched by Comprador
+                                    $despacho = Despacho::select('despachos.*')
+                                                ->where('despachos.id', '=', $id) // For this Despacho
+                                                ->where('despachos.despachable_type', '=', get_class($comprador))
+                                                ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
+                                                ->first();
+                                }
+
+                                break;
+                            }
+
+                            // Coordinador logistico at Sucursal (or Centro)
+                            case 'colsol': {
+
+                                // If user belongs to Sucursal (centro)
+                                if($user->stationable->type === 'centro')
+                                {
+                                    // Only if Despacho contains OcPartes from OCs generated from its same country
+                                    $despacho = Despacho::select('despachos.*')
+                                                ->join('despacho_ocparte', 'despacho_ocparte.despacho_id', '=', 'despachos.id')
+                                                ->join('oc_parte', 'oc_parte.id', '=', 'despacho_ocparte.ocparte_id')
+                                                ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                                ->where('despachos.id', '=', $id) // For this Despacho
+                                                ->where('despachos.despachable_type', '=', get_class($comprador))
+                                                ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
+                                                ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                                ->first();
+                                }
+                                // If user belongs to Sucursal
+                                else if($user->stationable->type === 'sucursal')
+                                {
+                                    // Only if Despacho contains OcPartes from belonging OCs generated from its same Sucursal
+                                    $despacho = Despacho::select('despachos.*')
+                                                ->join('despacho_ocparte', 'despacho_ocparte.despacho_id', '=', 'despachos.id')
+                                                ->join('oc_parte', 'oc_parte.id', '=', 'despacho_ocparte.ocparte_id')
+                                                ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                ->where('despachos.id', '=', $id) // For this Despacho
+                                                ->where('despachos.despachable_type', '=', get_class($comprador))
+                                                ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
+                                                ->where('solicitudes.sucursal_id', '=', $user->stationable->id) // Same Sucursal as user station
+                                                ->first();
+                                }
+                                
+
+                                break;
+                            }
+                            
+
+                            default: {
+                                break;
+                            }
+                        }
+                        
+                        if($despacho !== null)
+                        {           
+                            $despacho->makeHidden([
+                                'despachable_id', 
+                                'despachable_type',
+                                'destinable_id', 
+                                'destinable_type', 
+                                'partes_total',
+                                'created_at', 
+                                'updated_at'
+                            ]);
+
+                            $despacho->despachable;
+                            $despacho->despachable->makeHidden([
+                                'rut',
+                                'address',
+                                'city',
+                                'contact',
+                                'phone',
+                                'country_id',
+                                'created_at',
+                                'updated_at',
+                            ]);
+
+                            $despacho->destinable;
+                            $despacho->destinable->makeHidden([
+                                'type',
+                                'rut',
+                                'address',
+                                'city',
+                                'country_id',
+                                'created_at',
+                                'updated_at',
+                            ]);
+
+                            $despacho->destinable->country;
+                            $despacho->destinable->country->makeHidden([
+                                'created_at',
+                                'updated_at',
+                            ]);
+
+                            $despacho->ocpartes = $despacho->ocpartes->map(function($ocParte)
+                                {
+                                    $ocParte->makeHidden([
+                                        'oc_id',
+                                        'parte_id',
+                                        'estadoocparte_id',
+                                        'tiempoentrega',
+                                        'created_at',
+                                        'updated_at'
+                                    ]);
+
+                                    $ocParte->pivot;
+                                    $ocParte->pivot->makeHidden([
+                                        'despacho_id',
+                                        'ocparte_id',
+                                        'created_at',
+                                        'updated_at'
+                                    ]);
+
+                                    $ocParte->parte;
+                                    $ocParte->parte->makeHidden([
+                                        'marca_id',
+                                        'created_at',
+                                        'updated_at',
+                                    ]);
+
+                                    $ocParte->parte->marca;
+                                    $ocParte->parte->marca->makeHidden([
+                                        'created_at',
+                                        'updated_at',
+                                    ]);
+
+                                    $ocParte->oc;
+                                    $ocParte->oc->makeHidden([
+                                        'cotizacion_id',
+                                        'proveedor_id',
+                                        'filedata_id',
+                                        'estadooc_id',
+                                        'motivobaja_id',
+                                        'usdvalue',
+                                        'partes',
+                                        'dias',
+                                        'partes_total',
+                                        'monto',
+                                        'created_at',
+                                        'updated_at',
+                                    ]);
+
+                                    $ocParte->oc->cotizacion->makeHidden([
+                                        'solicitud_id',
+                                        'estadocotizacion_id',
+                                        'motivorechazo_id',
+                                        'usdvalue',
+                                        'created_at',
+                                        'updated_at',
+                                        'partes_total',
+                                        'dias',
+                                        'monto',
+                                        'partes'
+                                    ]);
+
+                                    $ocParte->oc->cotizacion->solicitud;
+                                    $ocParte->oc->cotizacion->solicitud->makeHidden([
+                                        'sucursal_id',
+                                        'faena_id',
+                                        'marca_id',
+                                        'comprador_id',
+                                        'user_id',
+                                        'estadosolicitud_id',
+                                        'comentario',
+                                        'created_at',
+                                        'updated_at',
+                                        'partes_total',
+                                        'partes'
+                                    ]);
+
+                                    $ocParte->oc->cotizacion->solicitud->sucursal;
+                                    $ocParte->oc->cotizacion->solicitud->sucursal->makeHidden([
+                                        'type',
+                                        'rut',
+                                        'address',
+                                        'city',
+                                        'country_id',
+                                        'created_at',
+                                        'updated_at'
+                                    ]);
+
+                                    $ocParte->oc->cotizacion->solicitud->faena;
+                                    $ocParte->oc->cotizacion->solicitud->faena->makeHidden([
+                                        'cliente_id',
+                                        'sucursal_id',
+                                        'rut',
+                                        'address',
+                                        'city',
+                                        'contact',
+                                        'phone',
+                                        'created_at',
+                                        'updated_at'
+                                    ]);
+
+                                    $ocParte->oc->cotizacion->solicitud->faena->cliente;
+                                    $ocParte->oc->cotizacion->solicitud->faena->cliente->makeHidden([
+                                        'country_id',
+                                        'created_at',
+                                        'updated_at'
+                                    ]);
+
+                                    $ocParte->oc->cotizacion->solicitud->marca;
+                                    $ocParte->oc->cotizacion->solicitud->marca->makeHidden([
+                                        'created_at',
+                                        'updated_at'
+                                    ]);
+
+                                    return $ocParte;
+                                }
+                            );
+
+                            $response = HelpController::buildResponse(
+                                200,
+                                null,
+                                $despacho
+                            );
+              
+                        }
+                        // If wasn't catched
+                        else
+                        {
+                            // If Despacho exists
+                            if(Despacho::find($id))
+                            {
+                                // It was filtered, so it's forbidden
+                                $response = HelpController::buildResponse(
+                                    405,
+                                    'No tienes acceso a visualizar el despacho',
+                                    null
+                                );
+                            }
+                            // It doesn't exist
+                            else
+                            {
+                                $response = HelpController::buildResponse(
+                                    412,
+                                    'El despacho no existe',
+                                    null
+                                );
+                            }
+                        }
+                    }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            412,
+                            'El comprador no existe',
+                            null
+                        );
+                    }
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a visualizar despachos de comprador',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al obtener el despacho [!]',
+                null
+            );
+        }
+        
+        return $response;
+    }
+
+    /**
+     * It retrieves all the required info for
+     * selecting data and updating a Despacho for Comprador
+     * 
+     */
+    public function update_prepare_comprador($comprador_id, $id)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('compradores despachos_update'))
+            {
+                $validatorInput = ['despacho_id' => $id];
+            
+                $validatorRules = [
+                    'despacho_id' => 'required|exists:despachos,id,despachable_id,' . $comprador_id . ',despachable_type,' . get_class(new Comprador()),
+                ];
+        
+                $validatorMessages = [
+                    'despacho_id.required' => 'Debes ingresar el despacho',
+                    'despacho_id.exists' => 'El despacho ingresado no existe para el comprador',                    
+                ];
+        
+                $validator = Validator::make(
+                    $validatorInput,
+                    $validatorRules,
+                    $validatorMessages
+                );
+        
+                if ($validator->fails()) 
+                {
+                    $response = HelpController::buildResponse(
+                        400,
+                        $validator->errors(),
+                        null
+                    );
+                }
+                else        
+                {
+                    if($comprador = Comprador::find($comprador_id))
+                    {
+                        $despacho = null;
+
+                        switch($user->role->name)
+                        {
+                            // Administrador
+                            case 'admin': {
+                                
+                                // Only if Despacho contains OcPartes from OCs generated from its same country
+                                $despacho = Despacho::select('despachos.*')
+                                            ->join('despacho_ocparte', 'despacho_ocparte.despacho_id', '=', 'despachos.id')
+                                            ->join('oc_parte', 'oc_parte.id', '=', 'despacho_ocparte.ocparte_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->where('despachos.id', '=', $id) // For this Despacho
+                                            ->where('despachos.despachable_type', '=', get_class($comprador))
+                                            ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
+                                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->first();
+
+                                break;
+                            }
+
+                            // Agente de compra
+                            case 'agtcom': {
+
+                                // If user belongs to this Comprador
+                                if(
+                                    (get_class($user->stationable) === get_class($comprador)) &&
+                                    ($user->stationable->id === $comprador->id)
+                                )
+                                {
+                                    // Only if Despacho was dispatched by Comprador
+                                    $despacho = Despacho::select('despachos.*')
+                                            ->where('despachos.id', '=', $id) // For this Despacho
+                                            ->where('despachos.despachable_type', '=', get_class($comprador))
+                                            ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
+                                            ->first();
+                                }
+
+                                break;
+                            }
+
+                            // Coordinador logistico at Comprador
+                            case 'colcom': {
+
+                                // If user belongs to this Comprador
+                                if(
+                                    (get_class($user->stationable) === get_class($comprador)) &&
+                                    ($user->stationable->id === $comprador->id)
+                                )
+                                {
+                                    // Only if Despacho was dispatched by Comprador
+                                    $despacho = Despacho::select('despachos.*')
+                                            ->where('despachos.id', '=', $id) // For this Despacho
+                                            ->where('despachos.despachable_type', '=', get_class($comprador))
+                                            ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
+                                            ->first();
+                                }
+
+                                break;
+                            }
+                            
+
+                            default: {
+                                break;
+                            }
+                        }
+
+                        if($despacho !== null)
+                        {   
+                            $despacho->makeHidden([
+                                'despachable_id', 
+                                'despachable_type',
+                                'destinable_id', 
+                                'destinable_type', 
+                                'created_at', 
+                                'updated_at'
+                            ]);
+
+                            $despacho->despachable;
+                            $despacho->despachable->makeHidden([
+                                'rut',
+                                'address',
+                                'city',
+                                'contact',
+                                'phone',
+                                'country_id',
+                                'created_at',
+                                'updated_at',
+                            ]);
+
+                            $despacho->destinable;
+                            $despacho->destinable->makeHidden([
+                                'type',
+                                'rut',
+                                'address',
+                                'city',
+                                'country_id',
+                                'created_at',
+                                'updated_at',
+                            ]);
+
+                            $despacho->destinable->country;
+                            $despacho->destinable->country->makeHidden([
+                                'created_at',
+                                'updated_at',
+                            ]);
+
+                            $despacho->ocpartes = $despacho->ocpartes->map(function($ocParte) use ($comprador)
+                                {
+                                    $ocParte->cantidad_recepcionado = $ocParte->getCantidadRecepcionado($comprador);
+                                    $ocParte->cantidad_despachado = $ocParte->getCantidadDespachado($comprador);
+
+                                    $ocParte->makeHidden([
+                                        'oc_id',
+                                        'parte_id',
+                                        'estadoocparte_id',
+                                        'tiempoentrega',
+                                        'created_at',
+                                        'updated_at'
+                                    ]);
+
+                                    $ocParte->pivot;
+                                    $ocParte->pivot->makeHidden([
+                                        'despacho_id',
+                                        'ocparte_id',
+                                        'created_at',
+                                        'updated_at'
+                                    ]);
+
+                                    $ocParte->parte;
+                                    $ocParte->parte->makeHidden([
+                                        'marca_id',
+                                        'created_at',
+                                        'updated_at',
+                                    ]);
+
+                                    $ocParte->parte->marca;
+                                    $ocParte->parte->marca->makeHidden([
+                                        'created_at',
+                                        'updated_at',
+                                    ]);
+
+                                    $ocParte->oc;
+                                    $ocParte->oc->makeHidden([
+                                        'cotizacion_id',
+                                        'proveedor_id',
+                                        'filedata_id',
+                                        'estadooc_id',
+                                        'motivobaja_id',
+                                        'usdvalue',
+                                        'partes',
+                                        'dias',
+                                        'partes_total',
+                                        'monto',
+                                        'created_at',
+                                        'updated_at',
+                                    ]);
+
+                                    $ocParte->oc->cotizacion->makeHidden([
+                                        'solicitud_id',
+                                        'estadocotizacion_id',
+                                        'motivorechazo_id',
+                                        'usdvalue',
+                                        'created_at',
+                                        'updated_at',
+                                        'partes_total',
+                                        'dias',
+                                        'monto',
+                                        'partes'
+                                    ]);
+
+                                    $ocParte->oc->cotizacion->solicitud;
+                                    $ocParte->oc->cotizacion->solicitud->makeHidden([
+                                        'sucursal_id',
+                                        'faena_id',
+                                        'marca_id',
+                                        'comprador_id',
+                                        'user_id',
+                                        'estadosolicitud_id',
+                                        'comentario',
+                                        'created_at',
+                                        'updated_at',
+                                        'partes_total',
+                                        'partes'
+                                    ]);
+
+                                    $ocParte->oc->cotizacion->solicitud->sucursal;
+                                    $ocParte->oc->cotizacion->solicitud->sucursal->makeHidden([
+                                        'type',
+                                        'rut',
+                                        'address',
+                                        'city',
+                                        'country_id',
+                                        'created_at',
+                                        'updated_at'
+                                    ]);
+
+                                    $ocParte->oc->cotizacion->solicitud->faena;
+                                    $ocParte->oc->cotizacion->solicitud->faena->makeHidden([
+                                        'cliente_id',
+                                        'sucursal_id',
+                                        'rut',
+                                        'address',
+                                        'city',
+                                        'contact',
+                                        'phone',
+                                        'created_at',
+                                        'updated_at'
+                                    ]);
+
+                                    $ocParte->oc->cotizacion->solicitud->faena->cliente;
+                                    $ocParte->oc->cotizacion->solicitud->faena->cliente->makeHidden([
+                                        'country_id',
+                                        'created_at',
+                                        'updated_at'
+                                    ]);
+
+                                    $ocParte->oc->cotizacion->solicitud->marca;
+                                    $ocParte->oc->cotizacion->solicitud->marca->makeHidden([
+                                        'created_at',
+                                        'updated_at'
+                                    ]);
+
+                                    return $ocParte;
+                                }
+                            );
+
+                            $response = HelpController::buildResponse(
+                                200,
+                                null,
+                                $despacho
+                            );
+              
+                        }  
+                        // If wasn't catched
+                        else
+                        {
+                            // If Despacho exists
+                            if(Despacho::find($id))
+                            {
+                                // It was filtered, so it's forbidden
+                                $response = HelpController::buildResponse(
+                                    405,
+                                    'No tienes acceso a actualizar el despacho',
+                                    null
+                                );
+                            }
+                            // It doesn't exist
+                            else
+                            {
+                                $response = HelpController::buildResponse(
+                                    412,
+                                    'El despacho no existe',
+                                    null
+                                );
+                            }
+                        }                         
+                    }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            412,
+                            'El comprador no existe',
+                            null
+                        );
+                    }
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a actualizar despachos de comprador',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al obtener el despacho [!]' . $e,
+                null
+            );
+        }
+        
+        return $response;
+    }
+
+    public function update_comprador(Request $request, $comprador_id, $id)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('compradores despachos_update'))
+            {
+                $validatorInput = $request->only('fecha', 'ndocumento', 'responsable', 'comentario', 'ocs');
+            
+                $validatorRules = [
+                    'fecha' => 'required|date_format:Y-m-d|before:tomorrow', // it includes today
+                    'ndocumento' => 'nullable|min:1',
+                    'responsable' => 'required|min:1',
+                    'comentario' => 'sometimes|nullable',
+                    'ocs' => 'required|array|min:1',
+                    'ocs.*.id'  => 'required|exists:ocs,id',
+                    'ocs.*.partes' => 'required|array|min:1',
+                    'ocs.*.partes.*.id'  => 'required|exists:partes,id',
+                    'ocs.*.partes.*.cantidad'  => 'required|numeric|min:1',
+                ];
+        
+                $validatorMessages = [
+                    'fecha.required' => 'Debes ingresar la fecha de despacho',
+                    'fecha.date_format' => 'El formato de fecha de despacho es invalido',
+                    'fecha.before' => 'La fecha debe ser igual o anterior a hoy',
+                    'ndocumento.min' => 'El numero de documento debe tener al menos un digito',
+                    'responsable.required' => 'Debes ingresar el nombre de la persona que despacha',
+                    'responsable.min' => 'El nombre de la persona que despacha debe tener al menos un digito',
+                    'ocs.required' => 'Debes seleccionar las partes despachadas',
+                    'ocs.array' => 'Lista de partes despachadas invalida',
+                    'ocs.min' => 'El despacho debe contener al menos 1 parte despachada',
+                    'ocs.*.id.required' => 'Debes seleccionar la OC a despachar',
+                    'ocs.*.id.exists' => 'La OC ingresada no existe',
+                    'ocs.*.partes.required' => 'Debes seleccionar las partes despachadas',
+                    'ocs.*.partes.array' => 'Lista de partes despachadas invalida',
+                    'ocs.*.partes.min' => 'El despacho debe contener al menos 1 parte despachada',
+                    'ocs.*.partes.*.id.required' => 'La lista de partes despachadas es invalida',
+                    'ocs.*.partes.*.id.exists' => 'La parte despachada ingresada no existe',
+                    'ocs.*.partes.*.cantidad.required' => 'Debes ingresar la cantidad para la parte despachada',
+                    'ocs.*.partes.*.cantidad.numeric' => 'La cantidad para la parte despachada debe ser numerica',
+                    'ocs.*.partes.*.cantidad.min' => 'La cantidad para la parte despachada debe ser mayor a 0',
+                ];
+        
+                $validator = Validator::make(
+                    $validatorInput,
+                    $validatorRules,
+                    $validatorMessages
+                );
+        
+                if ($validator->fails()) 
+                {
+                    $response = HelpController::buildResponse(
+                        400,
+                        $validator->errors(),
+                        null
+                    );
+                }
+                else if(($comprador = Comprador::find($comprador_id)) === null)
+                {
+                    $response = HelpController::buildResponse(
+                        412,
+                        'El comprador no existe',
+                        null
+                    );
+                }
+                else        
+                {
+                    $despacho = null;
+
+                    switch($user->role->name)
+                    {
+                        // Administrador
+                        case 'admin': {
+                            
+                            // Only if Despacho contains OcPartes from OCs generated from its same country
+                            $despacho = Despacho::select('despachos.*')
+                                        ->join('despacho_ocparte', 'despacho_ocparte.despacho_id', '=', 'despachos.id')
+                                        ->join('oc_parte', 'oc_parte.id', '=', 'despacho_ocparte.ocparte_id')
+                                        ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                        ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                        ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                        ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                        ->where('despachos.id', '=', $id) // For this Despacho
+                                        ->where('despachos.despachable_type', '=', get_class($comprador))
+                                        ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
+                                        ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->first();
+
+                            break;
+                        }
+
+                        // Agente de compra
+                        case 'agtcom': {
+
+                            // If user belongs to this Comprador
+                            if(
+                                (get_class($user->stationable) === get_class($comprador)) &&
+                                ($user->stationable->id === $comprador->id)
+                            )
+                            {
+                                // Only if Despacho was dispatched by Comprador
+                                $despacho = Despacho::select('despachos.*')
+                                            ->where('despachos.id', '=', $id) // For this Despacho
+                                            ->where('despachos.despachable_type', '=', get_class($comprador))
+                                            ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
+                                            ->first();
+                            }
+
+                            break;
+                        }
+
+                        // Coordinador logistico at Comprador
+                        case 'colcom': {
+
+                            // If user belongs to this Comprador
+                            if(
+                                (get_class($user->stationable) === get_class($comprador)) &&
+                                ($user->stationable->id === $comprador->id)
+                            )
+                            {
+                                // Only if Despacho was dispatched at Comprador
+                                $despacho = Despacho::select('despachos.*')
+                                            ->where('despachos.id', '=', $id) // For this Despacho
+                                            ->where('despachos.despachable_type', '=', get_class($comprador))
+                                            ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
+                                            ->first();
+                            }
+
+                            break;
+                        }
+
+                        default: {
+                            break;
+                        }
+                    }
+
+                    if($despacho !== null)
+                    {
+                        // Clean OC and partes list in request and store on diffList for validations and ocList for sync
+                        $diffList = array();
+                        $ocList = array();
+                        foreach($request->ocs as $oc)
+                        {
+                            if((in_array($oc['id'], array_keys($diffList))) === false)
+                            {
+                                $diffList[$oc['id']] = array();
+                                $ocList[$oc['id']] = array();
+                            }
+
+                            foreach($oc['partes'] as $parte)
+                            {
+                                if(in_array($parte['id'], array_keys($diffList[$oc['id']])))
+                                {
+                                    $diffList[$oc['id']][$parte['id']] += $parte['cantidad'];
+                                    $ocList[$oc['id']][$parte['id']] += $parte['cantidad'];
+                                }
+                                else
+                                {
+                                    $diffList[$oc['id']][$parte['id']] = $parte['cantidad'];
+                                    $ocList[$oc['id']][$parte['id']] = $parte['cantidad'];
+                                }
+                            }
+                        }
+
+                        // For each OcParte in Despacho
+                        foreach($despacho->ocpartes as $ocParte)
+                        {
+                            // If OC isn't in the OC list yet
+                            if((in_array($ocParte->oc->id, array_keys($diffList))) === false)
+                            {
+                                /*  Add the OC. Also the Parte wasn't there either
+                                 *  so it's gonna be removed. Then add it with negative cantidad
+                                 *  and don't add it on the ocList (for sync)
+                                */
+
+                                $diffList[$ocParte->oc->id] = array(
+                                    $ocParte->parte->id => ($ocParte->pivot->cantidad * -1)
+                                );
+                            }
+                            // If OC was already in the list
+                            else
+                            {
+                                // If the Parte is already in list, it's kept in Despacho
+                                if((in_array($ocParte->parte->id, array_keys($diffList[$ocParte->oc->id]))) === true)
+                                {
+                                    // Add the diff cantidad with cantidad given in request - old cantidad
+                                    $diffList[$ocParte->oc->id][$ocParte->parte->id] -= $ocParte->pivot->cantidad;
+                                }
+                                // If the OcParte isn't in the list, it's going to be removed and don't add it on the ocList (for sync)
+                                else
+                                {
+                                    $diffList[$ocParte->oc->id][$ocParte->parte->id] = ($ocParte->pivot->cantidad * -1);
+                                }
+                            }
+                        }
+
+                        DB::beginTransaction();
+
+                        // Fill the data
+                        $despacho->fill($request->all());
+
+                        if($despacho->save())
+                        {
+                            $success = true;
+
+                            $syncData = [];
+                            foreach(array_keys($diffList) as $ocId)
+                            {      
+                                // If success wasn't broken yet, continue
+                                if($success === true)
+                                {
+                                    $oc = null;
+            
+                                    switch($user->role->name)
+                                    {
+                                        // Administrador
+                                        case 'admin': {
+
+                                            // Only if Oc was generated from its same country
+                                            $oc = Oc::select('ocs.*')
+                                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                                ->where('ocs.id', '=', $ocId)
+                                                ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
+                                                ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                                ->first();
+            
+                                            break;
+                                        }
+            
+                                        // Agente de compra
+                                        case 'agtcom': {
+                                        
+                                            // If user belongs to this Comprador
+                                            if(
+                                                (get_class($user->stationable) === get_class($comprador)) &&
+                                                ($user->stationable->id === $comprador->id)
+                                            )
+                                            {
+                                                $oc = Oc::select('ocs.*')
+                                                    ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                    ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                    ->where('ocs.id', '=', $ocId)
+                                                    ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
+                                                    ->first();
+                                            }
+            
+                                            break;
+                                        }
+            
+                                        // Coordinador logistico en Comprador
+                                        case 'colcom': {
+
+                                            // If user belongs to this Comprador
+                                            if(
+                                                (get_class($user->stationable) === get_class($comprador)) &&
+                                                ($user->stationable->id === $comprador->id)
+                                            )
+                                            {
+                                                $oc = Oc::select('ocs.*')
+                                                    ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                    ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                    ->where('ocs.id', '=', $ocId)
+                                                    ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
+                                                    ->first();
+                                            }
+            
+                                            break;
+                                        }
+            
+                                        default: {
+                                            break;
+                                        }
+                                    }
+            
+                                    if($oc !== null)
+                                    {
+                                        foreach(array_keys($diffList[$oc->id]) as $parteId)
+                                        {
+                                            if($p = $oc->partes->find($parteId))
+                                            {
+                                                // Calc new cantidad with cantidad in Despachos + diff (negative when removing)
+                                                $newCantidad = $p->pivot->getCantidadDespachado($comprador) + $diffList[$oc->id][$parteId];
+
+                                                // If new cantidad in Despachos is equal or more received at destination Sucursal (centro)
+                                                if($newCantidad >= $p->pivot->getCantidadRecepcionado($despacho->destinable))
+                                                {
+                                                    // If new cantidad in Despachos is equal or less than cantidad in Recepciones
+                                                    if($newCantidad <= $p->pivot->getCantidadRecepcionado($comprador))
+                                                    {
+                                                        // If OC is in the request
+                                                        if(in_array($oc->id, array_keys($ocList)) === true)
+                                                        {
+                                                            // If Parte is in the request for the OC
+                                                            if(in_array($parteId, array_keys($ocList[$oc->id])) === true)
+                                                            {
+                                                                // Add the OcParte to syunc using the ID which is unique
+                                                                $syncData[$p->pivot->id] = array(
+                                                                    'cantidad' => $ocList[$oc->id][$parteId]
+                                                                );
+                                                            }
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        // If the dispatched parts are more than waiting in queue
+                                                        $response = HelpController::buildResponse(
+                                                            409,
+                                                            'La cantidad ingresada para la parte "' . $p->nparte . '" es mayor a la cantidad pendiente de despacho',
+                                                            null
+                                                        );
+                    
+                                                        $success = false;
+                    
+                                                        break;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    // If the dispatched partes are less than received at destination Sucursal (centro)
+                                                    $response = HelpController::buildResponse(
+                                                        409,
+                                                        'La cantidad ingresada para la parte "' . $p->nparte . '" es menor a la cantidad ya recepcionada en el centro de distribucion para la OC: ' . $oc->id,
+                                                        null
+                                                    );
+                
+                                                    $success = false;
+                
+                                                    break;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                //If the entered parte isn't in the OC
+                                                $response = HelpController::buildResponse(
+                                                    409,
+                                                    'Una de las partes ingresadas no existe en la OC: ' . $oc->id,
+                                                    null
+                                                );
+            
+                                                $success = false;
+            
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if(Oc::find($ocId))
+                                        {
+                                            $response = HelpController::buildResponse(
+                                                405,
+                                                'No tienes acceso a actualizar despachos para la OC: ' . $ocId,
+                                                null
+                                            );
+                                        }
+                                        else
+                                        {
+                                            $response = HelpController::buildResponse(
+                                                412,
+                                                'La OC: ' . $ocId . ' no existe',
+                                                null
+                                            );
+                                        }
+                                        
+                                        $success = false;
+        
+                                        break;
+                                    }
+                                }
+                                // If success was already broken
+                                else
+                                {
+                                    // Break the higher loop
+                                    break;
+                                }                    
+                            }
+
+                            if(($success === true) && ($despacho->ocpartes()->sync($syncData)))
+                            {
+                                DB::commit();
+                                    
+                                $response = HelpController::buildResponse(
+                                    201,
+                                    'Despacho actualizado',
+                                    null
+                                );
+                            }
+                            else
+                            {
+                                DB::rollback();
+                            }
+                        }
+                        else
+                        {       
+                            DB::rollback();
+
+                            $response = HelpController::buildResponse(
+                                500,
+                                'Error al actualizar el despacho',
+                                null
+                            );
+                        }
+                    }
+                    // If wasn't catched
+                    else
+                    {
+                        // If Despacho exists
+                        if(Despacho::find($id))
+                        {
+                            // It was filtered, so it's forbidden
+                            $response = HelpController::buildResponse(
+                                405,
+                                'No tienes acceso a actualizar el despacho',
+                                null
+                            );
+                        }
+                        // It doesn't exist
+                        else
+                        {
+                            $response = HelpController::buildResponse(
+                                412,
+                                'El despacho no existe',
+                                null
+                            );
+                        }
+                    }    
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a actualizar despachos para comprador',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al actualizar el despacho [!]',
+                null
+            );
+        }
+        
+        return $response;
+    }
+
+    public function destroy_comprador($comprador_id, $id)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('compradores recepciones_destroy'))
+            {
+                if($comprador = Comprador::find($comprador_id))
+                {
+                    $despacho = null;
+
+                    switch($user->role->name)
+                    {
+                        // Administrador
+                        case 'admin': {
+                            
+                            // Only if Despacho contains OcPartes from OCs generated from its same country
+                            $despacho = Despacho::select('despachos.*')
+                                        ->join('despacho_ocparte', 'despacho_ocparte.despacho_id', '=', 'despachos.id')
+                                        ->join('oc_parte', 'oc_parte.id', '=', 'despacho_ocparte.ocparte_id')
+                                        ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                        ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                        ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                        ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                        ->where('despachos.id', '=', $id) // For this Despacho
+                                        ->where('despachos.despachable_type', '=', get_class($comprador))
+                                        ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
+                                        ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->first();
+
+                            break;
+                        }
+
+                        // Agente de compra
+                        case 'agtcom': {
+
+                            // If user belongs to this Comprador
+                            if(
+                                (get_class($user->stationable) === get_class($comprador)) &&
+                                ($user->stationable->id === $comprador->id)
+                            )
+                            {
+                                // Only if Despacho was dispatched by Comprador
+                                $despacho = Despacho::select('despachos.*')
+                                            ->where('despachos.id', '=', $id) // For this Despacho
+                                            ->where('despachos.despachable_type', '=', get_class($comprador))
+                                            ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
+                                            ->first();
+                            }
+
+                            break;
+                        }
+
+                        // Coordinador logistico at Comprador
+                        case 'colcom': {
+
+                            // If user belongs to this Comprador
+                            if(
+                                (get_class($user->stationable) === get_class($comprador)) &&
+                                ($user->stationable->id === $comprador->id)
+                            )
+                            {
+                                // Only if Despacho was dispatched at Comprador
+                                $despacho = Despacho::select('despachos.*')
+                                            ->where('despachos.id', '=', $id) // For this Despacho
+                                            ->where('despachos.despachable_type', '=', get_class($comprador))
+                                            ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
+                                            ->first();
+                            }
+
+                            break;
+                        }
+
+                        default: {
+                            break;
+                        }
+                    }
+
+                    if($despacho !== null)
+                    {
+                        $ocList = array();
+
+                        // For each OcParte in Despacho
+                        foreach($despacho->ocpartes as $ocParte)
+                        {
+                            // If OC isn't in the OC list yet
+                            if((in_array($ocParte->oc->id, array_keys($ocList))) === false)
+                            {
+                                // Add the OC and add the Parte with negative cantidad for removing
+                                $ocList[$ocParte->oc->id] = array(
+                                    $ocParte->parte->id => ($ocParte->pivot->cantidad * -1)
+                                );
+                            }
+                            // If OC was already in the list
+                            else
+                            {
+                                // Add the Parte with negative cantidad for removing
+                                $ocList[$ocParte->oc->id][$ocParte->parte->id] = ($ocParte->pivot->cantidad * -1);
+                            }
+                        }
+
+                        $success = true;
+                        foreach(array_keys($ocList) as $ocId)
+                        {      
+                            // If success wasn't broken yet, continue
+                            if($success === true)
+                            {
+                                $oc = null;
+        
+                                switch($user->role->name)
+                                {
+                                    // Administrador
+                                    case 'admin': {
+
+                                        // Only if Oc was generated from its same country
+                                        $oc = Oc::select('ocs.*')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->where('ocs.id', '=', $ocId)
+                                            ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
+                                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->first();
+        
+                                        break;
+                                    }
+        
+                                    // Agente de compra
+                                    case 'agtcom': {
+
+                                        // If user belongs to this Comprador
+                                        if(
+                                            (get_class($user->stationable) === get_class($comprador)) &&
+                                            ($user->stationable->id === $comprador->id)
+                                        )
+                                        {
+                                            $oc = Oc::select('ocs.*')
+                                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                ->where('ocs.id', '=', $ocId)
+                                                ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
+                                                ->first();
+                                        }
+        
+                                        break;
+                                    }
+        
+                                    // Coordinador logistico en Comprador
+                                    case 'colcom': {
+
+                                        // If user belongs to this Comprador
+                                        if(
+                                            (get_class($user->stationable) === get_class($comprador)) &&
+                                            ($user->stationable->id === $comprador->id)
+                                        )
+                                        {
+                                            $oc = Oc::select('ocs.*')
+                                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                ->where('ocs.id', '=', $ocId)
+                                                ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
+                                                ->first();
+                                        }
+        
+                                        break;
+                                    }
+        
+                                    default: {
+                                        break;
+                                    }
+                                }
+        
+                                if($oc !== null)
+                                {
+                                    foreach(array_keys($ocList[$oc->id]) as $parteId)
+                                    {
+                                        if($p = $oc->partes->find($parteId))
+                                        {
+                                            // Calc new cantidad with cantidad in Despachos + diff (negative when removing)
+                                            $newCantidad = $p->pivot->getCantidadDespachado($comprador) + $ocList[$oc->id][$parteId];
+
+                                            // If new cantidad in Despachos is less than received at destination Sucursal (centro)
+                                            if($newCantidad < $p->pivot->getCantidadRecepcionado($despacho->destinable))
+                                            {
+                                                $response = HelpController::buildResponse(
+                                                    409,
+                                                    'La parte "' . $p->nparte . '" tiene cantidades ya recepcionadas en el centro de distribucion para la OC: ' . $oc->id,
+                                                    null
+                                                );
+            
+                                                $success = false;
+            
+                                                break;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            $response = HelpController::buildResponse(
+                                                500,
+                                                'Error al eliminar el despacho',
+                                                null
+                                            );
+        
+                                            $success = false;
+        
+                                            break;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    if(Oc::find($ocId))
+                                    {
+                                        $response = HelpController::buildResponse(
+                                            405,
+                                            'No tienes acceso a eliminar despachos para la OC: ' . $ocId,
+                                            null
+                                        );
+                                    }
+                                    else
+                                    {
+                                        $response = HelpController::buildResponse(
+                                            412,
+                                            'La OC: ' . $ocId . ' no existe',
+                                            null
+                                        );
+                                    }
+                                    
+                                    $success = false;
+    
+                                    break;
+                                }
+                            }
+                            // If success was already broken
+                            else
+                            {
+                                // Break the higher loop
+                                break;
+                            }                    
+                        }
+
+                        if(($success === true) && ($despacho->delete()))
+                        {  
+                            $response = HelpController::buildResponse(
+                                200,
+                                'Despacho eliminado',
+                                null
+                            );
+                        }
+                    }
+                    // If wasn't catched
+                    else
+                    {
+                        // If Despacho exists
+                        if(Despacho::find($id))
+                        {
+                            // It was filtered, so it's forbidden
+                            $response = HelpController::buildResponse(
+                                405,
+                                'No tienes acceso a eliminar el despacho',
+                                null
+                            );
+                        }
+                        // It doesn't exist
+                        else
+                        {
+                            $response = HelpController::buildResponse(
+                                412,
+                                'El despacho no existe',
+                                null
+                            );
+                        }
+                    }                    
+                }
+                else
+                {
+                    $response = HelpController::buildResponse(
+                        412,
+                        'El comprador no existe',
+                        null
+                    );
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a eliminar despachos para comprador',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al eliminar el despacho [!]' . $e,
                 null
             );
         }

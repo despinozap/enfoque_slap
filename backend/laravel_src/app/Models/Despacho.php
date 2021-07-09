@@ -10,7 +10,8 @@ class Despacho extends Model
     use HasFactory;
 
     protected $table = 'despachos';
-    public $appends = ['partes_total'];
+    protected $appends = ['partes_total'];
+    protected $fillable = ['fecha', 'ndocumento', 'responsable', 'comentario'];
 
     /*
      * The Despacho's source. 
@@ -23,7 +24,7 @@ class Despacho extends Model
 
     /*
      *  The Despacho's destination.
-     *  Destinable models: Centrodistribucion, Sucursal, Faena
+     *  Destinable models: Centrodistribucion, Sucursal
      */
     public function destinable()
     {
@@ -49,5 +50,4 @@ class Despacho extends Model
         return $quantity;
     }
 
-    
 }

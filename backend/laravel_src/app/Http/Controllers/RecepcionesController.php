@@ -34,7 +34,6 @@ class RecepcionesController extends Controller
                 if($comprador = Comprador::find($id))
                 {
                     $recepciones = null;
-                    $oc = null;
                     $forbidden = false;
 
                     switch($user->role->name)
@@ -1084,7 +1083,7 @@ class RecepcionesController extends Controller
                             // Vendedor
                             case 'seller': {
 
-                                // Get only Recepciones containing OcPartes from belonging OCs generated from its same Sucursal
+                                // Only if Recepcion contains OcPartes from belonging OCs generated from its same Sucursal
                                 $recepcion = Recepcion::select('recepciones.*')
                                             ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
                                             ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
@@ -1164,7 +1163,7 @@ class RecepcionesController extends Controller
                                 // If user belongs to Sucursal
                                 else if($user->stationable->type === 'sucursal')
                                 {
-                                    // Get only Recepciones containing OcPartes from OCs generated from its same Sucursal
+                                    // Only if Recepcion contains OcPartes from OCs generated from its same Sucursal
                                     $recepcion = Recepcion::select('recepciones.*')
                                                 ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
                                                 ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
@@ -1691,17 +1690,21 @@ class RecepcionesController extends Controller
                                     null
                                 );
                             }  
-                        }   
-                        else     
+                        }        
+                        // If wasn't catched
+                        else
                         {
+                            // If Recepcion exists
                             if(Recepcion::find($id))
                             {
+                                // It was filtered, so it's forbidden
                                 $response = HelpController::buildResponse(
                                     405,
                                     'No tienes acceso a actualizar la recepcion',
                                     null
                                 );
                             }
+                            // It doesn't exist
                             else
                             {
                                 $response = HelpController::buildResponse(
@@ -1710,7 +1713,7 @@ class RecepcionesController extends Controller
                                     null
                                 );
                             }
-                        }                        
+                        }                  
                     }
                     else
                     {
@@ -1970,37 +1973,58 @@ class RecepcionesController extends Controller
                 
                                         switch($user->role->name)
                                         {
-                                            // Administrador en Sucursal
+                                            // Administrador
                                             case 'admin': {
+
+                                                // Only if Oc was generated from its same country
                                                 $oc = Oc::select('ocs.*')
+                                                    ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                    ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                    ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
                                                     ->where('ocs.id', '=', $ocId)
+                                                    ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
+                                                    ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                                     ->first();
                 
                                                 break;
                                             }
                 
-                                            // Agente de compra en Comprador
+                                            // Agente de compra
                                             case 'agtcom': {
-                                                $oc = Oc::select('ocs.*')
-                                                    ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
-                                                    ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                                    ->where('ocs.id', '=', $ocId)
-                                                    ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
-                                                    ->where($comprador->id, '=', $user->stationable->id) // If user belongs to this Comprador
-                                                    ->first();
+
+                                                // If user belongs to this Comprador
+                                                if(
+                                                    (get_class($user->stationable) === get_class($comprador)) &&
+                                                    ($user->stationable->id === $comprador->id)
+                                                )
+                                                {
+                                                    $oc = Oc::select('ocs.*')
+                                                        ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                        ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                        ->where('ocs.id', '=', $ocId)
+                                                        ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
+                                                        ->first();
+                                                }
                 
                                                 break;
                                             }
                 
                                             // Coordinador logistico en Comprador
                                             case 'colcom': {
-                                                $oc = Oc::select('ocs.*')
-                                                    ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
-                                                    ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                                    ->where('ocs.id', '=', $ocId)
-                                                    ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
-                                                    ->where($comprador->id, '=', $user->stationable->id) // If user belongs to this Comprador
-                                                    ->first();
+
+                                                // If user belongs to this Comprador
+                                                if(
+                                                    (get_class($user->stationable) === get_class($comprador)) &&
+                                                    ($user->stationable->id === $comprador->id)
+                                                )
+                                                {
+                                                    $oc = Oc::select('ocs.*')
+                                                        ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                        ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                        ->where('ocs.id', '=', $ocId)
+                                                        ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
+                                                        ->first();
+                                                }
                 
                                                 break;
                                             }
@@ -2140,16 +2164,20 @@ class RecepcionesController extends Controller
                             }
                         }
                     }
-                    else     
+                    // If wasn't catched
+                    else
                     {
+                        // If Recepcion exists
                         if(Recepcion::find($id))
                         {
+                            // It was filtered, so it's forbidden
                             $response = HelpController::buildResponse(
                                 405,
                                 'No tienes acceso a actualizar la recepcion',
                                 null
                             );
                         }
+                        // It doesn't exist
                         else
                         {
                             $response = HelpController::buildResponse(
@@ -2158,7 +2186,7 @@ class RecepcionesController extends Controller
                                 null
                             );
                         }
-                    }  
+                    }
                 }
             }
             else
@@ -2174,7 +2202,7 @@ class RecepcionesController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al actualizar la recepcion [!]' . $e,
+                'Error al actualizar la recepcion [!]',
                 null
             );
         }
@@ -2293,37 +2321,58 @@ class RecepcionesController extends Controller
         
                                 switch($user->role->name)
                                 {
-                                    // Administrador en Sucursal
+                                    // Administrador
                                     case 'admin': {
+
+                                        // Only if Oc was generated from its same country
                                         $oc = Oc::select('ocs.*')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
                                             ->where('ocs.id', '=', $ocId)
+                                            ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
+                                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                             ->first();
         
                                         break;
                                     }
         
-                                    // Agente de compra en Comprador
+                                    // Agente de compra
                                     case 'agtcom': {
-                                        $oc = Oc::select('ocs.*')
-                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
-                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                            ->where('ocs.id', '=', $ocId)
-                                            ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
-                                            ->where($comprador->id, '=', $user->stationable->id) // If user belongs to this Comprador
-                                            ->first();
+
+                                        // If user belongs to this Comprador
+                                        if(
+                                            (get_class($user->stationable) === get_class($comprador)) &&
+                                            ($user->stationable->id === $comprador->id)
+                                        )
+                                        {
+                                            $oc = Oc::select('ocs.*')
+                                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                ->where('ocs.id', '=', $ocId)
+                                                ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
+                                                ->first();
+                                        }
         
                                         break;
                                     }
         
                                     // Coordinador logistico en Comprador
                                     case 'colcom': {
-                                        $oc = Oc::select('ocs.*')
-                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
-                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                            ->where('ocs.id', '=', $ocId)
-                                            ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
-                                            ->where($comprador->id, '=', $user->stationable->id) // If user belongs to this Comprador
-                                            ->first();
+
+                                        // If user belongs to this Comprador
+                                        if(
+                                            (get_class($user->stationable) === get_class($comprador)) &&
+                                            ($user->stationable->id === $comprador->id)
+                                        )
+                                        {
+                                            $oc = Oc::select('ocs.*')
+                                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                ->where('ocs.id', '=', $ocId)
+                                                ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
+                                                ->first();
+                                        }
         
                                         break;
                                     }
@@ -2412,16 +2461,20 @@ class RecepcionesController extends Controller
                             );
                         }
                     }
-                    else     
+                    // If wasn't catched
+                    else
                     {
+                        // If Recepcion exists
                         if(Recepcion::find($id))
                         {
+                            // It was filtered, so it's forbidden
                             $response = HelpController::buildResponse(
                                 405,
                                 'No tienes acceso a eliminar la recepcion',
                                 null
                             );
                         }
+                        // It doesn't exist
                         else
                         {
                             $response = HelpController::buildResponse(
@@ -2430,7 +2483,7 @@ class RecepcionesController extends Controller
                                 null
                             );
                         }
-                    }                  
+                    }                    
                 }
                 else
                 {
