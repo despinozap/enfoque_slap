@@ -246,6 +246,13 @@ export class RecepcionesService {
     return this.httpClient.get(endpoint);
   }
 
+  public prepareStoreRecepcion_comprador(comprador_id: number): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/compradores/${comprador_id}/recepciones/prepare`;
+    
+    return this.httpClient.get(endpoint);
+  }
+
   public getRecepciones_comprador(comprador_id: number): Observable<any>
   {
     let endpoint: string = `${environment.ENDPOINT_BASE}/compradores/${comprador_id}/recepciones`;

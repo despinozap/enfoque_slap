@@ -42,7 +42,7 @@
                                     <div *ngFor="let errorMessage of responseErrors.proveedor_id">{{ errorMessage }}</div>
                                 </div>
                                 <select class="form-control" name="proveedor" id="proveedor" formControlName="proveedor" (change)="loadOcs();">
-                                    <option *ngFor="let proveedor of proveedores" [value]="proveedor.id">{{ proveedor.name }}</option>
+                                    <option *ngFor="let proveedor of proveedores" [value]="proveedor.id">{{ proveedor.name }} [{{ proveedor.city }}]</option>
                                 </select>
                                 <!-- Frontend errors -->
                                 <div *ngIf="(proveedorForm.controls.proveedor.errors) && (proveedorForm.controls.proveedor.touched) && (proveedorForm.controls.proveedor.dirty)">

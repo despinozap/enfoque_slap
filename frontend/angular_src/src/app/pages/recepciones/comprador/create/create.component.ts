@@ -2,15 +2,11 @@ import { Component, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { Location } from '@angular/common';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
-import { Proveedor } from 'src/app/interfaces/proveedor';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { RecepcionesService } from 'src/app/services/recepciones.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
-import { ProveedoresService } from 'src/app/services/proveedores.service';
 import { UtilsService } from 'src/app/services/utils.service';
 import { Router } from '@angular/router';
-import { User } from 'src/app/interfaces/user';
-import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-create',
@@ -78,7 +74,6 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
   constructor(
     private location: Location,
     private router: Router,
-    private _proveedoresService: ProveedoresService,
     private _recepcionesService: RecepcionesService,
     private _utilsService: UtilsService
   ) { }
@@ -117,17 +112,33 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
     this.loading = true;
     this.proveedorForm.disable();
 
-    this._proveedoresService.getProveedores(this.comprador_id)
+    this._recepcionesService.prepareStoreRecepcion_comprador(this.comprador_id)
     .subscribe(
       //Success request
       (response: any) => {
 
-        this.proveedores = response.data;
-        this.loading = false;
-        this.proveedorForm.enable();
+        if(response.data.proveedores.length > 0) 
+        {
+          // Proveedores
+          this.proveedores = response.data.proveedores;
+
+          this.loading = false;
+          this.proveedorForm.enable();
+        }
+        else
+        {
+          NotificationsService.showToast(
+            'No se encontraron proveedores con partes pendiente de recepcion',
+            NotificationsService.messageType.info
+          );
+
+          this.loading = false;
+          this.goTo_back();
+        }
       },
       //Error request
       (errorResponse: any) => {
+
         switch(errorResponse.status)
         {
         
@@ -164,7 +175,7 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
           default: //Unhandled error
           {
             NotificationsService.showToast(
-              'Error al cargar los datos de los proveedores',
+              'Error al cargar los datos de los centros de distribucion',
               NotificationsService.messageType.error
             );
   
@@ -177,6 +188,7 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
         this.goTo_back();
       }
     );
+
   }
   
   public loadOcs(): void {
@@ -434,21 +446,10 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
     this.partes.forEach((parte: any) => {
       parte.checked = evt.target.checked;
     });
-
-    this.sortPartesByChecked();
   }
 
   public checkParteItem(parte: any, evt: any): void {
     parte.checked = evt.target.checked;
-
-    this.sortPartesByChecked();
-  }
-
-  private sortPartesByChecked(): void {
-    // Sort partes pushing checked ones to the top
-    this.partes = this.partes.sort((p1, p2) => {
-      return ((p2.checked === true) ? 1 : 0) - ((p1.checked === true) ? 1 : 0);
-    });
   }
 
   public isCheckedItem(dataSource: any[]): boolean

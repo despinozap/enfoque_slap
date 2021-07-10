@@ -102,8 +102,8 @@ export class DespachosCompradorCreateComponent implements OnInit {
         else
         {
           NotificationsService.showToast(
-            'Error al cargar los datos de los centros de distribucion',
-            NotificationsService.messageType.error
+            'No se encontraron centros de distribucion con partes pendiente de despacho',
+            NotificationsService.messageType.info
           );
 
           this.loading = false;
@@ -276,7 +276,7 @@ export class DespachosCompradorCreateComponent implements OnInit {
     // Prepare OCs list
     let indexOc;
     let indexParte;
-    let ocs = this.partes.reduce((carry, parte) =>
+    let dispatchedOcs = this.partes.reduce((carry, parte) =>
       {
         if(parte.checked === true)
         {
@@ -339,7 +339,7 @@ export class DespachosCompradorCreateComponent implements OnInit {
       ndocumento: this.despachoForm.value.documento,
       responsable: this.despachoForm.value.responsable,
       comentario: this.despachoForm.value.comentario,
-      ocs: ocs
+      ocs: dispatchedOcs
     };
 
     this._despachosService.storeDespacho_comprador(this.comprador_id, despacho)

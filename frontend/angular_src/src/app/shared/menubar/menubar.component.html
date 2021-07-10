@@ -114,7 +114,7 @@
                 </li>
 
                 <!-- Centro distribucion -->
-                <!-- <li class="menu-title" key="t-centrodistribucion">Centro distribucion</li>
+                <li class="menu-title" key="t-centrodistribucion">Centro distribucion</li>
                 <li>
                     <a href="javascript: void(0);" class="has-arrow waves-effect">
                         <i class="bx bx-log-in-circle"></i>
@@ -144,7 +144,7 @@
                         <li><a [routerLink]="['entregas/centrodistribucion/create']" key="t-centrodistribucionentregasnuevo">Nueva entrega</a></li>
                         <li><a [routerLink]="['entregas/centrodistribucion']" key="t-centrodistribucionentregaslista">Lista de entregas</a></li>
                     </ul>
-                </li> -->
+                </li>
 
                 <!-- Sucursal -->
                 <!-- <li class="menu-title" key="t-sucursal">Sucursal</li>
@@ -224,37 +224,19 @@
                 </li>
 
                 <!-- Centro distribucion -->
-                <!-- <li class="menu-title" key="t-centrodistribucion">Centro distribucion</li>
+                <li class="menu-title" key="t-centrodistribucion">Centro distribucion</li>
                 <li>
-                    <a href="javascript: void(0);" class="has-arrow waves-effect">
+                    <a [routerLink]="['recepciones/centrodistribucion']" class="waves-effect">
                         <i class="bx bx-log-in-circle"></i>
-                        <span key="t-centrodistribucionrecepciones">Recepciones</span>
+                        <span key="t-centrodistribucionrecepciones">Lista de recepciones</span>
                     </a>
-                    <ul class="sub-menu" aria-expanded="false">
-                        <li><a [routerLink]="['recepciones/centrodistribucion/create']" key="t-centrodistribucionrecepcionesnuevo">Nueva recepcion</a></li>
-                        <li><a [routerLink]="['recepciones/centrodistribucion']" key="t-centrodistribucionrecepcioneslista">Lista de recepciones</a></li>
-                    </ul>
                 </li>
                 <li>
-                    <a href="javascript: void(0);" class="has-arrow waves-effect">
+                    <a [routerLink]="['despachos/centrodistribucion']" class="waves-effect">
                         <i class="bx bx-log-out-circle"></i>
-                        <span key="t-centrodistribuciondespachos">Despachos</span>
+                        <span key="t-centrodistribuciondespachos">Lista de despachos</span>
                     </a>
-                    <ul class="sub-menu" aria-expanded="false">
-                        <li><a [routerLink]="['despachos/centrodistribucion/create']" key="t-centrodistribuciondespachosnuevo">Nuevo despacho</a></li>
-                        <li><a [routerLink]="['despachos/centrodistribucion']" key="t-centrodistribuciondespachoslista">Lista de despachos</a></li>
-                    </ul>
                 </li>
-                <li>
-                    <a href="javascript: void(0);" class="has-arrow waves-effect">
-                        <i class="bx bxs-truck"></i>
-                        <span key="t-centrodistribucionentregas">Entregas</span>
-                    </a>
-                    <ul class="sub-menu" aria-expanded="false">
-                        <li><a [routerLink]="['entregas/centrodistribucion/create']" key="t-centrodistribucionentregasnuevo">Nueva entrega</a></li>
-                        <li><a [routerLink]="['entregas/centrodistribucion']" key="t-centrodistribucionentregaslista">Lista de entregas</a></li>
-                    </ul>
-                </li> -->
 
             </ul>
 
@@ -307,6 +289,21 @@
                     <a [routerLink]="['despachos/comprador']" class="waves-effect">
                         <i class="bx bx-log-out-circle"></i>
                         <span key="t-compradordespachoslista">Lista de despachos</span>
+                    </a>
+                </li>
+
+                <!-- Centro distribucion -->
+                <li class="menu-title" key="t-centrodistribucion">Centro distribucion</li>
+                <li>
+                    <a [routerLink]="['recepciones/centrodistribucion']" class="waves-effect">
+                        <i class="bx bx-log-in-circle"></i>
+                        <span key="t-centrodistribucionrecepciones">Lista de recepciones</span>
+                    </a>
+                </li>
+                <li>
+                    <a [routerLink]="['despachos/centrodistribucion']" class="waves-effect">
+                        <i class="bx bx-log-out-circle"></i>
+                        <span key="t-centrodistribuciondespachos">Lista de despachos</span>
                     </a>
                 </li>
 
@@ -426,7 +423,7 @@
 
             </ul>
 
-            <!-- Role: Coordinador logistico at Sucursal (centro) [seller - centro] -->
+            <!-- Role: Coordinador logistico at Sucursal (centro) [colsol - centro] -->
             <ul class="metismenu list-unstyled" id="side-menu" *ngIf="(loggedUser !== null) && (loggedUser.role.name === 'colsol') && (loggedUser.stationable.type === 'centro')">
 
                 <!-- Menu -->
@@ -456,9 +453,32 @@
                     </a>
                 </li>
 
+                <!-- Centro distribucion -->
+                <li class="menu-title" key="t-centrodistribucion">Centro distribucion</li>
+                <li>
+                    <a href="javascript: void(0);" class="has-arrow waves-effect">
+                        <i class="bx bx-log-in-circle"></i>
+                        <span key="t-centrodistribucionrecepciones">Recepciones</span>
+                    </a>
+                    <ul class="sub-menu" aria-expanded="false">
+                        <li><a [routerLink]="['recepciones/centrodistribucion/create']" key="t-centrodistribucionrecepcionesnuevo">Nueva recepcion</a></li>
+                        <li><a [routerLink]="['recepciones/centrodistribucion']" key="t-centrodistribucionrecepcioneslista">Lista de recepciones</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="javascript: void(0);" class="has-arrow waves-effect">
+                        <i class="bx bx-log-out-circle"></i>
+                        <span key="t-centrodistribuciondespachos">Despachos</span>
+                    </a>
+                    <ul class="sub-menu" aria-expanded="false">
+                        <li><a [routerLink]="['despachos/centrodistribucion/create']" key="t-centrodistribuciondespachosnuevo">Nuevo despacho</a></li>
+                        <li><a [routerLink]="['despachos/centrodistribucion']" key="t-centrodistribuciondespachoslista">Lista de despachos</a></li>
+                    </ul>
+                </li>
+
             </ul>
 
-            <!-- Role: Coordinador logistico at Sucursal [seller - sucursal] -->
+            <!-- Role: Coordinador logistico at Sucursal [colsol - sucursal] -->
             <ul class="metismenu list-unstyled" id="side-menu" *ngIf="(loggedUser !== null) && (loggedUser.role.name === 'colsol') && (loggedUser.stationable.type === 'sucursal')">
 
                 <!-- Menu -->
@@ -486,6 +506,44 @@
                         <i class="bx bx-log-out-circle"></i>
                         <span key="t-compradordespachoslista">Lista de despachos</span>
                     </a>
+                </li>
+
+                <!-- Centro distribucion -->
+                <li class="menu-title" key="t-centrodistribucion">Centro distribucion</li>
+                <li>
+                    <a [routerLink]="['recepciones/centrodistribucion']" class="waves-effect">
+                        <i class="bx bx-log-in-circle"></i>
+                        <span key="t-centrodistribucionrecepciones">Lista de recepciones</span>
+                    </a>
+                </li>
+                <li>
+                    <a [routerLink]="['despachos/centrodistribucion']" class="waves-effect">
+                        <i class="bx bx-log-out-circle"></i>
+                        <span key="t-centrodistribuciondespachos">Lista de despachos</span>
+                    </a>
+                </li>
+
+                <!-- Sucursal -->
+                <li class="menu-title" key="t-sucursal">Sucursal</li>
+                <li>
+                    <a href="javascript: void(0);" class="has-arrow waves-effect">
+                        <i class="bx bx-log-in-circle"></i>
+                        <span key="t-sucursalrecepciones">Recepciones</span>
+                    </a>
+                    <ul class="sub-menu" aria-expanded="false">
+                        <li><a [routerLink]="['recepciones/sucursal/create']" key="t-sucursalrecepcionesnuevo">Nueva recepcion</a></li>
+                        <li><a [routerLink]="['recepciones/sucursal']" key="t-sucursalrecepcioneslista">Lista de recepciones</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="javascript: void(0);" class="has-arrow waves-effect">
+                        <i class="bx bx-log-out-circle"></i>
+                        <span key="t-sucursaldespachos">Despachos</span>
+                    </a>
+                    <ul class="sub-menu" aria-expanded="false">
+                        <li><a [routerLink]="['despachos/sucursal/create']" key="t-sucursaldespachosnuevo">Nuevo despacho</a></li>
+                        <li><a [routerLink]="['despachos/sucursal']" key="t-sucursaldespachoslista">Lista de despachos</a></li>
+                    </ul>
                 </li>
 
             </ul>
