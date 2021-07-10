@@ -139,6 +139,7 @@ Route::middleware(['auth:api', 'cors'])->group(function()
 
     // Recepciones (Comprador)
     Route::get('/compradores/{id}/recepciones', [RecepcionesController::class, 'index_comprador']);
+    Route::get('/compradores/{comprador_id}/recepciones/prepare', [RecepcionesController::class, 'store_prepare_comprador']);
     Route::get('/compradores/{comprador_id}/recepciones/queueocs/proveedores/{proveedor_id}', [RecepcionesController::class, 'queueOcs_comprador']);
     Route::post('/compradores/{comprador_id}/recepciones', [RecepcionesController::class, 'store_comprador']);
     Route::get('/compradores/{comprador_id}/recepciones/{id}', [RecepcionesController::class, 'show_comprador']);
@@ -158,7 +159,8 @@ Route::middleware(['auth:api', 'cors'])->group(function()
 
     // // Recepciones (Sucursal [centro])
     // Route::get('/centrosdistribucion/{id}/recepciones', [RecepcionesController::class, 'index_centrodistribucion']);
-    // Route::get('/centrosdistribucion/{centrodistribucion_id}/compradores/{comprador_id}/queuepartes', [RecepcionesController::class, 'queuePartes_centrodistribucion']);
+    Route::get('/centrosdistribucion/{centrodistribucion_id}/recepciones/prepare', [RecepcionesController::class, 'store_prepare_centrodistribucion']);
+    Route::get('/centrosdistribucion/{centrodistribucion_id}/recepciones/queueocpartes/compradores/{comprador_id}', [RecepcionesController::class, 'queueOcPartes_centrodistribucion']);
     // Route::post('/centrosdistribucion/{centrodistribucion_id}/recepciones', [RecepcionesController::class, 'store_centrodistribucion']);
     // Route::get('/centrosdistribucion/{centrodistribucion_id}/recepciones/{id}', [RecepcionesController::class, 'show_centrodistribucion']);
     // Route::get('/centrosdistribucion/{centrodistribucion_id}/recepciones/{id}/prepare', [RecepcionesController::class, 'update_prepare_centrodistribucion']);

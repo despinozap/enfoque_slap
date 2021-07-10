@@ -109,25 +109,7 @@ class DatabaseSeeder extends Seeder
             'compradores despachos_show',
             'compradores despachos_update',
             'compradores despachos_destroy',
-            //Sucurales (centro)
-            'centrosdistribucion index',
-            'centrosdistribucion show',
-            'centrosdistribucion recepciones_index',
-            'centrosdistribucion recepciones_store',
-            'centrosdistribucion recepciones_show',
-            'centrosdistribucion recepciones_update',
-            'centrosdistribucion recepciones_destroy',
-            'centrosdistribucion despachos_index',
-            'centrosdistribucion despachos_store',
-            'centrosdistribucion despachos_show',
-            'centrosdistribucion despachos_update',
-            'centrosdistribucion despachos_destroy',
-            'centrosdistribucion entregas_index',
-            'centrosdistribucion entregas_store',
-            'centrosdistribucion entregas_show',
-            'centrosdistribucion entregas_update',
-            'centrosdistribucion entregas_destroy',
-            //Sucurales (sucursal)
+            //Sucursales
             'sucursales index',
             'sucursales show',
             'sucursales recepciones_index',
@@ -267,25 +249,7 @@ class DatabaseSeeder extends Seeder
                 'compradores despachos_show',
                 'compradores despachos_update',
                 'compradores despachos_destroy',
-                //Sucurales (centro)
-                'centrosdistribucion index',
-                'centrosdistribucion show',
-                'centrosdistribucion recepciones_index',
-                'centrosdistribucion recepciones_store',
-                'centrosdistribucion recepciones_show',
-                'centrosdistribucion recepciones_update',
-                'centrosdistribucion recepciones_destroy',
-                'centrosdistribucion despachos_index',
-                'centrosdistribucion despachos_store',
-                'centrosdistribucion despachos_show',
-                'centrosdistribucion despachos_update',
-                'centrosdistribucion despachos_destroy',
-                'centrosdistribucion entregas_index',
-                'centrosdistribucion entregas_store',
-                'centrosdistribucion entregas_show',
-                'centrosdistribucion entregas_update',
-                'centrosdistribucion entregas_destroy',
-                //Sucurales (sucursal)
+                //Sucursales
                 'sucursales index',
                 'sucursales show',
                 'sucursales recepciones_index',
@@ -356,6 +320,16 @@ class DatabaseSeeder extends Seeder
                 'compradores recepciones_show',
                 'compradores despachos_index',
                 'compradores despachos_show',
+                //Sucursales
+                'sucursales recepciones_index',
+                'sucursales recepciones_show',
+                'sucursales despachos_index',
+                'sucursales despachos_show',
+                'sucursales entregas_index',
+                'sucursales entregas_store',
+                'sucursales entregas_show',
+                'sucursales entregas_update',
+                'sucursales entregas_destroy',
             ];
 
             $routePermissionIds = [];
@@ -445,7 +419,7 @@ class DatabaseSeeder extends Seeder
                 'compradores despachos_store',
                 'compradores despachos_show',
                 'compradores despachos_update',
-                'compradores despachos_destroy'
+                'compradores despachos_destroy',
             ];
 
             $routePermissionIds = [];
@@ -471,7 +445,26 @@ class DatabaseSeeder extends Seeder
             $routePermissionNames = [
                 //Loggedactions
                 'loggedactions index',
-                'loggedactions store'
+                'loggedactions store',
+                //Ocs
+                'ocs index',
+                'ocs report',
+                //Compradores
+                'compradores recepciones_index',
+                'compradores recepciones_show',
+                'compradores despachos_index',
+                'compradores despachos_show',
+                //Sucursales
+                'sucursales recepciones_index',
+                'sucursales recepciones_store',
+                'sucursales recepciones_show',
+                'sucursales recepciones_update',
+                'sucursales recepciones_destroy',
+                'sucursales despachos_index',
+                'sucursales despachos_store',
+                'sucursales despachos_show',
+                'sucursales despachos_update',
+                'sucursales despachos_destroy',
             ];
 
             $routePermissionIds = [];
@@ -756,7 +749,7 @@ class DatabaseSeeder extends Seeder
         $estadoocparte->name = 'Pendiente';
         $estadoocparte->save();
         $estadoocparte = new Estadoocparte();
-        $estadoocparte->name = 'Parcial';
+        $estadoocparte->name = 'En transito';
         $estadoocparte->save();
         $estadoocparte = new Estadoocparte();
         $estadoocparte->name = 'Entregado';

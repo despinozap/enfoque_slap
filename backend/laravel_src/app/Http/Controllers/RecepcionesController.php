@@ -380,6 +380,177 @@ class RecepcionesController extends Controller
         return $response;
     }
 
+    public function store_prepare_comprador($comprador_id)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('compradores recepciones_store'))
+            {
+                if($comprador = Comprador::find($comprador_id))
+                {
+                    $proveedores = null;
+                    $forbidden = false;
+
+                    switch($user->role->name)
+                    {
+                        // Administrador
+                        case 'admin': {
+
+                            // Get only Proveedores assigned for Ocs which were generated at its country for Comprador
+                            $proveedores = Proveedor::select('proveedores.*')
+                                        ->join('ocs', 'ocs.proveedor_id', '=', 'proveedores.id')
+                                        ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
+                                        ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                        ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                        ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                        ->where('ocs.estadooc_id', '=', 2)  // Oc with estadooc = 'En proceso'
+                                        ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
+                                        ->where('sucursales.country_id', '=', $user->stationable->country->id) // Solicitud from same Country as user station
+                                        ->groupBy('proveedores.id')
+                                        ->get();
+                            
+
+                            break;
+                        }
+
+                        // Agente de compra
+                        case 'agtcom': {
+
+                            // If user belongs to this Comprador
+                            if(
+                                (get_class($user->stationable) === get_class($comprador)) &&
+                                ($user->stationable->id === $comprador->id)
+                            )
+                            {
+                                // Get only Proveedores assigned for Ocs for Comprador
+                                $proveedores = Proveedor::select('proveedores.*')
+                                            ->join('ocs', 'ocs.proveedor_id', '=', 'proveedores.id')
+                                            ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
+                                            ->where('ocs.estadooc_id', '=', 2)  // Oc with estadooc = 'En proceso'
+                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
+                                            ->groupBy('proveedores.id')
+                                            ->get();
+                            }
+                            else
+                            {
+                                // Set as forbidden
+                                $forbidden = true;
+                            }
+
+                            break;
+                        }
+
+                        // Coordinador logistico at Comprador
+                        case 'colcom': {
+
+                            // If user belongs to this Comprador
+                            if(
+                                (get_class($user->stationable) === get_class($comprador)) &&
+                                ($user->stationable->id === $comprador->id)
+                            )
+                            {
+                                // Get only Proveedores assigned for Ocs for Comprador
+                                $proveedores = Proveedor::select('proveedores.*')
+                                            ->join('ocs', 'ocs.proveedor_id', '=', 'proveedores.id')
+                                            ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
+                                            ->where('ocs.estadooc_id', '=', 2)  // Oc with estadooc = 'En proceso'
+                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
+                                            ->groupBy('proveedores.id')
+                                            ->get();
+
+                            }
+                            else
+                            {
+                                // Set as forbidden
+                                $forbidden = true;
+                            }
+
+                            break;
+                        }
+
+                        default:
+                        {
+                            break;
+                        }
+                    }
+
+                    if($proveedores !== null)
+                    {
+                        $proveedores = $proveedores->map(function($proveedor)
+                            {
+                                $proveedor->makeHidden([
+                                    'comprador_id',
+                                    'rut',
+                                    'address',
+                                    'contact',
+                                    'phone',
+                                    'created_at',
+                                    'updated_at'
+                                ]);
+
+                                return $proveedor;
+                            }
+                        );
+
+                    
+                        $data = [
+                            "proveedores" => $proveedores
+                        ];
+
+                        $response = HelpController::buildResponse(
+                            200,
+                            null,
+                            $data
+                        );
+                    }
+                    else if($forbidden === true)
+                    {
+                        $response = HelpController::buildResponse(
+                            405,
+                            'No tienes acceso registrar recepciones para el comprador',
+                            null
+                        );
+                    }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            500,
+                            'Error al preparar la recepcion',
+                            null
+                        );
+                    }
+                }   
+                else     
+                {
+                    $response = HelpController::buildResponse(
+                        412,
+                        'El comprador no existe',
+                        null
+                    );
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a registrar recepciones para comprador',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al preparar la recepcion [!]',
+                null
+            );
+        }
+            
+        return $response;
+    }
+
     public function queueOcs_comprador($comprador_id, $proveedor_id)
     {
         try
@@ -401,13 +572,16 @@ class RecepcionesController extends Controller
 
                                 // Get only OCs for the Comprador assigned to Proveedor and generated from its same country
                                 $ocList = Oc::select('ocs.*')
+                                        ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                         ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                         ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
                                         ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
                                         ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                        ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                         ->where('ocs.proveedor_id', '=', $proveedor->id)
                                         ->where('solicitudes.comprador_id', '=', $comprador->id) // For this Comprador
                                         ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->groupBy('ocs.id')
                                         ->get();
 
                                 break;
@@ -424,11 +598,15 @@ class RecepcionesController extends Controller
                                 {
                                     // Get list
                                     $ocList = Oc::select('ocs.*')
+                                            ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                             ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                             ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                             ->where('solicitudes.comprador_id', '=', $comprador->id) // For this Comprador
                                             ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
                                             ->where('ocs.proveedor_id', '=', $proveedor->id)
+                                            ->groupBy('ocs.id')
                                             ->get();
                                 }
                                 else
@@ -451,11 +629,15 @@ class RecepcionesController extends Controller
                                 {
                                     // Get list
                                     $ocList = Oc::select('ocs.*')
+                                            ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                             ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                             ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                             ->where('solicitudes.comprador_id', '=', $comprador->id) // For this Comprador
                                             ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
                                             ->where('ocs.proveedor_id', '=', $proveedor->id)
+                                            ->groupBy('ocs.id')
                                             ->get();
                                 }
                                 else
@@ -802,13 +984,15 @@ class RecepcionesController extends Controller
                                     {
                                         // Administrador
                                         case 'admin': {
-
+                                            
                                             $oc = Oc::select('ocs.*')
+                                                ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                                 ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                                 ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
                                                 ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
-                                                ->where('ocs.id', '=', $ocId) // For this Oc
                                                 ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
+                                                ->where('ocs.id', '=', $ocId) // For this Oc
                                                 ->where('ocs.proveedor_id', '=', $proveedor->id)
                                                 ->where('solicitudes.comprador_id', '=', $comprador->id) // For this Comprador
                                                 ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
@@ -827,8 +1011,11 @@ class RecepcionesController extends Controller
                                             )
                                             {
                                                 $oc = Oc::select('ocs.*')
+                                                    ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                                     ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                                     ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                    ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                    ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                                     ->where('ocs.id', '=', $ocId)
                                                     ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
                                                     ->first();
@@ -847,8 +1034,11 @@ class RecepcionesController extends Controller
                                             )
                                             {
                                                 $oc = Oc::select('ocs.*')
+                                                    ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                                     ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                                     ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                    ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                    ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                                     ->where('ocs.id', '=', $ocId)
                                                     ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
                                                     ->first();
@@ -873,8 +1063,31 @@ class RecepcionesController extends Controller
                                                     $cantidadRecepcionado = $p->pivot->getCantidadRecepcionado($comprador);
                                                     if($cantidadRecepcionado < $p->pivot->cantidad)
                                                     {
-                                                        if(($cantidadRecepcionado + $ocList[$oc->id][$parteId]) <= $p->pivot->cantidad)
+                                                        $newCantidad = $cantidadRecepcionado + $ocList[$oc->id][$parteId];
+                                                        if($newCantidad <= $p->pivot->cantidad)
                                                         {
+                                                            // If new cantidad in Recepciones is equal to cantidad in Oc
+                                                            if($newCantidad === $p->pivot->cantidad)
+                                                            {
+                                                                // All partes were received at Comprador
+                                                                $p->pivot->estadoocparte_id = 2; // Estadoocparte = 'En transito'
+
+                                                                // If fail on saving the new status for OcParte
+                                                                if(!($p->pivot->save()))
+                                                                {
+                                                                    $response = HelpController::buildResponse(
+                                                                        500,
+                                                                        'Error al cambiar el estado de la parte "' . $p->nparte . '"',
+                                                                        null
+                                                                    );
+                                
+                                                                    $success = false;
+                                
+                                                                    break;
+                                                                }
+                                                            }
+
+                                                            // If didn't break the loop, then add the OcParte to Recepcion
                                                             $recepcion->ocpartes()->attach(
                                                                 array(
                                                                     $p->pivot->id => array(
@@ -1454,6 +1667,8 @@ class RecepcionesController extends Controller
                                             ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                             ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
                                             ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->where('ocs.estadooc_id', '=', 2)  // Oc with estadooc = 'En proceso'
+                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                             ->where('recepciones.id', '=', $id) // For this Recepcion
                                             ->where('recepciones.recepcionable_type', '=', get_class($comprador))
                                             ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
@@ -1474,6 +1689,11 @@ class RecepcionesController extends Controller
                                 {
                                     // Only if Recepcion was received at Comprador
                                     $recepcion = Recepcion::select('recepciones.*')
+                                                ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                                ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                                ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                                ->where('ocs.estadooc_id', '=', 2)  // Oc with estadooc = 'En proceso'
+                                                ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                                 ->where('recepciones.id', '=', $id) // For this Recepcion
                                                 ->where('recepciones.recepcionable_type', '=', get_class($comprador))
                                                 ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
@@ -1494,6 +1714,11 @@ class RecepcionesController extends Controller
                                 {
                                     // Only if Recepcion was received at Comprador
                                     $recepcion = Recepcion::select('recepciones.*')
+                                                ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                                ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                                ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                                ->where('ocs.estadooc_id', '=', 2)  // Oc with estadooc = 'En proceso'
+                                                ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                                 ->where('recepciones.id', '=', $id) // For this Recepcion
                                                 ->where('recepciones.recepcionable_type', '=', get_class($comprador))
                                                 ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
@@ -1828,6 +2053,8 @@ class RecepcionesController extends Controller
                                         ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                         ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
                                         ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                        ->where('ocs.estadooc_id', '=', 2)  // Oc with estadooc = 'En proceso'
+                                        ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                         ->where('recepciones.id', '=', $id) // For this Recepcion
                                         ->where('recepciones.recepcionable_type', '=', get_class($comprador))
                                         ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
@@ -1848,6 +2075,11 @@ class RecepcionesController extends Controller
                             {
                                 // Only if Recepcion was received at Comprador
                                 $recepcion = Recepcion::select('recepciones.*')
+                                            ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                            ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->where('ocs.estadooc_id', '=', 2)  // Oc with estadooc = 'En proceso'
+                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                             ->where('recepciones.id', '=', $id) // For this Recepcion
                                             ->where('recepciones.recepcionable_type', '=', get_class($comprador))
                                             ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
@@ -1868,6 +2100,11 @@ class RecepcionesController extends Controller
                             {
                                 // Only if Recepcion was received at Comprador
                                 $recepcion = Recepcion::select('recepciones.*')
+                                            ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                            ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->where('ocs.estadooc_id', '=', 2)  // Oc with estadooc = 'En proceso'
+                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                             ->where('recepciones.id', '=', $id) // For this Recepcion
                                             ->where('recepciones.recepcionable_type', '=', get_class($comprador))
                                             ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
@@ -1978,9 +2215,12 @@ class RecepcionesController extends Controller
 
                                                 // Only if Oc was generated from its same country
                                                 $oc = Oc::select('ocs.*')
+                                                    ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                                     ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                                     ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
                                                     ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                                    ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                    ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                                     ->where('ocs.id', '=', $ocId)
                                                     ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
                                                     ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
@@ -1999,8 +2239,11 @@ class RecepcionesController extends Controller
                                                 )
                                                 {
                                                     $oc = Oc::select('ocs.*')
+                                                        ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                                         ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                                         ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                        ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                        ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                                         ->where('ocs.id', '=', $ocId)
                                                         ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
                                                         ->first();
@@ -2019,8 +2262,11 @@ class RecepcionesController extends Controller
                                                 )
                                                 {
                                                     $oc = Oc::select('ocs.*')
+                                                        ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                                         ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                                         ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                        ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                        ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                                         ->where('ocs.id', '=', $ocId)
                                                         ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
                                                         ->first();
@@ -2055,12 +2301,48 @@ class RecepcionesController extends Controller
                                                                 // If Parte is in the request for the OC
                                                                 if(in_array($parteId, array_keys($ocList[$oc->id])) === true)
                                                                 {
+                                                                    // If new cantidad in Recepciones is equal to cantidad in Oc
+                                                                    if($newCantidad === $p->pivot->cantidad)
+                                                                    {
+                                                                        // All partes were received at Comprador
+                                                                        $p->pivot->estadoocparte_id = 2; // Estadoocparte = 'En transito'
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        $p->pivot->estadoocparte_id = 1; // Estadoocparte = 'Pendiente'
+                                                                    }
+
                                                                     // Add the OcParte to syunc using the ID which is unique
                                                                     $syncData[$p->pivot->id] = array(
                                                                         'cantidad' => $ocList[$oc->id][$parteId]
                                                                     );
                                                                 }
+                                                                // If Oc is in the list but not the Parte, so it's gonna be removed from Recepcion
+                                                                else
+                                                                {
+                                                                    $p->pivot->estadoocparte_id = 1; // Estadoocparte = 'Pendiente'
+                                                                }
                                                             }
+                                                            // If the Oc isn't in the list, so the Parte it's gonna be removed from Recepcion
+                                                            else
+                                                            {
+                                                                $p->pivot->estadoocparte_id = 1; // Estadoocparte = 'Pendiente'
+                                                            }
+
+                                                            // If fails on saving the new status for OcParte
+                                                            if(!($p->pivot->save()))
+                                                            {
+                                                                $response = HelpController::buildResponse(
+                                                                    500,
+                                                                    'Error al cambiar el estado de la parte "' . $p->nparte . '"',
+                                                                    null
+                                                                );
+                            
+                                                                $success = false;
+                            
+                                                                break;
+                                                            }
+                                                            
                                                         }
                                                         else
                                                         {
@@ -2234,6 +2516,8 @@ class RecepcionesController extends Controller
                                         ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                         ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
                                         ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                        ->where('ocs.estadooc_id', '=', 2)  // Oc with estadooc = 'En proceso'
+                                        ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                         ->where('recepciones.id', '=', $id) // For this Recepcion
                                         ->where('recepciones.recepcionable_type', '=', get_class($comprador))
                                         ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
@@ -2254,6 +2538,11 @@ class RecepcionesController extends Controller
                             {
                                 // Only if Recepcion was received at Comprador
                                 $recepcion = Recepcion::select('recepciones.*')
+                                            ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                            ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->where('ocs.estadooc_id', '=', 2)  // Oc with estadooc = 'En proceso'
+                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                             ->where('recepciones.id', '=', $id) // For this Recepcion
                                             ->where('recepciones.recepcionable_type', '=', get_class($comprador))
                                             ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
@@ -2274,6 +2563,11 @@ class RecepcionesController extends Controller
                             {
                                 // Only if Recepcion was received at Comprador
                                 $recepcion = Recepcion::select('recepciones.*')
+                                            ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                            ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->where('ocs.estadooc_id', '=', 2)  // Oc with estadooc = 'En proceso'
+                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                             ->where('recepciones.id', '=', $id) // For this Recepcion
                                             ->where('recepciones.recepcionable_type', '=', get_class($comprador))
                                             ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
@@ -2311,6 +2605,8 @@ class RecepcionesController extends Controller
                             }
                         }
 
+                        DB::beginTransaction();
+
                         $success = true;
                         foreach(array_keys($ocList) as $ocId)
                         {      
@@ -2326,9 +2622,12 @@ class RecepcionesController extends Controller
 
                                         // Only if Oc was generated from its same country
                                         $oc = Oc::select('ocs.*')
+                                            ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                             ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                             ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
                                             ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                             ->where('ocs.id', '=', $ocId)
                                             ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
                                             ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
@@ -2347,8 +2646,11 @@ class RecepcionesController extends Controller
                                         )
                                         {
                                             $oc = Oc::select('ocs.*')
+                                                ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                                 ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                                 ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                                 ->where('ocs.id', '=', $ocId)
                                                 ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
                                                 ->first();
@@ -2367,8 +2669,11 @@ class RecepcionesController extends Controller
                                         )
                                         {
                                             $oc = Oc::select('ocs.*')
+                                                ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                                 ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                                 ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                                 ->where('ocs.id', '=', $ocId)
                                                 ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
                                                 ->first();
@@ -2391,10 +2696,29 @@ class RecepcionesController extends Controller
                                             // Calc new cantidad with cantidad in Recepciones + diff (negative when removing)
                                             $newCantidad = $p->pivot->getCantidadRecepcionado($comprador) + $ocList[$oc->id][$parteId];
 
-                                            // If new cantidad in Recepciones is less than total in Despachos
-                                            if($newCantidad < $p->pivot->getCantidadDespachado($comprador))
+                                            // If new cantidad in Recepciones is more or equal than total in Despachos
+                                            if($newCantidad >= $p->pivot->getCantidadDespachado($comprador))
                                             {
-                                                // If the received parts are more than waiting in queue
+                                                // OcParte estadoocparte goes back to 'Pendiente'
+                                                $p->pivot->estadoocparte_id = 1; // Estadoocparte = 'Pendiente'
+
+                                                // If fail on saving the new status for OcParte
+                                                if(!($p->pivot->save()))
+                                                {
+                                                    $response = HelpController::buildResponse(
+                                                        500,
+                                                        'Error al cambiar el estado de la parte "' . $p->nparte . '"',
+                                                        null
+                                                    );
+                
+                                                    $success = false;
+                
+                                                    break;
+                                                }
+                                            }
+                                            // If new cantidad in Recepciones is less than total in Despachos
+                                            else
+                                            {
                                                 $response = HelpController::buildResponse(
                                                     409,
                                                     'La parte "' . $p->nparte . '" ya tiene partes despachadas en la OC: ' . $oc->id,
@@ -2454,11 +2778,19 @@ class RecepcionesController extends Controller
 
                         if(($success === true) && ($recepcion->delete()))
                         {  
+                            DB::commit();
+
                             $response = HelpController::buildResponse(
                                 200,
                                 'Recepcion eliminada',
                                 null
                             );
+                        }
+                        else
+                        {
+                            DB::rollback();
+
+                            // Error message was already given
                         }
                     }
                     // If wasn't catched
@@ -2514,4 +2846,204 @@ class RecepcionesController extends Controller
         
         return $response;
     }
+
+
+    /*
+     *  Sucursales (centro)
+     */
+
+    public function store_prepare_centrodistribucion($centrodistribucion_id)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('sucursales recepciones_store'))
+            {
+                if($centrodistribucion = Sucursal::where('id', '=', $centrodistribucion_id)->where('type', '=', 'centro')->first())
+                {
+                    $compradores = null;
+                    $forbidden = false;
+
+                    switch($user->role->name)
+                    {
+                        // Administrador
+                        case 'admin': {
+
+                            // Get only assigned Compradores with OcPartes dispatched to Sucursal (centro) on Ocs generated from its country
+                            $compradores = Comprador::select('compradores.*')
+                                        ->join('despachos', 'despachos.despachable_id', '=', 'compradores.id')
+                                        ->join('despacho_ocparte', 'despacho_ocparte.despacho_id', '=', 'despachos.id')
+                                        ->join('oc_parte', 'oc_parte.id', '=', 'despacho_ocparte.ocparte_id')
+                                        ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                        ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                        ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                        ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                        ->where('despachos.despachable_type', '=', get_class(new Comprador())) // Dispatched by Comprador
+                                        ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                        ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
+                                        ->where('despachos.destinable_type', '=', get_class($centrodistribucion))
+                                        ->where('despachos.destinable_id', '=', $centrodistribucion->id) // Despachos dispatched to Sucursal (centro)
+                                        ->where('sucursales.country_id', '=', $user->stationable->country->id) // Solicitud from same Country as user station
+                                        ->groupBy('compradores.id')
+                                        ->get();
+                            
+
+                            break;
+                        }
+
+                        // Agente de compra
+                        case 'agtcom': {
+
+                            // If user belongs to this Comprador
+                            if(
+                                (get_class($user->stationable) === get_class($comprador)) &&
+                                ($user->stationable->id === $comprador->id)
+                            )
+                            {
+                                // Get only Countries from where Ocs were generated and OcPartes were received at Comprador
+                                $countryList = Country::select('countries.*')
+                                            ->join('sucursales', 'sucursales.country_id', '=', 'countries.id')
+                                            ->join('solicitudes', 'solicitudes.sucursal_id', '=', 'sucursales.id')
+                                            ->join('cotizaciones', 'cotizaciones.solicitud_id', '=', 'solicitudes.id')
+                                            ->join('ocs', 'ocs.cotizacion_id', '=', 'cotizaciones.id')
+                                            ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
+                                            ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=', 'oc_parte.id') // Only for OcPartes in Recepciones
+                                            ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
+                                            ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
+                                            ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                            ->where('recepciones.recepcionable_id', '=', $comprador->id) // Recepciones received at Comprador
+                                            ->groupBy('countries.id')
+                                            ->get();
+                            }
+                            else
+                            {
+                                // Set as forbidden
+                                $forbidden = true;
+                            }
+
+                            break;
+                        }
+
+                        // Coordinador logistico at Comprador
+                        case 'colcom': {
+
+                            // If user belongs to this Comprador
+                            if(
+                                (get_class($user->stationable) === get_class($comprador)) &&
+                                ($user->stationable->id === $comprador->id)
+                            )
+                            {
+                                // Get only Countries from where Ocs were generated and OcPartes were received at Comprador
+                                $countryList = Country::select('countries.*')
+                                            ->join('sucursales', 'sucursales.country_id', '=', 'countries.id')
+                                            ->join('solicitudes', 'solicitudes.sucursal_id', '=', 'sucursales.id')
+                                            ->join('cotizaciones', 'cotizaciones.solicitud_id', '=', 'solicitudes.id')
+                                            ->join('ocs', 'ocs.cotizacion_id', '=', 'cotizaciones.id')
+                                            ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
+                                            ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=', 'oc_parte.id') // Only for OcPartes in Recepciones
+                                            ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
+                                            ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
+                                            ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                            ->where('recepciones.recepcionable_id', '=', $comprador->id) // Recepciones received at Comprador
+                                            ->groupBy('countries.id')
+                                            ->get();
+
+                            }
+                            else
+                            {
+                                // Set as forbidden
+                                $forbidden = true;
+                            }
+
+                            break;
+                        }
+
+                        default:
+                        {
+                            break;
+                        }
+                    }
+
+                    if($compradores !== null)
+                    {
+                        $compradores = $compradores->map(function($comprador)
+                            {
+                                $comprador->makeHidden([
+                                    'rut',
+                                    'address',
+                                    'contact',
+                                    'phone',
+                                    'country_id',
+                                    'created_at',
+                                    'updated_at'
+                                ]);
+
+                                $comprador->country;
+                                $comprador->country->makeHidden(['created_at', 'updated_at']);
+                                
+                                return $comprador;
+                            }
+                        );
+
+                    
+                        $data = [
+                            "compradores" => $compradores
+                        ];
+
+                        $response = HelpController::buildResponse(
+                            200,
+                            null,
+                            $data
+                        );
+                    }
+                    else if($forbidden === true)
+                    {
+                        $response = HelpController::buildResponse(
+                            405,
+                            'No tienes acceso registrar recepciones para el centro de distribucion',
+                            null
+                        );
+                    }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            500,
+                            'Error al preparar la recepcion',
+                            null
+                        );
+                    }
+                }   
+                else     
+                {
+                    $response = HelpController::buildResponse(
+                        412,
+                        'El comprador no existe',
+                        null
+                    );
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a registrar recepciones para centro de distribucion',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al preparar la recepcion [!]' . $e,
+                null
+            );
+        }
+            
+        return $response;
+    }
+
+   
 }

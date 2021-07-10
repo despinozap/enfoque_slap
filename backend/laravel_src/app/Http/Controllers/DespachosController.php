@@ -298,9 +298,10 @@ class DespachosController extends Controller
                                         ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                         ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=', 'oc_parte.id') // Only for OcPartes in Recepciones
                                         ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
+                                        ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                        ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                         ->where('recepciones.recepcionable_type', '=', get_class($comprador))
                                         ->where('recepciones.recepcionable_id', '=', $comprador->id) // Recepciones received at Comprador
-                                        ->where('ocs.estadooc_id', '=', 2)  // Oc with estadooc = 'En proceso'
                                         ->where('sucursales.country_id', '=', $user->stationable->country->id) // Solicitud from same Country as user station
                                         ->groupBy('countries.id')
                                         ->get();
@@ -327,9 +328,10 @@ class DespachosController extends Controller
                                             ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                             ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=', 'oc_parte.id') // Only for OcPartes in Recepciones
                                             ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
+                                            ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                             ->where('recepciones.recepcionable_type', '=', get_class($comprador))
                                             ->where('recepciones.recepcionable_id', '=', $comprador->id) // Recepciones received at Comprador
-                                            ->where('ocs.estadooc_id', '=', 2)  // Oc with estadooc = 'En proceso'
                                             ->groupBy('countries.id')
                                             ->get();
                             }
@@ -360,9 +362,10 @@ class DespachosController extends Controller
                                             ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                             ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=', 'oc_parte.id') // Only for OcPartes in Recepciones
                                             ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
+                                            ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                             ->where('recepciones.recepcionable_type', '=', get_class($comprador))
                                             ->where('recepciones.recepcionable_id', '=', $comprador->id) // Recepciones received at Comprador
-                                            ->where('ocs.estadooc_id', '=', 2)  // Oc with estadooc = 'En proceso'
                                             ->groupBy('countries.id')
                                             ->get();
 
@@ -506,6 +509,7 @@ class DespachosController extends Controller
                                             ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
                                             ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
                                             ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                             ->where('recepciones.recepcionable_type', '=', get_class($comprador))
                                             ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
                                             ->where('sucursales.country_id', '=', $centrodistribucion->country->id) // Same Country as Sucursal (centro)
@@ -525,7 +529,7 @@ class DespachosController extends Controller
                                     ($user->stationable->id === $comprador->id)
                                 )
                                 {
-                                    // Get only OcPartes on OCs generated from its country and received at Comprador
+                                    // Get only OcPartes on OCs generated from the Sucursal's (centro) country and received at Comprador
                                     $ocParteList = OcParte::select('oc_parte.*')
                                                 ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=', 'oc_parte.id')
                                                 ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
@@ -534,6 +538,7 @@ class DespachosController extends Controller
                                                 ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
                                                 ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
                                                 ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                                 ->where('recepciones.recepcionable_type', '=', get_class($comprador))
                                                 ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
                                                 ->where('sucursales.country_id', '=', $centrodistribucion->country->id) // Same Country as Sucursal (centro)
@@ -558,7 +563,7 @@ class DespachosController extends Controller
                                     ($user->stationable->id === $comprador->id)
                                 )
                                 {
-                                    // Get only OcPartes on OCs generated from its country and received at Comprador
+                                    // Get only OcPartes on OCs generated from the Sucursal's (centro) country and received at Comprador
                                     $ocParteList = OcParte::select('oc_parte.*')
                                                 ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=', 'oc_parte.id')
                                                 ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
@@ -567,6 +572,7 @@ class DespachosController extends Controller
                                                 ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
                                                 ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
                                                 ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                                 ->where('recepciones.recepcionable_type', '=', get_class($comprador))
                                                 ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
                                                 ->where('sucursales.country_id', '=', $centrodistribucion->country->id) // Same Country as Sucursal (centro)
@@ -768,7 +774,7 @@ class DespachosController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al obtener OCs pendiente de despacho [!]' . $e,
+                'Error al obtener OCs pendiente de despacho [!]',
                 null
             );
         }
@@ -909,10 +915,12 @@ class DespachosController extends Controller
                                     case 'admin': {
 
                                         $oc = Oc::select('ocs.*')
+                                            ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                             ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                             ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
                                             ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
                                             ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                             ->where('solicitudes.comprador_id', '=', $comprador->id) // Solicitudes for this Comprador
                                             ->where('sucursales.country_id', '=', $centrodistribucion->country->id) // Same Country as Sucursal (centro)
                                             ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
@@ -931,10 +939,12 @@ class DespachosController extends Controller
                                         )
                                         {
                                             $oc = Oc::select('ocs.*')
+                                                ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                                 ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                                 ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
                                                 ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
                                                 ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                                 ->where('solicitudes.comprador_id', '=', $comprador->id) // Solicitudes for this Comprador
                                                 ->where('sucursales.country_id', '=', $centrodistribucion->country->id) // Same Country as Sucursal (centro)
                                                 ->first();
@@ -953,10 +963,12 @@ class DespachosController extends Controller
                                         )
                                         {
                                             $oc = Oc::select('ocs.*')
+                                                ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                                 ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                                 ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
                                                 ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
                                                 ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                                 ->where('solicitudes.comprador_id', '=', $comprador->id) // Solicitudes for this Comprador
                                                 ->where('sucursales.country_id', '=', $centrodistribucion->country->id) // Same Country as Sucursal (centro)
                                                 ->first();
@@ -1106,7 +1118,7 @@ class DespachosController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al crear el despacho [!]' . $e,
+                'Error al crear el despacho [!]',
                 null
             );
         }
@@ -1558,6 +1570,8 @@ class DespachosController extends Controller
                                             ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                             ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
                                             ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                             ->where('despachos.id', '=', $id) // For this Despacho
                                             ->where('despachos.despachable_type', '=', get_class($comprador))
                                             ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
@@ -1575,6 +1589,7 @@ class DespachosController extends Controller
                                                 ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
                                                 ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
                                                 ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                                 ->where('recepciones.recepcionable_type', '=', get_class($comprador))
                                                 ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
                                                 ->where('sucursales.country_id', '=', $despacho->destinable->country->id) // Same Country as Sucursal (centro)
@@ -1597,6 +1612,11 @@ class DespachosController extends Controller
                                 {
                                     // Only if Despacho was dispatched by Comprador
                                     $despacho = Despacho::select('despachos.*')
+                                            ->join('despacho_ocparte', 'despacho_ocparte.despacho_id', '=', 'despachos.id')
+                                            ->join('oc_parte', 'oc_parte.id', '=', 'despacho_ocparte.ocparte_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                             ->where('despachos.id', '=', $id) // For this Despacho
                                             ->where('despachos.despachable_type', '=', get_class($comprador))
                                             ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
@@ -1613,6 +1633,7 @@ class DespachosController extends Controller
                                                     ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
                                                     ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
                                                     ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                    ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                                     ->where('recepciones.recepcionable_type', '=', get_class($comprador))
                                                     ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
                                                     ->where('sucursales.country_id', '=', $despacho->destinable->country->id) // Same Country as Sucursal (centro)
@@ -1635,6 +1656,11 @@ class DespachosController extends Controller
                                 {
                                     // Only if Despacho was dispatched by Comprador
                                     $despacho = Despacho::select('despachos.*')
+                                            ->join('despacho_ocparte', 'despacho_ocparte.despacho_id', '=', 'despachos.id')
+                                            ->join('oc_parte', 'oc_parte.id', '=', 'despacho_ocparte.ocparte_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                             ->where('despachos.id', '=', $id) // For this Despacho
                                             ->where('despachos.despachable_type', '=', get_class($comprador))
                                             ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
@@ -1651,6 +1677,7 @@ class DespachosController extends Controller
                                                     ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
                                                     ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
                                                     ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                    ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                                     ->where('recepciones.recepcionable_type', '=', get_class($comprador))
                                                     ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
                                                     ->where('sucursales.country_id', '=', $despacho->destinable->country->id) // Same Country as Sucursal (centro)
@@ -2106,6 +2133,8 @@ class DespachosController extends Controller
                                         ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                         ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
                                         ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                        ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                        ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                         ->where('despachos.id', '=', $id) // For this Despacho
                                         ->where('despachos.despachable_type', '=', get_class($comprador))
                                         ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
@@ -2126,6 +2155,11 @@ class DespachosController extends Controller
                             {
                                 // Only if Despacho was dispatched by Comprador
                                 $despacho = Despacho::select('despachos.*')
+                                            ->join('despacho_ocparte', 'despacho_ocparte.despacho_id', '=', 'despachos.id')
+                                            ->join('oc_parte', 'oc_parte.id', '=', 'despacho_ocparte.ocparte_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                             ->where('despachos.id', '=', $id) // For this Despacho
                                             ->where('despachos.despachable_type', '=', get_class($comprador))
                                             ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
@@ -2144,8 +2178,13 @@ class DespachosController extends Controller
                                 ($user->stationable->id === $comprador->id)
                             )
                             {
-                                // Only if Despacho was dispatched at Comprador
+                                // Only if Despacho was dispatched by Comprador
                                 $despacho = Despacho::select('despachos.*')
+                                            ->join('despacho_ocparte', 'despacho_ocparte.despacho_id', '=', 'despachos.id')
+                                            ->join('oc_parte', 'oc_parte.id', '=', 'despacho_ocparte.ocparte_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                             ->where('despachos.id', '=', $id) // For this Despacho
                                             ->where('despachos.despachable_type', '=', get_class($comprador))
                                             ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
@@ -2244,9 +2283,12 @@ class DespachosController extends Controller
 
                                             // Only if Oc was generated from its same country
                                             $oc = Oc::select('ocs.*')
+                                                ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                                 ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                                 ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
                                                 ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                                ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                                 ->where('ocs.id', '=', $ocId)
                                                 ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
                                                 ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
@@ -2265,8 +2307,11 @@ class DespachosController extends Controller
                                             )
                                             {
                                                 $oc = Oc::select('ocs.*')
+                                                    ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                                     ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                                     ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                    ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                    ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                                     ->where('ocs.id', '=', $ocId)
                                                     ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
                                                     ->first();
@@ -2285,8 +2330,11 @@ class DespachosController extends Controller
                                             )
                                             {
                                                 $oc = Oc::select('ocs.*')
+                                                    ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                                     ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                                     ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                    ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                    ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                                     ->where('ocs.id', '=', $ocId)
                                                     ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
                                                     ->first();
@@ -2499,6 +2547,8 @@ class DespachosController extends Controller
                                         ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                         ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
                                         ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                        ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                        ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                         ->where('despachos.id', '=', $id) // For this Despacho
                                         ->where('despachos.despachable_type', '=', get_class($comprador))
                                         ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
@@ -2519,6 +2569,11 @@ class DespachosController extends Controller
                             {
                                 // Only if Despacho was dispatched by Comprador
                                 $despacho = Despacho::select('despachos.*')
+                                            ->join('despacho_ocparte', 'despacho_ocparte.despacho_id', '=', 'despachos.id')
+                                            ->join('oc_parte', 'oc_parte.id', '=', 'despacho_ocparte.ocparte_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                             ->where('despachos.id', '=', $id) // For this Despacho
                                             ->where('despachos.despachable_type', '=', get_class($comprador))
                                             ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
@@ -2539,6 +2594,11 @@ class DespachosController extends Controller
                             {
                                 // Only if Despacho was dispatched at Comprador
                                 $despacho = Despacho::select('despachos.*')
+                                            ->join('despacho_ocparte', 'despacho_ocparte.despacho_id', '=', 'despachos.id')
+                                            ->join('oc_parte', 'oc_parte.id', '=', 'despacho_ocparte.ocparte_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                             ->where('despachos.id', '=', $id) // For this Despacho
                                             ->where('despachos.despachable_type', '=', get_class($comprador))
                                             ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
@@ -2591,9 +2651,12 @@ class DespachosController extends Controller
 
                                         // Only if Oc was generated from its same country
                                         $oc = Oc::select('ocs.*')
+                                            ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                             ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                             ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
                                             ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                             ->where('ocs.id', '=', $ocId)
                                             ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
                                             ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
@@ -2612,8 +2675,11 @@ class DespachosController extends Controller
                                         )
                                         {
                                             $oc = Oc::select('ocs.*')
+                                                ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                                 ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                                 ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                                 ->where('ocs.id', '=', $ocId)
                                                 ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
                                                 ->first();
@@ -2632,8 +2698,11 @@ class DespachosController extends Controller
                                         )
                                         {
                                             $oc = Oc::select('ocs.*')
+                                                ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                                 ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                                 ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                                 ->where('ocs.id', '=', $ocId)
                                                 ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
                                                 ->first();
@@ -2771,7 +2840,7 @@ class DespachosController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al eliminar el despacho [!]' . $e,
+                'Error al eliminar el despacho [!]',
                 null
             );
         }
