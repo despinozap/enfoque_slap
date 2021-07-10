@@ -2,6 +2,8 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
+import { User } from 'src/app/interfaces/user';
+import { AuthService } from 'src/app/services/auth.service';
 import { DespachosService } from 'src/app/services/despachos.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { UtilsService } from 'src/app/services/utils.service';
@@ -43,17 +45,29 @@ export class DespachosCompradorListComponent implements OnInit {
   
   dtTrigger: Subject<any> = new Subject<any>();
 
+  loggedUser: User = null as any;
+  private subLoggedUser: any;
+
   despachos: any[] = [];
   comprador_id : number = 1;
   loading: boolean = false;
   
   constructor(
     private router: Router,
+    private _authService: AuthService,
     private _despachosService: DespachosService,
     private _utilsService: UtilsService
   ) { }
 
   ngOnInit(): void {
+    //For loggedUser
+    {
+      this.subLoggedUser = this._authService.loggedUser$.subscribe((data) => {
+        this.loggedUser = data.user as User;
+      });
+      
+      this._authService.notifyLoggedUser(this._authService.NOTIFICATION_RECEIVER_CONTENTPAGE);
+    }
   }
 
   ngAfterViewInit(): void {
@@ -67,6 +81,7 @@ export class DespachosCompradorListComponent implements OnInit {
   }
 
   ngOnDestroy(): void {
+    this.subLoggedUser.unsubscribe();
     this.dtTrigger.unsubscribe();
   }
 

@@ -101,9 +101,9 @@ export class RecepcionesCompradorEditComponent implements OnInit {
     if(recepcionData.recepcion.ocpartes.length > 0)
     {
       // All Partes in OC
-      this.partes = recepcionData.oc.partes.reduce((carry: any[], parte: any) => {
+      this.partes = recepcionData.oc.partes.map((parte: any) => {
 
-        carry.push({
+        return {
           id: parte.id,
           nparte: parte.nparte,
           descripcion: parte.pivot.descripcion,
@@ -112,15 +112,13 @@ export class RecepcionesCompradorEditComponent implements OnInit {
           cantidad: parte.pivot.cantidad - parte.pivot.cantidad_recepcionado,
           cantidad_total: parte.pivot.cantidad,
           cantidad_recepcionado: parte.pivot.cantidad_recepcionado,
+          cantidad_despachado: parte.pivot.cantidad_despachado,
           cantidad_pendiente: parte.pivot.cantidad - parte.pivot.cantidad_recepcionado,
-          cantidad_min: parte.pivot.cantidad_despachado - (parte.pivot.cantidad_recepcionado - parte.pivot.cantidad),
+          cantidad_min: 1,
           checked: false
-        });
-        
-          return carry;
-        },
-        [] // Empty array
-      );
+        }
+
+      });
 
       this.recepcion.id = recepcionData.recepcion.id;
       this.recepcion.proveedor_name = recepcionData.recepcion.sourceable.name;
@@ -158,6 +156,7 @@ export class RecepcionesCompradorEditComponent implements OnInit {
           // Update data for parte in Recepcion
           this.partes[index].checked = true;
           this.partes[index].cantidad = ocParte.pivot.cantidad;
+          this.partes[index].cantidad_min = this.partes[index].cantidad_despachado - (this.partes[index].cantidad_recepcionado - ocParte.pivot.cantidad);
           this.partes[index].cantidad_pendiente = this.partes[index].cantidad_pendiente + ocParte.pivot.cantidad;
           this.partes[index].cantidad_recepcionado = this.partes[index].cantidad_recepcionado - ocParte.pivot.cantidad;
         }
@@ -175,10 +174,7 @@ export class RecepcionesCompradorEditComponent implements OnInit {
         }
       });
 
-      // Sort partes pushing checked ones to the top
-      this.partes = this.partes.sort((p1, p2) => {
-        return ((p2.checked === true) ? 1 : 0) - ((p1.checked === true) ? 1 : 0);
-      });
+      this.sortPartesByChecked();
     }
     else
     {
@@ -379,7 +375,12 @@ export class RecepcionesCompradorEditComponent implements OnInit {
   }
 
   public updateParte_cantidad(parte: any, evt: any): void {
-    if((isNaN(evt.target.value) === false) && (parseInt(evt.target.value) > 0) && (parseInt(evt.target.value) <= parte.cantidad_pendiente))
+    if(
+        (isNaN(evt.target.value) === false) && 
+        (parseInt(evt.target.value) > 0) && 
+        (parseInt(evt.target.value) >= parte.cantidad_min) &&
+        (parseInt(evt.target.value) <= parte.cantidad_pendiente)
+    )
     {
       parte.cantidad = parseInt(evt.target.value);
     }
@@ -393,10 +394,14 @@ export class RecepcionesCompradorEditComponent implements OnInit {
     this.partes.forEach((parte: any) => {
       parte.checked = evt.target.checked;
     });
+
+    this.sortPartesByChecked();
   }
 
   public checkParteItem(parte: any, evt: any): void {
     parte.checked = evt.target.checked;
+
+    this.sortPartesByChecked();
   }
 
   public isCheckedItem(dataSource: any[]): boolean
@@ -429,6 +434,13 @@ export class RecepcionesCompradorEditComponent implements OnInit {
     });
 
     return index >= 0 ? true : false;
+  }
+
+  private sortPartesByChecked(): void {
+    // Sort partes pushing checked ones to the top
+    this.partes = this.partes.sort((p1, p2) => {
+      return ((p2.checked === true) ? 1 : 0) - ((p1.checked === true) ? 1 : 0);
+    });
   }
 
   public getDateToday(): string {

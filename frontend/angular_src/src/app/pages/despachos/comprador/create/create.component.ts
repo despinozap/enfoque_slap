@@ -60,7 +60,7 @@ export class DespachosCompradorCreateComponent implements OnInit {
 
     //Prevents throwing an error for var status changed while initialization
     setTimeout(() => {
-        this.loadData();
+        this.loadCentrosdistribucion();
 
         this.despachoForm.controls.fecha.setValue(this.getDateToday());
       },
@@ -81,7 +81,7 @@ export class DespachosCompradorCreateComponent implements OnInit {
     });
   }
   
-  public loadData(): void {
+  public loadCentrosdistribucion(): void {
     
     this.loading = true;
     this.despachoForm.disable();
@@ -91,29 +91,24 @@ export class DespachosCompradorCreateComponent implements OnInit {
       //Success request
       (response: any) => {
 
-        // Centrosdistribucion
-        this.centrosdistribucion = response.data.centrosdistribucion;
-        
-        // Partes
-        this.partes = response.data.queue_partes.reduce((carry: any[], parte: any) => {
-            carry.push({
-              id: parte.id,
-              nparte: parte.nparte,
-              marca: parte.marca,
-              cantidad_stock: parte.cantidad_stock,
-              checked: false,
-              cantidad: parte.cantidad_stock,
-            });
+        if(response.data.centrosdistribucion.length > 0) 
+        {
+          // Centrosdistribucion
+          this.centrosdistribucion = response.data.centrosdistribucion;
 
-            return carry;
-          },
-          [] // Empty array
-        );
+          this.loading = false;
+          this.despachoForm.enable();
+        }
+        else
+        {
+          NotificationsService.showToast(
+            'Error al cargar los datos de los centros de distribucion',
+            NotificationsService.messageType.error
+          );
 
-        this.renderDataTable(this.datatableElement_partes, this.dtTrigger);
-
-        this.loading = false;
-        this.despachoForm.enable();
+          this.loading = false;
+          this.goTo_back();
+        }
       },
       //Error request
       (errorResponse: any) => {
@@ -169,35 +164,182 @@ export class DespachosCompradorCreateComponent implements OnInit {
     );
   }
 
+  public loadOcPartes(): void {
+    
+    this.loading = true;
+    this.despachoForm.disable();
+
+    this._despachosService.queueOcPartesDespacho_comprador(this.comprador_id, this.despachoForm.value.centrodistribucion)
+    .subscribe(
+      //Success request
+      (response: any) => {
+
+        if(response.data.length > 0)
+        {
+          // OcPartes
+          this.partes = response.data.reduce((carry: any[], ocparte: any) => {
+              
+            carry.push(
+              {
+                id: ocparte.parte.id,
+                descripcion: ocparte.descripcion,
+                nparte: ocparte.parte.nparte,
+                marca_name: ocparte.parte.marca.name,
+                oc_id: ocparte.oc.id,
+                oc_noccliente: ocparte.oc.noccliente,
+                backorder: ocparte.backorder,
+                sucursal_name: ocparte.oc.cotizacion.solicitud.sucursal.name,
+                faena_name: ocparte.oc.cotizacion.solicitud.faena.name,
+                cantidad_stock: ocparte.cantidad_recepcionado - ocparte.cantidad_despachado,
+                cantidad: ocparte.cantidad_recepcionado - ocparte.cantidad_despachado,
+                checked: false
+              }
+            );
+  
+              return carry;
+            },
+            [] // Empty array
+          );
+  
+          this.renderDataTable(this.datatableElement_partes, this.dtTrigger);
+        }
+        else
+        {
+          NotificationsService.showAlert(
+            'No se encontraron partes para despachar al centro de distribucion seleccionado',
+            NotificationsService.messageType.info
+          );
+        }
+
+        this.loading = false;
+        this.despachoForm.enable();
+      },
+      //Error request
+      (errorResponse: any) => {
+
+        switch(errorResponse.status)
+        {
+        
+          case 405: //Permission denied
+          {
+            NotificationsService.showToast(
+              errorResponse.error.message,
+              NotificationsService.messageType.error
+            );
+
+            break;
+          }
+
+          case 412: //Object not found
+          {
+            NotificationsService.showToast(
+              errorResponse.error.message,
+              NotificationsService.messageType.warning
+            );
+
+            break;
+          }
+
+          case 500: //Internal server
+          {
+            NotificationsService.showToast(
+              errorResponse.error.message,
+              NotificationsService.messageType.error
+            );
+
+            break;
+          }
+        
+          default: //Unhandled error
+          {
+            NotificationsService.showToast(
+              'Error al cargar los datos de las partes para despachar',
+              NotificationsService.messageType.error
+            );
+  
+            break;
+
+          }
+        }
+
+        this.loading = false;
+        this.goTo_back();
+      }
+    );
+  }
+
   public storeDespacho(): void {
     this.despachoForm.disable();
     this.loading = true;
     this.responseErrors = [];
 
-    let dispatchedPartes = this.partes.reduce((carry, parte) => 
+    // Prepare OCs list
+    let indexOc;
+    let indexParte;
+    let ocs = this.partes.reduce((carry, parte) =>
       {
         if(parte.checked === true)
         {
-          carry.push(
+          indexOc = carry.findIndex((oc: any) => {
+            return (oc.id === parte.oc_id);
+          });
+  
+          // If Oc already exists in list
+          if(indexOc >= 0)
+          {
+            indexParte = carry[indexOc].partes.findIndex((p: any) => {
+              return (p.id === parte.id);
+            });
+  
+            // If Parte is already in the partes list for Oc
+            if(indexParte >= 0)
             {
-              id: parte.id,
-              cantidad: parte.cantidad
+              // Adds cantidad to the existing parte
+              carry[indexOc].partes[indexParte] += parte.cantidad;
             }
-          );
+            // If Parte isn't in the partes list for Oc
+            else
+            {
+              // Add Parte to the partes list in Oc
+              carry[indexOc].partes.push(
+                {
+                  id: parte.id,
+                  cantidad: parte.cantidad
+                }
+              );
+            }
+          }
+          // If doesn't exist
+          else
+          {
+            // Add the OC to list and also add the parte in partes list for the Oc
+            carry.push(
+              {
+                id: parte.oc_id,
+                partes: [
+                  {
+                    id: parte.id,
+                    cantidad: parte.cantidad
+                  }
+                ]
+              }
+            );
+          }
+
         }
-      
+
         return carry;
-      }, 
+      },
       []
     );
 
     let despacho: any = {
-      sucursal_id: this.despachoForm.value.centrodistribucion,
+      centrodistribucion_id: this.despachoForm.value.centrodistribucion,
       fecha: this.despachoForm.value.fecha,
       ndocumento: this.despachoForm.value.documento,
       responsable: this.despachoForm.value.responsable,
       comentario: this.despachoForm.value.comentario,
-      partes: dispatchedPartes
+      ocs: ocs
     };
 
     this._despachosService.storeDespacho_comprador(this.comprador_id, despacho)
@@ -296,10 +438,21 @@ export class DespachosCompradorCreateComponent implements OnInit {
     this.partes.forEach((parte: any) => {
       parte.checked = evt.target.checked;
     });
+
+    this.sortPartesByChecked();
   }
 
   public checkParteItem(parte: any, evt: any): void {
     parte.checked = evt.target.checked;
+
+    this.sortPartesByChecked();
+  }
+
+  private sortPartesByChecked(): void {
+    // Sort partes pushing checked ones to the top
+    this.partes = this.partes.sort((p1, p2) => {
+      return ((p2.checked === true) ? 1 : 0) - ((p1.checked === true) ? 1 : 0);
+    });
   }
 
   public isCheckedItem(dataSource: any[]): boolean

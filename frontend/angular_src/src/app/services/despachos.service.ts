@@ -159,6 +159,13 @@ export class DespachosService {
     return this.httpClient.post(endpoint, despacho, httpOptions);
   }
 
+  public queueOcPartesDespacho_comprador(comprador_id: number, centrodistribucion_id: number): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/compradores/${comprador_id}/despachos/queueocpartes/centrosdistribucion/${centrodistribucion_id}`;
+    
+    return this.httpClient.get(endpoint);
+  }
+
   public prepareStoreDespacho_comprador(comprador_id: number): Observable<any>
   {
     let endpoint: string = `${environment.ENDPOINT_BASE}/compradores/${comprador_id}/despachos/prepare`;

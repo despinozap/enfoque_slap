@@ -87,7 +87,7 @@ export class DespachosCompradorEditComponent implements OnInit {
 
   private loadFormData(despachoData: any)
   {
-    if(despachoData.despacho['partes'].length > 0)
+    if(despachoData.despacho['ocpartes'].length > 0)
     {
       // Load Despacho data
       this.despacho.id = despachoData.despacho.id;
@@ -105,44 +105,49 @@ export class DespachosCompradorEditComponent implements OnInit {
         this.despachoForm.controls.comentario.setValue(despachoData.despacho.comentario);
       }
 
-      // Load partes list from queue_partes
-      this.partes = despachoData.queue_partes.reduce((carry: any[], parte: any) => {
-          carry.push({
-            id: parte.id,
-            nparte: parte.nparte,
-            marca: parte.marca,
-            cantidad_stock: parte.cantidad_stock,
-            checked: false,
-            cantidad: 1,
-          });
-
-          return carry;
-        },
-        [] // Empty array
+      // Load partes list from queueOcPartes
+      this.partes = despachoData.queue_ocpartes.map((ocparte: any) => 
+        {
+          return {
+            id: ocparte.parte.id,
+            descripcion: ocparte.descripcion,
+            nparte: ocparte.parte.nparte,
+            marca_name: ocparte.parte.marca.name,
+            oc_id: ocparte.oc.id,
+            oc_noccliente: ocparte.oc.noccliente,
+            backorder: ocparte.backorder,
+            sucursal_name: ocparte.oc.cotizacion.solicitud.sucursal.name,
+            faena_name: ocparte.oc.cotizacion.solicitud.faena.name,
+            cantidad_min: (ocparte.cantidad_min > 0) ? ocparte.cantidad_min : 1,
+            cantidad_stock: ocparte.cantidad_recepcionado - ocparte.cantidad_despachado,
+            cantidad: ocparte.cantidad_recepcionado - ocparte.cantidad_despachado,
+            checked: false
+          };
+        }
       );
 
       let index: number;
 
       // Update values with partes list in despacho 
-      despachoData.despacho.partes.forEach((parteD: any) => {
+      despachoData.despacho.ocpartes.forEach((parteD: any) => {
 
         index = this.partes.findIndex((parteQ) => {
-          return (parteD.id === parteQ.id);
+          return (parteD.parte.id === parteQ.id);
         });
 
         if(index >= 0)
         {
+          // Update data for parte in Despacho
           this.partes[index].checked = true;
           this.partes[index].cantidad = parteD.pivot.cantidad;
+          this.partes[index].cantidad_stock += parteD.pivot.cantidad;
         }
 
       });
 
-      this.partes = this.partes.sort((p1, p2) => {
-        return p2.cantidad - p1.cantidad;
-      });
-
       this.renderDataTable(this.datatableElement_partes);
+
+      this.sortPartesByChecked();
     }
     else
     {
@@ -227,20 +232,63 @@ export class DespachosCompradorEditComponent implements OnInit {
     this.loading = true;
     this.responseErrors = [];
 
-    let dispatchedPartes = this.partes.reduce((carry, parte) => 
+    // Prepare OCs list
+    let indexOc;
+    let indexParte;
+    let ocs = this.partes.reduce((carry, parte) =>
       {
         if(parte.checked === true)
         {
-          carry.push(
+          indexOc = carry.findIndex((oc: any) => {
+            return (oc.id === parte.oc_id);
+          });
+  
+          // If Oc already exists in list
+          if(indexOc >= 0)
+          {
+            indexParte = carry[indexOc].partes.findIndex((p: any) => {
+              return (p.id === parte.id);
+            });
+  
+            // If Parte is already in the partes list for Oc
+            if(indexParte >= 0)
             {
-              id: parte.id,
-              cantidad: parte.cantidad
+              // Adds cantidad to the existing parte
+              carry[indexOc].partes[indexParte] += parte.cantidad;
             }
-          );
+            // If Parte isn't in the partes list for Oc
+            else
+            {
+              // Add Parte to the partes list in Oc
+              carry[indexOc].partes.push(
+                {
+                  id: parte.id,
+                  cantidad: parte.cantidad
+                }
+              );
+            }
+          }
+          // If doesn't exist
+          else
+          {
+            // Add the OC to list and also add the parte in partes list for the Oc
+            carry.push(
+              {
+                id: parte.oc_id,
+                partes: [
+                  {
+                    id: parte.id,
+                    cantidad: parte.cantidad
+                  }
+                ]
+              }
+            );
+          }
+
         }
-      
+
         return carry;
-      }, 
+      },
       []
     );
 
@@ -249,7 +297,7 @@ export class DespachosCompradorEditComponent implements OnInit {
       ndocumento: this.despachoForm.value.documento,
       responsable: this.despachoForm.value.responsable,
       comentario: this.despachoForm.value.comentario,
-      partes: dispatchedPartes
+      ocs: ocs
     };
 
     this._despachosService.updateDespacho_comprador(this.comprador_id, this.despacho.id, despacho)
@@ -338,6 +386,7 @@ export class DespachosCompradorEditComponent implements OnInit {
     if(
         (isNaN(evt.target.value) === false) && 
         (parseInt(evt.target.value) > 0) && 
+        (parseInt(evt.target.value) >= parte.cantidad_min) &&
         (parseInt(evt.target.value) <= parte.cantidad_stock)
     )
     {
@@ -353,10 +402,21 @@ export class DespachosCompradorEditComponent implements OnInit {
     this.partes.forEach((parte: any) => {
       parte.checked = evt.target.checked;
     });
+
+    this.sortPartesByChecked();
   }
 
   public checkParteItem(parte: any, evt: any): void {
     parte.checked = evt.target.checked;
+
+    this.sortPartesByChecked();
+  }
+
+  private sortPartesByChecked(): void {
+    // Sort partes pushing checked ones to the top
+    this.partes = this.partes.sort((p1, p2) => {
+      return ((p2.checked === true) ? 1 : 0) - ((p1.checked === true) ? 1 : 0);
+    });
   }
 
   public isCheckedItem(dataSource: any[]): boolean
