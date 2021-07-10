@@ -631,6 +631,7 @@ class DespachosController extends Controller
                                             'motivobaja_id',
                                             'usdvalue',
                                             'partes_total',
+                                            'monto',
                                             'partes',
                                             'created_at',
                                             'updated_at',
@@ -701,7 +702,11 @@ class DespachosController extends Controller
                                             'updated_at'
                                         ]);
 
-                                        array_push($carry, $ocParte);
+                                        // Add only if there's stock at Comprador
+                                        if($cantidadDespachado < $cantidadRecepcionado)
+                                        {
+                                            array_push($carry, $ocParte);
+                                        }   
                                     }
 
                                     return $carry;
@@ -1537,13 +1542,14 @@ class DespachosController extends Controller
                 {
                     if($comprador = Comprador::find($comprador_id))
                     {
+                        $ocParteList = null;
                         $despacho = null;
 
                         switch($user->role->name)
                         {
                             // Administrador
                             case 'admin': {
-                                
+
                                 // Only if Despacho contains OcPartes from OCs generated from its same country
                                 $despacho = Despacho::select('despachos.*')
                                             ->join('despacho_ocparte', 'despacho_ocparte.despacho_id', '=', 'despachos.id')
@@ -1557,6 +1563,25 @@ class DespachosController extends Controller
                                             ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
                                             ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                             ->first();
+
+                                if($despacho !== null)
+                                {
+                                    // Get only OcPartes on OCs generated from its country and received at Comprador
+                                    $ocParteList = OcParte::select('oc_parte.*')
+                                                ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=', 'oc_parte.id')
+                                                ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
+                                                ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                                ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                                ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
+                                                ->where('sucursales.country_id', '=', $despacho->destinable->country->id) // Same Country as Sucursal (centro)
+                                                ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                                ->groupBy('oc_parte.id')
+                                                ->get();
+                                }
 
                                 break;
                             }
@@ -1576,6 +1601,24 @@ class DespachosController extends Controller
                                             ->where('despachos.despachable_type', '=', get_class($comprador))
                                             ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
                                             ->first();
+
+                                    if($despacho !== null)
+                                    {
+                                        // Get only OcPartes on OCs generated from its country and received at Comprador
+                                        $ocParteList = OcParte::select('oc_parte.*')
+                                                    ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=', 'oc_parte.id')
+                                                    ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
+                                                    ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                                    ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                    ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                    ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                                    ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                    ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                                    ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
+                                                    ->where('sucursales.country_id', '=', $despacho->destinable->country->id) // Same Country as Sucursal (centro)
+                                                    ->groupBy('oc_parte.id')
+                                                    ->get();
+                                    }
                                 }
 
                                 break;
@@ -1596,6 +1639,24 @@ class DespachosController extends Controller
                                             ->where('despachos.despachable_type', '=', get_class($comprador))
                                             ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
                                             ->first();
+
+                                    if($despacho !== null)
+                                    {
+                                        // Get only OcPartes on OCs generated from its country and received at Comprador
+                                        $ocParteList = OcParte::select('oc_parte.*')
+                                                    ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=', 'oc_parte.id')
+                                                    ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
+                                                    ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                                    ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                    ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                    ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                                    ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                    ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                                    ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
+                                                    ->where('sucursales.country_id', '=', $despacho->destinable->country->id) // Same Country as Sucursal (centro)
+                                                    ->groupBy('oc_parte.id')
+                                                    ->get();
+                                    }
                                 }
 
                                 break;
@@ -1607,8 +1668,137 @@ class DespachosController extends Controller
                             }
                         }
 
-                        if($despacho !== null)
+                        if(
+                            ($ocParteList !== null) &&
+                            ($despacho !== null)
+                        )
                         {   
+                            $queueOcPartes = $ocParteList->reduce(function($carry, $ocParte) use ($comprador, $despacho)
+                                {
+                                    $cantidadRecepcionado = $ocParte->getCantidadRecepcionado($comprador);
+                                    $cantidadDespachado = $ocParte->getCantidadDespachado($comprador);
+
+                                    // Add to list only if has stock at Comprador
+                                    if($cantidadDespachado < $cantidadRecepcionado)
+                                    {
+                                        // Filter data to response
+                                        $ocParte->makeHidden([
+                                            'oc_id',
+                                            'parte_id',
+                                            'estadoocparte_id',
+                                            'tiempoentrega',
+                                            'created_at',
+                                        ]);
+
+                                        $ocParte->cantidad_recepcionado = $cantidadRecepcionado;
+                                        $ocParte->cantidad_despachado = $cantidadDespachado;
+                                        // Set minimum cantidad as total cantidad in Recepciones at destinable Sucursal (centro)
+                                        $ocParte->cantidad_min = $ocParte->getCantidadRecepcionado($despacho->destinable);
+
+                                        $ocParte->parte->makeHidden([
+                                            'marca_id',
+                                            'created_at', 
+                                            'updated_at'
+                                        ]);
+    
+                                        $ocParte->parte->marca;
+                                        $ocParte->parte->marca->makeHidden([
+                                            'created_at', 
+                                            'updated_at'
+                                        ]);
+
+                                        $ocParte->oc;
+                                        $ocParte->oc->makeHidden([
+                                            'cotizacion_id',
+                                            'proveedor_id',
+                                            'filedata_id',
+                                            'estadooc_id',
+                                            'motivobaja_id',
+                                            'usdvalue',
+                                            'partes_total',
+                                            'monto',
+                                            'partes',
+                                            'created_at',
+                                            'updated_at',
+                                        ]);
+    
+                                        $ocParte->oc->cotizacion->makeHidden([
+                                            'solicitud_id',
+                                            'estadocotizacion_id',
+                                            'motivorechazo_id',
+                                            'usdvalue',
+                                            'created_at',
+                                            'updated_at',
+                                            'partes_total',
+                                            'dias',
+                                            'monto',
+                                            'partes'
+                                        ]);
+    
+                                        $ocParte->oc->cotizacion->solicitud;
+                                        $ocParte->oc->cotizacion->solicitud->makeHidden([
+                                            'sucursal_id',
+                                            'faena_id',
+                                            'marca_id',
+                                            'comprador_id',
+                                            'user_id',
+                                            'estadosolicitud_id',
+                                            'comentario',
+                                            'created_at',
+                                            'updated_at',
+                                            'partes_total',
+                                            'partes'
+                                        ]);
+    
+                                        $ocParte->oc->cotizacion->solicitud->sucursal;
+                                        $ocParte->oc->cotizacion->solicitud->sucursal->makeHidden([
+                                            'type',
+                                            'rut',
+                                            'address',
+                                            'city',
+                                            'country_id',
+                                            'created_at',
+                                            'updated_at'
+                                        ]);
+    
+                                        $ocParte->oc->cotizacion->solicitud->faena;
+                                        $ocParte->oc->cotizacion->solicitud->faena->makeHidden([
+                                            'cliente_id',
+                                            'sucursal_id',
+                                            'rut',
+                                            'address',
+                                            'city',
+                                            'contact',
+                                            'phone',
+                                            'created_at',
+                                            'updated_at'
+                                        ]);
+    
+                                        $ocParte->oc->cotizacion->solicitud->faena->cliente;
+                                        $ocParte->oc->cotizacion->solicitud->faena->cliente->makeHidden([
+                                            'country_id',
+                                            'created_at',
+                                            'updated_at'
+                                        ]);
+    
+                                        $ocParte->oc->cotizacion->solicitud->marca;
+                                        $ocParte->oc->cotizacion->solicitud->marca->makeHidden([
+                                            'created_at',
+                                            'updated_at'
+                                        ]);
+
+                                        // Add only if there's stock at Comprador
+                                        if($cantidadDespachado < $cantidadRecepcionado)
+                                        {
+                                            array_push($carry, $ocParte);
+                                        }   
+                                    }
+
+                                    return $carry;
+                                },
+                                []
+                            );
+
                             $despacho->makeHidden([
                                 'despachable_id', 
                                 'despachable_type',
@@ -1767,10 +1957,15 @@ class DespachosController extends Controller
                                 }
                             );
 
+                            $data = [
+                                "queue_ocpartes" => $queueOcPartes,
+                                "despacho" => $despacho
+                            ];
+
                             $response = HelpController::buildResponse(
                                 200,
                                 null,
-                                $despacho
+                                $data
                             );
               
                         }  

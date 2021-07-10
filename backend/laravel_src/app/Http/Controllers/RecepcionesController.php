@@ -2067,7 +2067,7 @@ class RecepcionesController extends Controller
                                                             // If the received parts are more than waiting in queue
                                                             $response = HelpController::buildResponse(
                                                                 409,
-                                                                'La cantidad ingresada para la parte "' . $p->nparte . '" es mayor a la cantidad ya despachada',
+                                                                'La cantidad ingresada para la parte "' . $p->nparte . '" es menor a la cantidad ya despachada',
                                                                 null
                                                             );
                         
