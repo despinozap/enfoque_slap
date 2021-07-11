@@ -85,7 +85,7 @@ export class DespachosCentrodistribucionDetailsComponent implements OnInit {
 
   private loadFormData(despachoData: any)
   { 
-    if(despachoData['partes'].length > 0)
+    if(despachoData['ocpartes'].length > 0)
     {
       this.despacho.id = despachoData.id;
       this.despacho.fecha = despachoData.fecha;
@@ -96,17 +96,23 @@ export class DespachosCentrodistribucionDetailsComponent implements OnInit {
       this.despacho.centrodistribucion_name = despachoData.despachable.name;
       this.despacho.sucursal_name = despachoData.destinable.name;
       
-      this.partes = [];
-      despachoData.partes.forEach((parte: any) => {
-        this.partes.push(
-          {
-            'id': parte.id,
-            'nparte': parte.nparte,
-            'marca_name': parte.marca.name,
-            'cantidad': parte.pivot.cantidad
-          }
-        )
-      });
+      this.partes = despachoData.ocpartes.map((ocparte: any) => 
+        {
+          return {
+            id: ocparte.parte.id,
+            descripcion: ocparte.descripcion,
+            nparte: ocparte.parte.nparte,
+            marca_name: ocparte.parte.marca.name,
+            oc_id: ocparte.oc.id,
+            oc_noccliente: ocparte.oc.noccliente,
+            backorder: ocparte.backorder === 1 ? true : false,
+            sucursal_name: ocparte.oc.cotizacion.solicitud.sucursal.name,
+            faena_name: ocparte.oc.cotizacion.solicitud.faena.name,
+            cantidad: ocparte.pivot.cantidad,
+            checked: false
+          };
+        }
+      );
 
     }
     else
@@ -195,5 +201,4 @@ export class DespachosCentrodistribucionDetailsComponent implements OnInit {
   public goTo_back(): void {
     this.location.back();
   }
-
 }

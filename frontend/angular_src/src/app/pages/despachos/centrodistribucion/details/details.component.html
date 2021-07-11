@@ -91,15 +91,23 @@
                             <thead>
                                 <tr>
                                     <th>N° Parte</th>
+                                    <th>Descripcion</th>
                                     <th>Marca</th>
+                                    <th>OC Interna</th>
+                                    <th>OC Cliente</th>
+                                    <th>Faena</th>
                                     <th>Cantidad</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr *ngFor="let parte of partes; index as i">
-                                    <td align="center">{{ parte.nparte !== null ? parte.nparte : "" }}</td>
-                                    <td align="center">{{ parte.marca_name !== null ? parte.marca_name : "" }}</td>
-                                    <td align="right">{{ parte.cantidad !== null ? parte.cantidad : "" }}</td>
+                                    <td align="center"><i class="bx bx-timer icon-table" *ngIf="(parte.backorder === true)"></i>{{ parte.nparte !== null ? parte.nparte : '' }}</td>
+                                    <td align="center">{{ parte.descripcion !== null ? parte.descripcion : '' }}</td>
+                                    <td align="center">{{ parte.marca_name !== null ? parte.marca_name : '' }}</td>
+                                    <td align="center">{{ parte.oc_id !== null ? parte.oc_id : '' }}</td>
+                                    <td align="center">{{ parte.oc_noccliente !== null ? parte.oc_noccliente : '' }}</td>
+                                    <td align="center">{{ parte.faena_name !== null ? parte.faena_name : '' }}</td>
+                                    <td align="center">{{ parte.cantidad !== null ? parte.cantidad : '' }}</td>
                                 </tr>
                             </tbody>
                         </table>

@@ -29,7 +29,7 @@
             <div class="card-body">
 
                 <h4 class="card-title">Despachos</h4>
-                <p class="card-title-desc">Lista de despachos del centro de distribucion</p>
+                <p class="card-title-desc">Lista de despachos del comprador</p>
 
                 <table datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger" class="table table-bordered dt-responsive nowrap row-border hover" style="border-collapse: collapse; border-spacing: 0; width: 100%;">
                     <thead>
@@ -60,18 +60,20 @@
                             <td align="left">{{ despacho.comentario !== null ? despacho.comentario : '' }}</td>
                             <td align="center">
                                 <a [routerLink]="['details', despacho.id]" class="btn-table btn btn-secondary" title="Detalle"><i
-                  class="bx bx-zoom-in"></i></a>
-                                <a [routerLink]="['edit', despacho.id]" class="btn-table btn btn-secondary" title="Editar"><i class="bx bx-edit-alt"></i></a>
-                                <a [routerLink]="" (click)="removeDespacho(despacho)" class="btn-table btn btn-secondary" title="Eliminar"><i class="bx bx-trash-alt"></i></a>
+                                    class="bx bx-zoom-in"></i></a>
+                                <a [routerLink]="['edit', despacho.id]" class="btn-table btn btn-secondary" *ngIf="(loggedUser !== null) && ((['admin'].includes(loggedUser.role.name)) || ((loggedUser.role.name === 'colsol') && (loggedUser.stationable.type === 'centro')))" title="Editar"><i class="bx bx-edit-alt"></i></a>
+                                <a [routerLink]="" (click)="removeDespacho(despacho)" class="btn-table btn btn-secondary" *ngIf="(loggedUser !== null) && ((['admin'].includes(loggedUser.role.name)) || ((loggedUser.role.name === 'colsol') && (loggedUser.stationable.type === 'centro')))"
+                                    title="Eliminar"><i class="bx bx-trash-alt"></i></a>
                             </td>
                         </tr>
                     </tbody>
                     <tfoot>
                         <tr>
                             <td colspan="8" align="left">
-                                <button type="button" class="btn btn-outline-primary mr-2" (click)="goTo_newDespacho()" [disabled]="(loading === true)">
-                  <i class="bx bx-notepad font-size-16 align-middle"></i> Nuevo despacho
-                </button>
+                                <button type="button" class="btn btn-outline-primary mr-2" (click)="goTo_newDespacho()" *ngIf="(loggedUser !== null) && ((['admin'].includes(loggedUser.role.name)) || ((loggedUser.role.name === 'colsol') && (loggedUser.stationable.type === 'centro')))"
+                                    [disabled]="(loading === true)">
+                                    <i class="bx bx-notepad font-size-16 align-middle"></i> Nuevo despacho
+                                </button>
                             </td>
                         </tr>
                     </tfoot>
