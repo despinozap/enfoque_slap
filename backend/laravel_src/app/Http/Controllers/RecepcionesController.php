@@ -4028,7 +4028,6 @@ class RecepcionesController extends Controller
                                     'parte_id',
                                     'estadoocparte_id',
                                     'tiempoentrega',
-                                    'oc',
                                     'created_at', 
                                     'updated_at'
                                 ]);
@@ -4038,6 +4037,87 @@ class RecepcionesController extends Controller
                                     'ocparte_id',
                                     'created_at',
                                     'updated_at',
+                                ]);
+
+                                $ocParte->oc;
+                                $ocParte->oc->makeHidden([
+                                    'cotizacion_id',
+                                    'proveedor_id',
+                                    'filedata_id',
+                                    'estadooc_id',
+                                    'motivobaja_id',
+                                    'usdvalue',
+                                    'partes',
+                                    'dias',
+                                    'partes_total',
+                                    'monto',
+                                    'created_at',
+                                    'updated_at',
+                                ]);
+
+                                $ocParte->oc->cotizacion->makeHidden([
+                                    'solicitud_id',
+                                    'estadocotizacion_id',
+                                    'motivorechazo_id',
+                                    'usdvalue',
+                                    'created_at',
+                                    'updated_at',
+                                    'partes_total',
+                                    'dias',
+                                    'monto',
+                                    'partes'
+                                ]);
+
+                                $ocParte->oc->cotizacion->solicitud;
+                                $ocParte->oc->cotizacion->solicitud->makeHidden([
+                                    'sucursal_id',
+                                    'faena_id',
+                                    'marca_id',
+                                    'comprador_id',
+                                    'user_id',
+                                    'estadosolicitud_id',
+                                    'comentario',
+                                    'created_at',
+                                    'updated_at',
+                                    'partes_total',
+                                    'partes'
+                                ]);
+
+                                $ocParte->oc->cotizacion->solicitud->sucursal;
+                                $ocParte->oc->cotizacion->solicitud->sucursal->makeHidden([
+                                    'type',
+                                    'rut',
+                                    'address',
+                                    'city',
+                                    'country_id',
+                                    'created_at',
+                                    'updated_at'
+                                ]);
+
+                                $ocParte->oc->cotizacion->solicitud->faena;
+                                $ocParte->oc->cotizacion->solicitud->faena->makeHidden([
+                                    'cliente_id',
+                                    'sucursal_id',
+                                    'rut',
+                                    'address',
+                                    'city',
+                                    'contact',
+                                    'phone',
+                                    'created_at',
+                                    'updated_at'
+                                ]);
+
+                                $ocParte->oc->cotizacion->solicitud->faena->cliente;
+                                $ocParte->oc->cotizacion->solicitud->faena->cliente->makeHidden([
+                                    'country_id',
+                                    'created_at',
+                                    'updated_at'
+                                ]);
+
+                                $ocParte->oc->cotizacion->solicitud->marca;
+                                $ocParte->oc->cotizacion->solicitud->marca->makeHidden([
+                                    'created_at',
+                                    'updated_at'
                                 ]);
 
                                 $ocParte->parte->makeHidden([
