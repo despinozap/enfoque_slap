@@ -164,8 +164,8 @@ Route::middleware(['auth:api', 'cors'])->group(function()
     Route::post('/centrosdistribucion/{centrodistribucion_id}/recepciones', [RecepcionesController::class, 'store_centrodistribucion']);
     Route::get('/centrosdistribucion/{centrodistribucion_id}/recepciones/{id}', [RecepcionesController::class, 'show_centrodistribucion']);
     Route::get('/centrosdistribucion/{centrodistribucion_id}/recepciones/{id}/prepare', [RecepcionesController::class, 'update_prepare_centrodistribucion']);
-    // Route::put('/centrosdistribucion/{centrodistribucion_id}/recepciones/{id}', [RecepcionesController::class, 'update_centrodistribucion']);
-    // Route::delete('/centrosdistribucion/{centrodistribucion_id}/recepciones/{id}', [RecepcionesController::class, 'destroy_centrodistribucion']);
+    Route::put('/centrosdistribucion/{centrodistribucion_id}/recepciones/{id}', [RecepcionesController::class, 'update_centrodistribucion']);
+    Route::delete('/centrosdistribucion/{centrodistribucion_id}/recepciones/{id}', [RecepcionesController::class, 'destroy_centrodistribucion']);
     
     // // Despachos (Sucursal [centro])
     // Route::get('/centrosdistribucion/{id}/despachos', [DespachosController::class, 'index_centrodistribucion']);

@@ -2364,12 +2364,16 @@ class DespachosController extends Controller
                                             // Only if Oc was generated from its same country
                                             $oc = Oc::select('ocs.*')
                                                 ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
+                                                ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=' , 'oc_parte.id')
+                                                ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
                                                 ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                                 ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
                                                 ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
                                                 ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
                                                 ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                                 ->where('ocs.id', '=', $ocId)
+                                                ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                                ->where('recepciones.recepcionable_id', '=', $comprador->id) // OcParte in Recepcion at Comprador
                                                 ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
                                                 ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                                 ->first();
@@ -2388,11 +2392,15 @@ class DespachosController extends Controller
                                             {
                                                 $oc = Oc::select('ocs.*')
                                                     ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
+                                                    ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=' , 'oc_parte.id')
+                                                    ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
                                                     ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                                     ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
                                                     ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
                                                     ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                                     ->where('ocs.id', '=', $ocId)
+                                                    ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                                    ->where('recepciones.recepcionable_id', '=', $comprador->id) // OcParte in Recepcion at Comprador
                                                     ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
                                                     ->first();
                                             }
@@ -2411,11 +2419,15 @@ class DespachosController extends Controller
                                             {
                                                 $oc = Oc::select('ocs.*')
                                                     ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
+                                                    ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=' , 'oc_parte.id')
+                                                    ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
                                                     ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                                     ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
                                                     ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
                                                     ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                                     ->where('ocs.id', '=', $ocId)
+                                                    ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                                    ->where('recepciones.recepcionable_id', '=', $comprador->id) // OcParte in Recepcion at Comprador
                                                     ->where('solicitudes.comprador_id', '=', $comprador->id) // If solicitud belongs to this Comprador
                                                     ->first();
                                             }
@@ -2437,7 +2449,7 @@ class DespachosController extends Controller
                                                 // Calc new cantidad with cantidad in Despachos + diff (negative when removing)
                                                 $newCantidad = $p->pivot->getCantidadDespachado($comprador) + $diffList[$oc->id][$parteId];
 
-                                                // If new cantidad in Despachos is equal or more received at destination Sucursal (centro)
+                                                // If new cantidad in Despachos is equal or more than received at destination Sucursal (centro)
                                                 if($newCantidad >= $p->pivot->getCantidadRecepcionado($despacho->destinable))
                                                 {
                                                     // If new cantidad in Despachos is equal or less than cantidad in Recepciones
