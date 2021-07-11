@@ -20,6 +20,7 @@ class DespachosController extends Controller
     /*
      *  Compradores 
      */
+    
     public function index_comprador($id)
     {
         try
@@ -708,11 +709,7 @@ class DespachosController extends Controller
                                             'updated_at'
                                         ]);
 
-                                        // Add only if there's stock at Comprador
-                                        if($cantidadDespachado < $cantidadRecepcionado)
-                                        {
-                                            array_push($carry, $ocParte);
-                                        }   
+                                        array_push($carry, $ocParte);  
                                     }
 
                                     return $carry;
@@ -916,11 +913,15 @@ class DespachosController extends Controller
 
                                         $oc = Oc::select('ocs.*')
                                             ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
+                                            ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=', 'oc_parte.id')
+                                            ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
                                             ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                             ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
                                             ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
                                             ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
                                             ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
+                                            ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                            ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
                                             ->where('solicitudes.comprador_id', '=', $comprador->id) // Solicitudes for this Comprador
                                             ->where('sucursales.country_id', '=', $centrodistribucion->country->id) // Same Country as Sucursal (centro)
                                             ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
@@ -940,11 +941,16 @@ class DespachosController extends Controller
                                         {
                                             $oc = Oc::select('ocs.*')
                                                 ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
+                                                ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
+                                                ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=', 'oc_parte.id')
+                                                ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
                                                 ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                                 ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
                                                 ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
                                                 ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
                                                 ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
+                                                ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                                ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
                                                 ->where('solicitudes.comprador_id', '=', $comprador->id) // Solicitudes for this Comprador
                                                 ->where('sucursales.country_id', '=', $centrodistribucion->country->id) // Same Country as Sucursal (centro)
                                                 ->first();
@@ -964,11 +970,16 @@ class DespachosController extends Controller
                                         {
                                             $oc = Oc::select('ocs.*')
                                                 ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
+                                                ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
+                                                ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=', 'oc_parte.id')
+                                                ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
                                                 ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                                 ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
                                                 ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
                                                 ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
                                                 ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
+                                                ->where('recepciones.recepcionable_type', '=', get_class($comprador))
+                                                ->where('recepciones.recepcionable_id', '=', $comprador->id) // Received at Comprador
                                                 ->where('solicitudes.comprador_id', '=', $comprador->id) // Solicitudes for this Comprador
                                                 ->where('sucursales.country_id', '=', $centrodistribucion->country->id) // Same Country as Sucursal (centro)
                                                 ->first();
@@ -1580,7 +1591,7 @@ class DespachosController extends Controller
 
                                 if($despacho !== null)
                                 {
-                                    // Get only OcPartes on OCs generated from its country and received at Comprador
+                                    // Get only OcPartes (queue) on OCs generated from its country and received at Comprador
                                     $ocParteList = OcParte::select('oc_parte.*')
                                                 ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=', 'oc_parte.id')
                                                 ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
@@ -1596,6 +1607,28 @@ class DespachosController extends Controller
                                                 ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                                 ->groupBy('oc_parte.id')
                                                 ->get();
+
+                                    // For OcPartes in current Despacho
+                                    $ocParteList = $despacho->ocpartes->reduce(function($carry, $ocParte) use ($ocParteList)
+                                        {
+                                            $contains = $carry->contains(function($op) use ($ocParte)
+                                                {
+                                                    return ($ocParte->id === $op->id);
+                                                }
+                                            );
+
+                                            // If OcParte from Despacho isn't in queue
+                                            if($contains === false)
+                                            {
+                                                // Add OcParte to list
+                                                array_push($carry, $ocParte);
+                                            }
+
+                                            return $carry;
+                                        },
+                                        $ocParteList // Initialize with previous list as base
+                                    );
+
                                 }
 
                                 break;
@@ -1624,7 +1657,7 @@ class DespachosController extends Controller
 
                                     if($despacho !== null)
                                     {
-                                        // Get only OcPartes on OCs generated from its country and received at Comprador
+                                        // Get only OcPartes (queue) on OCs generated from its country and received at Comprador
                                         $ocParteList = OcParte::select('oc_parte.*')
                                                     ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=', 'oc_parte.id')
                                                     ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
@@ -1639,6 +1672,28 @@ class DespachosController extends Controller
                                                     ->where('sucursales.country_id', '=', $despacho->destinable->country->id) // Same Country as Sucursal (centro)
                                                     ->groupBy('oc_parte.id')
                                                     ->get();
+
+                                        // For OcPartes in current Despacho
+                                        $ocParteList = $despacho->ocpartes->reduce(function($carry, $ocParte) use ($ocParteList)
+                                            {
+                                                $contains = $carry->contains(function($op) use ($ocParte)
+                                                    {
+                                                        return ($ocParte->id === $op->id);
+                                                    }
+                                                );
+
+                                                // If OcParte from Despacho isn't in queue
+                                                if($contains === false)
+                                                {
+                                                    // Add OcParte to list
+                                                    array_push($carry, $ocParte);
+                                                }
+
+                                                return $carry;
+                                            },
+                                            $ocParteList // Initialize with previous list as base
+                                        );
+
                                     }
                                 }
 
@@ -1668,7 +1723,7 @@ class DespachosController extends Controller
 
                                     if($despacho !== null)
                                     {
-                                        // Get only OcPartes on OCs generated from its country and received at Comprador
+                                        // Get only OcPartes (queue) on OCs generated from its country and received at Comprador
                                         $ocParteList = OcParte::select('oc_parte.*')
                                                     ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=', 'oc_parte.id')
                                                     ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
@@ -1683,6 +1738,28 @@ class DespachosController extends Controller
                                                     ->where('sucursales.country_id', '=', $despacho->destinable->country->id) // Same Country as Sucursal (centro)
                                                     ->groupBy('oc_parte.id')
                                                     ->get();
+
+                                        // For OcPartes in current Despacho
+                                        $ocParteList = $despacho->ocpartes->reduce(function($carry, $ocParte) use ($ocParteList)
+                                            {
+                                                $contains = $carry->contains(function($op) use ($ocParte)
+                                                    {
+                                                        return ($ocParte->id === $op->id);
+                                                    }
+                                                );
+
+                                                // If OcParte from Despacho isn't in queue
+                                                if($contains === false)
+                                                {
+                                                    // Add OcParte to list
+                                                    array_push($carry, $ocParte);
+                                                }
+
+                                                return $carry;
+                                            },
+                                            $ocParteList // Initialize with previous list as base
+                                        );
+
                                     }
                                 }
 
@@ -1705,8 +1782,15 @@ class DespachosController extends Controller
                                     $cantidadRecepcionado = $ocParte->getCantidadRecepcionado($comprador);
                                     $cantidadDespachado = $ocParte->getCantidadDespachado($comprador);
 
-                                    // Add to list only if has stock at Comprador
-                                    if($cantidadDespachado < $cantidadRecepcionado)
+                                    // Try to find OcParte in Despacho
+                                    $op = $despacho->ocpartes->find($ocParte->id);
+
+                                    if(
+                                        // If OcParte is in Despacho
+                                        ($op !== null) ||
+                                        // Or if OcParte isn't in Despacho and hasn't been full dispatched yet
+                                        (($op === null) && ($cantidadDespachado < $cantidadRecepcionado))
+                                    )
                                     {
                                         // Filter data to response
                                         $ocParte->makeHidden([
@@ -1814,11 +1898,7 @@ class DespachosController extends Controller
                                             'updated_at'
                                         ]);
 
-                                        // Add only if there's stock at Comprador
-                                        if($cantidadDespachado < $cantidadRecepcionado)
-                                        {
-                                            array_push($carry, $ocParte);
-                                        }   
+                                        array_push($carry, $ocParte);
                                     }
 
                                     return $carry;
@@ -2043,7 +2123,7 @@ class DespachosController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al obtener el despacho [!]' . $e,
+                'Error al obtener el despacho [!]',
                 null
             );
         }

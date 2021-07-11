@@ -66,24 +66,23 @@ class OcParte extends Pivot
     }
 
 
-    // public function getCantidadEntregado($sucursal)
-    // {
-    //     $ocParteEntregaList = OcParteEntrega::select('entrega_ocparte.*')
-    //                         ->join('entregas', 'entregas.id', '=', 'entrega_ocparte.entrega_id')
-    //                         ->join('oc_parte', 'oc_parte.id', '=', 'entrega_ocparte.ocparte_id')
-    //                         ->join('partes', 'partes.id', '=', 'oc_parte.parte_id')
-    //                         ->where('entregas.sucursal_id', '=', $sucursal->id)
-    //                         ->where('partes.id', '=', $this->id)
-    //                         ->get();
+    public function getCantidadEntregado($sucursal)
+    {
+        $ocParteEntregaList = OcParteEntrega::select('entrega_ocparte.*')
+                            ->join('entregas', 'entregas.id', '=', 'entrega_ocparte.entrega_id')
+                            ->join('oc_parte', 'oc_parte.id', '=', 'entrega_ocparte.ocparte_id')
+                            ->where('oc_parte.id', '=', $this->id)
+                            ->where('entregas.sucursal_id', '=', $sucursal->id)
+                            ->get();
 
-    //     $quantity = $ocParteEntregaList->reduce(function ($carry, $ocParteEntrega) 
-    //         {
-    //             return $carry + $ocParteEntrega->cantidad;
-    //         }, 
-    //         0
-    //     );
+        $quantity = $ocParteEntregaList->reduce(function ($carry, $ocParteEntrega) 
+            {
+                return $carry + $ocParteEntrega->cantidad;
+            }, 
+            0
+        );
 
-    //     return $quantity;
-    // }
+        return $quantity;
+    }
 
 }
