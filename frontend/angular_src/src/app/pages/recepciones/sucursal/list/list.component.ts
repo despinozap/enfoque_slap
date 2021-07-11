@@ -2,6 +2,8 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
+import { User } from 'src/app/interfaces/user';
+import { AuthService } from 'src/app/services/auth.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { RecepcionesService } from 'src/app/services/recepciones.service';
 import { UtilsService } from 'src/app/services/utils.service';
@@ -44,17 +46,29 @@ export class RecepcionesSucursalListComponent implements OnInit {
   
   dtTrigger: Subject<any> = new Subject<any>();
 
+  loggedUser: User = null as any;
+  private subLoggedUser: any;
+
   recepciones: any[] = [];
   sucursal_id : number = 2;
   loading: boolean = false;
   
   constructor(
     private router: Router,
+    private _authService: AuthService,
     private _recepcionesService: RecepcionesService,
     private _utilsService: UtilsService
   ) { }
 
   ngOnInit(): void {
+    //For loggedUser
+    {
+      this.subLoggedUser = this._authService.loggedUser$.subscribe((data) => {
+        this.loggedUser = data.user as User;
+      });
+      
+      this._authService.notifyLoggedUser(this._authService.NOTIFICATION_RECEIVER_CONTENTPAGE);
+    }
   }
 
   ngAfterViewInit(): void {
@@ -68,6 +82,7 @@ export class RecepcionesSucursalListComponent implements OnInit {
   }
 
   ngOnDestroy(): void {
+    this.subLoggedUser.unsubscribe();
     this.dtTrigger.unsubscribe();
   }
 
@@ -222,7 +237,7 @@ export class RecepcionesSucursalListComponent implements OnInit {
               {
                 NotificationsService.showAlert(
                   errorResponse.error.message,
-                  NotificationsService.messageType.error
+                  NotificationsService.messageType.warning
                 );
 
                 break;

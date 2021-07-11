@@ -25,7 +25,6 @@ export class RecepcionesSucursalEditComponent implements OnInit {
     order: [[0, 'desc']]
   };
 
-  
   dtTrigger: Subject<any> = new Subject<any>();
 
   recepcion: any = {
@@ -88,9 +87,9 @@ export class RecepcionesSucursalEditComponent implements OnInit {
 
   private loadFormData(recepcionData: any)
   {
-    if(recepcionData.recepcion['partes'].length > 0)
+    if(recepcionData.recepcion['ocpartes'].length > 0)
     {
-      // Load Recepcion data
+      // Load Despacho data
       this.recepcion.id = recepcionData.recepcion.id;
       this.recepcion.centrodistribucion_id = recepcionData.recepcion.sourceable.id;
       this.recepcion.centrodistribucion_name = recepcionData.recepcion.sourceable.name;
@@ -106,46 +105,49 @@ export class RecepcionesSucursalEditComponent implements OnInit {
         this.recepcionForm.controls.comentario.setValue(recepcionData.recepcion.comentario);
       }
 
-      // Load partes list from queue_partes
-      this.partes = recepcionData.queue_partes.reduce((carry: any[], parte: any) => {
-          carry.push({
-            id: parte.id,
-            nparte: parte.nparte,
-            marca: parte.marca,
-            cantidad_max: parte.cantidad_pendiente,
-            cantidad_despachos: parte.cantidad_despachos,
-            checked: false,
-            cantidad: 1,
-          });
-
-          return carry;
-        },
-        [] // Empty array
+      // Load partes list from queueOcPartes
+      this.partes = recepcionData.queue_ocpartes.map((ocparte: any) => 
+        {
+          return {
+            id: ocparte.parte.id,
+            descripcion: ocparte.descripcion,
+            nparte: ocparte.parte.nparte,
+            marca_name: ocparte.parte.marca.name,
+            oc_id: ocparte.oc.id,
+            oc_noccliente: ocparte.oc.noccliente,
+            backorder: ocparte.backorder === 1 ? true : false,
+            sucursal_name: ocparte.oc.cotizacion.solicitud.sucursal.name,
+            faena_name: ocparte.oc.cotizacion.solicitud.faena.name,
+            cantidad_min: (ocparte.cantidad_min > 0) ? ocparte.cantidad_min : 1,
+            cantidad_transit: ocparte.cantidad_despachado - ocparte.cantidad_recepcionado,
+            cantidad: ocparte.cantidad_despachado - ocparte.cantidad_recepcionado,
+            checked: false
+          };
+        }
       );
 
       let index: number;
-      let parte: any;
 
-      // Update values with partes list in recepcion 
-      recepcionData.recepcion.partes.forEach((parteR: any) => {
+      // Update values with partes list in Recepcion 
+      recepcionData.recepcion.ocpartes.forEach((parteD: any) => {
 
         index = this.partes.findIndex((parteQ) => {
-          return (parteR.id === parteQ.id);
+          return (parteD.parte.id === parteQ.id);
         });
 
         if(index >= 0)
         {
+          // Update data for parte in Recepcion
           this.partes[index].checked = true;
-          this.partes[index].cantidad = parteR.pivot.cantidad;
+          this.partes[index].cantidad = parteD.pivot.cantidad;
+          this.partes[index].cantidad_transit += parteD.pivot.cantidad;
         }
 
       });
 
-      this.partes = this.partes.sort((p1, p2) => {
-        return p2.cantidad - p1.cantidad;
-      });
-
       this.renderDataTable(this.datatableElement_partes);
+
+      this.sortPartesByChecked();
     }
     else
     {
@@ -230,20 +232,63 @@ export class RecepcionesSucursalEditComponent implements OnInit {
     this.loading = true;
     this.responseErrors = [];
 
-    let receivedPartes = this.partes.reduce((carry, parte) => 
+    // Prepare OCs list
+    let indexOc;
+    let indexParte;
+    let receivedOcs = this.partes.reduce((carry, parte) =>
       {
         if(parte.checked === true)
         {
-          carry.push(
+          indexOc = carry.findIndex((oc: any) => {
+            return (oc.id === parte.oc_id);
+          });
+  
+          // If Oc already exists in list
+          if(indexOc >= 0)
+          {
+            indexParte = carry[indexOc].partes.findIndex((p: any) => {
+              return (p.id === parte.id);
+            });
+  
+            // If Parte is already in the partes list for Oc
+            if(indexParte >= 0)
             {
-              id: parte.id,
-              cantidad: parte.cantidad
+              // Adds cantidad to the existing parte
+              carry[indexOc].partes[indexParte] += parte.cantidad;
             }
-          );
+            // If Parte isn't in the partes list for Oc
+            else
+            {
+              // Add Parte to the partes list in Oc
+              carry[indexOc].partes.push(
+                {
+                  id: parte.id,
+                  cantidad: parte.cantidad
+                }
+              );
+            }
+          }
+          // If doesn't exist
+          else
+          {
+            // Add the OC to list and also add the parte in partes list for the Oc
+            carry.push(
+              {
+                id: parte.oc_id,
+                partes: [
+                  {
+                    id: parte.id,
+                    cantidad: parte.cantidad
+                  }
+                ]
+              }
+            );
+          }
+
         }
-      
+
         return carry;
-      }, 
+      },
       []
     );
 
@@ -252,7 +297,7 @@ export class RecepcionesSucursalEditComponent implements OnInit {
       ndocumento: this.recepcionForm.value.documento,
       responsable: this.recepcionForm.value.responsable,
       comentario: this.recepcionForm.value.comentario,
-      partes: receivedPartes
+      ocs: receivedOcs
     };
 
     this._recepcionesService.updateRecepcion_sucursal(this.sucursal_id, this.recepcion.id, recepcion)
@@ -290,7 +335,7 @@ export class RecepcionesSucursalEditComponent implements OnInit {
                 break;
               }
 
-            case 409: //Permission denied
+            case 409: //Conflict
               {
                 NotificationsService.showAlert(
                   errorResponse.error.message,
@@ -341,8 +386,9 @@ export class RecepcionesSucursalEditComponent implements OnInit {
     if(
         (isNaN(evt.target.value) === false) && 
         (parseInt(evt.target.value) > 0) && 
-        (parseInt(evt.target.value) <= parte.cantidad_max) && 
-        (parseInt(evt.target.value) >= parte.cantidad_despachos))
+        (parseInt(evt.target.value) >= parte.cantidad_min) &&
+        (parseInt(evt.target.value) <= parte.cantidad_transit)
+    )
     {
         parte.cantidad = parseInt(evt.target.value);
     }
@@ -356,10 +402,21 @@ export class RecepcionesSucursalEditComponent implements OnInit {
     this.partes.forEach((parte: any) => {
       parte.checked = evt.target.checked;
     });
+
+    this.sortPartesByChecked();
   }
 
   public checkParteItem(parte: any, evt: any): void {
     parte.checked = evt.target.checked;
+
+    this.sortPartesByChecked();
+  }
+
+  private sortPartesByChecked(): void {
+    // Sort partes pushing checked ones to the top
+    this.partes = this.partes.sort((p1, p2) => {
+      return ((p2.checked === true) ? 1 : 0) - ((p1.checked === true) ? 1 : 0);
+    });
   }
 
   public isCheckedItem(dataSource: any[]): boolean
@@ -407,5 +464,4 @@ export class RecepcionesSucursalEditComponent implements OnInit {
   public goTo_recepcionesList(): void {
     this.router.navigate(['/panel/recepciones/sucursal']);
   }
-
 }

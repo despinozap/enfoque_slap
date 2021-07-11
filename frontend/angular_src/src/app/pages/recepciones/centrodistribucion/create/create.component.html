@@ -162,7 +162,7 @@
                                                 <input class="form-control" type="number" name="" id="txtParte-{{ i }}-cantidad" min="1" max="{{parte.cantidad_transit}}" value="{{ ((parte.cantidad_transit !== null) && (parte.checked)) ? parte.cantidad_transit : '' }}" (change)="updateParte_cantidad(parte, $event)"
                                                     [disabled]="loading === true ? true : (parte.checked ? false : true)">
                                             </td>
-                                            <td align="center">{{ parte.cantidad_tansit !== null ? parte.cantidad_tansit : '' }}</td>
+                                            <td align="center">{{ parte.cantidad_transit !== null ? parte.cantidad_transit : '' }}</td>
                                         </tr>
                                     </tbody>
                                 </table>
