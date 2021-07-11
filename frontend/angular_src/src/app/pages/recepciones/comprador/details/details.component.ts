@@ -129,7 +129,8 @@ export class RecepcionesCompradorDetailsComponent implements OnInit {
             'nparte': ocParte.parte.nparte,
             'descripcion': ocParte.descripcion,
             'marca_name': ocParte.parte.marca.name,
-            'cantidad': ocParte.pivot.cantidad
+            'cantidad': ocParte.pivot.cantidad,
+            'backorder': ocParte.backorder === 1 ? true : false
           }
         )
       });

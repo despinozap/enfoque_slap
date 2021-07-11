@@ -187,7 +187,7 @@ export class DespachosCompradorCreateComponent implements OnInit {
                 marca_name: ocparte.parte.marca.name,
                 oc_id: ocparte.oc.id,
                 oc_noccliente: ocparte.oc.noccliente,
-                backorder: ocparte.backorder,
+                backorder: ocparte.backorder === 1 ? true : false,
                 sucursal_name: ocparte.oc.cotizacion.solicitud.sucursal.name,
                 faena_name: ocparte.oc.cotizacion.solicitud.faena.name,
                 cantidad_stock: ocparte.cantidad_recepcionado - ocparte.cantidad_despachado,

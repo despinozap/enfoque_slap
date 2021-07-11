@@ -278,7 +278,7 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
             nparte: parte.nparte,
             descripcion: parte.pivot.descripcion,
             marca_name: parte.marca.name,
-            backorder: parte.backorder > 0 ? true : false,
+            backorder: parte.pivot.backorder > 0 ? true : false,
             cantidad: parte.pivot.cantidad - parte.pivot.cantidad_recepcionado,
             cantidad_total: parte.pivot.cantidad,
             cantidad_recepcionado: parte.pivot.cantidad_recepcionado,
