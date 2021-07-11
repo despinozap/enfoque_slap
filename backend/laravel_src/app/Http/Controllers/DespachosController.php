@@ -4468,7 +4468,7 @@ class DespachosController extends Controller
 
                                         $ocParte->cantidad_recepcionado = $cantidadRecepcionado;
                                         $ocParte->cantidad_despachado = $cantidadDespachado;
-                                        $ocParte->cantidad_entrgado = $cantidadEntregado;
+                                        $ocParte->cantidad_entregado = $cantidadEntregado;
 
                                         // Set minimum cantidad as total cantidad in Recepciones at destinable Sucursal
                                         $ocParte->cantidad_min = $ocParte->getCantidadRecepcionado($despacho->destinable);
