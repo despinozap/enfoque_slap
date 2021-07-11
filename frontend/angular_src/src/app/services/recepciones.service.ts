@@ -158,9 +158,16 @@ export class RecepcionesService {
     return this.httpClient.post(endpoint, recepcion, httpOptions);
   }
 
-  public getQueuePartes_centrodistribucion(centrodistribucion_id: number, comprador_id: number): Observable<any>
+  public getQueueOcPartes_centrodistribucion(centrodistribucion_id: number, comprador_id: number): Observable<any>
   {
-    let endpoint: string = `${environment.ENDPOINT_BASE}/centrosdistribucion/${centrodistribucion_id}/compradores/${comprador_id}/queuepartes`;
+    let endpoint: string = `${environment.ENDPOINT_BASE}/centrosdistribucion/${centrodistribucion_id}/recepciones/queueocpartes/compradores/${comprador_id}`;
+    
+    return this.httpClient.get(endpoint);
+  }
+
+  public prepareStoreRecepcion_centrodistribucion(centrodistribucion_id: number): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/centrosdistribucion/${centrodistribucion_id}/recepciones/prepare`;
     
     return this.httpClient.get(endpoint);
   }

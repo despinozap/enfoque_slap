@@ -5,7 +5,6 @@ import { Router } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
 import { Comprador } from 'src/app/interfaces/comprador';
-import { CompradoresService } from 'src/app/services/compradores.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { RecepcionesService } from 'src/app/services/recepciones.service';
 import { UtilsService } from 'src/app/services/utils.service';
@@ -26,7 +25,7 @@ export class RecepcionesCentrodistribucionCreateComponent implements OnInit {
       url: '//cdn.datatables.net/plug-ins/1.10.22/i18n/Spanish.json'
     },
     order: [[0, 'desc']]
-  };
+  };  
 
   
   dtTrigger: Subject<any> = new Subject<any>();
@@ -49,7 +48,6 @@ export class RecepcionesCentrodistribucionCreateComponent implements OnInit {
   constructor(
     private location: Location,
     private router: Router,
-    private _compradoresService: CompradoresService,
     private _recepcionesService: RecepcionesService,
     private _utilsService: UtilsService
   ) { }
@@ -88,14 +86,29 @@ export class RecepcionesCentrodistribucionCreateComponent implements OnInit {
     this.loading = true;
     this.recepcionForm.disable();
 
-    this._compradoresService.getCompradores()
+    this._recepcionesService.prepareStoreRecepcion_centrodistribucion(this.centrodistribucion_id)
     .subscribe(
       //Success request
       (response: any) => {
 
-        this.compradores = response.data;
-        this.loading = false;
-        this.recepcionForm.enable();
+        if(response.data.compradores.length > 0) 
+        {
+          // Compradores
+          this.compradores = response.data.compradores;
+
+          this.loading = false;
+          this.recepcionForm.enable();
+        }
+        else
+        {
+          NotificationsService.showToast(
+            'No se encontraron compradores con partes pendiente de recepcion',
+            NotificationsService.messageType.info
+          );
+
+          this.loading = false;
+          this.goTo_back();
+        }
       },
       //Error request
       (errorResponse: any) => {
@@ -151,37 +164,59 @@ export class RecepcionesCentrodistribucionCreateComponent implements OnInit {
     );
   }
 
-  public loadQueuePartes(): void {
+  public loadOcPartes(): void {
+    
     this.loading = true;
     this.recepcionForm.disable();
 
-    this._recepcionesService.getQueuePartes_centrodistribucion(this.centrodistribucion_id, this.recepcionForm.value.comprador)
+    this._recepcionesService.getQueueOcPartes_centrodistribucion(this.centrodistribucion_id, this.recepcionForm.value.comprador)
     .subscribe(
       //Success request
       (response: any) => {
-        this.partes = response.data.reduce((carry: any[], parte: any) => {
-            carry.push({
-              id: parte.id,
-              nparte: parte.nparte,
-              marca: parte.marca,
-              cantidad_pendiente: parte.cantidad_pendiente,
-              checked: false,
-              cantidad: parte.cantidad_pendiente,
-            });
 
-            return carry;
-          },
-          [] // Empty array
-        );
-
-        this.renderDataTable(this.datatableElement_partes, this.dtTrigger);
+        if(response.data.length > 0)
+        {
+          // OcPartes
+          this.partes = response.data.reduce((carry: any[], ocparte: any) => {
+              
+            carry.push(
+              {
+                id: ocparte.parte.id,
+                descripcion: ocparte.descripcion,
+                nparte: ocparte.parte.nparte,
+                marca_name: ocparte.parte.marca.name,
+                oc_id: ocparte.oc.id,
+                oc_noccliente: ocparte.oc.noccliente,
+                backorder: ocparte.backorder,
+                sucursal_name: ocparte.oc.cotizacion.solicitud.sucursal.name,
+                faena_name: ocparte.oc.cotizacion.solicitud.faena.name,
+                cantidad_transit: ocparte.cantidad_despachado - ocparte.cantidad_recepcionado,
+                cantidad: ocparte.cantidad_despachado - ocparte.cantidad_recepcionado,
+                checked: false
+              }
+            );
+  
+              return carry;
+            },
+            [] // Empty array
+          );
+  
+          this.renderDataTable(this.datatableElement_partes, this.dtTrigger);
+        }
+        else
+        {
+          NotificationsService.showAlert(
+            'No se encontraron partes para recepcionar desde el comprador seleccionado',
+            NotificationsService.messageType.info
+          );
+        }
 
         this.loading = false;
         this.recepcionForm.enable();
       },
       //Error request
       (errorResponse: any) => {
-        
+
         switch(errorResponse.status)
         {
         
@@ -218,7 +253,7 @@ export class RecepcionesCentrodistribucionCreateComponent implements OnInit {
           default: //Unhandled error
           {
             NotificationsService.showToast(
-              'Error al cargar los datos de partes',
+              'Error al cargar los datos de las partes para recepcionar',
               NotificationsService.messageType.error
             );
   
@@ -238,20 +273,63 @@ export class RecepcionesCentrodistribucionCreateComponent implements OnInit {
     this.loading = true;
     this.responseErrors = [];
 
-    let receivedPartes = this.partes.reduce((carry, parte) => 
+    // Prepare OCs list
+    let indexOc;
+    let indexParte;
+    let receivedOcs = this.partes.reduce((carry, parte) =>
       {
         if(parte.checked === true)
         {
-          carry.push(
+          indexOc = carry.findIndex((oc: any) => {
+            return (oc.id === parte.oc_id);
+          });
+  
+          // If Oc already exists in list
+          if(indexOc >= 0)
+          {
+            indexParte = carry[indexOc].partes.findIndex((p: any) => {
+              return (p.id === parte.id);
+            });
+  
+            // If Parte is already in the partes list for Oc
+            if(indexParte >= 0)
             {
-              id: parte.id,
-              cantidad: parte.cantidad
+              // Adds cantidad to the existing parte
+              carry[indexOc].partes[indexParte] += parte.cantidad;
             }
-          );
+            // If Parte isn't in the partes list for Oc
+            else
+            {
+              // Add Parte to the partes list in Oc
+              carry[indexOc].partes.push(
+                {
+                  id: parte.id,
+                  cantidad: parte.cantidad
+                }
+              );
+            }
+          }
+          // If doesn't exist
+          else
+          {
+            // Add the OC to list and also add the parte in partes list for the Oc
+            carry.push(
+              {
+                id: parte.oc_id,
+                partes: [
+                  {
+                    id: parte.id,
+                    cantidad: parte.cantidad
+                  }
+                ]
+              }
+            );
+          }
+
         }
-      
+
         return carry;
-      }, 
+      },
       []
     );
 
@@ -261,7 +339,7 @@ export class RecepcionesCentrodistribucionCreateComponent implements OnInit {
       ndocumento: this.recepcionForm.value.documento,
       responsable: this.recepcionForm.value.responsable,
       comentario: this.recepcionForm.value.comentario,
-      partes: receivedPartes
+      ocs: receivedOcs
     };
 
     this._recepcionesService.storeRecepcion_centrodistribucion(this.centrodistribucion_id, recepcion)
@@ -278,6 +356,7 @@ export class RecepcionesCentrodistribucionCreateComponent implements OnInit {
         },
         //Error request
         (errorResponse: any) => {
+
           switch (errorResponse.status) 
           {
             case 400: //Invalid request parameters
@@ -297,7 +376,7 @@ export class RecepcionesCentrodistribucionCreateComponent implements OnInit {
                 break;
               }
 
-            case 409: //Permission denied
+            case 409: //Conflict
               {
                 NotificationsService.showAlert(
                   errorResponse.error.message,
@@ -345,13 +424,17 @@ export class RecepcionesCentrodistribucionCreateComponent implements OnInit {
   }
 
   public updateParte_cantidad(parte: any, evt: any): void {
-    if((isNaN(evt.target.value) === false) && (parseInt(evt.target.value) > 0) && (parseInt(evt.target.value) <= parte.cantidad_pendiente))
+    if(
+        (isNaN(evt.target.value) === false) && 
+        (parseInt(evt.target.value) > 0) && 
+        (parseInt(evt.target.value) <= parte.cantidad_transit)
+    )
     {
-        parte.cantidad = parseInt(evt.target.value);
+      parte.cantidad = parseInt(evt.target.value);
     }
     else
     {
-      evt.target.value = parte.cantidad_pendiente;
+      evt.target.value = parte.cantidad_transit;
     }
   }
 
@@ -359,10 +442,21 @@ export class RecepcionesCentrodistribucionCreateComponent implements OnInit {
     this.partes.forEach((parte: any) => {
       parte.checked = evt.target.checked;
     });
+
+    this.sortPartesByChecked();
   }
 
   public checkParteItem(parte: any, evt: any): void {
     parte.checked = evt.target.checked;
+
+    this.sortPartesByChecked();
+  }
+
+  private sortPartesByChecked(): void {
+    // Sort partes pushing checked ones to the top
+    this.partes = this.partes.sort((p1, p2) => {
+      return ((p2.checked === true) ? 1 : 0) - ((p1.checked === true) ? 1 : 0);
+    });
   }
 
   public isCheckedItem(dataSource: any[]): boolean

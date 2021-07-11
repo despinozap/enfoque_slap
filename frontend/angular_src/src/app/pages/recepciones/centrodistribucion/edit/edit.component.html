@@ -76,7 +76,7 @@
                         </div>
                         <div class="col-4">
                             <div class="form-group">
-                                <label class="control-label" for="responsable">Recibido por</label>
+                                <label class="control-label" for="responsable">Recepcionado por</label>
                                 <!-- Backend errors -->
                                 <div class="alert alert-danger" *ngIf="(responseErrors.responsable)">
                                     <div *ngFor="let errorMessage of responseErrors.responsable">{{ errorMessage }}</div>
@@ -105,7 +105,7 @@
 
                             <!-- Partes list -->
                             <label class="control-label">Lista de partes pendientes de recepcion</label>
-                            <p class="card-title-desc">Completa las cantidades para las partes que se reciben</p>
+                            <p class="card-title-desc">Completa las cantidades para las partes que se recepcionan</p>
 
                             <div class="table-responsive">
 
@@ -119,13 +119,18 @@
                                                 </div>
                                             </th>
                                             <th>N° Parte</th>
+                                            <th>Descripcion</th>
                                             <th>Marca</th>
+                                            <th>OC Interna</th>
+                                            <th>OC Cliente</th>
+                                            <th>Faena</th>
                                             <th>Cantidad</th>
+                                            <th>Pendiente</th>
                                         </tr>
                                     </thead>
                                     <tbody *ngIf="(loading === true)">
                                         <tr>
-                                            <td colspan="4" style="text-align: center;"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</td>
+                                            <td colspan="9" style="text-align: center;"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</td>
                                         </tr>
                                     </tbody>
                                     <tbody [hidden]="(loading === true)">
@@ -136,12 +141,17 @@
                                                     <label class="custom-control-label" for="chkParte-{{ i }}"></label>
                                                 </div>
                                             </td>
-                                            <td align="center">{{ parte.nparte !== null ? parte.nparte : '' }}</td>
-                                            <td align="center">{{ parte.marca.name !== null ? parte.marca.name : '' }}</td>
+                                            <td align="center"><i class="bx bx-timer icon-table" *ngIf="(parte.backorder === true)"></i>{{ parte.nparte !== null ? parte.nparte : '' }}</td>
+                                            <td align="center">{{ parte.descripcion !== null ? parte.descripcion : '' }}</td>
+                                            <td align="center">{{ parte.marca_name !== null ? parte.marca_name : '' }}</td>
+                                            <td align="center">{{ parte.oc_id !== null ? parte.oc_id : '' }}</td>
+                                            <td align="center">{{ parte.oc_noccliente !== null ? parte.oc_noccliente : '' }}</td>
+                                            <td align="center">{{ parte.faena_name !== null ? parte.faena_name : '' }}</td>
                                             <td align="center">
-                                                <input class="form-control" type="number" name="" id="txtParte-{{ i }}-cantidad" min="{{parte.cantidad_despachos}}" max="{{parte.cantidad_max}}" value="{{ ((parte.checked === true) && (parte.cantidad !== null)) ? parte.cantidad : '' }}" (change)="updateParte_cantidad(parte, $event)"
+                                                <input class="form-control" type="number" name="" id="txtParte-{{ i }}-cantidad" min="{{parte.cantidad_min}}" max="{{parte.cantidad_transit}}" value="{{ ((parte.cantidad !== null) && (parte.checked)) ? parte.cantidad : '' }}" (change)="updateParte_cantidad(parte, $event)"
                                                     [disabled]="loading === true ? true : (parte.checked ? false : true)">
                                             </td>
+                                            <td align="center">{{ parte.cantidad_transit !== null ? parte.cantidad_transit : '' }}</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -154,12 +164,12 @@
                         <div class="col-12">
                             <div class="form-buttons mt-2">
                                 <button class="btn btn-primary mr-2" (click)="updateRecepcion()" [disabled]="(recepcionForm.invalid) || (loading === true) || (isCheckedItem(partes) === false)">
-                  <span *ngIf="loading === true"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
-                  <span *ngIf="loading === false">Guardar</span>
-                </button>
+                                    <span *ngIf="loading === true"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
+                                    <span *ngIf="loading === false">Guardar</span>
+                                </button>
                                 <button [disabled]="(loading === true)" class="btn btn-light" (click)="goTo_recepcionesList()">
-                  <span>Cancelar</span>
-                </button>
+                                    <span>Cancelar</span>
+                                </button>
                             </div>
                         </div>
                     </div>

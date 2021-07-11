@@ -60,18 +60,20 @@
                             <td align="left">{{ recepcion.comentario !== null ? recepcion.comentario : '' }}</td>
                             <td align="center">
                                 <a [routerLink]="['details', recepcion.id]" class="btn-table btn btn-secondary" title="Detalle"><i
-                  class="bx bx-zoom-in"></i></a>
-                                <a [routerLink]="['edit', recepcion.id]" class="btn-table btn btn-secondary" title="Editar"><i class="bx bx-edit-alt"></i></a>
-                                <a [routerLink]="" (click)="removeRecepcion(recepcion)" class="btn-table btn btn-secondary" title="Eliminar"><i class="bx bx-trash-alt"></i></a>
+                                    class="bx bx-zoom-in"></i></a>
+                                <a [routerLink]="['edit', recepcion.id]" class="btn-table btn btn-secondary" *ngIf="(loggedUser !== null) && ((['admin'].includes(loggedUser.role.name)) || ((loggedUser.role.name === 'colsol') && (loggedUser.stationable.type === 'centro')))" title="Editar"><i class="bx bx-edit-alt"></i></a>
+                                <a [routerLink]="" (click)="removeRecepcion(recepcion)" class="btn-table btn btn-secondary" *ngIf="(loggedUser !== null) && ((['admin'].includes(loggedUser.role.name)) || ((loggedUser.role.name === 'colsol') && (loggedUser.stationable.type === 'centro')))"
+                                    title="Eliminar"><i class="bx bx-trash-alt"></i></a>
                             </td>
                         </tr>
                     </tbody>
                     <tfoot>
                         <tr>
                             <td colspan="8" align="left">
-                                <button type="button" class="btn btn-outline-primary mr-2" (click)="goTo_newRecepcion()" [disabled]="(loading === true)">
-                  <i class="bx bx-notepad font-size-16 align-middle"></i> Nueva recepcion
-                </button>
+                                <button type="button" class="btn btn-outline-primary mr-2" (click)="goTo_newRecepcion()" *ngIf="(loggedUser !== null) && ((['admin'].includes(loggedUser.role.name)) || ((loggedUser.role.name === 'colsol') && (loggedUser.stationable.type === 'centro')))"
+                                    [disabled]="(loading === true)">
+                                    <i class="bx bx-notepad font-size-16 align-middle"></i> Nueva recepcion
+                                </button>
                             </td>
                         </tr>
                     </tfoot>

@@ -128,7 +128,7 @@ export class DespachosCompradorEditComponent implements OnInit {
 
       let index: number;
 
-      // Update values with partes list in despacho 
+      // Update values with partes list in Despacho 
       despachoData.despacho.ocpartes.forEach((parteD: any) => {
 
         index = this.partes.findIndex((parteQ) => {
@@ -235,7 +235,7 @@ export class DespachosCompradorEditComponent implements OnInit {
     // Prepare OCs list
     let indexOc;
     let indexParte;
-    let ocs = this.partes.reduce((carry, parte) =>
+    let dispatchedOcs = this.partes.reduce((carry, parte) =>
       {
         if(parte.checked === true)
         {
@@ -297,7 +297,7 @@ export class DespachosCompradorEditComponent implements OnInit {
       ndocumento: this.despachoForm.value.documento,
       responsable: this.despachoForm.value.responsable,
       comentario: this.despachoForm.value.comentario,
-      ocs: ocs
+      ocs: dispatchedOcs
     };
 
     this._despachosService.updateDespacho_comprador(this.comprador_id, this.despacho.id, despacho)

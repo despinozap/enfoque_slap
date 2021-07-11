@@ -36,8 +36,8 @@ export class RecepcionesCentrodistribucionDetailsComponent implements OnInit {
     responsable: null,
     comentario: null,
     created_at: null,
-    centrodistribucion_name: null,
     comprador_name: null,
+    centrodistribucion_name: null,
   };
   
   partes: any[] = [];
@@ -85,7 +85,7 @@ export class RecepcionesCentrodistribucionDetailsComponent implements OnInit {
 
   private loadFormData(recepcionData: any)
   { 
-    if(recepcionData['partes'].length > 0)
+    if(recepcionData['ocpartes'].length > 0)
     {
       this.recepcion.id = recepcionData.id;
       this.recepcion.fecha = recepcionData.fecha;
@@ -93,20 +93,27 @@ export class RecepcionesCentrodistribucionDetailsComponent implements OnInit {
       this.recepcion.responsable = recepcionData.responsable;
       this.recepcion.comentario = recepcionData.comentario;
       this.recepcion.created_at = recepcionData.created_at;
-      this.recepcion.centrodistribucion_name = recepcionData.recepcionable.name;
       this.recepcion.comprador_name = recepcionData.sourceable.name;
+      this.recepcion.centrodistribucion_name = recepcionData.recepcionable.name;
       
-      this.partes = [];
-      recepcionData.partes.forEach((parte: any) => {
-        this.partes.push(
-          {
-            'id': parte.id,
-            'nparte': parte.nparte,
-            'marca_name': parte.marca.name,
-            'cantidad': parte.pivot.cantidad
-          }
-        )
-      });
+      this.partes = recepcionData.ocpartes.map((ocparte: any) => 
+        {
+          return {
+            id: ocparte.parte.id,
+            descripcion: ocparte.descripcion,
+            nparte: ocparte.parte.nparte,
+            marca_name: ocparte.parte.marca.name,
+            oc_id: ocparte.oc.id,
+            oc_noccliente: ocparte.oc.noccliente,
+            backorder: ocparte.backorder,
+            sucursal_name: ocparte.oc.cotizacion.solicitud.sucursal.name,
+            faena_name: ocparte.oc.cotizacion.solicitud.faena.name,
+            cantidad: ocparte.pivot.cantidad,
+            checked: false
+          };
+        }
+      );
+
     }
     else
     {
@@ -194,5 +201,4 @@ export class RecepcionesCentrodistribucionDetailsComponent implements OnInit {
   public goTo_back(): void {
     this.location.back();
   }
-
 }
