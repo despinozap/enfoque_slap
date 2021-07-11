@@ -189,32 +189,10 @@ class RecepcionesController extends Controller
                                             'sourceable_type',
                                             'recepcionable_id', 
                                             'recepcionable_type', 
+                                            'ocpartes',
                                             'created_at', 
                                             'updated_at'
                                         ]);
-    
-                                        $recepcion->ocpartes;
-                                        $recepcion->ocpartes = $recepcion->ocpartes->filter(function($ocParte)
-                                        {
-                                            $ocParte->makeHidden([
-                                                'oc_id',
-                                                'parte_id',
-                                                'estadoocparte_id',
-                                                'tiempoentrega',
-                                                'oc',
-                                                'created_at',
-                                                'updated_at'
-                                            ]);
-        
-                                            $ocParte->pivot->makeHidden([
-                                                'recepcion_id',
-                                                'ocparte_id',
-                                                'created_at',
-                                                'updated_at'
-                                            ]);
-        
-                                            return $ocParte;
-                                        });
         
                                         $recepcion->sourceable;
                                         $recepcion->sourceable->makeHidden([
@@ -1115,7 +1093,7 @@ class RecepcionesController extends Controller
                                                         // If the entered parte isn't in queue
                                                         $response = HelpController::buildResponse(
                                                             409,
-                                                            'La parte "' . $p->nparte . '" no tiene partes pendiente de recepcion',
+                                                            'La parte "' . $p->nparte . '" no tiene partes pendiente de recepcion en la OC: ' . $oc->id,
                                                             null
                                                         );
                     
@@ -1743,7 +1721,6 @@ class RecepcionesController extends Controller
                                     'sourceable_type',
                                     'recepcionable_id',
                                     'recepcionable_type',
-                                    'proveedor_id',
                                     'partes_total',
                                     'updated_at',
                                 ]);
@@ -2966,32 +2943,10 @@ class RecepcionesController extends Controller
                                     'sourceable_type',
                                     'recepcionable_id', 
                                     'recepcionable_type', 
+                                    'ocpartes',
                                     'created_at', 
                                     'updated_at'
                                 ]);
-
-                                $recepcion->ocpartes;
-                                $recepcion->ocpartes = $recepcion->ocpartes->filter(function($ocParte)
-                                {
-                                    $ocParte->makeHidden([
-                                        'oc_id',
-                                        'parte_id',
-                                        'estadoocparte_id',
-                                        'tiempoentrega',
-                                        'oc',
-                                        'created_at',
-                                        'updated_at'
-                                    ]);
-
-                                    $ocParte->pivot->makeHidden([
-                                        'recepcion_id',
-                                        'ocparte_id',
-                                        'created_at',
-                                        'updated_at'
-                                    ]);
-
-                                    return $ocParte;
-                                });
 
                                 $recepcion->sourceable;
                                 $recepcion->sourceable->makeHidden([
@@ -3038,7 +2993,7 @@ class RecepcionesController extends Controller
                 {
                     $response = HelpController::buildResponse(
                         412,
-                        'El comprador no existe',
+                        'El centro de distribucion no existe',
                         null
                     );
                 }
@@ -3056,7 +3011,7 @@ class RecepcionesController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al obtener las recepciones del centro de distribucion [!]' . $e,
+                'Error al obtener las recepciones del centro de distribucion [!]',
                 null
             );
         }
@@ -3103,29 +3058,31 @@ class RecepcionesController extends Controller
                             break;
                         }
 
-                        // Agente de compra
-                        case 'agtcom': {
-
-                            // If user belongs to this Comprador
+                        // Coordinador logistico at Sucursal (centro)
+                        case 'colsol': {
+    
+                            // If user belongs to this Sucursal (centro)
                             if(
-                                (get_class($user->stationable) === get_class($comprador)) &&
-                                ($user->stationable->id === $comprador->id)
+                                (get_class($user->stationable) === get_class($centrodistribucion)) &&
+                                ($user->stationable->id === $centrodistribucion->id)
                             )
                             {
-                                // Get only Countries from where Ocs were generated and OcPartes were received at Comprador
-                                $countryList = Country::select('countries.*')
-                                            ->join('sucursales', 'sucursales.country_id', '=', 'countries.id')
-                                            ->join('solicitudes', 'solicitudes.sucursal_id', '=', 'sucursales.id')
-                                            ->join('cotizaciones', 'cotizaciones.solicitud_id', '=', 'solicitudes.id')
-                                            ->join('ocs', 'ocs.cotizacion_id', '=', 'cotizaciones.id')
-                                            ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
-                                            ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=', 'oc_parte.id') // Only for OcPartes in Recepciones
-                                            ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
+                                // Get only assigned Compradores with OcPartes dispatched to Sucursal (centro) on Ocs generated from its country
+                                $compradores = Comprador::select('compradores.*')
+                                            ->join('despachos', 'despachos.despachable_id', '=', 'compradores.id')
+                                            ->join('despacho_ocparte', 'despacho_ocparte.despacho_id', '=', 'despachos.id')
+                                            ->join('oc_parte', 'oc_parte.id', '=', 'despacho_ocparte.ocparte_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->where('despachos.despachable_type', '=', get_class(new Comprador())) // Dispatched by Comprador
                                             ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
                                             ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
-                                            ->where('recepciones.recepcionable_type', '=', get_class($comprador))
-                                            ->where('recepciones.recepcionable_id', '=', $comprador->id) // Recepciones received at Comprador
-                                            ->groupBy('countries.id')
+                                            ->where('despachos.destinable_type', '=', get_class($centrodistribucion))
+                                            ->where('despachos.destinable_id', '=', $centrodistribucion->id) // Despachos dispatched to Sucursal (centro)
+                                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // Solicitud from same Country as user station
+                                            ->groupBy('compradores.id')
                                             ->get();
                             }
                             else
@@ -3137,40 +3094,6 @@ class RecepcionesController extends Controller
                             break;
                         }
 
-                        // Coordinador logistico at Comprador
-                        case 'colcom': {
-
-                            // If user belongs to this Comprador
-                            if(
-                                (get_class($user->stationable) === get_class($comprador)) &&
-                                ($user->stationable->id === $comprador->id)
-                            )
-                            {
-                                // Get only Countries from where Ocs were generated and OcPartes were received at Comprador
-                                $countryList = Country::select('countries.*')
-                                            ->join('sucursales', 'sucursales.country_id', '=', 'countries.id')
-                                            ->join('solicitudes', 'solicitudes.sucursal_id', '=', 'sucursales.id')
-                                            ->join('cotizaciones', 'cotizaciones.solicitud_id', '=', 'solicitudes.id')
-                                            ->join('ocs', 'ocs.cotizacion_id', '=', 'cotizaciones.id')
-                                            ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
-                                            ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=', 'oc_parte.id') // Only for OcPartes in Recepciones
-                                            ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
-                                            ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
-                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
-                                            ->where('recepciones.recepcionable_type', '=', get_class($comprador))
-                                            ->where('recepciones.recepcionable_id', '=', $comprador->id) // Recepciones received at Comprador
-                                            ->groupBy('countries.id')
-                                            ->get();
-
-                            }
-                            else
-                            {
-                                // Set as forbidden
-                                $forbidden = true;
-                            }
-
-                            break;
-                        }
 
                         default:
                         {
@@ -3231,7 +3154,7 @@ class RecepcionesController extends Controller
                 {
                     $response = HelpController::buildResponse(
                         412,
-                        'El comprador no existe',
+                        'El centro de distribucion no existe',
                         null
                     );
                 }
@@ -3249,7 +3172,7 @@ class RecepcionesController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al preparar la recepcion [!]' . $e,
+                'Error al preparar la recepcion [!]',
                 null
             );
         }
@@ -3752,7 +3675,7 @@ class RecepcionesController extends Controller
                                                 // If the entered parte isn't in queue
                                                 $response = HelpController::buildResponse(
                                                     409,
-                                                    'La parte "' . $p->nparte . '" no tiene partes pendiente de recepcion',
+                                                    'La parte "' . $p->nparte . '" no tiene partes pendiente de recepcion en la OC: ' . $oc->id,
                                                     null
                                                 );
             
@@ -3848,7 +3771,7 @@ class RecepcionesController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al crear la recepcion [!]' . $e,
+                'Error al crear la recepcion [!]',
                 null
             );
         }
@@ -4517,6 +4440,7 @@ class RecepcionesController extends Controller
                                 'sourceable_type',
                                 'recepcionable_id', 
                                 'recepcionable_type', 
+                                'partes_total',
                                 'created_at', 
                                 'updated_at'
                             ]);
@@ -4725,7 +4649,7 @@ class RecepcionesController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al obtener la recepcion [!]' . $e,
+                'Error al obtener la recepcion [!]',
                 null
             );
         }
@@ -5349,7 +5273,7 @@ class RecepcionesController extends Controller
 
                                             /*
                                             *  If new cantidad in Recepciones is less than
-                                            *  cantidad in Despachos + cantidad in Entregas from destination Sucursal (centro) 
+                                            *  cantidad in Despachos + cantidad in Entregas at Sucursal (centro) 
                                             */
 
                                             if($newCantidad < $p->pivot->getCantidadDespachado($centrodistribucion) + $p->pivot->getCantidadEntregado($centrodistribucion))
@@ -5466,6 +5390,2573 @@ class RecepcionesController extends Controller
                 $response = HelpController::buildResponse(
                     405,
                     'No tienes acceso a eliminar recepciones para centro de distribucion',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al eliminar la recepcion [!]',
+                null
+            );
+        }
+        
+        return $response;
+    }
+
+
+    /*
+     *  Sucursales
+     */
+
+    public function index_sucursal($id)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('sucursales recepciones_index'))
+            {
+                if($sucursal = Sucursal::where('type', '=', 'sucursal')->where('id', '=', $id)->first())
+                {
+                    $recepciones = null;
+                    $forbidden = false;
+
+                    switch($user->role->name)
+                    {
+
+                        // Administrador
+                        case 'admin': {
+
+                            // Get only Recepciones containing OcPartes from OCs generated from its same country
+                            $recepciones = Recepcion::select('recepciones.*')
+                                        ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                        ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                        ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                        ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                        ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                        ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                        ->where('recepciones.recepcionable_type', '=', get_class($sucursal))
+                                        ->where('recepciones.recepcionable_id', '=', $sucursal->id) // Received at Sucursal
+                                        ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->groupBy('recepciones.id')
+                                        ->get();
+
+                            break;
+                        }
+
+                        // Vendedor
+                        case 'seller': {
+
+                            // Get only Recepciones containing OcPartes from OCs generated from its same Sucursal
+                            $recepciones = Recepcion::select('recepciones.*')
+                                        ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                        ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                        ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                        ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                        ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                        ->where('recepciones.recepcionable_type', '=', get_class($sucursal))
+                                        ->where('recepciones.recepcionable_id', '=', $sucursal->id) // Received at Sucursal
+                                        ->where('solicitudes.sucursal_id', '=', $user->stationable->id) // Same Sucursal as user station
+                                        ->where('solicitudes.user_id', '=', $user->id) // Belonging to user
+                                        ->groupBy('recepciones.id')
+                                        ->get();
+
+                            break;
+                        }
+
+
+                        // Coordinador logistico at Sucursal (or Centro)
+                        case 'colsol': {
+
+                            // If user belongs to Sucursal (centro)
+                            if($user->stationable->type === 'centro')
+                            {
+                                // Get only Recepciones containing OcPartes from OCs generated from its same country
+                                $recepciones = Recepcion::select('recepciones.*')
+                                            ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                            ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->where('recepciones.recepcionable_type', '=', get_class($sucursal))
+                                            ->where('recepciones.recepcionable_id', '=', $sucursal->id) // Received at Sucursal
+                                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->groupBy('recepciones.id')
+                                            ->get();
+                            }
+                            // If user belongs to Sucursal
+                            else if($user->stationable->type === 'sucursal')
+                            {
+                                // Get only Recepciones containing OcPartes from OCs generated from its same Sucursal
+                                $recepciones = Recepcion::select('recepciones.*')
+                                            ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                            ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->where('recepciones.recepcionable_type', '=', get_class($sucursal))
+                                            ->where('recepciones.recepcionable_id', '=', $sucursal->id) // Received at Sucursal
+                                            ->where('solicitudes.sucursal_id', '=', $user->stationable->id) // Same Sucursal as user station
+                                            ->groupBy('recepciones.id')
+                                            ->get();
+                            }
+                            
+
+                            break;
+                        }
+
+                        default:
+                        {
+                            break;
+                        }
+                    }
+
+                    if($recepciones !== null)
+                    {
+                        $recepciones = $recepciones->map(function($recepcion)
+                            {
+                                $recepcion->partes_total;
+                                        
+                                $recepcion->makeHidden([
+                                    'sourceable_id', 
+                                    'sourceable_type',
+                                    'recepcionable_id', 
+                                    'recepcionable_type',
+                                    'ocpartes', 
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+
+                                $recepcion->sourceable;
+                                $recepcion->sourceable->makeHidden([
+                                    'type',
+                                    'rut',
+                                    'address',
+                                    'contact',
+                                    'phone',
+                                    'country_id',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+
+                                return $recepcion;
+                            }
+                        );
+
+                        $response = HelpController::buildResponse(
+                            200,
+                            null,
+                            $recepciones
+                        );
+                    }
+                    else if($forbidden === true)
+                    {
+                        $response = HelpController::buildResponse(
+                            405,
+                            'No tienes acceso a visualizar las recepciones',
+                            null
+                        );
+                    }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            500,
+                            'Error al obtener la lista de recepciones',
+                            null
+                        );
+                    }
+                }   
+                else     
+                {
+                    $response = HelpController::buildResponse(
+                        412,
+                        'La sucursal no existe',
+                        null
+                    );
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a visualizar recepciones de sucursales',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al obtener las recepciones de la sucursal [!]',
+                null
+            );
+        }
+            
+        return $response;
+    }
+
+    public function store_prepare_sucursal($sucursal_id)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('sucursales recepciones_store'))
+            {
+                if($sucursal = Sucursal::where('id', '=', $sucursal_id)->where('type', '=', 'sucursal')->first())
+                {
+                    $centrosdistribucion = null;
+                    $forbidden = false;
+
+                    switch($user->role->name)
+                    {
+                        // Administrador
+                        case 'admin': {
+
+                            // Get only Sucursales (centro) with OcPartes dispatched to Sucursal on Ocs generated from its country
+                            $centrosdistribucion = Sucursal::select('sucursales.*')
+                                                ->join('despachos', 'despachos.despachable_id', '=', 'sucursales.id')
+                                                ->join('despacho_ocparte', 'despacho_ocparte.despacho_id', '=', 'despachos.id')
+                                                ->join('oc_parte', 'oc_parte.id', '=', 'despacho_ocparte.ocparte_id')
+                                                ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                ->where('despachos.despachable_type', '=', get_class(new Sucursal())) // Dispatched by Sucursal (centro)
+                                                ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
+                                                ->where('despachos.destinable_type', '=', get_class($sucursal))
+                                                ->where('despachos.destinable_id', '=', $sucursal->id) // Despachos dispatched to Sucursal
+                                                ->where('sucursales.type', '=', 'centro') // Dispatched by a Sucursal (centro)
+                                                ->where('sucursales.country_id', '=', $user->stationable->country->id) // Solicitud from same Country as user station
+                                                ->groupBy('sucursales.id')
+                                                ->get();
+                            
+
+                            break;
+                        }
+
+                        // Coordinador logistico at Sucursal
+                        case 'colsol': {
+    
+                            // If user belongs to this Sucursal
+                            if(
+                                (get_class($user->stationable) === get_class($sucursal)) &&
+                                ($user->stationable->id === $sucursal->id)
+                            )
+                            {
+                                // Get only Sucursales (centro) with OcPartes dispatched to Sucursal on Ocs generated from its country
+                                $centrosdistribucion = Sucursal::select('sucursales.*')
+                                                    ->join('despachos', 'despachos.despachable_id', '=', 'sucursales.id')
+                                                    ->join('despacho_ocparte', 'despacho_ocparte.despacho_id', '=', 'despachos.id')
+                                                    ->join('oc_parte', 'oc_parte.id', '=', 'despacho_ocparte.ocparte_id')
+                                                    ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                                    ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                    ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                    ->where('despachos.despachable_type', '=', get_class(new Sucursal())) // Dispatched by Sucursal (centro)
+                                                    ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                    ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
+                                                    ->where('despachos.destinable_type', '=', get_class($sucursal))
+                                                    ->where('despachos.destinable_id', '=', $sucursal->id) // Despachos dispatched to Sucursal
+                                                    ->where('sucursales.type', '=', 'centro') // Dispatched by a Sucursal (centro)
+                                                    ->where('sucursales.id', '=', $user->stationable->id) // Solicitud from same Sucursal as user station
+                                                    ->groupBy('sucursales.id')
+                                                    ->get();
+                            }
+                            else
+                            {
+                                // Set as forbidden
+                                $forbidden = true;
+                            }
+
+                            break;
+                        }
+
+
+                        default:
+                        {
+                            break;
+                        }
+                    }
+
+                    if($centrosdistribucion !== null)
+                    {
+                        $centrosdistribucion = $centrosdistribucion->map(function($centrodistribucion)
+                            {
+                                $centrodistribucion->makeHidden([
+                                    'rut',
+                                    'address',
+                                    'contact',
+                                    'phone',
+                                    'country_id',
+                                    'created_at',
+                                    'updated_at'
+                                ]);
+
+                                return $centrodistribucion;
+                            }
+                        );
+
+                    
+                        $data = [
+                            "centrosdistribucion" => $centrosdistribucion
+                        ];
+
+                        $response = HelpController::buildResponse(
+                            200,
+                            null,
+                            $data
+                        );
+                    }
+                    else if($forbidden === true)
+                    {
+                        $response = HelpController::buildResponse(
+                            405,
+                            'No tienes acceso registrar recepciones para la sucursal',
+                            null
+                        );
+                    }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            500,
+                            'Error al preparar la recepcion',
+                            null
+                        );
+                    }
+                }   
+                else     
+                {
+                    $response = HelpController::buildResponse(
+                        412,
+                        'La sucursal no existe',
+                        null
+                    );
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a registrar recepciones para sucursal',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al preparar la recepcion [!]',
+                null
+            );
+        }
+            
+        return $response;
+    }
+
+    public function queueOcPartes_sucursal($sucursal_id, $centrodistribucion_id)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('sucursales despachos_store'))
+            {
+                if($sucursal = Sucursal::where('id', '=', $sucursal_id)->where('type', '=', 'sucursal')->first())
+                {
+                    if($centrodistribucion = Sucursal::where('id', '=', $centrodistribucion_id)->where('type', '=', 'centro')->first())
+                    {
+                        $ocParteList = null;
+                        $forbidden = false;
+    
+                        switch($user->role->name)
+                        {
+                            // Administrador
+                            case 'admin': {
+    
+                                // Get only OcPartes on OCs generated from its country and dispatched from Sucursal (centro) to Sucursal
+                                $ocParteList = OcParte::select('oc_parte.*')
+                                            ->join('despacho_ocparte', 'despacho_ocparte.ocparte_id', '=', 'oc_parte.id')
+                                            ->join('despachos', 'despachos.id', '=', 'despacho_ocparte.despacho_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
+                                            ->where('despachos.destinable_type', '=', get_class($sucursal))
+                                            ->where('despachos.destinable_id', '=', $sucursal->id) // Dispatched to Sucursal
+                                            ->where('despachos.despachable_type', '=', get_class($centrodistribucion))
+                                            ->where('despachos.despachable_id', '=', $centrodistribucion->id) // Dispatched by Sucursal (centro)
+                                            ->where('sucursales.type', '=', 'sucursal') // Solicitud belonging to a Sucursal
+                                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->groupBy('oc_parte.id')
+                                            ->get();
+    
+                                break;
+                            }
+    
+                            // Coordinador logistico at Sucursal
+                            case 'colsol': {
+    
+                                // If user belongs to this Sucursal
+                                if(
+                                    (get_class($user->stationable) === get_class($sucursal)) &&
+                                    ($user->stationable->id === $sucursal->id)
+                                )
+                                {
+                                    // Get only OcPartes on OCs generated from its Sucursal and dispatched from Sucursal (centro) to Sucursal
+                                    $ocParteList = OcParte::select('oc_parte.*')
+                                                ->join('despacho_ocparte', 'despacho_ocparte.ocparte_id', '=', 'oc_parte.id')
+                                                ->join('despachos', 'despachos.id', '=', 'despacho_ocparte.despacho_id')
+                                                ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                                ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
+                                                ->where('despachos.destinable_type', '=', get_class($sucursal))
+                                                ->where('despachos.destinable_id', '=', $sucursal->id) // Dispatched to Sucursal
+                                                ->where('despachos.despachable_type', '=', get_class($centrodistribucion))
+                                                ->where('despachos.despachable_id', '=', $centrodistribucion->id) // Dispatched by Sucursal (centro)
+                                                ->where('sucursales.id', '=', $user->stationable->id) // Same Sucursal as user station
+                                                ->groupBy('oc_parte.id')
+                                                ->get();
+                                }
+                                else
+                                {
+                                    // Set as forbidden
+                                    $forbidden = true;
+                                }
+    
+                                break;
+                            }
+    
+                            default:
+                            {
+                                break;
+                            }
+                        }
+    
+                        if($ocParteList !== null)
+                        {
+                            $queueOcPartes = $ocParteList->reduce(function($carry, $ocParte) use ($sucursal, $centrodistribucion)
+                                {
+                                    $cantidadRecepcionado = $ocParte->getCantidadRecepcionado($sucursal);
+                                    $cantidadDespachado = $ocParte->getCantidadDespachado($centrodistribucion);
+
+                                    // Add to list only if has cantidad in transit
+                                    if($cantidadRecepcionado < $cantidadDespachado)
+                                    {
+                                        // Filter data to response
+                                        $ocParte->makeHidden([
+                                            'oc_id',
+                                            'parte_id',
+                                            'estadoocparte_id',
+                                            'tiempoentrega',
+                                            'created_at',
+                                        ]);
+
+                                        $ocParte->cantidad_recepcionado = $cantidadRecepcionado;
+                                        $ocParte->cantidad_despachado = $cantidadDespachado;
+
+                                        $ocParte->parte->makeHidden([
+                                            'marca_id',
+                                            'created_at', 
+                                            'updated_at'
+                                        ]);
+    
+                                        $ocParte->parte->marca;
+                                        $ocParte->parte->marca->makeHidden([
+                                            'created_at', 
+                                            'updated_at'
+                                        ]);
+
+                                        $ocParte->oc;
+                                        $ocParte->oc->makeHidden([
+                                            'cotizacion_id',
+                                            'proveedor_id',
+                                            'filedata_id',
+                                            'estadooc_id',
+                                            'motivobaja_id',
+                                            'usdvalue',
+                                            'partes_total',
+                                            'monto',
+                                            'partes',
+                                            'created_at',
+                                            'updated_at',
+                                        ]);
+    
+                                        $ocParte->oc->cotizacion->makeHidden([
+                                            'solicitud_id',
+                                            'estadocotizacion_id',
+                                            'motivorechazo_id',
+                                            'usdvalue',
+                                            'created_at',
+                                            'updated_at',
+                                            'partes_total',
+                                            'dias',
+                                            'monto',
+                                            'partes'
+                                        ]);
+    
+                                        $ocParte->oc->cotizacion->solicitud;
+                                        $ocParte->oc->cotizacion->solicitud->makeHidden([
+                                            'sucursal_id',
+                                            'faena_id',
+                                            'marca_id',
+                                            'comprador_id',
+                                            'user_id',
+                                            'estadosolicitud_id',
+                                            'comentario',
+                                            'created_at',
+                                            'updated_at',
+                                            'partes_total',
+                                            'partes'
+                                        ]);
+    
+                                        $ocParte->oc->cotizacion->solicitud->sucursal;
+                                        $ocParte->oc->cotizacion->solicitud->sucursal->makeHidden([
+                                            'type',
+                                            'rut',
+                                            'address',
+                                            'city',
+                                            'country_id',
+                                            'created_at',
+                                            'updated_at'
+                                        ]);
+    
+                                        $ocParte->oc->cotizacion->solicitud->faena;
+                                        $ocParte->oc->cotizacion->solicitud->faena->makeHidden([
+                                            'cliente_id',
+                                            'sucursal_id',
+                                            'rut',
+                                            'address',
+                                            'city',
+                                            'contact',
+                                            'phone',
+                                            'created_at',
+                                            'updated_at'
+                                        ]);
+    
+                                        $ocParte->oc->cotizacion->solicitud->faena->cliente;
+                                        $ocParte->oc->cotizacion->solicitud->faena->cliente->makeHidden([
+                                            'country_id',
+                                            'created_at',
+                                            'updated_at'
+                                        ]);
+    
+                                        $ocParte->oc->cotizacion->solicitud->marca;
+                                        $ocParte->oc->cotizacion->solicitud->marca->makeHidden([
+                                            'created_at',
+                                            'updated_at'
+                                        ]);
+
+                                        array_push($carry, $ocParte);  
+                                    }
+
+                                    return $carry;
+                                },
+                                []
+                            );
+    
+                            $response = HelpController::buildResponse(
+                                200,
+                                null,
+                                $queueOcPartes
+                            );
+                        }
+                        else if($forbidden === true)
+                        {
+                            $response = HelpController::buildResponse(
+                                405,
+                                'No tienes acceso a visualizar las OCs pendiente de recepcion',
+                                null
+                            );
+                        }
+                        else
+                        {
+                            $response = HelpController::buildResponse(
+                                500,
+                                'Error al obtener la lista de OCs',
+                                null
+                            );
+                        }
+                    }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            412,
+                            'El centro de distribucion no existe',
+                            null
+                        );
+                    }
+                }   
+                else     
+                {
+                    $response = HelpController::buildResponse(
+                        412,
+                        'La sucursal no existe',
+                        null
+                    );
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a visualizar OCs pendiente de recepcion',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al obtener OCs pendiente de recepcion [!]',
+                null
+            );
+        }
+            
+        return $response;
+    }
+
+    public function store_sucursal(Request $request, $sucursal_id)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('sucursales recepciones_store'))
+            {
+                $validatorInput = $request->only('centrodistribucion_id', 'fecha', 'ndocumento', 'responsable', 'comentario', 'ocs');
+            
+                $validatorRules = [
+                    'centrodistribucion_id' => 'required|exists:sucursales,id,type,"centro"',
+                    'fecha' => 'required|date_format:Y-m-d|before:tomorrow', // it includes today
+                    'ndocumento' => 'nullable|min:1',
+                    'responsable' => 'required|min:1',
+                    'comentario' => 'sometimes|nullable',
+                    'ocs' => 'required|array|min:1',
+                    'ocs.*.id'  => 'required',
+                    'ocs.*.partes' => 'required|array|min:1',
+                    'ocs.*.partes.*.id'  => 'required|exists:partes,id',
+                    'ocs.*.partes.*.cantidad'  => 'required|numeric|min:1',
+                ];
+        
+                $validatorMessages = [
+                    'centrodistribucion_id.required' => 'Debes seleccionar el centro de distribucion',
+                    'centrodistribucion_id.exists' => 'El centro de distribucion no existe',
+                    'fecha.required' => 'Debes ingresar la fecha de recepcion',
+                    'fecha.date_format' => 'El formato de fecha de recepcion es invalido',
+                    'fecha.before' => 'La fecha debe ser igual o anterior a hoy',
+                    'ndocumento.min' => 'El numero de documento debe tener al menos un digito',
+                    'responsable.required' => 'Debes ingresar el nombre de la persona que recibe',
+                    'responsable.min' => 'El nombre de la persona que recibe debe tener al menos un digito',
+                    'ocs.required' => 'Debes seleccionar las partes recepcionadas',
+                    'ocs.array' => 'Lista de partes recepcionadas invalida',
+                    'ocs.min' => 'La recepcion debe contener al menos 1 parte recepcionada',
+                    'ocs.*.id.required' => 'Debes seleccionar la OC a recepcionar',
+                    'ocs.*.partes.required' => 'Debes seleccionar las partes recepcionadas',
+                    'ocs.*.partes.array' => 'Lista de partes recepcionadas invalida',
+                    'ocs.*.partes.min' => 'La recepcion debe contener al menos 1 parte recepcionada',
+                    'ocs.*.partes.*.id.required' => 'La lista de partes recepcionadas es invalida',
+                    'ocs.*.partes.*.id.exists' => 'La parte recepcionada ingresada no existe',
+                    'ocs.*.partes.*.cantidad.required' => 'Debes ingresar la cantidad para la parte recepcionada',
+                    'ocs.*.partes.*.cantidad.numeric' => 'La cantidad para la parte recepcionada debe ser numerica',
+                    'ocs.*.partes.*.cantidad.min' => 'La cantidad para la parte recepcionada debe ser mayor a 0',
+                ];
+        
+                $validator = Validator::make(
+                    $validatorInput,
+                    $validatorRules,
+                    $validatorMessages
+                );
+        
+                if ($validator->fails()) 
+                {
+                    $response = HelpController::buildResponse(
+                        400,
+                        $validator->errors(),
+                        null
+                    );
+                }
+                else if(($sucursal = Sucursal::where('type', '=', 'sucursal')->where('id', '=', $sucursal_id)->first()) === null)
+                {
+                    $response = HelpController::buildResponse(
+                        412,
+                        'La sucursal no existe',
+                        null
+                    );
+                }
+                else if(($centrodistribucion = Sucursal::where('type', '=', 'centro')->where('id', '=', $request->centrodistribucion_id)->first()) === null)
+                {
+                    $response = HelpController::buildResponse(
+                        412,
+                        'El centro de distribucion seleccionado no existe',
+                        null
+                    );
+                }
+                else        
+                {
+                    // Clean OC and partes list in request
+                    $ocList = array();
+                    foreach($request->ocs as $oc)
+                    {
+                        if((in_array($oc['id'], array_keys($ocList))) === false)
+                        {
+                            $ocList[$oc['id']] = array();
+                        }
+
+                        foreach($oc['partes'] as $parte)
+                        {
+                            if(in_array($parte['id'], array_keys($ocList[$oc['id']])))
+                            {
+                                $ocList[$oc['id']][$parte['id']] += $parte['cantidad'];
+                            }
+                            else
+                            {
+                                $ocList[$oc['id']][$parte['id']] = $parte['cantidad'];
+                            }
+                        }
+                    }
+
+
+                    DB::beginTransaction();
+
+                    $recepcion = new Recepcion();
+                    // Set the morph source for Recepcion as Sucursal (centro)
+                    $recepcion->sourceable_id = $centrodistribucion->id;
+                    $recepcion->sourceable_type = get_class($centrodistribucion);
+                    // Set the morph destination for Recepcion as Sucursal
+                    $recepcion->recepcionable_id = $sucursal->id;
+                    $recepcion->recepcionable_type = get_class($sucursal);
+                    // Fill the data
+                    $recepcion->fecha = $request->fecha;
+                    $recepcion->ndocumento = $request->ndocumento;
+                    $recepcion->responsable = $request->responsable;
+                    $recepcion->comentario = $request->comentario;
+
+                    if($recepcion->save())
+                    {
+                        $success = true;
+
+                        // This list has only 1 item
+                        foreach(array_keys($ocList) as $ocId)
+                        {      
+                            // If success wasn't broken yet, continue
+                            if($success === true)
+                            {
+                                $oc = null;
+        
+                                switch($user->role->name)
+                                {
+                                    // Administrador
+                                    case 'admin': {
+
+                                        $oc = Oc::select('ocs.*')
+                                            ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
+                                            ->join('despacho_ocparte', 'despacho_ocparte.ocparte_id', '=', 'oc_parte.id')
+                                            ->join('despachos', 'despachos.id', '=', 'despacho_ocparte.despacho_id')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
+                                            ->where('despachos.destinable_type', '=', get_class($sucursal))
+                                            ->where('despachos.destinable_id', '=', $sucursal->id) // Dispatched to Sucursal
+                                            ->where('despachos.despachable_type', '=', get_class($centrodistribucion))
+                                            ->where('despachos.despachable_id', '=', $centrodistribucion->id) // Dispatched by Sucursal (centro)
+                                            ->where('sucursales.country_id', '=', $centrodistribucion->country->id) // Same Country as Sucursal (centro)
+                                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->first();
+        
+                                        break;
+                                    }
+
+                                    // Coordinador logistico at Sucursal
+                                    case 'colsol': {
+            
+                                        // If user belongs to this Sucursal
+                                        if(
+                                            (get_class($user->stationable) === get_class($sucursal)) &&
+                                            ($user->stationable->id === $sucursal->id)
+                                        )
+                                        {
+                                            $oc = Oc::select('ocs.*')
+                                                ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
+                                                ->join('despacho_ocparte', 'despacho_ocparte.ocparte_id', '=', 'oc_parte.id')
+                                                ->join('despachos', 'despachos.id', '=', 'despacho_ocparte.despacho_id')
+                                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                                ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
+                                                ->where('despachos.destinable_type', '=', get_class($sucursal))
+                                                ->where('despachos.destinable_id', '=', $sucursal->id) // Dispatched to Sucursal
+                                                ->where('despachos.despachable_type', '=', get_class($centrodistribucion))
+                                                ->where('despachos.despachable_id', '=', $centrodistribucion->id) // Dispatched by Sucursal (centro)
+                                                ->where('sucursales.country_id', '=', $centrodistribucion->country->id) // Same Country as Sucursal (centro)
+                                                ->where('sucursales.id', '=', $user->stationable->id) // Same Sucursal as user station
+                                                ->first();
+                                        }
+            
+                                        break;
+                                    }
+        
+                                    default: {
+                                        break;
+                                    }
+                                }
+        
+                                if($oc !== null)
+                                {
+                                    foreach(array_keys($ocList[$oc->id]) as $parteId)
+                                    {
+                                        if($p = $oc->partes->find($parteId))
+                                        {
+                                            $cantidadRecepcionado = $p->pivot->getCantidadRecepcionado($sucursal);
+                                            $cantidadDespachado = $p->pivot->getCantidadDespachado($centrodistribucion);
+
+                                            if($cantidadRecepcionado < $cantidadDespachado)
+                                            {
+                                                if(($cantidadRecepcionado + $ocList[$oc->id][$parteId]) <= $cantidadDespachado)
+                                                {
+                                                    $recepcion->ocpartes()->attach(
+                                                        array(
+                                                            $p->pivot->id => array(
+                                                                "cantidad" => $ocList[$oc->id][$parteId]
+                                                            )
+                                                        )
+                                                    );
+                                                }
+                                                else
+                                                {
+                                                    // If the received parts are more than waiting in queue
+                                                    $response = HelpController::buildResponse(
+                                                        409,
+                                                        'La cantidad ingresada para la parte "' . $p->nparte . '" es mayor a la cantidad pendiente de recepcion en la OC: ' . $oc->id,
+                                                        null
+                                                    );
+                
+                                                    $success = false;
+                
+                                                    break;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                // If the entered parte isn't in queue
+                                                $response = HelpController::buildResponse(
+                                                    409,
+                                                    'La parte "' . $p->nparte . '" no tiene partes pendiente de recepcion en la OC: ' . $oc->id,
+                                                    null
+                                                );
+            
+                                                $success = false;
+            
+                                                break;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            //If the entered parte isn't in the OC
+                                            $response = HelpController::buildResponse(
+                                                409,
+                                                'Una de las partes ingresadas no existe en la OC',
+                                                null
+                                            );
+        
+                                            $success = false;
+        
+                                            break;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    if(Oc::find($ocId))
+                                    {
+                                        $response = HelpController::buildResponse(
+                                            405,
+                                            'No tienes acceso a registrar recepciones para la OC',
+                                            null
+                                        );
+                                    }
+                                    else
+                                    {
+                                        $response = HelpController::buildResponse(
+                                            412,
+                                            'La OC ingresada no existe',
+                                            null
+                                        );
+                                    }
+                                    
+                                    $success = false;
+    
+                                    break;
+                                }
+                            }
+                            // If success was already broken
+                            else
+                            {
+                                // Break the higher loop
+                                break;
+                            }                    
+                        }
+
+                        if($success === true)
+                        {
+                            DB::commit();
+                                
+                            $response = HelpController::buildResponse(
+                                201,
+                                'Recepcion creada',
+                                null
+                            );
+                        }
+                        else
+                        {
+                            DB::rollback();
+                        }
+                    }
+                    else
+                    {       
+                        DB::rollback();
+
+                        $response = HelpController::buildResponse(
+                            500,
+                            'Error al crear la recepcion',
+                            null
+                        );
+                    }
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a registrar recepciones para sucursal',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al crear la recepcion [!]',
+                null
+            );
+        }
+        
+        return $response;
+    }
+
+    public function show_sucursal($sucursal_id, $id)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('sucursales recepciones_show'))
+            {
+                $validatorInput = ['recepcion_id' => $id];
+            
+                $validatorRules = [
+                    'recepcion_id' => 'required|exists:recepciones,id,recepcionable_id,' . $sucursal_id . ',recepcionable_type,' . get_class(new Sucursal()),
+                ];
+        
+                $validatorMessages = [
+                    'recepcion_id.required' => 'Debes ingresar la recepcion',
+                    'recepcion_id.exists' => 'La recepcion ingresada no existe para la sucursal',                    
+                ];
+        
+                $validator = Validator::make(
+                    $validatorInput,
+                    $validatorRules,
+                    $validatorMessages
+                );
+        
+                if ($validator->fails()) 
+                {
+                    $response = HelpController::buildResponse(
+                        400,
+                        $validator->errors(),
+                        null
+                    );
+                }
+                else        
+                {
+                    if($sucursal = Sucursal::where('type', '=', 'sucursal')->where('id', '=', $sucursal_id)->first())
+                    {
+                        $recepcion = null;
+
+                        switch($user->role->name)
+                        {
+                            // Administrador
+                            case 'admin': {
+                                
+                                // Only if Recepcion contains OcPartes from OCs generated from its same country
+                                $recepcion = Recepcion::select('recepciones.*')
+                                            ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                            ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->where('recepciones.id', '=', $id) // For this Recepcion
+                                            ->where('recepciones.recepcionable_type', '=', get_class($sucursal))
+                                            ->where('recepciones.recepcionable_id', '=', $sucursal->id) // Received at Sucursal
+                                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->first();
+
+                                break;
+                            }
+
+                            // Vendedor
+                            case 'seller': {
+
+                                // Only if Recepcion contains OcPartes from belonging OCs generated from its same Sucursal
+                                $recepcion = Recepcion::select('recepciones.*')
+                                            ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                            ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->where('recepciones.id', '=', $id) // For this Recepcion
+                                            ->where('recepciones.recepcionable_type', '=', get_class($sucursal))
+                                            ->where('recepciones.recepcionable_id', '=', $sucursal->id) // Received at Sucursal
+                                            ->where('solicitudes.sucursal_id', '=', $user->stationable->id) // Same Sucursal as user station
+                                            ->where('solicitudes.user_id', '=', $user->id) // Belonging to user
+                                            ->first();
+
+                                break;
+                            }
+
+                            // Coordinador logistico at Sucursal (or Centro)
+                            case 'colsol': {
+
+                                // If user belongs to Sucursal (centro)
+                                if($user->stationable->type === 'centro')
+                                {
+                                    // Only if Recepcion contains OcPartes from OCs generated from its same country
+                                    $recepcion = Recepcion::select('recepciones.*')
+                                                ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                                ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                                ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                                ->where('recepciones.id', '=', $id) // For this Recepcion
+                                                ->where('recepciones.recepcionable_type', '=', get_class($sucursal))
+                                                ->where('recepciones.recepcionable_id', '=', $sucursal->id) // Received at Sucursal
+                                                ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                                ->first();
+                                }
+                                // If user belongs to Sucursal
+                                else if($user->stationable->type === 'sucursal')
+                                {
+                                    // Only if Recepcion contains OcPartes from OCs generated from its same Sucursal
+                                    $recepcion = Recepcion::select('recepciones.*')
+                                                ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                                ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                                ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                ->where('recepciones.id', '=', $id) // For this Recepcion
+                                                ->where('recepciones.recepcionable_type', '=', get_class($sucursal))
+                                                ->where('recepciones.recepcionable_id', '=', $sucursal->id) // Received at Sucursal
+                                                ->where('solicitudes.sucursal_id', '=', $user->stationable->id) // Same Sucursal as user station
+                                                ->first();
+                                }
+                                
+
+                                break;
+                            }
+                            
+
+                            default: {
+                                break;
+                            }
+                        }
+                        
+                        if($recepcion !== null)
+                        {
+                            $recepcion->makeHidden([
+                                'sourceable_id',
+                                'sourceable_type',
+                                'recepcionable_id',
+                                'recepcionable_type',
+                                'proveedor_id',
+                                'partes_total',
+                                'updated_at',
+                            ]);
+
+                            $recepcion->sourceable;
+                            $recepcion->sourceable->makeHidden([
+                                'type',
+                                'rut',
+                                'address',
+                                'country_id',
+                                'created_at', 
+                                'updated_at'
+                            ]);
+
+                            $recepcion->recepcionable;
+                            $recepcion->recepcionable->makeHidden([
+                                'type',
+                                'rut',
+                                'address',
+                                'city',
+                                'country_id',
+                                'created_at', 
+                                'updated_at'
+                            ]);
+
+                            $recepcion->ocpartes;
+                            foreach($recepcion->ocpartes as $ocParte)
+                            {                                
+                                $ocParte->makeHidden([
+                                    'oc_id',
+                                    'parte_id',
+                                    'estadoocparte_id',
+                                    'tiempoentrega',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+
+                                $ocParte->pivot->makeHidden([
+                                    'recepcion_id',
+                                    'ocparte_id',
+                                    'created_at',
+                                    'updated_at',
+                                ]);
+
+                                $ocParte->oc;
+                                $ocParte->oc->makeHidden([
+                                    'cotizacion_id',
+                                    'proveedor_id',
+                                    'filedata_id',
+                                    'estadooc_id',
+                                    'motivobaja_id',
+                                    'usdvalue',
+                                    'partes',
+                                    'dias',
+                                    'partes_total',
+                                    'monto',
+                                    'created_at',
+                                    'updated_at',
+                                ]);
+
+                                $ocParte->oc->cotizacion->makeHidden([
+                                    'solicitud_id',
+                                    'estadocotizacion_id',
+                                    'motivorechazo_id',
+                                    'usdvalue',
+                                    'created_at',
+                                    'updated_at',
+                                    'partes_total',
+                                    'dias',
+                                    'monto',
+                                    'partes'
+                                ]);
+
+                                $ocParte->oc->cotizacion->solicitud;
+                                $ocParte->oc->cotizacion->solicitud->makeHidden([
+                                    'sucursal_id',
+                                    'faena_id',
+                                    'marca_id',
+                                    'comprador_id',
+                                    'user_id',
+                                    'estadosolicitud_id',
+                                    'comentario',
+                                    'created_at',
+                                    'updated_at',
+                                    'partes_total',
+                                    'partes'
+                                ]);
+
+                                $ocParte->oc->cotizacion->solicitud->sucursal;
+                                $ocParte->oc->cotizacion->solicitud->sucursal->makeHidden([
+                                    'type',
+                                    'rut',
+                                    'address',
+                                    'city',
+                                    'country_id',
+                                    'created_at',
+                                    'updated_at'
+                                ]);
+
+                                $ocParte->oc->cotizacion->solicitud->faena;
+                                $ocParte->oc->cotizacion->solicitud->faena->makeHidden([
+                                    'cliente_id',
+                                    'sucursal_id',
+                                    'rut',
+                                    'address',
+                                    'city',
+                                    'contact',
+                                    'phone',
+                                    'created_at',
+                                    'updated_at'
+                                ]);
+
+                                $ocParte->oc->cotizacion->solicitud->faena->cliente;
+                                $ocParte->oc->cotizacion->solicitud->faena->cliente->makeHidden([
+                                    'country_id',
+                                    'created_at',
+                                    'updated_at'
+                                ]);
+
+                                $ocParte->oc->cotizacion->solicitud->marca;
+                                $ocParte->oc->cotizacion->solicitud->marca->makeHidden([
+                                    'created_at',
+                                    'updated_at'
+                                ]);
+
+                                $ocParte->parte->makeHidden([
+                                    'marca_id',
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+
+                                $ocParte->parte->marca;
+                                $ocParte->parte->marca->makeHidden(['created_at', 'updated_at']);
+                            }
+                            
+                            $response = HelpController::buildResponse(
+                                200,
+                                null,
+                                $recepcion
+                            );                
+                        }
+                        // If wasn't catched
+                        else
+                        {
+                            // If Recepcion exists
+                            if(Recepcion::find($id))
+                            {
+                                // It was filtered, so it's forbidden
+                                $response = HelpController::buildResponse(
+                                    405,
+                                    'No tienes acceso a visualizar la recepcion',
+                                    null
+                                );
+                            }
+                            // It doesn't exist
+                            else
+                            {
+                                $response = HelpController::buildResponse(
+                                    412,
+                                    'La recepcion no existe',
+                                    null
+                                );
+                            }
+                        }
+                    }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            412,
+                            'La sucursal no existe',
+                            null
+                        );
+                    }
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a visualizar recepciones de sucursal',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al obtener la recepcion [!]',
+                null
+            );
+        }
+        
+        return $response;
+    }
+
+    /**
+     * It retrieves all the required info for
+     * selecting data and updating a Recepcion for Sucursal
+     * 
+     */
+    public function update_prepare_sucursal($sucursal_id, $id)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('sucursales recepciones_update'))
+            {
+                $validatorInput = ['recepcion_id' => $id];
+            
+                $validatorRules = [
+                    'recepcion_id' => 'required|exists:recepciones,id,recepcionable_id,' . $sucursal_id . ',recepcionable_type,' . get_class(new Sucursal()),
+                ];
+        
+                $validatorMessages = [
+                    'recepcion_id.required' => 'Debes ingresar la recepcion',
+                    'recepcion_id.exists' => 'La recepcion ingresado no existe para la sucursal',                    
+                ];
+        
+                $validator = Validator::make(
+                    $validatorInput,
+                    $validatorRules,
+                    $validatorMessages
+                );
+        
+                if ($validator->fails()) 
+                {
+                    $response = HelpController::buildResponse(
+                        400,
+                        $validator->errors(),
+                        null
+                    );
+                }
+                else        
+                {
+                    if($sucursal = Sucursal::where('type', '=', 'sucursal')->where('id', '=', $sucursal_id)->first())
+                    {
+                        $ocParteList = null;
+                        $recepcion = null;
+
+                        switch($user->role->name)
+                        {
+                            // Administrador
+                            case 'admin': {
+
+                                // Only if Recepcion contains OcPartes from OCs generated from its same country
+                                $recepcion = Recepcion::select('recepciones.*')
+                                            ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                            ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->where('recepciones.id', '=', $id) // For this Recepcion
+                                            ->where('recepciones.recepcionable_type', '=', get_class($sucursal))
+                                            ->where('recepciones.recepcionable_id', '=', $sucursal->id) // Received at Sucursal
+                                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->first();
+
+                                if($recepcion !== null)
+                                {
+                                     // Get only OcPartes on OCs generated from its country and dispatched from Comprador to Sucursal
+                                    $ocParteList = OcParte::select('oc_parte.*')
+                                                ->join('despacho_ocparte', 'despacho_ocparte.ocparte_id', '=', 'oc_parte.id')
+                                                ->join('despachos', 'despachos.id', '=', 'despacho_ocparte.despacho_id')
+                                                ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                                ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
+                                                ->where('despachos.destinable_type', '=', get_class($sucursal))
+                                                ->where('despachos.destinable_id', '=', $sucursal->id) // Dispatched to Sucursal
+                                                ->where('despachos.despachable_type', '=', get_class($recepcion->sourceable)) // Recepcion's source is Sucursal (centro)
+                                                ->where('despachos.despachable_id', '=', $recepcion->sourceable->id) // Dispatched by Sucursal (centro)
+                                                ->where('sucursales.country_id', '=', $sucursal->country->id) // Same Country as Sucursal
+                                                ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                                ->groupBy('oc_parte.id')
+                                                ->get();
+
+
+                                     // For OcPartes in current Recepcion
+                                     $ocParteList = $recepcion->ocpartes->reduce(function($carry, $ocParte) use ($ocParteList)
+                                        {
+                                            $contains = $carry->contains(function($op) use ($ocParte)
+                                                {
+                                                    return ($ocParte->id === $op->id);
+                                                }
+                                            );
+
+                                            // If OcParte from Recepcion isn't in queue
+                                            if($contains === false)
+                                            {
+                                                // Add OcParte to list
+                                                array_push($carry, $ocParte);
+                                            }
+
+                                            return $carry;
+                                        },
+                                        $ocParteList // Initialize with previous list as base
+                                    );
+                                }
+
+                                break;
+                            }
+
+                    
+                            // Coordinador logistico at Sucursal (or Centro)
+                            case 'colsol': {
+
+                                // If user belongs to this Sucursal
+                                if(
+                                    (get_class($user->stationable) === get_class($sucursal)) &&
+                                    ($user->stationable->id === $sucursal->id)
+                                )
+                                {
+                                    // Only if Recepcion contains OcPartes from OCs generated from its same Sucursal
+                                    $recepcion = Recepcion::select('recepciones.*')
+                                                ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                                ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                                ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                                ->where('recepciones.id', '=', $id) // For this Recepcion
+                                                ->where('recepciones.recepcionable_type', '=', get_class($sucursal))
+                                                ->where('recepciones.recepcionable_id', '=', $sucursal->id) // Received at Sucursal
+                                                ->where('sucursales.id', '=', $user->stationable->id) // Same Sucursal as user station
+                                                ->first();
+
+                                    if($recepcion !== null)
+                                    {
+                                        // Get only OcPartes on OCs generated from its country and dispatched from Comprador to Sucursal
+                                        $ocParteList = OcParte::select('oc_parte.*')
+                                                    ->join('despacho_ocparte', 'despacho_ocparte.ocparte_id', '=', 'oc_parte.id')
+                                                    ->join('despachos', 'despachos.id', '=', 'despacho_ocparte.despacho_id')
+                                                    ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                                    ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                    ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                    ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                                    ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                    ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
+                                                    ->where('despachos.destinable_type', '=', get_class($sucursal))
+                                                    ->where('despachos.destinable_id', '=', $sucursal->id) // Dispatched to Sucursal
+                                                    ->where('despachos.despachable_type', '=', get_class($recepcion->sourceable)) // Recepcion's source is Sucursal (centro)
+                                                    ->where('despachos.despachable_id', '=', $recepcion->sourceable->id) // Dispatched by Sucursal (centro)
+                                                    ->where('sucursales.id', '=', $user->stationable->id) // Same Sucursal as user station
+                                                    ->groupBy('oc_parte.id')
+                                                    ->get();
+
+                                         // For OcPartes in current Recepcion
+                                        $ocParteList = $recepcion->ocpartes->reduce(function($carry, $ocParte) use ($ocParteList)
+                                            {
+                                                $contains = $carry->contains(function($op) use ($ocParte)
+                                                    {
+                                                        return ($ocParte->id === $op->id);
+                                                    }
+                                                );
+
+                                                // If OcParte from Recepcion isn't in queue
+                                                if($contains === false)
+                                                {
+                                                    // Add OcParte to list
+                                                    array_push($carry, $ocParte);
+                                                }
+
+                                                return $carry;
+                                            },
+                                            $ocParteList // Initialize with previous list as base
+                                        );
+
+                                    }
+                                }                                
+
+                                break;
+                            }
+                            
+
+                            default: {
+                                break;
+                            }
+                        }
+
+                        if(
+                            ($ocParteList !== null) &&
+                            ($recepcion !== null)
+                        )
+                        {   
+                            $queueOcPartes = $ocParteList->reduce(function($carry, $ocParte) use ($recepcion, $sucursal)
+                                {
+                                    $cantidadRecepcionado = $ocParte->getCantidadRecepcionado($sucursal);
+                                    $cantidadDespachado = $ocParte->getCantidadDespachado($recepcion->sourceable); // Recepcion's source is Sucursal (centro)
+
+                                    // Try to find OcParte in Recepcion
+                                    $op = $recepcion->ocpartes->find($ocParte->id);
+
+                                    if(
+                                        // If OcParte is in Recepcion
+                                        ($op !== null) ||
+                                        // Or if OcParte isn't in Recepcion and hasn't been full received yet
+                                        (($op === null) && ($cantidadRecepcionado < $cantidadDespachado))
+                                    )
+                                    {
+                                        // Filter data to response
+                                        $ocParte->makeHidden([
+                                            'oc_id',
+                                            'parte_id',
+                                            'estadoocparte_id',
+                                            'tiempoentrega',
+                                            'created_at',
+                                        ]);
+
+                                        $ocParte->cantidad_recepcionado = $cantidadRecepcionado;
+                                        $ocParte->cantidad_despachado = $cantidadDespachado;
+                                        // Set minimum cantidad as total cantidad in Entregas at destinable Sucursal
+                                        $ocParte->cantidad_min = $ocParte->getCantidadEntregado($sucursal);
+
+                                        $ocParte->parte->makeHidden([
+                                            'marca_id',
+                                            'created_at', 
+                                            'updated_at'
+                                        ]);
+    
+                                        $ocParte->parte->marca;
+                                        $ocParte->parte->marca->makeHidden([
+                                            'created_at', 
+                                            'updated_at'
+                                        ]);
+
+                                        $ocParte->oc;
+                                        $ocParte->oc->makeHidden([
+                                            'cotizacion_id',
+                                            'proveedor_id',
+                                            'filedata_id',
+                                            'estadooc_id',
+                                            'motivobaja_id',
+                                            'usdvalue',
+                                            'partes_total',
+                                            'monto',
+                                            'partes',
+                                            'created_at',
+                                            'updated_at',
+                                        ]);
+    
+                                        $ocParte->oc->cotizacion->makeHidden([
+                                            'solicitud_id',
+                                            'estadocotizacion_id',
+                                            'motivorechazo_id',
+                                            'usdvalue',
+                                            'created_at',
+                                            'updated_at',
+                                            'partes_total',
+                                            'dias',
+                                            'monto',
+                                            'partes'
+                                        ]);
+    
+                                        $ocParte->oc->cotizacion->solicitud;
+                                        $ocParte->oc->cotizacion->solicitud->makeHidden([
+                                            'sucursal_id',
+                                            'faena_id',
+                                            'marca_id',
+                                            'comprador_id',
+                                            'user_id',
+                                            'estadosolicitud_id',
+                                            'comentario',
+                                            'created_at',
+                                            'updated_at',
+                                            'partes_total',
+                                            'partes'
+                                        ]);
+    
+                                        $ocParte->oc->cotizacion->solicitud->sucursal;
+                                        $ocParte->oc->cotizacion->solicitud->sucursal->makeHidden([
+                                            'type',
+                                            'rut',
+                                            'address',
+                                            'city',
+                                            'country_id',
+                                            'created_at',
+                                            'updated_at'
+                                        ]);
+    
+                                        $ocParte->oc->cotizacion->solicitud->faena;
+                                        $ocParte->oc->cotizacion->solicitud->faena->makeHidden([
+                                            'cliente_id',
+                                            'sucursal_id',
+                                            'rut',
+                                            'address',
+                                            'city',
+                                            'contact',
+                                            'phone',
+                                            'created_at',
+                                            'updated_at'
+                                        ]);
+    
+                                        $ocParte->oc->cotizacion->solicitud->faena->cliente;
+                                        $ocParte->oc->cotizacion->solicitud->faena->cliente->makeHidden([
+                                            'country_id',
+                                            'created_at',
+                                            'updated_at'
+                                        ]);
+    
+                                        $ocParte->oc->cotizacion->solicitud->marca;
+                                        $ocParte->oc->cotizacion->solicitud->marca->makeHidden([
+                                            'created_at',
+                                            'updated_at'
+                                        ]);
+
+                                        array_push($carry, $ocParte);
+                                    }
+
+                                    return $carry;
+                                },
+                                []
+                            );
+
+                            $recepcion->makeHidden([
+                                'sourceable_id', 
+                                'sourceable_type',
+                                'recepcionable_id', 
+                                'recepcionable_type',
+                                'partes_total',
+                                'created_at', 
+                                'updated_at'
+                            ]);
+
+                            $recepcion->sourceable;
+                            $recepcion->sourceable->makeHidden([
+                                'type',
+                                'rut',
+                                'address',
+                                'contact',
+                                'phone',
+                                'country_id',
+                                'created_at',
+                                'updated_at',
+                            ]);
+
+                            $recepcion->recepcionable;
+                            $recepcion->recepcionable->makeHidden([
+                                'type',
+                                'rut',
+                                'address',
+                                'city',
+                                'country_id',
+                                'created_at',
+                                'updated_at',
+                            ]);
+
+                            $recepcion->ocpartes = $recepcion->ocpartes->map(function($ocParte)
+                                {
+                                    $ocParte->makeHidden([
+                                        'oc_id',
+                                        'parte_id',
+                                        'estadoocparte_id',
+                                        'tiempoentrega',
+                                        'created_at',
+                                        'updated_at'
+                                    ]);
+
+                                    $ocParte->pivot;
+                                    $ocParte->pivot->makeHidden([
+                                        'recepcion_id',
+                                        'ocparte_id',
+                                        'created_at',
+                                        'updated_at'
+                                    ]);
+
+                                    $ocParte->parte;
+                                    $ocParte->parte->makeHidden([
+                                        'marca_id',
+                                        'created_at',
+                                        'updated_at',
+                                    ]);
+
+                                    $ocParte->parte->marca;
+                                    $ocParte->parte->marca->makeHidden([
+                                        'created_at',
+                                        'updated_at',
+                                    ]);
+
+                                    $ocParte->oc;
+                                    $ocParte->oc->makeHidden([
+                                        'cotizacion_id',
+                                        'proveedor_id',
+                                        'filedata_id',
+                                        'estadooc_id',
+                                        'motivobaja_id',
+                                        'usdvalue',
+                                        'partes',
+                                        'dias',
+                                        'partes_total',
+                                        'monto',
+                                        'created_at',
+                                        'updated_at',
+                                    ]);
+
+                                    $ocParte->oc->cotizacion->makeHidden([
+                                        'solicitud_id',
+                                        'estadocotizacion_id',
+                                        'motivorechazo_id',
+                                        'usdvalue',
+                                        'created_at',
+                                        'updated_at',
+                                        'partes_total',
+                                        'dias',
+                                        'monto',
+                                        'partes'
+                                    ]);
+
+                                    $ocParte->oc->cotizacion->solicitud;
+                                    $ocParte->oc->cotizacion->solicitud->makeHidden([
+                                        'sucursal_id',
+                                        'faena_id',
+                                        'marca_id',
+                                        'comprador_id',
+                                        'user_id',
+                                        'estadosolicitud_id',
+                                        'comentario',
+                                        'created_at',
+                                        'updated_at',
+                                        'partes_total',
+                                        'partes'
+                                    ]);
+
+                                    $ocParte->oc->cotizacion->solicitud->sucursal;
+                                    $ocParte->oc->cotizacion->solicitud->sucursal->makeHidden([
+                                        'type',
+                                        'rut',
+                                        'address',
+                                        'city',
+                                        'country_id',
+                                        'created_at',
+                                        'updated_at'
+                                    ]);
+
+                                    $ocParte->oc->cotizacion->solicitud->faena;
+                                    $ocParte->oc->cotizacion->solicitud->faena->makeHidden([
+                                        'cliente_id',
+                                        'sucursal_id',
+                                        'rut',
+                                        'address',
+                                        'city',
+                                        'contact',
+                                        'phone',
+                                        'created_at',
+                                        'updated_at'
+                                    ]);
+
+                                    $ocParte->oc->cotizacion->solicitud->faena->cliente;
+                                    $ocParte->oc->cotizacion->solicitud->faena->cliente->makeHidden([
+                                        'country_id',
+                                        'created_at',
+                                        'updated_at'
+                                    ]);
+
+                                    $ocParte->oc->cotizacion->solicitud->marca;
+                                    $ocParte->oc->cotizacion->solicitud->marca->makeHidden([
+                                        'created_at',
+                                        'updated_at'
+                                    ]);
+
+                                    return $ocParte;
+                                }
+                            );
+
+                            $data = [
+                                "queue_ocpartes" => $queueOcPartes,
+                                "recepcion" => $recepcion
+                            ];
+
+                            $response = HelpController::buildResponse(
+                                200,
+                                null,
+                                $data
+                            );
+              
+                        }  
+                        // If wasn't catched
+                        else
+                        {
+                            // If Recepcion exists
+                            if(Recepcion::find($id))
+                            {
+                                // It was filtered, so it's forbidden
+                                $response = HelpController::buildResponse(
+                                    405,
+                                    'No tienes acceso a actualizar la recepcion',
+                                    null
+                                );
+                            }
+                            // It doesn't exist
+                            else
+                            {
+                                $response = HelpController::buildResponse(
+                                    412,
+                                    'La recepcion no existe',
+                                    null
+                                );
+                            }
+                        }                         
+                    }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            412,
+                            'La sucursal no existe',
+                            null
+                        );
+                    }
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a actualizar recepciones de sucursal',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al obtener la recepcion [!]' . $e,
+                null
+            );
+        }
+        
+        return $response;
+    }
+
+    public function update_sucursal(Request $request, $sucursal_id, $id)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('sucursales recepciones_update'))
+            {
+                $validatorInput = $request->only('fecha', 'ndocumento', 'responsable', 'comentario', 'ocs');
+            
+                $validatorRules = [
+                    'fecha' => 'required|date_format:Y-m-d|before:tomorrow', // it includes today
+                    'ndocumento' => 'nullable|min:1',
+                    'responsable' => 'required|min:1',
+                    'comentario' => 'sometimes|nullable',
+                    'ocs' => 'required|array|min:1',
+                    'ocs.*.id'  => 'required|exists:ocs,id',
+                    'ocs.*.partes' => 'required|array|min:1',
+                    'ocs.*.partes.*.id'  => 'required|exists:partes,id',
+                    'ocs.*.partes.*.cantidad'  => 'required|numeric|min:1',
+                ];
+        
+                $validatorMessages = [
+                    'fecha.required' => 'Debes ingresar la fecha de recepcion',
+                    'fecha.date_format' => 'El formato de fecha de recepcion es invalido',
+                    'fecha.before' => 'La fecha debe ser igual o anterior a hoy',
+                    'ndocumento.min' => 'El numero de documento debe tener al menos un digito',
+                    'responsable.required' => 'Debes ingresar el nombre de la persona que recibe',
+                    'responsable.min' => 'El nombre de la persona que recibe debe tener al menos un digito',
+                    'ocs.required' => 'Debes seleccionar las partes recepcionadas',
+                    'ocs.array' => 'Lista de partes recepcionadas invalida',
+                    'ocs.min' => 'El recepcion debe contener al menos 1 parte recepcionada',
+                    'ocs.*.id.required' => 'Debes seleccionar la OC a recepcionar',
+                    'ocs.*.id.exists' => 'La OC ingresada no existe',
+                    'ocs.*.partes.required' => 'Debes seleccionar las partes recepcionadas',
+                    'ocs.*.partes.array' => 'Lista de partes recepcionadas invalida',
+                    'ocs.*.partes.min' => 'El recepcion debe contener al menos 1 parte recepcionada',
+                    'ocs.*.partes.*.id.required' => 'La lista de partes recepcionadas es invalida',
+                    'ocs.*.partes.*.id.exists' => 'La parte recepcionada ingresada no existe',
+                    'ocs.*.partes.*.cantidad.required' => 'Debes ingresar la cantidad para la parte recepcionada',
+                    'ocs.*.partes.*.cantidad.numeric' => 'La cantidad para la parte recepcionada debe ser numerica',
+                    'ocs.*.partes.*.cantidad.min' => 'La cantidad para la parte recepcionada debe ser mayor a 0',
+                ];
+        
+                $validator = Validator::make(
+                    $validatorInput,
+                    $validatorRules,
+                    $validatorMessages
+                );
+        
+                if ($validator->fails()) 
+                {
+                    $response = HelpController::buildResponse(
+                        400,
+                        $validator->errors(),
+                        null
+                    );
+                }
+                else if(($sucursal = Sucursal::where('type', '=', 'sucursal')->where('id', '=', $sucursal_id)->first()) === null)
+                {
+                    $response = HelpController::buildResponse(
+                        412,
+                        'La sucursal no existe',
+                        null
+                    );
+                }
+                else        
+                {
+                    $recepcion = null;
+
+                    switch($user->role->name)
+                    {
+                        // Administrador
+                        case 'admin': {
+                            
+                            // Only if Recepcion contains OcPartes from OCs generated from its same country
+                            $recepcion = Recepcion::select('recepciones.*')
+                                        ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                        ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                        ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                        ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                        ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                        ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                        ->where('recepciones.id', '=', $id) // For this Recepcion
+                                        ->where('recepciones.recepcionable_type', '=', get_class($sucursal))
+                                        ->where('recepciones.recepcionable_id', '=', $sucursal->id) // Received at Sucursal
+                                        ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->first();
+
+                            break;
+                        }
+
+                        // Coordinador logistico at Sucursal (or Centro)
+                        case 'colsol': {
+
+                            // If user belongs to this Sucursal
+                            if(
+                                (get_class($user->stationable) === get_class($sucursal)) &&
+                                ($user->stationable->id === $sucursal->id)
+                            )
+                            {
+                                // Only if Recepcion contains OcPartes from OCs generated from its same country
+                                $recepcion = Recepcion::select('recepciones.*')
+                                            ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                            ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->where('recepciones.id', '=', $id) // For this Recepcion
+                                            ->where('recepciones.recepcionable_type', '=', get_class($sucursal))
+                                            ->where('recepciones.recepcionable_id', '=', $sucursal->id) // Received at Sucursal
+                                            ->where('sucursales.id', '=', $user->stationable->id) // Same Sucursal as user station
+                                            ->first();
+
+                            }                                
+
+                            break;
+                        }
+
+                        default: {
+                            break;
+                        }
+                    }
+
+                    if($recepcion !== null)
+                    {
+                        // Clean OC and partes list in request and store on diffList for validations and ocList for sync
+                        $diffList = array();
+                        $ocList = array();
+                        foreach($request->ocs as $oc)
+                        {
+                            if((in_array($oc['id'], array_keys($diffList))) === false)
+                            {
+                                $diffList[$oc['id']] = array();
+                                $ocList[$oc['id']] = array();
+                            }
+
+                            foreach($oc['partes'] as $parte)
+                            {
+                                if(in_array($parte['id'], array_keys($diffList[$oc['id']])))
+                                {
+                                    $diffList[$oc['id']][$parte['id']] += $parte['cantidad'];
+                                    $ocList[$oc['id']][$parte['id']] += $parte['cantidad'];
+                                }
+                                else
+                                {
+                                    $diffList[$oc['id']][$parte['id']] = $parte['cantidad'];
+                                    $ocList[$oc['id']][$parte['id']] = $parte['cantidad'];
+                                }
+                            }
+                        }
+
+                        // For each OcParte in Recepcion
+                        foreach($recepcion->ocpartes as $ocParte)
+                        {
+                            // If OC isn't in the OC list yet
+                            if((in_array($ocParte->oc->id, array_keys($diffList))) === false)
+                            {
+                                /*  Add the OC. Also the Parte wasn't there either
+                                 *  so it's gonna be removed. Then add it with negative cantidad
+                                 *  and don't add it on the ocList (for sync)
+                                */
+
+                                $diffList[$ocParte->oc->id] = array(
+                                    $ocParte->parte->id => ($ocParte->pivot->cantidad * -1)
+                                );
+                            }
+                            // If OC was already in the list
+                            else
+                            {
+                                // If the Parte is already in list, it's kept in Recepcion
+                                if((in_array($ocParte->parte->id, array_keys($diffList[$ocParte->oc->id]))) === true)
+                                {
+                                    // Add the diff cantidad with cantidad given in request - old cantidad
+                                    $diffList[$ocParte->oc->id][$ocParte->parte->id] -= $ocParte->pivot->cantidad;
+                                }
+                                // If the OcParte isn't in the list, it's going to be removed and don't add it on the ocList (for sync)
+                                else
+                                {
+                                    $diffList[$ocParte->oc->id][$ocParte->parte->id] = ($ocParte->pivot->cantidad * -1);
+                                }
+                            }
+                        }
+
+                        DB::beginTransaction();
+
+                        // Fill the data
+                        $recepcion->fill($request->all());
+
+                        if($recepcion->save())
+                        {
+                            $success = true;
+
+                            $syncData = [];
+                            foreach(array_keys($diffList) as $ocId)
+                            {      
+                                // If success wasn't broken yet, continue
+                                if($success === true)
+                                {
+                                    $oc = null;
+            
+                                    switch($user->role->name)
+                                    {
+                                        // Administrador
+                                        case 'admin': {
+
+                                            // Only if Oc was generated from its same country
+                                            $oc = Oc::select('ocs.*')
+                                                ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
+                                                ->join('despacho_ocparte', 'despacho_ocparte.ocparte_id', '=' , 'oc_parte.id')
+                                                ->join('despachos', 'despachos.id', '=', 'despacho_ocparte.despacho_id')
+                                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                                ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
+                                                ->where('ocs.id', '=', $ocId)
+                                                ->where('despachos.despachable_type', '=', get_class($recepcion->sourceable)) // Recepcion's source is Sucursal (centro)
+                                                ->where('despachos.despachable_id', '=', $recepcion->sourceable->id) // OcParte dispatched from Sucursal (centro)
+                                                ->where('despachos.destinable_type', '=', get_class($sucursal))
+                                                ->where('despachos.destinable_id', '=', $sucursal->id) // OcParte dispatched to Sucursal
+                                                ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                                ->first();
+            
+                                            break;
+                                        }
+            
+                                        // Coordinador logistico at Sucursal (or Centro)
+                                        case 'colsol': {
+
+                                            // If user belongs to this Sucursal
+                                            if(
+                                                (get_class($user->stationable) === get_class($sucursal)) &&
+                                                ($user->stationable->id === $sucursal->id)
+                                            )
+                                            {
+                                                // Only if Oc was generated from its same country
+                                                $oc = Oc::select('ocs.*')
+                                                    ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
+                                                    ->join('despacho_ocparte', 'despacho_ocparte.ocparte_id', '=' , 'oc_parte.id')
+                                                    ->join('despachos', 'despachos.id', '=', 'despacho_ocparte.despacho_id')
+                                                    ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                    ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                    ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                                    ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                    ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
+                                                    ->where('ocs.id', '=', $ocId)
+                                                    ->where('despachos.despachable_type', '=', get_class($recepcion->sourceable)) // Recepcion's source is Sucursal (centro)
+                                                    ->where('despachos.despachable_id', '=', $recepcion->sourceable->id) // OcParte dispatched from Sucursal (centro)
+                                                    ->where('despachos.destinable_type', '=', get_class($sucursal))
+                                                    ->where('despachos.destinable_id', '=', $sucursal->id) // OcParte dispatched to Sucursal
+                                                    ->where('sucursales.id', '=', $user->stationable->id) // Same Sucursal as user station
+                                                    ->first();
+                                            }                                
+
+                                            break;
+                                        }
+
+            
+                                        default: {
+                                            break;
+                                        }
+                                    }
+            
+                                    if($oc !== null)
+                                    {
+                                        foreach(array_keys($diffList[$oc->id]) as $parteId)
+                                        {
+                                            if($p = $oc->partes->find($parteId))
+                                            {
+                                                // Calc new cantidad with cantidad in Recepciones + diff (negative when removing)
+                                                $newCantidad = $p->pivot->getCantidadRecepcionado($sucursal) + $diffList[$oc->id][$parteId];
+
+                                                /*
+                                                 *  If new cantidad in Recepciones is equal or more than
+                                                 *  cantidad in Entregas from destination Sucursal
+                                                 */
+
+                                                if($newCantidad >= $p->pivot->getCantidadEntregado($sucursal))
+                                                {
+                                                    // If new cantidad in Recepciones is equal or less than cantidad in Despachos to Sucursal
+                                                    if($newCantidad <= $p->pivot->getCantidadDespachado($recepcion->sourceable))
+                                                    {
+                                                        // If OC is in the request
+                                                        if(in_array($oc->id, array_keys($ocList)) === true)
+                                                        {
+                                                            // If Parte is in the request for the OC
+                                                            if(in_array($parteId, array_keys($ocList[$oc->id])) === true)
+                                                            {
+                                                                // Add the OcParte to syunc using the ID which is unique
+                                                                $syncData[$p->pivot->id] = array(
+                                                                    'cantidad' => $ocList[$oc->id][$parteId]
+                                                                );
+                                                            }
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        // If the received parts are more than waiting in queue
+                                                        $response = HelpController::buildResponse(
+                                                            409,
+                                                            'La cantidad ingresada para la parte "' . $p->nparte . '" es mayor a la cantidad pendiente de recepcion en la OC: ' . $oc->id,
+                                                            null
+                                                        );
+                    
+                                                        $success = false;
+                    
+                                                        break;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    // If the received partes are less than dispathed and delivered at destination Sucursal (centro)
+                                                    $response = HelpController::buildResponse(
+                                                        409,
+                                                        'La cantidad ingresada para la parte "' . $p->nparte . '" es menor a la cantidad ya entregada en la sucursal para la OC: ' . $oc->id,
+                                                        null
+                                                    );
+                
+                                                    $success = false;
+                
+                                                    break;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                //If the entered parte isn't in the OC
+                                                $response = HelpController::buildResponse(
+                                                    409,
+                                                    'Una de las partes ingresadas no existe en la OC: ' . $oc->id,
+                                                    null
+                                                );
+            
+                                                $success = false;
+            
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if(Oc::find($ocId))
+                                        {
+                                            $response = HelpController::buildResponse(
+                                                405,
+                                                'No tienes acceso a actualizar recepciones para la OC: ' . $ocId,
+                                                null
+                                            );
+                                        }
+                                        else
+                                        {
+                                            $response = HelpController::buildResponse(
+                                                412,
+                                                'La OC: ' . $ocId . ' no existe',
+                                                null
+                                            );
+                                        }
+                                        
+                                        $success = false;
+        
+                                        break;
+                                    }
+                                }
+                                // If success was already broken
+                                else
+                                {
+                                    // Break the higher loop
+                                    break;
+                                }                    
+                            }
+
+                            if(($success === true) && ($recepcion->ocpartes()->sync($syncData)))
+                            {
+                                DB::commit();
+                                    
+                                $response = HelpController::buildResponse(
+                                    201,
+                                    'Recepcion actualizada',
+                                    null
+                                );
+                            }
+                            else
+                            {
+                                DB::rollback();
+                            }
+                        }
+                        else
+                        {       
+                            DB::rollback();
+
+                            $response = HelpController::buildResponse(
+                                500,
+                                'Error al actualizar la recepcion',
+                                null
+                            );
+                        }
+                    }
+                    // If wasn't catched
+                    else
+                    {
+                        // If Recepcion exists
+                        if(Recepcion::find($id))
+                        {
+                            // It was filtered, so it's forbidden
+                            $response = HelpController::buildResponse(
+                                405,
+                                'No tienes acceso a actualizar la recepcion',
+                                null
+                            );
+                        }
+                        // It doesn't exist
+                        else
+                        {
+                            $response = HelpController::buildResponse(
+                                412,
+                                'La recepcion no existe',
+                                null
+                            );
+                        }
+                    }    
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a actualizar recepciones para sucursal',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al actualizar la recepcion [!]',
+                null
+            );
+        }
+        
+        return $response;
+    }
+
+    public function destroy_sucursal($sucursal_id, $id)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('sucursales recepciones_destroy'))
+            {
+                if($sucursal = Sucursal::where('type', '=', 'sucursal')->where('id', '=', $sucursal_id)->first())
+                {
+                    $recepcion = null;
+
+                    switch($user->role->name)
+                    {
+                        // Administrador
+                        case 'admin': {
+                            
+                            // Only if Recepcion contains OcPartes from OCs generated from its same country
+                            $recepcion = Recepcion::select('recepciones.*')
+                                        ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                        ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                        ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                        ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                        ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                        ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                        ->where('recepciones.id', '=', $id) // For this Recepcion
+                                        ->where('recepciones.recepcionable_type', '=', get_class($sucursal))
+                                        ->where('recepciones.recepcionable_id', '=', $sucursal->id) // Received at Sucursal (centro)
+                                        ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->first();
+
+                            break;
+                        }
+
+                        // Coordinador logistico at Sucursal (or Centro)
+                        case 'colsol': {
+
+                            // If user belongs to this Sucursal
+                            if(
+                                (get_class($user->stationable) === get_class($sucursal)) &&
+                                ($user->stationable->id === $sucursal->id)
+                            )
+                            {
+                                // Only if Recepcion contains OcPartes from OCs generated from its same Sucursal
+                                $recepcion = Recepcion::select('recepciones.*')
+                                            ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                            ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->where('recepciones.id', '=', $id) // For this Recepcion
+                                            ->where('recepciones.recepcionable_type', '=', get_class($sucursal))
+                                            ->where('recepciones.recepcionable_id', '=', $sucursal->id) // Received at Sucursal
+                                            ->where('sucursales.id', '=', $user->stationable->id) // Same Sucursal as user station
+                                            ->first();
+
+                            }                                
+
+                            break;
+                        }
+
+                        default: {
+                            break;
+                        }
+                    }
+
+                    if($recepcion !== null)
+                    {
+                        $ocList = array();
+
+                        // For each OcParte in Recepcion
+                        foreach($recepcion->ocpartes as $ocParte)
+                        {
+                            // If OC isn't in the OC list yet
+                            if((in_array($ocParte->oc->id, array_keys($ocList))) === false)
+                            {
+                                // Add the OC and add the Parte with negative cantidad for removing
+                                $ocList[$ocParte->oc->id] = array(
+                                    $ocParte->parte->id => ($ocParte->pivot->cantidad * -1)
+                                );
+                            }
+                            // If OC was already in the list
+                            else
+                            {
+                                // Add the Parte with negative cantidad for removing
+                                $ocList[$ocParte->oc->id][$ocParte->parte->id] = ($ocParte->pivot->cantidad * -1);
+                            }
+                        }
+
+                        DB::beginTransaction();
+
+                        $success = true;
+                        foreach(array_keys($ocList) as $ocId)
+                        {      
+                            // If success wasn't broken yet, continue
+                            if($success === true)
+                            {
+                                $oc = null;
+        
+                                switch($user->role->name)
+                                {
+                                    // Administrador
+                                    case 'admin': {
+
+                                        // Only if Oc was generated from its same country
+                                        $oc = Oc::select('ocs.*')
+                                            ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
+                                            ->join('despacho_ocparte', 'despacho_ocparte.ocparte_id', '=' , 'oc_parte.id')
+                                            ->join('despachos', 'despachos.id', '=', 'despacho_ocparte.despacho_id')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
+                                            ->where('ocs.id', '=', $ocId)
+                                            ->where('despachos.despachable_type', '=', get_class($recepcion->sourceable)) // Recepcion's source is Sucursal (centro)
+                                            ->where('despachos.despachable_id', '=', $recepcion->sourceable->id) // OcParte dispatched from Sucursal (centro)
+                                            ->where('despachos.destinable_type', '=', get_class($sucursal))
+                                            ->where('despachos.destinable_id', '=', $sucursal->id) // OcParte dispatched to Sucursal
+                                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->first();
+        
+                                        break;
+                                    }
+        
+                                    // Coordinador logistico at Sucursal (or Centro)
+                                    case 'colsol': {
+
+                                        // If user belongs to this Sucursal
+                                        if(
+                                            (get_class($user->stationable) === get_class($sucursal)) &&
+                                            ($user->stationable->id === $sucursal->id)
+                                        )
+                                        {
+                                            // Only if Oc was generated from its same Sucursal
+                                            $oc = Oc::select('ocs.*')
+                                                ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
+                                                ->join('despacho_ocparte', 'despacho_ocparte.ocparte_id', '=' , 'oc_parte.id')
+                                                ->join('despachos', 'despachos.id', '=', 'despacho_ocparte.despacho_id')
+                                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                                ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
+                                                ->where('ocs.id', '=', $ocId)
+                                                ->where('despachos.despachable_type', '=', get_class($recepcion->sourceable)) // Recepcion's source is Sucursal (centro)
+                                                ->where('despachos.despachable_id', '=', $recepcion->sourceable->id) // OcParte dispatched from Sucursal (centro)
+                                                ->where('despachos.destinable_type', '=', get_class($sucursal))
+                                                ->where('despachos.destinable_id', '=', $sucursal->id) // OcParte dispatched to Sucursal
+                                                ->where('sucursales.id', '=', $user->stationable->id) // Same Sucursal as user station
+                                                ->first();
+                                        }                                
+
+                                        break;
+                                    }
+
+        
+                                    default: {
+                                        break;
+                                    }
+                                }
+        
+                                if($oc !== null)
+                                {
+                                    foreach(array_keys($ocList[$oc->id]) as $parteId)
+                                    {
+                                        if($p = $oc->partes->find($parteId))
+                                        {
+                                            // Calc new cantidad with cantidad in Recepciones + diff (negative when removing)
+                                            $newCantidad = $p->pivot->getCantidadRecepcionado($sucursal) + $ocList[$oc->id][$parteId];
+
+                                            /*
+                                            *  If new cantidad in Recepciones is less than
+                                            *  cantidad in Entregas at Sucursal
+                                            */
+
+                                            if($newCantidad < $p->pivot->getCantidadEntregado($sucursal))
+                                            {
+                                                $response = HelpController::buildResponse(
+                                                    409,
+                                                    'La parte "' . $p->nparte . '" ya tiene partes entregadas en la OC: ' . $oc->id,
+                                                    null
+                                                );
+            
+                                                $success = false;
+            
+                                                break;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            $response = HelpController::buildResponse(
+                                                500,
+                                                'Error al eliminar la recepcion',
+                                                null
+                                            );
+        
+                                            $success = false;
+        
+                                            break;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    if(Oc::find($ocId))
+                                    {
+                                        $response = HelpController::buildResponse(
+                                            405,
+                                            'No tienes acceso a eliminar recepciones para la OC: ' . $ocId,
+                                            null
+                                        );
+                                    }
+                                    else
+                                    {
+                                        $response = HelpController::buildResponse(
+                                            412,
+                                            'La OC: ' . $ocId . ' no existe',
+                                            null
+                                        );
+                                    }
+                                    
+                                    $success = false;
+    
+                                    break;
+                                }
+                            }
+                            // If success was already broken
+                            else
+                            {
+                                // Break the higher loop
+                                break;
+                            }                    
+                        }
+
+                        if(($success === true) && ($recepcion->delete()))
+                        {  
+                            DB::commit();
+
+                            $response = HelpController::buildResponse(
+                                200,
+                                'Recepcion eliminada',
+                                null
+                            );
+                        }
+                        else
+                        {
+                            DB::rollback();
+
+                            // Error message was already given
+                        }
+                    }
+                    // If wasn't catched
+                    else
+                    {
+                        // If Recepcion exists
+                        if(Recepcion::find($id))
+                        {
+                            // It was filtered, so it's forbidden
+                            $response = HelpController::buildResponse(
+                                405,
+                                'No tienes acceso a eliminar la recepcion',
+                                null
+                            );
+                        }
+                        // It doesn't exist
+                        else
+                        {
+                            $response = HelpController::buildResponse(
+                                412,
+                                'La recepcion no existe',
+                                null
+                            );
+                        }
+                    }                    
+                }
+                else
+                {
+                    $response = HelpController::buildResponse(
+                        412,
+                        'La sucursal no existe',
+                        null
+                    );
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a eliminar recepciones para sucursal',
                     null
                 );
             }

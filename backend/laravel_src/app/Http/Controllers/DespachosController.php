@@ -1033,7 +1033,7 @@ class DespachosController extends Controller
                                                 // If the entered parte isn't in queue
                                                 $response = HelpController::buildResponse(
                                                     409,
-                                                    'La parte "' . $p->nparte . '" no tiene partes pendiente de despacho',
+                                                    'La parte "' . $p->nparte . '" no tiene partes pendiente de despacho en la OC: ' . $oc->id,
                                                     null
                                                 );
             
@@ -3803,7 +3803,7 @@ class DespachosController extends Controller
                                                 // If the entered parte isn't in queue
                                                 $response = HelpController::buildResponse(
                                                     409,
-                                                    'La parte "' . $p->nparte . '" no tiene partes pendiente de despacho',
+                                                    'La parte "' . $p->nparte . '" no tiene partes pendiente de despacho en la OC: ' . $oc->id,
                                                     null
                                                 );
             

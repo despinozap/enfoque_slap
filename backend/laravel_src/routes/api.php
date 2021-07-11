@@ -167,7 +167,7 @@ Route::middleware(['auth:api', 'cors'])->group(function()
     Route::put('/centrosdistribucion/{centrodistribucion_id}/recepciones/{id}', [RecepcionesController::class, 'update_centrodistribucion']);
     Route::delete('/centrosdistribucion/{centrodistribucion_id}/recepciones/{id}', [RecepcionesController::class, 'destroy_centrodistribucion']);
     
-    // // Despachos (Sucursal [centro])
+    // Despachos (Sucursal [centro])
     Route::get('/centrosdistribucion/{id}/despachos', [DespachosController::class, 'index_centrodistribucion']);
     Route::get('/centrosdistribucion/{centrodistribucion_id}/despachos/prepare', [DespachosController::class, 'store_prepare_centrodistribucion']);
     Route::get('/centrosdistribucion/{centrodistribucion_id}/despachos/queueocpartes/sucursales/{sucursal_id}', [DespachosController::class, 'queueOcPartes_centrodistribucion']);
@@ -187,14 +187,15 @@ Route::middleware(['auth:api', 'cors'])->group(function()
     // Route::put('/centrosdistribucion/{centrodistribucion_id}/entregas/{id}', [EntregasController::class, 'update_centrodistribucion']);
     // Route::delete('/centrosdistribucion/{centrodistribucion_id}/entregas/{id}', [EntregasController::class, 'destroy_centrodistribucion']);
 
-    // // Recepciones (Sucursal)
-    // Route::get('/sucursales/{id}/recepciones', [RecepcionesController::class, 'index_sucursal']);
-    // Route::get('/sucursales/{sucursal_id}/centrosdistribucion/{centrodistribucion_id}/queuepartes', [RecepcionesController::class, 'queuePartes_sucursal']);
-    // Route::post('/sucursales/{sucursal_id}/recepciones', [RecepcionesController::class, 'store_sucursal']);
-    // Route::get('/sucursales/{sucursal_id}/recepciones/{id}', [RecepcionesController::class, 'show_sucursal']);
-    // Route::get('/sucursales/{sucursal_id}/recepciones/{id}/prepare', [RecepcionesController::class, 'update_prepare_sucursal']);
-    // Route::put('/sucursales/{sucursal_id}/recepciones/{id}', [RecepcionesController::class, 'update_sucursal']);
-    // Route::delete('/sucursales/{sucursal_id}/recepciones/{id}', [RecepcionesController::class, 'destroy_sucursal']);
+    // Recepciones (Sucursal)
+    Route::get('/sucursales/{id}/recepciones', [RecepcionesController::class, 'index_sucursal']);
+    Route::get('/sucursales/{sucursal_id}/recepciones/prepare', [RecepcionesController::class, 'store_prepare_sucursal']);
+    Route::get('/sucursales/{sucursal_id}/recepciones/queueocpartes/centrosdistribucion/{centrodistribucion_id}', [RecepcionesController::class, 'queueOcPartes_sucursal']);
+    Route::post('/sucursales/{sucursal_id}/recepciones', [RecepcionesController::class, 'store_sucursal']);
+    Route::get('/sucursales/{sucursal_id}/recepciones/{id}', [RecepcionesController::class, 'show_sucursal']);
+    Route::get('/sucursales/{sucursal_id}/recepciones/{id}/prepare', [RecepcionesController::class, 'update_prepare_sucursal']);
+    Route::put('/sucursales/{sucursal_id}/recepciones/{id}', [RecepcionesController::class, 'update_sucursal']);
+    Route::delete('/sucursales/{sucursal_id}/recepciones/{id}', [RecepcionesController::class, 'destroy_sucursal']);
 
     // // Entregas (Sucursal)
     // Route::get('/sucursales/{id}/entregas', [EntregasController::class, 'index_sucursal']);
