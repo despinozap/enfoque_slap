@@ -1101,7 +1101,7 @@ class RecepcionesController extends Controller
                                                             // If the received parts are more than waiting in queue
                                                             $response = HelpController::buildResponse(
                                                                 409,
-                                                                'La cantidad ingresada para la parte "' . $p->nparte . '" es mayor a la cantidad de pendiente de recepcion',
+                                                                'La cantidad ingresada para la parte "' . $p->nparte . '" es mayor a la cantidad pendiente de recepcion en la OC: ' . $oc->id,
                                                                 null
                                                             );
                         
@@ -2363,7 +2363,7 @@ class RecepcionesController extends Controller
                                                         // If the received parts are more than waiting in queue
                                                         $response = HelpController::buildResponse(
                                                             409,
-                                                            'La cantidad ingresada para la parte "' . $p->nparte . '" es mayor a la cantidad de pendiente de recepcion en la OC: ' . $oc->id,
+                                                            'La cantidad ingresada para la parte "' . $p->nparte . '" es mayor a la cantidad pendiente de recepcion en la OC: ' . $oc->id,
                                                             null
                                                         );
                     
@@ -3738,7 +3738,7 @@ class RecepcionesController extends Controller
                                                     // If the received parts are more than waiting in queue
                                                     $response = HelpController::buildResponse(
                                                         409,
-                                                        'La cantidad ingresada para la parte "' . $p->nparte . '" es mayor a la cantidad de pendiente de recepcion',
+                                                        'La cantidad ingresada para la parte "' . $p->nparte . '" es mayor a la cantidad pendiente de recepcion en la OC: ' . $oc->id,
                                                         null
                                                     );
                 
@@ -5034,7 +5034,7 @@ class RecepcionesController extends Controller
                                                         // If the received parts are more than waiting in queue
                                                         $response = HelpController::buildResponse(
                                                             409,
-                                                            'La cantidad ingresada para la parte "' . $p->nparte . '" es mayor a la cantidad pendiente de recepcion',
+                                                            'La cantidad ingresada para la parte "' . $p->nparte . '" es mayor a la cantidad pendiente de recepcion en la OC: ' . $oc->id,
                                                             null
                                                         );
                     
