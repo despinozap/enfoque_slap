@@ -156,7 +156,7 @@ export class RecepcionesCompradorEditComponent implements OnInit {
           // Update data for parte in Recepcion
           this.partes[index].checked = true;
           this.partes[index].cantidad = ocParte.pivot.cantidad;
-          this.partes[index].cantidad_min = this.partes[index].cantidad_despachado - (this.partes[index].cantidad_recepcionado - ocParte.pivot.cantidad);
+          this.partes[index].cantidad_min = (ocParte.cantidad_min > 0) ? ocParte.cantidad_min : 1;
           this.partes[index].cantidad_pendiente = this.partes[index].cantidad_pendiente + ocParte.pivot.cantidad;
           this.partes[index].cantidad_recepcionado = this.partes[index].cantidad_recepcionado - ocParte.pivot.cantidad;
         }

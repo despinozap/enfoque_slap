@@ -1752,7 +1752,10 @@ class RecepcionesController extends Controller
 
                                 $recepcion->ocpartes;
                                 foreach($recepcion->ocpartes as $ocParte)
-                                {                                
+                                {                 
+                                    // Set minimum cantidad as cantidad in Despachos - (cantidad in Recepciones - cantidad in Recepcion) at Comprador
+                                    $ocParte->cantidad_min = $ocParte->getCantidadDespachado($comprador) - ($ocParte->getCantidadRecepcionado($comprador) - $ocParte->pivot->cantidad);
+                   
                                     $ocParte->makeHidden([
                                         'oc_id',
                                         'parte_id',
@@ -1862,7 +1865,7 @@ class RecepcionesController extends Controller
     
                                     $parte->pivot->cantidad_recepcionado = $parte->pivot->getCantidadRecepcionado($comprador);
                                     $parte->pivot->cantidad_despachado = $parte->pivot->getCantidadDespachado($comprador);
-    
+                                    
                                     $parte->pivot->makeHidden([
                                         'oc_id',
                                         'parte_id',
@@ -4332,8 +4335,6 @@ class RecepcionesController extends Controller
 
                                         $ocParte->cantidad_recepcionado = $cantidadRecepcionado;
                                         $ocParte->cantidad_despachado = $cantidadDespachado;
-                                        // Set minimum cantidad as total cantidad in Despachos + cantidad in Entregas at destinable Sucursal (centro)
-                                        $ocParte->cantidad_min = $ocParte->getCantidadDespachado($centrodistribucion) + $ocParte->getCantidadEntregado($centrodistribucion);
 
                                         $ocParte->parte->makeHidden([
                                             'marca_id',
@@ -4473,8 +4474,11 @@ class RecepcionesController extends Controller
                                 'updated_at',
                             ]);
 
-                            $recepcion->ocpartes = $recepcion->ocpartes->map(function($ocParte)
+                            $recepcion->ocpartes = $recepcion->ocpartes->map(function($ocParte) use ($recepcion)
                                 {
+                                    // Set minimum cantidad as (cantidad in Despachos + cantidad in Entregas) - (cantidad in Recepciones - cantidad in Recepcion) at recepcionable Sucursal (centro)
+                                    $ocParte->cantidad_min = ($ocParte->getCantidadDespachado($recepcion->recepcionable) + $ocParte->getCantidadEntregado($recepcion->recepcionable)) - ($ocParte->getCantidadRecepcionado($recepcion->recepcionable) - $ocParte->pivot->cantidad);
+
                                     $ocParte->makeHidden([
                                         'oc_id',
                                         'parte_id',
@@ -6904,8 +6908,6 @@ class RecepcionesController extends Controller
 
                                         $ocParte->cantidad_recepcionado = $cantidadRecepcionado;
                                         $ocParte->cantidad_despachado = $cantidadDespachado;
-                                        // Set minimum cantidad as total cantidad in Entregas at destinable Sucursal
-                                        $ocParte->cantidad_min = $ocParte->getCantidadEntregado($sucursal);
 
                                         $ocParte->parte->makeHidden([
                                             'marca_id',
@@ -7040,8 +7042,11 @@ class RecepcionesController extends Controller
                                 'updated_at',
                             ]);
 
-                            $recepcion->ocpartes = $recepcion->ocpartes->map(function($ocParte)
+                            $recepcion->ocpartes = $recepcion->ocpartes->map(function($ocParte) use ($recepcion)
                                 {
+                                    // Set minimum cantidad as (cantidad in Despachos + cantidad in Entregas) - (cantidad in Recepciones - cantidad in Recepcion) at recepcionable Sucursal (centro)
+                                    $ocParte->cantidad_min = ($ocParte->getCantidadDespachado($recepcion->recepcionable) + $ocParte->getCantidadEntregado($recepcion->recepcionable)) - ($ocParte->getCantidadRecepcionado($recepcion->recepcionable) - $ocParte->pivot->cantidad);
+
                                     $ocParte->makeHidden([
                                         'oc_id',
                                         'parte_id',

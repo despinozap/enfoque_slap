@@ -118,7 +118,7 @@ export class DespachosCompradorEditComponent implements OnInit {
             backorder: ocparte.backorder === 1 ? true : false,
             sucursal_name: ocparte.oc.cotizacion.solicitud.sucursal.name,
             faena_name: ocparte.oc.cotizacion.solicitud.faena.name,
-            cantidad_min: (ocparte.cantidad_min > 0) ? ocparte.cantidad_min : 1,
+            cantidad_min: 1,
             cantidad_stock: ocparte.cantidad_recepcionado - ocparte.cantidad_despachado,
             cantidad: ocparte.cantidad_recepcionado - ocparte.cantidad_despachado,
             checked: false
@@ -140,6 +140,7 @@ export class DespachosCompradorEditComponent implements OnInit {
           // Update data for parte in Despacho
           this.partes[index].checked = true;
           this.partes[index].cantidad = parteD.pivot.cantidad;
+          this.partes[index].cantidad_min = (parteD.cantidad_min > 0) ? parteD.cantidad_min : 1;
           this.partes[index].cantidad_stock += parteD.pivot.cantidad;
         }
 

@@ -118,7 +118,7 @@ export class RecepcionesCentrodistribucionEditComponent implements OnInit {
             backorder: ocparte.backorder === 1 ? true : false,
             sucursal_name: ocparte.oc.cotizacion.solicitud.sucursal.name,
             faena_name: ocparte.oc.cotizacion.solicitud.faena.name,
-            cantidad_min: (ocparte.cantidad_min > 0) ? ocparte.cantidad_min : 1,
+            cantidad_min: 1,
             cantidad_transit: ocparte.cantidad_despachado - ocparte.cantidad_recepcionado,
             cantidad: ocparte.cantidad_despachado - ocparte.cantidad_recepcionado,
             checked: false
@@ -129,18 +129,19 @@ export class RecepcionesCentrodistribucionEditComponent implements OnInit {
       let index: number;
 
       // Update values with partes list in Recepcion 
-      recepcionData.recepcion.ocpartes.forEach((parteD: any) => {
+      recepcionData.recepcion.ocpartes.forEach((parteR: any) => {
 
         index = this.partes.findIndex((parteQ) => {
-          return (parteD.parte.id === parteQ.id);
+          return (parteR.parte.id === parteQ.id);
         });
 
         if(index >= 0)
         {
           // Update data for parte in Recepcion
           this.partes[index].checked = true;
-          this.partes[index].cantidad = parteD.pivot.cantidad;
-          this.partes[index].cantidad_transit += parteD.pivot.cantidad;
+          this.partes[index].cantidad = parteR.pivot.cantidad;
+          this.partes[index].cantidad_min = (parteR.cantidad_min > 0) ? parteR.cantidad_min : 1;
+          this.partes[index].cantidad_transit += parteR.pivot.cantidad;
         }
 
       });

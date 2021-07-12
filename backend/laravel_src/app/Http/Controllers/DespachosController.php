@@ -1803,8 +1803,6 @@ class DespachosController extends Controller
 
                                         $ocParte->cantidad_recepcionado = $cantidadRecepcionado;
                                         $ocParte->cantidad_despachado = $cantidadDespachado;
-                                        // Set minimum cantidad as total cantidad in Recepciones at destinable Sucursal (centro)
-                                        $ocParte->cantidad_min = $ocParte->getCantidadRecepcionado($despacho->destinable);
 
                                         $ocParte->parte->makeHidden([
                                             'marca_id',
@@ -1945,8 +1943,11 @@ class DespachosController extends Controller
                                 'updated_at',
                             ]);
 
-                            $despacho->ocpartes = $despacho->ocpartes->map(function($ocParte) use ($comprador)
+                            $despacho->ocpartes = $despacho->ocpartes->map(function($ocParte) use ($despacho)
                                 {
+                                    // Set minimum cantidad as cantidad in Recepciones at Sucursal (centro) - (cantidad in Despachos - cantidad in Despacho) at despachable Comprador
+                                    $ocParte->cantidad_min = $ocParte->getCantidadRecepcionado($despacho->destinable) - ($ocParte->getCantidadDespachado($despacho->despachable) - $ocParte->pivot->cantidad);
+
                                     $ocParte->makeHidden([
                                         'oc_id',
                                         'parte_id',
@@ -4470,9 +4471,6 @@ class DespachosController extends Controller
                                         $ocParte->cantidad_despachado = $cantidadDespachado;
                                         $ocParte->cantidad_entregado = $cantidadEntregado;
 
-                                        // Set minimum cantidad as total cantidad in Recepciones at destinable Sucursal
-                                        $ocParte->cantidad_min = $ocParte->getCantidadRecepcionado($despacho->destinable);
-
                                         $ocParte->parte->makeHidden([
                                             'marca_id',
                                             'created_at', 
@@ -4604,8 +4602,11 @@ class DespachosController extends Controller
                                 'updated_at',
                             ]);
 
-                            $despacho->ocpartes = $despacho->ocpartes->map(function($ocParte) use ($centrodistribucion)
+                            $despacho->ocpartes = $despacho->ocpartes->map(function($ocParte) use ($despacho)
                                 {
+                                    // Set minimum cantidad as cantidad in Recepciones at destinable Sucursal - (cantidad in Despachos - cantidad in Despacho) at despachable Sucursal (centro)
+                                    $ocParte->cantidad_min = $ocParte->getCantidadRecepcionado($despacho->destinable) - ($ocParte->getCantidadDespachado($despacho->despachable) - $ocParte->pivot->cantidad);
+
                                     $ocParte->makeHidden([
                                         'oc_id',
                                         'parte_id',
