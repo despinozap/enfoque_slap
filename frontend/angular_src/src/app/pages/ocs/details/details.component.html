@@ -123,7 +123,7 @@
                                     <td align="center">{{ parte.descripcion !== null ? parte.descripcion : "" }}</td>
                                     <td align="right">{{ parte.tiempoentrega !== null ? parte.tiempoentrega + " dias" : "" }}</td>
                                     <td align="right">{{ parte.statusdays !== null ? parte.statusdays + " dias" : ""}}</td>
-                                    <td align="center">{{ (parte.cantidad_entregado === parte.cantidad) ? 'Entregado' : ( (parte.cantidad_entregado > 0) ? 'Parcial' : ( (parte.cantidad_stock === 0) ? 'Sin stock' : 'Pendiente' ) ) }}</td>
+                                    <td align="center">{{ parte.estadoocparte_name !== null ? parte.estadoocparte_name : "" }}</td>
                                     <td align="center">
                                         <button (click)="goTo_updateParte(i)" *ngIf="((loggedUser !== null) && (['admin', 'agtcom'].includes(loggedUser.role.name))) && ([1, 2].includes(oc.estadooc_id))" class="btn-table btn btn-secondary" title="Editar"><i class="bx bx-edit-alt"></i></button>
                                         <!-- <button (click)="removeParte(parte)" *ngIf="([1, 2].includes(oc.estadooc_id))" class="btn-table btn btn-secondary" title="Eliminar"><i class="bx bx-trash-alt"></i></button> -->
