@@ -487,7 +487,17 @@ class OcsController extends Controller
                             $oc->cotizacion->solicitud->marca->makeHidden(['created_at', 'updated_at']);
                             
                             $oc->cotizacion->solicitud->user;
-                            $oc->cotizacion->solicitud->user->makeHidden(['email', 'phone', 'country_id', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
+                            $oc->cotizacion->solicitud->user->makeHidden([
+                                'stationable_id',
+                                'stationable_type',
+                                'email', 
+                                'phone', 
+                                'country_id', 
+                                'role_id', 
+                                'email_verified_at', 
+                                'created_at', 
+                                'updated_at'
+                            ]);
                             
                             $oc->cotizacion->solicitud->comprador;
                             $oc->cotizacion->solicitud->comprador->makeHidden([
@@ -694,12 +704,34 @@ class OcsController extends Controller
                 {
                     if($parte = $oc->partes->where('nparte', $request->nparte)->first())
                     {
-                        $parte->pivot->cantidad = $request->cantidad;
-                        $parte->pivot->tiempoentrega = $request->tiempoentrega;
-                        $parte->pivot->backorder = $request->backorder;
-                    
-                        // if($request->cantidad >= $parte->pivot->getCantidadEntregado())
-                        // {
+                        $success = true;
+
+                        // If Oc is Estadooc = 'En proceso'
+                        if($oc->estadooc_id === 2)
+                        {
+                            //If new cantidad is less than cantidad already received at Comprador
+                            if($request->cantidad < $parte->pivot->getCantidadRecepcionado($oc->cotizacion->solicitud->comprador))
+                            {
+                                $response = HelpController::buildResponse(
+                                    400,
+                                    [
+                                        "cantidad" => [
+                                            "La cantidad debe ser mayor o igual a la ya recepcionada por el comprador"
+                                        ]
+                                    ],
+                                    null
+                                );
+
+                                $success = false;
+                            }
+                        }
+
+                        if($success === true)
+                        {
+                            $parte->pivot->cantidad = $request->cantidad;
+                            $parte->pivot->tiempoentrega = $request->tiempoentrega;
+                            $parte->pivot->backorder = $request->backorder;
+
                             if($parte->pivot->save())
                             {
                                 $response = HelpController::buildResponse(
@@ -716,19 +748,12 @@ class OcsController extends Controller
                                     null
                                 );
                             }
-                        // }
-                        // else
-                        // {
-                        //     $response = HelpController::buildResponse(
-                        //         400,
-                        //         [
-                        //             "cantidad" => [
-                        //                 "La cantidad debe ser mayor o igual a la ya entregada"
-                        //             ]
-                        //         ],
-                        //         null
-                        //     );
-                        // }
+                        }
+                        else
+                        {
+                            // Error message was already given
+                        }
+                        
                     }
                     else
                     {
@@ -763,7 +788,6 @@ class OcsController extends Controller
 
     public function destroyParte($id, $parte_id)
     {
-        //VALIDATE: At least 1 parte in OC, parte not received, parte not dispatched, parte not delivered
         try
         {
             $user = Auth::user();
@@ -858,9 +882,50 @@ class OcsController extends Controller
                 else     
                 {
                     if($parte = $oc->partes->find($parte_id))
-                    {                   
-                        // if($request->cantidad >= $parte->pivot->getCantidadEntregado())
-                        // {
+                    {                
+                        $success = true;
+
+                        // If Oc is Estadooc = 'En proceso'
+                        if($oc->estadooc_id === 2)
+                        {
+                            //If new cantidad is less than cantidad already received at Comprador
+                            if($request->cantidad < $parte->pivot->getCantidadRecepcionado($oc->cotizacion->solicitud->comprador))
+                            {
+                                $response = HelpController::buildResponse(
+                                    400,
+                                    [
+                                        "cantidad" => [
+                                            "La parte tiene cantidades ya recepcionadas por el comprador"
+                                        ]
+                                    ],
+                                    null
+                                );
+
+                                $success = false;
+                            }
+                            // If this is the only one parte in Oc
+                            else if($oc->partes->count() < 2)
+                            {
+                                $response = HelpController::buildResponse(
+                                    400,
+                                    [
+                                        "cantidad" => [
+                                            "La OC debe tener al menos 1 parte"
+                                        ]
+                                    ],
+                                    null
+                                );
+
+                                $success = false;
+                            }
+                        }
+
+                        if($success === true)
+                        {
+                            $parte->pivot->cantidad = $request->cantidad;
+                            $parte->pivot->tiempoentrega = $request->tiempoentrega;
+                            $parte->pivot->backorder = $request->backorder;
+
                             if($oc->partes()->detach($parte->id))
                             {
                                 $response = HelpController::buildResponse(
@@ -877,19 +942,12 @@ class OcsController extends Controller
                                     null
                                 );
                             }
-                        // }
-                        // else
-                        // {
-                        //     $response = HelpController::buildResponse(
-                        //         400,
-                        //         [
-                        //             "cantidad" => [
-                        //                 "La cantidad debe ser mayor o igual a la ya entregada"
-                        //             ]
-                        //         ],
-                        //         null
-                        //     );
-                        // }
+                        }
+                        else
+                        {
+                            // Error message was already given
+                        }
+
                     }
                     else
                     {
