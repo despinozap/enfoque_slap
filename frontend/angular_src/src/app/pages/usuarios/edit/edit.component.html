@@ -73,8 +73,8 @@
                                     <div *ngFor="let errorMessage of responseErrors.stationable_id">{{ errorMessage }}</div>
                                 </div>
                                 <select class="form-control" name="station" id="station" formControlName="station">
-																	<option *ngFor="let station of stations;" [value]="station.stationable_id">{{ station.label }}</option>
-																</select>
+                                    <option *ngFor="let station of stations;" [value]="station.stationable_id">{{ station.label }}</option>
+                                </select>
                                 <!-- Frontend errors -->
                                 <div *ngIf="(userForm.controls.station.errors) && (userForm.controls.station.touched) && (userForm.controls.station.dirty)">
                                     <div class="error-response" *ngIf="userForm.controls.station.errors.required === true">

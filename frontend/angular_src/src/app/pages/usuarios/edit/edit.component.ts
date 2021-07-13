@@ -45,37 +45,37 @@ export class UsuariosEditComponent implements OnInit {
       this.loading = true;
 
       this.roles = [
-      // Vendedor solicitante (Vendedor en Sucursal Santiago)
-      {
-        name: "vensol",
-        label: "Vendedor en Santiago",
-        stationable_id: 1
-      },
-      // Vendedor solicitante (Vendedor en Sucursal Antofagasta)
-      {
-        name: "vensol",
-        label: "Vendedor en Antofagasta",
-        stationable_id: 2
-      },
-      // Coordinador Logistico comprador (bodega en Comprador)
-      {
-        name: "colcom",
-        label: "Coordinador logistico en USA",
-        stationable_id: 1
-      },
-      // Coordinador Logistico solicitante (Bodega en Sucursal Santiago)
-      {
-        name: "colsol",
-        label: "Coordinador logistico en Santiago",
-        stationable_id: 1
-      },
-      // Coordinador Logistico solicitante (Bodega en Sucursal Antofagasta)
-      {
-        name: "colsol",
-        label: "Coordinador logistico en Antofagasta",
-        stationable_id: 2
-      }
-    ];
+        // Vendedor solicitante (Vendedor en Sucursal Santiago)
+        {
+          name: "seller",
+          label: "Vendedor en Santiago",
+          stationable_id: 1
+        },
+        // Vendedor solicitante (Vendedor en Sucursal Antofagasta)
+        {
+          name: "seller",
+          label: "Vendedor en Antofagasta",
+          stationable_id: 2
+        },
+        // Coordinador Logistico comprador (bodega en Comprador)
+        {
+          name: "colcom",
+          label: "Coordinador logistico en USA",
+          stationable_id: 1
+        },
+        // Coordinador Logistico solicitante (Bodega en Sucursal Santiago)
+        {
+          name: "colsol",
+          label: "Coordinador logistico en Santiago",
+          stationable_id: 1
+        },
+        // Coordinador Logistico solicitante (Bodega en Sucursal Antofagasta)
+        {
+          name: "colsol",
+          label: "Coordinador logistico en Antofagasta",
+          stationable_id: 2
+        }
+      ];
 
       this._usersService.getUser(this.id)
       .subscribe(
@@ -138,7 +138,7 @@ export class UsuariosEditComponent implements OnInit {
   private loadFormData(userData: any)
   {
     this.stations = this.roles.filter((role) => {
-      return (role.name === userData.role.name) ? role : null;
+      return (role.name === userData.role.name);
     });
 
     this.userForm.controls.name.setValue(userData.name);
