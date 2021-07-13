@@ -15,7 +15,7 @@ class Filedata extends Model
     protected $fillable = [
         'path', 'size',
     ];
-    public $appends = ['url'];
+    protected $appends = ['url'];
 
     public function getUrlAttribute()
     {

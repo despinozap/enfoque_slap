@@ -10,7 +10,8 @@ class Entrega extends Model
     use HasFactory;
 
     protected $table = 'entregas';
-    public $appends = ['partes_total'];
+    protected $appends = ['partes_total'];
+    protected $fillable = ['fecha', 'ndocumento', 'responsable', 'comentario'];
 
     /*
      * The Entrega's source. 

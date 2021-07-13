@@ -360,12 +360,38 @@ class SolicitudesController extends Controller
             $user = Auth::user();
             if($user->role->hasRoutepermission('solicitudes store'))
             {
-                if( ! ($faenas = Faena::select('faenas.*')
+                $faenas = null;
+
+                switch($user->role->name)
+                {
+                    case 'admin':
+                        {
+                            // Gets only the Faenas in the same country than user station (Sucursal)
+                            $faenas = Faena::select('faenas.*')
                                     ->join('clientes', 'clientes.id', '=', 'faenas.cliente_id')
-                                    ->where('clientes.country_id', '=', $user->stationable->country->id) // Gets only the Faenas in the same country than Sucursal
-                                    ->get()
-                            )
-                )
+                                    ->where('clientes.country_id', '=', $user->stationable->country->id)
+                                    ->get();
+
+                            break;
+                        }
+
+                    case 'seller':
+                        {
+                            // Gets only the Faenas with the same delivery Sucursal than user station (Sucursal)
+                            $faenas = Faena::select('faenas.*')
+                                    ->where('faenas.sucursal_id', '=', $user->stationable->id)
+                                    ->get();
+
+                            break;
+                        }
+
+                    default:
+                    {
+                        break;
+                    }
+                }
+
+                if($faenas === null)
                 {
                     $response = HelpController::buildResponse(
                         500,
@@ -541,57 +567,72 @@ class SolicitudesController extends Controller
                         null
                     );
                 }
-                // For 'admin' and 'seller' checks if they belong to the same Sucursal
-                else if (
-                    (in_array($user->role->name, ['admin', 'seller'])) && 
-                    ($request->sucursal_id !== $user->stationable->id)
-                ) 
-                {
-                    $response = HelpController::buildResponse(
-                        409,
-                        'No puedes crear solicitudes bajo otras sucursales',
-                        null
-                    );
-                }
                 else        
                 {
-                    // Check if faena is in the same country than Sucursal
-                    if($faena = Faena::select('faenas.*')
-                        ->join('clientes', 'clientes.id', '=', 'faenas.cliente_id')
-                        ->join('sucursales', 'sucursales.country_id', '=', 'clientes.country_id')
-                        ->where('sucursales.id', '=', $request->sucursal_id)
-                        ->where('faenas.id', '=', $request->faena_id)
-                        ->first()
-                    )
+                    $forbidden = true;
+
+                    switch($user->role->name)
                     {
-                        $solicitud = new Solicitud();
-                        $solicitud->fill($request->all());
-                        $solicitud->user_id = $user->id;
-                        $solicitud->estadosolicitud_id = 1; //Initial Estadosolicitud
-            
-                        DB::beginTransaction();
-            
-                        if($solicitud->save())
-                        {
-                            $success = true;
-            
-                            //Attaching each Parte to the Solicitud
-                            foreach($request->partes as $parte)
+                        case 'admin':
                             {
-                                if($p = Parte::where('nparte', $parte['nparte'])->where('marca_id', $request->marca_id)->first())
+                                // Get Sucursal in request
+                                if($sucursal = Sucursal::find($request->sucursal_id))
                                 {
-                                    $solicitud->partes()->attach([ 
-                                        $p->id => [
-                                            'cantidad' => $parte['cantidad']
-                                        ]
-                                    ]);
+                                    // If user belongs to the same country than Sucursal in request
+                                    if($user->stationable->country->id === $sucursal->country->id)
+                                    {
+                                        // Allow user for registering the Solicitud
+                                        $forbidden = false;
+                                    }
                                 }
-                                else
+
+                                break;
+                            }
+
+                        case 'seller':
+                            {
+                                // If user belongs to the same Sucursal than Sucursal in request
+                                if($user->stationable->id === $request->sucursal_id)
                                 {
-                                    $p = new Parte();
-                                    $p->nparte = $parte['nparte'];
-                                    $p->marca_id = $request->marca_id;
-                                    if($p->save())
+                                    // Allow user for registering the Solicitud
+                                    $forbidden = false;
+                                }
+
+                                break;
+                            }
+
+                        default:
+                        {
+                            break;
+                        }
+                    }
+
+                    if($forbidden === false)
+                    {
+                        // Check if faena is in the same country than Sucursal
+                        if($faena = Faena::select('faenas.*')
+                            ->join('clientes', 'clientes.id', '=', 'faenas.cliente_id')
+                            ->join('sucursales', 'sucursales.country_id', '=', 'clientes.country_id')
+                            ->where('sucursales.id', '=', $request->sucursal_id)
+                            ->where('faenas.id', '=', $request->faena_id)
+                            ->first()
+                        )
+                        {
+                            $solicitud = new Solicitud();
+                            $solicitud->fill($request->all());
+                            $solicitud->user_id = $user->id;
+                            $solicitud->estadosolicitud_id = 1; //Initial Estadosolicitud
+                
+                            DB::beginTransaction();
+                
+                            if($solicitud->save())
+                            {
+                                $success = true;
+                
+                                //Attaching each Parte to the Solicitud
+                                foreach($request->partes as $parte)
+                                {
+                                    if($p = Parte::where('nparte', $parte['nparte'])->where('marca_id', $request->marca_id)->first())
                                     {
                                         $solicitud->partes()->attach([ 
                                             $p->id => [
@@ -601,50 +642,73 @@ class SolicitudesController extends Controller
                                     }
                                     else
                                     {
-                                        $success = false;
-            
-                                        $response = HelpController::buildResponse(
-                                            500,
-                                            'Error al crear la parte N:' . $parte['nparte'],
-                                            null
-                                        );
+                                        $p = new Parte();
+                                        $p->nparte = $parte['nparte'];
+                                        $p->marca_id = $request->marca_id;
+                                        if($p->save())
+                                        {
+                                            $solicitud->partes()->attach([ 
+                                                $p->id => [
+                                                    'cantidad' => $parte['cantidad']
+                                                ]
+                                            ]);
+                                        }
+                                        else
+                                        {
+                                            $success = false;
                 
-                                        break;
+                                            $response = HelpController::buildResponse(
+                                                500,
+                                                'Error al crear la parte N:' . $parte['nparte'],
+                                                null
+                                            );
+                    
+                                            break;
+                                        }
                                     }
                                 }
-                            }
-            
-                            if($success === true)
-                            {
-                                DB::commit();
-            
-                                $response = HelpController::buildResponse(
-                                    201,
-                                    'Solicitud creada',
-                                    null
-                                );
+                
+                                if($success === true)
+                                {
+                                    DB::commit();
+                
+                                    $response = HelpController::buildResponse(
+                                        201,
+                                        'Solicitud creada',
+                                        null
+                                    );
+                                }
+                                else
+                                {
+                                    DB::rollback();
+                                }
                             }
                             else
                             {
                                 DB::rollback();
+                
+                                $response = HelpController::buildResponse(
+                                    500,
+                                    'Error al crear la solicitud',
+                                    null
+                                );
                             }
                         }
                         else
                         {
-                            DB::rollback();
-            
                             $response = HelpController::buildResponse(
-                                500,
-                                'Error al crear la solicitud',
+                                412,
+                                'La faena no existe para la sucursal',
                                 null
                             );
                         }
                     }
                     else
                     {
+                        //If it's forbidden for registering the Solicitud
                         $response = HelpController::buildResponse(
-                            412,
-                            'La faena no existe para la sucursal',
+                            405,
+                            'No tienes acceso a registrar solicitudes para la sucursal ingresada',
                             null
                         );
                     }

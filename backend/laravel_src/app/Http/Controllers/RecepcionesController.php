@@ -2292,7 +2292,7 @@ class RecepcionesController extends Controller
                                                                         $p->pivot->estadoocparte_id = 1; // Estadoocparte = 'Pendiente'
                                                                     }
 
-                                                                    // Add the OcParte to syunc using the ID which is unique
+                                                                    // Add the OcParte to sync using the ID which is unique
                                                                     $syncData[$p->pivot->id] = array(
                                                                         'cantidad' => $ocList[$oc->id][$parteId]
                                                                     );
@@ -4950,7 +4950,7 @@ class RecepcionesController extends Controller
                                                             // If Parte is in the request for the OC
                                                             if(in_array($parteId, array_keys($ocList[$oc->id])) === true)
                                                             {
-                                                                // Add the OcParte to syunc using the ID which is unique
+                                                                // Add the OcParte to sync using the ID which is unique
                                                                 $syncData[$p->pivot->id] = array(
                                                                     'cantidad' => $ocList[$oc->id][$parteId]
                                                                 );
@@ -7518,7 +7518,7 @@ class RecepcionesController extends Controller
                                                             // If Parte is in the request for the OC
                                                             if(in_array($parteId, array_keys($ocList[$oc->id])) === true)
                                                             {
-                                                                // Add the OcParte to syunc using the ID which is unique
+                                                                // Add the OcParte to sync using the ID which is unique
                                                                 $syncData[$p->pivot->id] = array(
                                                                     'cantidad' => $ocList[$oc->id][$parteId]
                                                                 );

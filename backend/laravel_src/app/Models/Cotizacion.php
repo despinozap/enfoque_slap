@@ -15,7 +15,7 @@ class Cotizacion extends Model
     protected $fillable = [
         'solicitud_id', 'estadocotizacion_id', 'motivorechazo_id', 'usdvalue',
     ];
-    public $appends = ['partes_total', 'dias', 'monto'];
+    protected $appends = ['partes_total', 'dias', 'monto'];
 
     public function getMontoAttribute()
     {

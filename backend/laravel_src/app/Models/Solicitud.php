@@ -13,7 +13,7 @@ class Solicitud extends Model
     protected $fillable = [
         'sucursal_id', 'faena_id', 'marca_id', 'comprador_id', 'user_id', 'estadosolicitud_id', 'comentario', 
     ];
-    public $appends = ['partes_total'];
+    protected $appends = ['partes_total'];
 
     public function getPartesTotalAttribute()
     {

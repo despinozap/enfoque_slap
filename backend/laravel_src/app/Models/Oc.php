@@ -15,7 +15,7 @@ class Oc extends Model
     protected $fillable = [
         'cotizacion_id', 'proveedor_id', 'filedata_id', 'estadooc_id', 'noccliente', 'usdvalue',
     ];
-    public $appends = ['partes_total', 'dias', 'monto'];
+    protected $appends = ['partes_total', 'dias', 'monto'];
 
     public function getMontoAttribute()
     {
