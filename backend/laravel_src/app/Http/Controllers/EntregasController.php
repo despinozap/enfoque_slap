@@ -1388,6 +1388,8 @@ class EntregasController extends Controller
                         $entrega->ocpartes;
                         $entrega->ocpartes = $entrega->ocpartes->filter(function($ocparte)
                         {
+                            $ocparte->cantidad_entregado = $ocparte->getCantidadTotalEntregado();
+
                             $ocparte->makeHidden([
                                 'oc_id',
                                 'parte_id',
@@ -1723,6 +1725,12 @@ class EntregasController extends Controller
                                 {
                                     $parte->makeHidden([
                                         'marca_id',
+                                        'created_at',
+                                        'updated_at'
+                                    ]);
+
+                                    $parte->marca;
+                                    $parte->marca->makeHidden([
                                         'created_at',
                                         'updated_at'
                                     ]);
@@ -2128,7 +2136,7 @@ class EntregasController extends Controller
                                 {
                                     if($entrega->ocpartes()->sync($syncData))
                                     {
-                                        DB::rollback();
+                                        DB::commit();
                                     
                                         $response = HelpController::buildResponse(
                                             200,
