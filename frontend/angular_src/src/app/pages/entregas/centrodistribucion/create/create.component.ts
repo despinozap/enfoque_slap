@@ -187,24 +187,19 @@ export class EntregasCentrodistribucionCreateComponent implements OnInit {
       //Success request
       (response: any) => {
 
-        let cantidad_pendiente: number;
-        let cantidad_max: number;
-
         // Partes
         this.partes = response.data.queue_partes.reduce((carry: any[], parte: any) => {
-
-            cantidad_pendiente = parte.cantidad_total - parte.cantidad_entregado;
-            cantidad_max = cantidad_pendiente <= parte.cantidad_stock ? cantidad_pendiente : parte.cantidad_stock;
-
+          
             carry.push({
               id: parte.id,
               nparte: parte.nparte,
               marca: parte.marca,
-              backorder: parte.backorder > 0 ? true : false,
-              cantidad: cantidad_max,
-              cantidad_pendiente: cantidad_pendiente,
-              cantidad_stock: parte.cantidad_stock,
-              cantidad_max: cantidad_max,
+              descripcion: parte.pivot.descripcion,
+              backorder: parte.pivot.backorder > 0 ? true : false,
+              cantidad: parte.pivot.cantidad_stock,
+              cantidad_stock: parte.pivot.cantidad_stock,
+              cantidad_pendiente: parte.pivot.cantidad - parte.pivot.cantidad_entregado,
+              estadoocparte: parte.pivot.estadoocparte,
               checked: false,
             });
 
@@ -216,6 +211,8 @@ export class EntregasCentrodistribucionCreateComponent implements OnInit {
         // Uses the second (and last) datatables instance
         this.renderDataTable(this.datatableELements.last, this.dtTriggerPartes);
 
+        this.sortPartesByChecked();
+        
         this.loading = false;
         this.entregaForm.enable();
       },
@@ -388,7 +385,7 @@ export class EntregasCentrodistribucionCreateComponent implements OnInit {
   }
 
   public updateParte_cantidad(parte: any, evt: any): void {
-    if((isNaN(evt.target.value) === false) && (parseInt(evt.target.value) > 0) && (parseInt(evt.target.value) <= parte.cantidad_max))
+    if((isNaN(evt.target.value) === false) && (parseInt(evt.target.value) > 0) && (parseInt(evt.target.value) <= parte.cantidad_stock))
     {
       parte.cantidad = parseInt(evt.target.value);
     }
@@ -398,14 +395,25 @@ export class EntregasCentrodistribucionCreateComponent implements OnInit {
     }
   }
 
+  private sortPartesByChecked(): void {
+    // Sort partes pushing checked ones to the top
+    this.partes = this.partes.sort((p1, p2) => {
+      return ((p2.checked === true) ? 1 : 0) - ((p1.checked === true) ? 1 : 0);
+    });
+  }
+
   public checkPartesList(evt: any): void {
     this.partes.forEach((parte: any) => {
       parte.checked = evt.target.checked;
     });
+    
+    this.sortPartesByChecked();
   }
 
   public checkParteItem(parte: any, evt: any): void {
     parte.checked = evt.target.checked;
+    
+    this.sortPartesByChecked();
   }
 
   public isCheckedItem(dataSource: any[]): boolean

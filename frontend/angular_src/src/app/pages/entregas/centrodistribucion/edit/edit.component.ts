@@ -113,26 +113,19 @@ export class EntregasCentrodistribucionEditComponent implements OnInit {
         this.entregaForm.controls.comentario.setValue(entregaData.entrega.comentario);
       }
 
-      let cantidad_pendiente: number;
-      let cantidad_max: number;
-
       // Load partes list from queue_partes
       this.partes = entregaData.queue_partes.reduce((carry: any[], parte: any) => {
-
-          cantidad_pendiente = parte.cantidad_total - parte.cantidad_entregado;
-          cantidad_max = cantidad_pendiente <= parte.cantidad_stock ? cantidad_pendiente : parte.cantidad_stock;
 
           carry.push({
             id: parte.id,
             nparte: parte.nparte,
             marca: parte.marca,
-            backorder: parte.backorder > 0 ? true : false,
-            cantidad: cantidad_max,
-            cantidad_total: parte.cantidad_total,
-            cantidad_pendiente: cantidad_pendiente,
-            cantidad_stock: parte.cantidad_stock,
-            cantidad_entregado: parte.cantidad_entregado,
-            cantidad_max: cantidad_max,
+            descripcion: parte.pivot.descripcion,
+            backorder: parte.pivot.backorder > 0 ? true : false,
+            cantidad: parte.pivot.cantidad_stock,
+            cantidad_stock: parte.pivot.cantidad_stock,
+            cantidad_pendiente: parte.pivot.cantidad - parte.pivot.cantidad_entregado,
+            estadoocparte: parte.pivot.estadoocparte,
             checked: false,
           });
 
@@ -152,22 +145,15 @@ export class EntregasCentrodistribucionEditComponent implements OnInit {
 
         if(index >= 0)
         {
-          cantidad_pendiente = this.partes[index].cantidad_total - this.partes[index].cantidad_entregado + ocparte.pivot.cantidad;
-          cantidad_max = cantidad_pendiente <= this.partes[index].cantidad_stock ? cantidad_pendiente : this.partes[index].cantidad_stock;
-
           this.partes[index].checked = true;
           this.partes[index].cantidad = ocparte.pivot.cantidad;
-          this.partes[index].cantidad_pendiente = cantidad_pendiente;
-          this.partes[index].cantidad_max = cantidad_max;
         }
 
       });
 
-      this.partes = this.partes.sort((p1, p2) => {
-        return p2.cantidad - p1.cantidad;
-      });
-
       this.renderDataTable(this.datatableElement_ocpartes);
+
+      this.sortPartesByChecked();
     }
     else
     {
@@ -374,14 +360,25 @@ export class EntregasCentrodistribucionEditComponent implements OnInit {
     }
   }
 
+  private sortPartesByChecked(): void {
+    // Sort partes pushing checked ones to the top
+    this.partes = this.partes.sort((p1, p2) => {
+      return ((p2.checked === true) ? 1 : 0) - ((p1.checked === true) ? 1 : 0);
+    });
+  }
+
   public checkPartesList(evt: any): void {
     this.partes.forEach((parte: any) => {
       parte.checked = evt.target.checked;
     });
+
+    this.sortPartesByChecked();
   }
 
   public checkParteItem(parte: any, evt: any): void {
     parte.checked = evt.target.checked;
+
+    this.sortPartesByChecked();
   }
 
   public isCheckedItem(dataSource: any[]): boolean
