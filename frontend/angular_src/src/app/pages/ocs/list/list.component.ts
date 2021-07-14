@@ -157,7 +157,18 @@ export class OcsListComponent implements OnInit, AfterViewInit {
     return this._utilsService.dateStringFormat(value);
   }
 
+  // Modified for removing decimals when in CLP value
   public moneyStringFormat(value: number): string {
-    return this._utilsService.moneyStringFormat(value);
+    let moneyStr = this._utilsService.moneyStringFormat(value);
+    
+    // If role is Seller
+    if((this.loggedUser !== null) && (this.loggedUser.role.name === 'seller'))
+    {
+      // Modify value removing decimals
+      let index = moneyStr.indexOf('.');
+      moneyStr = moneyStr.substring(0, index);
+    }
+    
+    return moneyStr;
   }
 }

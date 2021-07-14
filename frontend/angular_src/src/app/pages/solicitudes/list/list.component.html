@@ -40,19 +40,19 @@
                                 </div>
                             </th>
                             <th>Solicitud</th>
-                            <th>Sucursal</th>
+                            <!-- <th>Sucursal</th> -->
                             <th>Faena</th>
                             <th>Marca</th>
-                            <th>Comprador</th>
+                            <!-- <th>Comprador</th> -->
                             <th>Ejecutivo</th>
-                            <th>Partes</th>
+                            <!-- <th>Partes</th> -->
                             <th>Estado</th>
                             <th>Opciones</th>
                         </tr>
                     </thead>
                     <tbody *ngIf="(loading === true)">
                         <tr>
-                            <td colspan="10" style="text-align: center;"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</td>
+                            <td colspan="7" style="text-align: center;"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</td>
                         </tr>
                     </tbody>
                     <tbody *ngIf="(loading === false)">
@@ -64,12 +64,12 @@
                                 </div>
                             </td>
                             <td align="center">{{ solicitud.id }}</td>
-                            <td align="center">{{ solicitud.sucursal.name }}</td>
+                            <!-- <td align="center">{{ solicitud.sucursal.name }}</td> -->
                             <td align="center">{{ solicitud.faena.name }}</td>
                             <td align="center">{{ solicitud.marca.name }}</td>
-                            <td align="center">{{ solicitud.comprador.name }}</td>
+                            <!-- <td align="center">{{ solicitud.comprador.name }}</td> -->
                             <td align="center">{{ solicitud.user.name }}</td>
-                            <td align="right">{{ solicitud.partes_total }}</td>
+                            <!-- <td align="right">{{ solicitud.partes_total }}</td> -->
                             <td align="center">{{ solicitud.estadosolicitud.name }}</td>
                             <td align="center">
                                 <a [routerLink]="['details', solicitud.id]" class="btn-table btn btn-secondary" title="Detalle"><i
@@ -84,12 +84,12 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="5" align="left">
+                            <td colspan="3" align="left">
                                 <button type="button" class="btn btn-outline-primary mr-2" (click)="goTo_newSolicitud()" *ngIf="(loggedUser !== null) && (['admin', 'seller'].includes(this.loggedUser.role.name))" [disabled]="(loading === true)">
                                     <i class="bx bx-notepad font-size-16 align-middle"></i> Nueva solicitud
                                 </button>
                             </td>
-                            <td colspan="5" align="right">
+                            <td colspan="4" align="right">
                                 <button type="button" class="btn btn-outline-primary" (click)="exportSolicitudesToExcel()" [disabled]="(loading === true) || (isCheckedItem(solicitudes) === false)">
                                     <i class="bx bx-spreadsheet font-size-16 align-middle"></i> Exportar a Excel
                                 </button>

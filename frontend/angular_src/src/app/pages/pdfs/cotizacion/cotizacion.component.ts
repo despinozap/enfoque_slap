@@ -91,8 +91,15 @@ export class PDFCotizacionComponent implements OnInit {
     );
   }
 
+  // Modified for removing decimals when in CLP value
   public moneyStringFormat(value: number): string {
-    return this._utilsService.moneyStringFormat(value);
+    let moneyStr = this._utilsService.moneyStringFormat(value);
+    
+    // Modify value removing decimals
+    let index = moneyStr.indexOf('.');
+    moneyStr = moneyStr.substring(0, index);
+    
+    return moneyStr;
   }
 
   public dateStringFormat(value: string): string {

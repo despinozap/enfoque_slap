@@ -618,10 +618,6 @@ export class OcsDetailsComponent implements OnInit {
       );
   }
 
-  public moneyStringFormat(value: number): string {
-    return this._utilsService.moneyStringFormat(value);
-  }
-
   public dateStringFormat(value: string): string {
     return this._utilsService.dateStringFormat(value);
   }
