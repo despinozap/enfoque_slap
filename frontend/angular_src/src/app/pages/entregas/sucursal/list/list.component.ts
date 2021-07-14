@@ -2,6 +2,8 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { DataTableDirective } from 'angular-datatables';
 import { Subject } from 'rxjs';
+import { User } from 'src/app/interfaces/user';
+import { AuthService } from 'src/app/services/auth.service';
 import { EntregasService } from 'src/app/services/entregas.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { UtilsService } from 'src/app/services/utils.service';
@@ -43,17 +45,29 @@ export class EntregasSucursalListComponent implements OnInit {
   
   dtTrigger: Subject<any> = new Subject<any>();
 
+  loggedUser: User = null as any;
+  private subLoggedUser: any;
+  
   entregas: any[] = [];
   sucursal_id : number = 2;
   loading: boolean = false;
   
   constructor(
     private router: Router,
+    private _authService: AuthService,
     private _entregasService: EntregasService,
     private _utilsService: UtilsService
   ) { }
 
   ngOnInit(): void {
+    //For loggedUser
+    {
+      this.subLoggedUser = this._authService.loggedUser$.subscribe((data) => {
+        this.loggedUser = data.user as User;
+      });
+      
+      this._authService.notifyLoggedUser(this._authService.NOTIFICATION_RECEIVER_CONTENTPAGE);
+    }
   }
 
   ngAfterViewInit(): void {
@@ -67,6 +81,7 @@ export class EntregasSucursalListComponent implements OnInit {
   }
 
   ngOnDestroy(): void {
+    this.subLoggedUser.unsubscribe();
     this.dtTrigger.unsubscribe();
   }
 
@@ -257,9 +272,9 @@ export class EntregasSucursalListComponent implements OnInit {
   public dateStringFormat(value: string): string {
     return this._utilsService.dateStringFormat(value);
   }
-
+  
   public goTo_newEntrega(): void {
     this.router.navigate(['/panel/entregas/sucursal/create']);
   }
-
+  
 }

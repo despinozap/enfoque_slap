@@ -112,15 +112,21 @@
                             <thead>
                                 <tr>
                                     <th>N° Parte</th>
+                                    <th>Descripcion</th>
                                     <th>Marca</th>
                                     <th>Cantidad</th>
+                                    <th>Pendiente</th>
+                                    <th>Estado</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr *ngFor="let parte of partes; index as i">
-                                    <td align="center"><i class="bx bx-timer icon-table" *ngIf="(parte.backorder === true)"></i>{{ parte.nparte !== null ? parte.nparte : "" }}</td>
-                                    <td align="center">{{ parte.marca_name !== null ? parte.marca_name : "" }}</td>
-                                    <td align="right">{{ parte.cantidad !== null ? parte.cantidad : "" }}</td>
+                                    <td align="center"><i class="bx bx-timer icon-table" *ngIf="(parte.backorder === true)"></i>{{ parte.nparte !== null ? parte.nparte : '' }}</td>
+                                    <td align="center">{{ parte.descripcion !== null ? parte.descripcion : '' }}</td>
+                                    <td align="center">{{ parte.marca.name !== null ? parte.marca.name : '' }}</td>
+                                    <td align="right">{{ parte.cantidad !== null ? parte.cantidad : '' }}</td>
+                                    <td align="right">{{ parte.cantidad_pendiente !== null ? parte.cantidad_pendiente : '' }}</td>
+                                    <td align="center">{{ parte.estadoocparte.name !== null ? parte.estadoocparte.name : '' }}</td>
                                 </tr>
                             </tbody>
                         </table>

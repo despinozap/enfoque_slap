@@ -108,9 +108,12 @@ export class EntregasSucursalDetailsComponent implements OnInit {
           {
             'id': ocparte.parte.id,
             'nparte': ocparte.parte.nparte,
-            'marca_name': ocparte.parte.marca.name,
+            'marca': ocparte.parte.marca,
+            'descripcion': ocparte.descripcion,
             'backorder': ocparte.backorder > 0 ? true : false,
-            'cantidad': ocparte.pivot.cantidad
+            'cantidad': ocparte.pivot.cantidad,
+            'cantidad_pendiente': ocparte.cantidad - ocparte.cantidad_entregado,
+            'estadoocparte': ocparte.estadoocparte 
           }
         )
       });
