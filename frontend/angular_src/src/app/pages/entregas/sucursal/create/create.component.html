@@ -139,7 +139,7 @@
                         </div>
                         <div class="col-4">
                             <div class="form-group">
-                                <label class="control-label" for="name">Fecha de entrega</label>
+                                <label class="control-label required-field" for="name">Fecha de entrega</label>
                                 <!-- Backend errors -->
                                 <div class="alert alert-danger" *ngIf="(responseErrors.fecha)">
                                     <div *ngFor="let errorMessage of responseErrors.fecha">{{ errorMessage }}</div>
@@ -171,7 +171,7 @@
                         </div>
                         <div class="col-4">
                             <div class="form-group">
-                                <label class="control-label" for="responsable">Entregado por</label>
+                                <label class="control-label required-field" for="responsable">Entregado por</label>
                                 <!-- Backend errors -->
                                 <div class="alert alert-danger" *ngIf="(responseErrors.responsable)">
                                     <div *ngFor="let errorMessage of responseErrors.responsable">{{ errorMessage }}</div>

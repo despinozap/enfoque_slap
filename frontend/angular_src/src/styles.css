@@ -40,6 +40,12 @@ label.control-label {
     font-weight: 700;
 }
 
+label.required-field::after {
+    content: '*';
+    color: #ff0000;
+    font-weight: bold;
+}
+
 .custom-file-label {
     cursor: pointer;
 }

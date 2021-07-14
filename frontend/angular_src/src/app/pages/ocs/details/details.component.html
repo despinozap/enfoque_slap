@@ -154,7 +154,7 @@
 
                             <div class="col-6">
                                 <div class="form-group">
-                                    <label for="cantidad">Cantidad</label>
+                                    <label for="cantidad" class="required-field">Cantidad</label>
                                     <!-- Backend errors -->
                                     <div class="alert alert-danger" *ngIf="(responseErrors.cantidad)">
                                         <div *ngFor="let errorMessage of responseErrors.cantidad">{{ errorMessage }}</div>
@@ -170,7 +170,7 @@
 
                             <div class="col-6">
                                 <div class="form-group">
-                                    <label for="tiempoentrega">Tiempo de entrega (en dias)</label>
+                                    <label for="tiempoentrega" class="required-field">Tiempo de entrega (en dias)</label>
                                     <!-- Backend errors -->
                                     <div class="alert alert-danger" *ngIf="(responseErrors.tiempoentrega)">
                                         <div *ngFor="let errorMessage of responseErrors.tiempoentrega">{{ errorMessage }}</div>
@@ -221,7 +221,7 @@
 
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label class="control-label">Motivo de baja</label>
+                                    <label class="control-label required-field">Motivo de baja</label>
                                     <!-- Backend errors -->
                                     <div class="alert alert-danger" *ngIf="(responseErrors.motivobaja_id)">
                                         <div *ngFor="let errorMessage of responseErrors.motivobaja_id">{{ errorMessage }}</div>
@@ -267,7 +267,7 @@
 
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label class="control-label">Proveedor</label>
+                                    <label class="control-label required-field">Proveedor</label>
                                     <!-- Backend errors -->
                                     <div class="alert alert-danger" *ngIf="(responseErrors.proveedor_id)">
                                         <div *ngFor="let errorMessage of responseErrors.proveedor_id">{{ errorMessage }}</div>
@@ -287,12 +287,12 @@
                             <div class="col-12">
                                 <div class="form-group">
                                     <button type="submit" [disabled]="(startOCForm.invalid) || (loading === true)" class="btn btn-primary mr-2">
-                    <span *ngIf="loading === true"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
-                    <span *ngIf="loading === false">Guardar</span>
-                  </button>
+                                        <span *ngIf="loading === true"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
+                                        <span *ngIf="loading === false">Guardar</span>
+                                    </button>
                                     <button type="button" class="btn btn-outline-primary" [disabled]="(loading === true)" (click)="goTo_partesList()">
-                    Cancelar
-                  </button>
+                                        Cancelar
+                                    </button>
                                 </div>
                             </div>
 

@@ -171,7 +171,7 @@
 
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label class="control-label">Estado comercial</label>
+                                    <label class="control-label required-field">Estado comercial</label>
                                     <!-- Backend errors -->
                                     <div class="alert alert-danger" *ngIf="(responseErrors.decision)">
                                         <div *ngFor="let errorMessage of responseErrors.decision">{{ errorMessage }}
@@ -258,7 +258,7 @@
 
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label class="control-label">Numero OC Cliente</label>
+                                    <label class="control-label required-field">Numero OC Cliente</label>
                                     <!-- Backend errors -->
                                     <div class="alert alert-danger" *ngIf="(responseErrors.noccliente)">
                                         <div *ngFor="let errorMessage of responseErrors.noccliente">{{ errorMessage }}
@@ -322,15 +322,14 @@
 
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label class="control-label">Motivo de rechazo</label>
+                                    <label class="control-label required-field">Motivo de rechazo</label>
                                     <!-- Backend errors -->
                                     <div class="alert alert-danger" *ngIf="(responseErrors.motivorechazo_id)">
                                         <div *ngFor="let errorMessage of responseErrors.motivorechazo_id">{{ errorMessage }}</div>
                                     </div>
                                     <select class="form-control" name="motivorechazo_id" id="motivorechazo_id" formControlName="motivorechazo_id">
                                         <option *ngFor="let motivoRechazo of motivosRechazo" [value]="motivoRechazo.id">
-                                            {{
-                                            motivoRechazo.name }}</option>
+                                            {{ motivoRechazo.name }}</option>
                                     </select>
                                     <!-- Frontend errors -->
                                     <div *ngIf="(estadoComercialRechazarForm.controls.motivorechazo_id.errors) && (estadoComercialRechazarForm.controls.motivorechazo_id.touched) && (estadoComercialRechazarForm.controls.motivorechazo_id.dirty)">

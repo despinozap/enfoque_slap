@@ -72,7 +72,7 @@
                         </div>
                         <div class="col-4">
                             <div class="form-group">
-                                <label class="control-label" for="name">Fecha de entrega</label>
+                                <label class="control-label required-field" for="name">Fecha de entrega</label>
                                 <!-- Backend errors -->
                                 <div class="alert alert-danger" *ngIf="(responseErrors.fecha)">
                                     <div *ngFor="let errorMessage of responseErrors.fecha">{{ errorMessage }}</div>
@@ -104,7 +104,7 @@
                         </div>
                         <div class="col-4">
                             <div class="form-group">
-                                <label class="control-label" for="responsable">Entregado por</label>
+                                <label class="control-label required-field" for="responsable">Entregado por</label>
                                 <!-- Backend errors -->
                                 <div class="alert alert-danger" *ngIf="(responseErrors.responsable)">
                                     <div *ngFor="let errorMessage of responseErrors.responsable">{{ errorMessage }}</div>
@@ -190,12 +190,12 @@
                         <div class="col-12">
                             <div class="form-buttons mt-2">
                                 <button class="btn btn-primary mr-2" (click)="updateEntrega()" [disabled]="(entregaForm.invalid) || (loading === true) || (isCheckedItem(partes) === false)">
-                  <span *ngIf="loading === true"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
-                  <span *ngIf="loading === false">Guardar</span>
-                </button>
+                                    <span *ngIf="loading === true"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</span>
+                                    <span *ngIf="loading === false">Guardar</span>
+                                </button>
                                 <button [disabled]="(loading === true)" class="btn btn-light" (click)="goTo_entregasList()">
-                  <span>Cancelar</span>
-                </button>
+                                    <span>Cancelar</span>
+                                </button>
                             </div>
                         </div>
                     </div>

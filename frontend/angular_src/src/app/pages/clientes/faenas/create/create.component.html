@@ -35,7 +35,7 @@
                     <div class="row">
                         <div class="col-6">
                             <div class="form-group">
-                                <label class="control-label" for="rut">RUT</label>
+                                <label class="control-label required-field" for="rut">RUT</label>
                                 <!-- Backend errors -->
                                 <div class="alert alert-danger" *ngIf="(responseErrors.rut)">
                                     <div *ngFor="let errorMessage of responseErrors.rut">{{ errorMessage }}</div>
@@ -52,7 +52,7 @@
                         </div>
                         <div class="col-6">
                             <div class="form-group">
-                                <label class="control-label" for="name">Nombre</label>
+                                <label class="control-label required-field" for="name">Nombre</label>
                                 <!-- Backend errors -->
                                 <div class="alert alert-danger" *ngIf="(responseErrors.name)">
                                     <div *ngFor="let errorMessage of responseErrors.name">{{ errorMessage }}</div>
@@ -69,7 +69,7 @@
                         </div>
                         <div class="col-6">
                             <div class="form-group">
-                                <label class="control-label" for="address">Direccion</label>
+                                <label class="control-label required-field" for="address">Direccion</label>
                                 <!-- Backend errors -->
                                 <div class="alert alert-danger" *ngIf="(responseErrors.address)">
                                     <div *ngFor="let errorMessage of responseErrors.address">{{ errorMessage }}</div>
@@ -86,7 +86,7 @@
                         </div>
                         <div class="col-6">
                             <div class="form-group">
-                                <label class="control-label" for="city">Ciudad</label>
+                                <label class="control-label required-field" for="city">Ciudad</label>
                                 <!-- Backend errors -->
                                 <div class="alert alert-danger" *ngIf="(responseErrors.city)">
                                     <div *ngFor="let errorMessage of responseErrors.city">{{ errorMessage }}</div>
@@ -103,7 +103,7 @@
                         </div>
                         <div class="col-6">
                             <div class="form-group">
-                                <label class="control-label" for="contact">Contacto (nombre persona)</label>
+                                <label class="control-label required-field" for="contact">Contacto (nombre persona)</label>
                                 <!-- Backend errors -->
                                 <div class="alert alert-danger" *ngIf="(responseErrors.contact)">
                                     <div *ngFor="let errorMessage of responseErrors.contact">{{ errorMessage }}</div>
@@ -120,7 +120,7 @@
                         </div>
                         <div class="col-6">
                             <div class="form-group">
-                                <label class="control-label" for="phone">Telefono</label>
+                                <label class="control-label required-field" for="phone">Telefono</label>
                                 <!-- Backend errors -->
                                 <div class="alert alert-danger" *ngIf="(responseErrors.phone)">
                                     <div *ngFor="let errorMessage of responseErrors.phone">{{ errorMessage }}</div>
@@ -137,7 +137,7 @@
                         </div>
                         <div class="col-6">
                             <div class="form-group">
-                                <label class="control-label">Sucursal de entrega</label>
+                                <label class="control-label required-field">Sucursal de entrega</label>
                                 <!-- Backend errors -->
                                 <div class="alert alert-danger" *ngIf="(responseErrors.sucursal_id)">
                                     <div *ngFor="let errorMessage of responseErrors.sucursal_id">{{ errorMessage }}</div>

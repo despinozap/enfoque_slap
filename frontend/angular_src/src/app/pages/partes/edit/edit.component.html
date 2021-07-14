@@ -34,7 +34,7 @@
                     <div class="row">
                         <div class="col-12">
                             <div class="form-group">
-                                <label class="control-label" for="nparte">N° Parte</label>
+                                <label class="control-label required-field" for="nparte">N° Parte</label>
                                 <!-- Backend errors -->
                                 <div class="alert alert-danger" *ngIf="(responseErrors.nparte)">
                                     <div *ngFor="let errorMessage of responseErrors.nparte">{{ errorMessage }}</div>
@@ -50,7 +50,7 @@
                         </div>
                         <div class="col-12">
                             <div class="form-group">
-                                <label class="control-label">Marca</label>
+                                <label class="control-label required-field">Marca</label>
                                 <!-- Backend errors -->
                                 <div class="alert alert-danger" *ngIf="(responseErrors.marca)">
                                     <div *ngFor="let errorMessage of responseErrors.marca">{{ errorMessage }}</div>

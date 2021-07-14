@@ -34,7 +34,7 @@
                     <div class="row">
                         <div class="col-6">
                             <div class="form-group">
-                                <label class="control-label" for="name">Nombre</label>
+                                <label class="control-label required-field" for="name">Nombre</label>
                                 <!-- Backend errors -->
                                 <div class="alert alert-danger" *ngIf="(responseErrors.name)">
                                     <div *ngFor="let errorMessage of responseErrors.name">{{ errorMessage }}</div>
@@ -51,7 +51,7 @@
                         </div>
                         <div class="col-6">
                             <div class="form-group">
-                                <label class="control-label" for="email">Email</label>
+                                <label class="control-label required-field" for="email">Email</label>
                                 <!-- Backend errors -->
                                 <div class="alert alert-danger" *ngIf="(responseErrors.email)">
                                     <div *ngFor="let errorMessage of responseErrors.email">{{ errorMessage }}</div>
@@ -67,14 +67,14 @@
                         </div>
                         <div class="col-6">
                             <div class="form-group">
-                                <label class="control-label">Rol</label>
+                                <label class="control-label required-field">Rol</label>
                                 <!-- Backend errors -->
                                 <div class="alert alert-danger" *ngIf="(responseErrors.role_name)">
                                     <div *ngFor="let errorMessage of responseErrors.role_name">{{ errorMessage }}</div>
                                 </div>
                                 <select class="form-control" name="role" id="role" formControlName="role">
-																	<option *ngFor="let role of roles; index as i" [value]="(i)">{{ role.label }}</option>
-																</select>
+                                    <option *ngFor="let role of roles; index as i" [value]="(i)">{{ role.label }}</option>
+                                </select>
                                 <!-- Frontend errors -->
                                 <div *ngIf="(userForm.controls.role.errors) && (userForm.controls.role.touched) && (userForm.controls.role.dirty)">
                                     <div class="error-response" *ngIf="userForm.controls.role.errors.required === true">Debes seleccionar el rol
@@ -85,7 +85,7 @@
                         </div>
                         <div class="col-6">
                             <div class="form-group">
-                                <label class="control-label" for="phone">Telefono</label>
+                                <label class="control-label required-field" for="phone">Telefono</label>
                                 <!-- Backend errors -->
                                 <div class="alert alert-danger" *ngIf="(responseErrors.phone)">
                                     <div *ngFor="let errorMessage of responseErrors.phone">{{ errorMessage }}</div>
