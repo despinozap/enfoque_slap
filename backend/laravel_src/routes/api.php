@@ -197,13 +197,14 @@ Route::middleware(['auth:api', 'cors'])->group(function()
     Route::put('/sucursales/{sucursal_id}/recepciones/{id}', [RecepcionesController::class, 'update_sucursal']);
     Route::delete('/sucursales/{sucursal_id}/recepciones/{id}', [RecepcionesController::class, 'destroy_sucursal']);
 
-    // // Entregas (Sucursal)
-    // Route::get('/sucursales/{id}/entregas', [EntregasController::class, 'index_sucursal']);
-    // Route::get('/sucursales/{sucursal_id}/entregas/queueocs', [EntregasController::class, 'queueOcs_sucursal']);
-    // Route::get('/sucursales/{sucursal_id}/entregas/prepare/ocs/{oc_id}', [EntregasController::class, 'store_prepare_sucursal']);
-    // Route::post('/sucursales/{sucursal_id}/entregas/ocs/{oc_id}', [EntregasController::class, 'store_sucursal']);
-    // Route::get('/sucursales/{sucursal_id}/entregas/{id}', [EntregasController::class, 'show_sucursal']);
-    // Route::get('/sucursales/{sucursal_id}/entregas/{id}/prepare', [EntregasController::class, 'update_prepare_sucursal']);
-    // Route::put('/sucursales/{sucursal_id}/entregas/{id}', [EntregasController::class, 'update_sucursal']);
-    // Route::delete('/sucursales/{sucursal_id}/entregas/{id}', [EntregasController::class, 'destroy_sucursal']);
+    // Entregas (Sucursal)
+    Route::get('/sucursales/{id}/entregas', [EntregasController::class, 'index_sucursal']);
+    Route::get('/sucursales/{sucursal_id}/entregas/queueocs', [EntregasController::class, 'queueOcs_sucursal']);
+    Route::get('/sucursales/{sucursal_id}/entregas/prepare/ocs/{oc_id}', [EntregasController::class, 'store_prepare_sucursal']);
+    Route::post('/sucursales/{id}/entregas/ocs/{oc_id}', [EntregasController::class, 'store_sucursal']);
+    Route::get('/sucursales/{sucursal_id}/entregas/{id}', [EntregasController::class, 'show_sucursal']);
+    Route::get('/sucursales/{sucursal_id}/entregas/{id}/prepare', [EntregasController::class, 'update_prepare_sucursal']);
+    Route::put('/sucursales/{sucursal_id}/entregas/{id}', [EntregasController::class, 'update_sucursal']);
+    Route::delete('/sucursales/{sucursal_id}/entregas/{id}', [EntregasController::class, 'destroy_sucursal']);
+
 });

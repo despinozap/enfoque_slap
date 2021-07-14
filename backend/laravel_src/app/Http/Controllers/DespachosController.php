@@ -3157,7 +3157,7 @@ class DespachosController extends Controller
                         // Administrador
                         case 'admin': {
 
-                            // If user belongs to the Sucursal' (centro) country
+                            // If user belongs to the Sucursal's (centro) country
                             if($user->stationable->country->id === $centrodistribucion->country->id)
                             {
                                 // Get only Sucursales in the same Country from where Ocs were generated and OcPartes were received at Sucursal (centro)
@@ -3323,7 +3323,7 @@ class DespachosController extends Controller
                             // Administrador
                             case 'admin': {
 
-                                // If user belongs to the Sucursal' (centro) country
+                                // If user belongs to the Sucursal's (centro) country
                                 if($user->stationable->country->id === $centrodistribucion->country->id)
                                 {
                                     // Get only OcPartes on OCs generated from the given Sucursal and received at Sucursal (centro)
