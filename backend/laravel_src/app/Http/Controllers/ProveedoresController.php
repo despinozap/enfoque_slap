@@ -122,30 +122,52 @@ class ProveedoresController extends Controller
             $user = Auth::user();
             if($user->role->hasRoutepermission('proveedores store'))
             {
-                $validatorInput = $request->only('rut', 'name', 'address', 'city', 'contact', 'phone');
+                $validatorInput = $request->only(
+                    'rut', 
+                    'name', 
+                    'address', 
+                    'city', 
+                    'email', 
+                    'phone', 
+                    'delivered', 
+                    'delivery_name',
+                    'delivery_address',
+                    'delivery_city',
+                    'delivery_email',
+                    'delivery_phone'
+                );
             
                 $validatorRules = [
-                    'rut' => 'required|min:1',
+                    'rut' => 'required|min:4',
                     'name' => 'required|min:4',
-                    'address' => 'required|min:1',
-                    'city' => 'required|min:1',
-                    'contact' => 'required|min:1',
-                    'phone' => 'required|min:1'
+                    'address' => 'required|min:4',
+                    'city' => 'required|min:4',
+                    'email' => 'required|email',
+                    'phone' => 'required|min:4',
+                    'delivered' => 'required|boolean',
+                    'delivery_name' => 'sometimes',
+                    'delivery_address' => 'sometimes',
+                    'delivery_city' => 'sometimes',
+                    'delivery_email' => 'sometimes',
+                    'delivery_phone' => 'sometimes'
                 ];
 
                 $validatorMessages = [
                     'rut.required' => 'Debes ingresar el RUT',
-                    'rut.min' => 'El RUT debe tener al menos 1 caracter',
+                    'rut.min' => 'El RUT debe tener al menos 4 caracteres',
                     'name.required' => 'Debes ingresar el nombre',
                     'name.min' => 'El nombre debe tener al menos 4 caracteres',
                     'address.required' => 'Debes ingresar la direccion',
-                    'address.min' => 'La direccion debe tener al menos 1 caracter',
+                    'address.min' => 'La direccion debe tener al menos 4 caracteres',
                     'city.required' => 'Debes ingresar la ciudad',
-                    'city.min' => 'La ciudad debe tener al menos 1 caracter',
-                    'contact.required' => 'Debes ingresar el nombre de contacto',
-                    'contact.min' => 'El nombre de contacto debe tener al menos 1 caracter',
+                    'city.min' => 'La ciudad debe tener al menos 4 caracteres',
+                    'email.required' => 'Debes ingresar el email',
+                    'email.email' => 'El email debe ser valido',
                     'phone.required' => 'Debes ingresar el telefono',
-                    'phone.min' => 'El telefono debe tener al menos 1 caracter',
+                    'phone.min' => 'El telefono debe tener al menos 4 caracteres',
+                    'delivered.required' => 'Debes seleccionar si el proveedor requiere entrega',
+                    'delivered.boolean' => 'La seleccion de requerir entrega para el proveedor es invalido',
+                    'delivery_email.email' => 'El email del punto de entrega debe ser valido',
                 ];
 
                 $validator = Validator::make(
@@ -196,23 +218,86 @@ class ProveedoresController extends Controller
                 }
                 else       
                 {
-                    $proveedor = new Proveedor();
-                    $proveedor->fill($request->all());
-                    $proveedor->comprador_id = $comprador_id;
-                    
-                    if($proveedor->save())
+                    $success = true;
+
+                    // If requieres delivery
+                    if($request->delivered === true)
                     {
-                        $response = HelpController::buildResponse(
-                            201,
-                            'Proveedor creado',
-                            null
-                        );
+                        $errorMessages = [];
+                        if(!isset($request->delivery_name))
+                        {
+                            $success = false;
+                        
+                            $errorMessages['delivery_name'] = array(
+                                'Debes ingresar el nombre del punto de entrega'
+                            );
+                        }
+                        
+                        if(!isset($request->delivery_address))
+                        {
+                            $success = false;
+                        
+                            $errorMessages['delivery_address'] = array(
+                                'Debes ingresar la direccion del punto de entrega'
+                            );
+                        }
+                        
+                        if(!isset($request->delivery_city))
+                        {
+                            $success = false;
+                        
+                            $errorMessages['delivery_city'] = array(
+                                'Debes ingresar la ciudad del punto de entrega'
+                            );
+                        }
+                        
+                        if(!isset($request->delivery_email))
+                        {
+                            $success = false;
+                        
+                            $errorMessages['delivery_email'] = array(
+                                'Debes ingresar el email del punto de entrega'
+                            );
+                        }
+                        
+                        if(!isset($request->delivery_phone))
+                        {
+                            $success = false;
+                        
+                            $errorMessages['delivery_phone'] = array(
+                                'Debes ingresar el telefono del punto de entrega'
+                            );
+                        }
+                    }
+
+                    if($success === true)
+                    {
+                        $proveedor = new Proveedor();
+                        $proveedor->fill($request->all());
+                        $proveedor->comprador_id = $comprador_id;
+                        
+                        if($proveedor->save())
+                        {
+                            $response = HelpController::buildResponse(
+                                201,
+                                'Proveedor creado',
+                                null
+                            );
+                        }
+                        else
+                        {
+                            $response = HelpController::buildResponse(
+                                500,
+                                'Error al crear el proveedor',
+                                null
+                            );
+                        }
                     }
                     else
                     {
                         $response = HelpController::buildResponse(
-                            500,
-                            'Error al crear el proveedor',
+                            400,
+                            $errorMessages,
                             null
                         );
                     }
@@ -339,30 +424,52 @@ class ProveedoresController extends Controller
             $user = Auth::user();
             if($user->role->hasRoutepermission('proveedores update'))
             {
-                $validatorInput = $request->only('rut', 'name', 'address', 'city', 'contact', 'phone');
+                $validatorInput = $request->only(
+                    'rut', 
+                    'name', 
+                    'address', 
+                    'city', 
+                    'email', 
+                    'phone', 
+                    'delivered', 
+                    'delivery_name',
+                    'delivery_address',
+                    'delivery_city',
+                    'delivery_email',
+                    'delivery_phone'
+                );
             
                 $validatorRules = [
-                    'rut' => 'required|min:1',
+                    'rut' => 'required|min:4',
                     'name' => 'required|min:4',
-                    'address' => 'required|min:1',
-                    'city' => 'required|min:1',
-                    'contact' => 'required|min:1',
-                    'phone' => 'required|min:1'
+                    'address' => 'required|min:4',
+                    'city' => 'required|min:4',
+                    'email' => 'required|email',
+                    'phone' => 'required|min:4',
+                    'delivered' => 'required|boolean',
+                    'delivery_name' => 'sometimes',
+                    'delivery_address' => 'sometimes',
+                    'delivery_city' => 'sometimes',
+                    'delivery_email' => 'sometimes',
+                    'delivery_phone' => 'sometimes'
                 ];
 
                 $validatorMessages = [
                     'rut.required' => 'Debes ingresar el RUT',
-                    'rut.min' => 'El RUT debe tener al menos 1 caracter',
+                    'rut.min' => 'El RUT debe tener al menos 4 caracteres',
                     'name.required' => 'Debes ingresar el nombre',
                     'name.min' => 'El nombre debe tener al menos 4 caracteres',
                     'address.required' => 'Debes ingresar la direccion',
-                    'address.min' => 'La direccion debe tener al menos 1 caracter',
+                    'address.min' => 'La direccion debe tener al menos 4 caracteres',
                     'city.required' => 'Debes ingresar la ciudad',
-                    'city.min' => 'La ciudad debe tener al menos 1 caracter',
-                    'contact.required' => 'Debes ingresar el nombre de contacto',
-                    'contact.min' => 'El nombre de contacto debe tener al menos 1 caracter',
+                    'city.min' => 'La ciudad debe tener al menos 4 caracteres',
+                    'email.required' => 'Debes ingresar el email',
+                    'email.email' => 'El email debe ser valido',
                     'phone.required' => 'Debes ingresar el telefono',
-                    'phone.min' => 'El telefono debe tener al menos 1 caracter',
+                    'phone.min' => 'El telefono debe tener al menos 4 caracteres',
+                    'delivered.required' => 'Debes seleccionar si el proveedor requiere entrega',
+                    'delivered.boolean' => 'La seleccion de requerir entrega para el proveedor es invalido',
+                    'delivery_email.email' => 'El email del punto de entrega debe ser valido',
                 ];
 
                 $validator = Validator::make(
@@ -417,22 +524,93 @@ class ProveedoresController extends Controller
                 {
                     if($proveedor = Proveedor::find($id))
                     {
-                        $proveedor->fill($request->all());
-                        $proveedor->comprador_id= $comprador_id;
+                        $success = true;
 
-                        if($proveedor->save())
+                        // If requieres delivery
+                        if($request->delivered === true)
                         {
-                            $response = HelpController::buildResponse(
-                                200,
-                                'Proveedor actualizado',
-                                null
-                            );
+                            $errorMessages = [];
+                            if(!isset($request->delivery_name))
+                            {
+                                $success = false;
+                            
+                                $errorMessages['delivery_name'] = array(
+                                    'Debes ingresar el nombre del punto de entrega'
+                                );
+                            }
+                            
+                            if(!isset($request->delivery_address))
+                            {
+                                $success = false;
+                            
+                                $errorMessages['delivery_address'] = array(
+                                    'Debes ingresar la direccion del punto de entrega'
+                                );
+                            }
+                            
+                            if(!isset($request->delivery_city))
+                            {
+                                $success = false;
+                            
+                                $errorMessages['delivery_city'] = array(
+                                    'Debes ingresar la ciudad del punto de entrega'
+                                );
+                            }
+                            
+                            if(!isset($request->delivery_email))
+                            {
+                                $success = false;
+                            
+                                $errorMessages['delivery_email'] = array(
+                                    'Debes ingresar el email del punto de entrega'
+                                );
+                            }
+                            
+                            if(!isset($request->delivery_phone))
+                            {
+                                $success = false;
+                            
+                                $errorMessages['delivery_phone'] = array(
+                                    'Debes ingresar el telefono del punto de entrega'
+                                );
+                            }
+                        }
+
+                        if($success === true)
+                        {
+                            $proveedor->fill($request->all());
+
+                            if($request->delivered === false)
+                            {
+                                $proveedor->delivery_name = null;
+                                $proveedor->delivery_address = null;
+                                $proveedor->delivery_city = null;
+                                $proveedor->delivery_email = null;
+                                $proveedor->delivery_phone = null;
+                            }
+
+                            if($proveedor->save())
+                            {
+                                $response = HelpController::buildResponse(
+                                    200,
+                                    'Proveedor actualizado',
+                                    null
+                                );
+                            }
+                            else
+                            {
+                                $response = HelpController::buildResponse(
+                                    500,
+                                    'Error al actualizar el proveedor',
+                                    null
+                                );
+                            }
                         }
                         else
                         {
                             $response = HelpController::buildResponse(
-                                500,
-                                'Error al actualizar el proveedor',
+                                400,
+                                $errorMessages,
                                 null
                             );
                         }

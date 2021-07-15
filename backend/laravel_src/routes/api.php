@@ -120,8 +120,9 @@ Route::middleware(['auth:api', 'cors'])->group(function()
     // Compradores
     Route::get('/compradores', [CompradoresController::class, 'index']);
     Route::get('/compradores/{id}', [CompradoresController::class, 'show']);
+    Route::put('/compradores/{comprador_id}', [CompradoresController::class, 'update']);
     
-    // Proveedores
+    // Faenas
     Route::get('/compradores/{comprador_id}/proveedores', [ProveedoresController::class, 'index']);
     Route::post('/compradores/{comprador_id}/proveedores', [ProveedoresController::class, 'store']);
     Route::get('/compradores/{comprador_id}/proveedores/{id}', [ProveedoresController::class, 'show']);
