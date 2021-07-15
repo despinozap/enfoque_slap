@@ -50,6 +50,7 @@
                             <td align="center">{{ comprador.name }}</td>
                             <td align="right">{{ comprador.proveedores.length }}</td>
                             <td align="center">
+                                <a [routerLink]="['edit', comprador.id]" class="btn-table btn btn-secondary" title="Editar"><i class="bx bx-edit-alt"></i></a>
                                 <a [routerLink]="[comprador.id, 'proveedores']" class="btn-table btn btn-secondary" title="Proveedores"><i class="bx bx-sitemap"></i></a>
                             </td>
                         </tr>

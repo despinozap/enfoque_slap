@@ -212,8 +212,8 @@ export class SolicitudesCreateComponent implements OnInit {
           this.loading = false;
 
           this.faenas = <Array<Faena>>(response.data.faenas);
-          this.marcas = <Array<Faena>>(response.data.marcas);
-          this.compradores = <Array<Faena>>(response.data.compradores);
+          this.marcas = <Array<Marca>>(response.data.marcas);
+          this.compradores = <Array<Comprador>>(response.data.compradores);
 
           this.solicitudForm.enable();
         },
