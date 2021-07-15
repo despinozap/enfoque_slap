@@ -20,8 +20,14 @@ class CreateProveedoresTable extends Migration
             $table->string('name');
             $table->string('address');
             $table->string('city');
-            $table->string('contact');
+            $table->string('email');
             $table->string('phone');
+            $table->boolean('delivered');
+            $table->string('delivery_name')->nullable();
+            $table->string('delivery_address')->nullable();
+            $table->string('delivery_city')->nullable();
+            $table->string('delivery_email')->nullable();
+            $table->string('delivery_phone')->nullable();
             $table->timestamps();
 
             $table->foreign('comprador_id')->references('id')->on('compradores')->onDelete('cascade');

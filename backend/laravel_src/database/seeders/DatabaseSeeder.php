@@ -697,8 +697,9 @@ class DatabaseSeeder extends Seeder
         $proveedor->name = 'ProveedorNombreTest01';
         $proveedor->address = 'ProveedorDireccionTest01';
         $proveedor->city = 'ProveedorCiudadTest01';
-        $proveedor->contact = 'ProveedorContactoTest01';
+        $proveedor->email = 'proveedor1@mail.com';
         $proveedor->phone = 'ProveedorTelefonoTest01';
+        $proveedor->delivered = false;
         $proveedor->save();
         $proveedor = new Proveedor();
         $proveedor->comprador_id = $comprador->id;
@@ -706,8 +707,9 @@ class DatabaseSeeder extends Seeder
         $proveedor->name = 'KTractor Parts, Inc.';
         $proveedor->address = '8147 NW 67th St';
         $proveedor->city = 'Miami';
-        $proveedor->contact = 'Paul Harrison';
+        $proveedor->email = 'ktractorparts@mail.com';
         $proveedor->phone = '+1 305-392-7452';
+        $proveedor->delivered = false;
         $proveedor->save();
 
 
@@ -1176,6 +1178,23 @@ class DatabaseSeeder extends Seeder
             $faena->contact = 'Cristian Haro';
             $faena->phone = '52229354';
             $faena->save();
+
+            // Proveedor
+            $proveedor = new Proveedor();
+            $proveedor->comprador_id = $comprador->id;
+            $proveedor->rut = '11.222.333-4';
+            $proveedor->name = 'Power Depot Inc';
+            $proveedor->address = '3553 NW 78th Ave';
+            $proveedor->city = 'Medley, Florida 33122';
+            $proveedor->email = 'jgarzon@powerdepot.com';
+            $proveedor->phone = '305 592 7100';
+            $proveedor->delivered = true;
+            $proveedor->delivery_name = 'Capital';
+            $proveedor->delivery_address = '7315 NW 31 Street';
+            $proveedor->delivery_city = 'Miami, Florida 33122';
+            $proveedor->delivery_email = 'mlorenzo@capitaltrans.com';
+            $proveedor->delivery_phone = '305 597 2300';
+            $proveedor->save();
 
             /*
              *  Vendedores

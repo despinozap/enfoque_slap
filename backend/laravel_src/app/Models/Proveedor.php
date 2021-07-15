@@ -11,7 +11,19 @@ class Proveedor extends Model
 
     protected $table = 'proveedores';
     protected $fillable = [
-        'comprador_id', 'rut', 'name', 'address', 'city', 'contact', 'phone' 
+        'comprador_id', 
+        'rut', 
+        'name', 
+        'address', 
+        'city', 
+        'email', 
+        'phone',
+        'delivered',
+        'delivery_name',
+        'delivery_address',
+        'delivery_city',
+        'delivery_email',
+        'delivery_phone'
     ];
 
     public function comprador()
