@@ -19,7 +19,7 @@ class CreateCompradoresTable extends Migration
             $table->string('name');
             $table->string('address');
             $table->string('city');
-            $table->string('contact');
+            $table->string('email');
             $table->string('phone');
             $table->bigInteger('country_id')->unsigned();
             $table->timestamps();

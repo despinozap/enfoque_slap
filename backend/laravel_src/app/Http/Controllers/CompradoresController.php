@@ -194,14 +194,14 @@ class CompradoresController extends Controller
             $user = Auth::user();
             if($user->role->hasRoutepermission('compradores update'))
             {
-                $validatorInput = $request->only('rut', 'name', 'address', 'city', 'contact', 'phone');
+                $validatorInput = $request->only('rut', 'name', 'address', 'city', 'email', 'phone');
             
                 $validatorRules = [
                     'rut' => 'required|min:1',
                     'name' => 'required|min:4',
                     'address' => 'required|min:1',
                     'city' => 'required|min:1',
-                    'contact' => 'required|min:1',
+                    'email' => 'required|email',
                     'phone' => 'required|min:1'
                 ];
 
@@ -214,8 +214,8 @@ class CompradoresController extends Controller
                     'address.min' => 'La direccion debe tener al menos 1 caracter',
                     'city.required' => 'Debes ingresar la ciudad',
                     'city.min' => 'La ciudad debe tener al menos 1 caracter',
-                    'contact.required' => 'Debes ingresar el nombre de contacto',
-                    'contact.min' => 'El nombre de contacto debe tener al menos 1 caracter',
+                    'email.required' => 'Debes ingresar el email',
+                    'email.email' => 'El email debe ser valido',
                     'phone.required' => 'Debes ingresar el telefono',
                     'phone.min' => 'El telefono debe tener al menos 1 caracter'
                 ];
@@ -268,7 +268,7 @@ class CompradoresController extends Controller
                         $comprador->name = $request->name;
                         $comprador->address = $request->address;
                         $comprador->city = $request->city;
-                        $comprador->contact = $request->contact;
+                        $comprador->email = $request->email;
                         $comprador->phone = $request->phone;
 
                         if($comprador->save())

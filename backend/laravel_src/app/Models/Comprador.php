@@ -11,7 +11,7 @@ class Comprador extends Model
 
     protected $table = 'compradores';
     protected $fillable = [
-        'rut', 'name', 'address', 'city', 'contact', 'phone', 'country_id', 
+        'rut', 'name', 'address', 'city', 'email', 'phone', 'country_id', 
     ];
 
     public function country()

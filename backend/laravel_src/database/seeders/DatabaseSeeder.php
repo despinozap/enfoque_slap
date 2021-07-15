@@ -524,8 +524,8 @@ class DatabaseSeeder extends Seeder
         $comprador->name = 'American Parts Miami';
         $comprador->address = 'CompradorDireccionTest01';
         $comprador->city = 'Miami';
-        $comprador->country_id = 2; // Chile
-        $comprador->contact = 'John Doe';
+        $comprador->country_id = 2; // USA
+        $comprador->email = 'americanpartsmiami@mail.com';
         $comprador->phone = '+12345678901';
         $comprador->save();
 
