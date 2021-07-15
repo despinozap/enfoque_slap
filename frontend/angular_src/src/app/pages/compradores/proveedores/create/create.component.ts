@@ -1,5 +1,6 @@
+import { ifStmt } from '@angular/compiler/src/output/output_ast';
 import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Proveedor } from 'src/app/interfaces/proveedor';
 import { CompradoresService } from 'src/app/services/compradores.service';
@@ -25,12 +26,18 @@ export class ProveedoresCreateComponent implements OnInit {
   private sub: any;
 
   proveedorForm: FormGroup = new FormGroup({
-    rut: new FormControl('', [Validators.required, Validators.minLength(1)]),
+    rut: new FormControl('', [Validators.required, Validators.minLength(4)]),
     name: new FormControl('', [Validators.required, Validators.minLength(4)]),
-    address: new FormControl('', [Validators.required, Validators.minLength(1)]),
-    city: new FormControl('', [Validators.required, Validators.minLength(1)]),
-    contact: new FormControl('', [Validators.required, Validators.minLength(1)]),
-    phone: new FormControl('', [Validators.required, Validators.minLength(1)]),
+    address: new FormControl('', [Validators.required, Validators.minLength(4)]),
+    city: new FormControl('', [Validators.required, Validators.minLength(4)]),
+    email: new FormControl('', [Validators.required, Validators.email]),
+    phone: new FormControl('', [Validators.required, Validators.minLength(4)]),
+    delivered: new FormControl(''),
+    delivery_name: new FormControl(''),
+    delivery_address: new FormControl(''),
+    delivery_city: new FormControl(''),
+    delivery_email: new FormControl(''),
+    delivery_phone: new FormControl('')
   });
 
   constructor(
@@ -45,10 +52,41 @@ export class ProveedoresCreateComponent implements OnInit {
       this.comprador.id = params['comprador_id'];
       this.loadComprador();
     });
+
+    this.proveedorForm.controls.delivered.setValue(true);
+    this.updateStatusDelivered();
   }
 
   ngOnDestroy() {
     this.sub.unsubscribe();
+  }
+
+  public deliveryFieldValidator(control: AbstractControl):{[key: string]: boolean} | null 
+  {
+    let errorMessages = {
+      required: false,
+      minlength: false
+    };
+
+    if(control.value === null)
+    {
+      errorMessages.required = true;
+    }
+    else
+    {
+      if(control.value.length === 0)
+      {
+        errorMessages.required = true;
+      }
+      
+      if(control.value.length < 4)
+      {
+        errorMessages.minlength = true;
+      }
+    }
+    
+    // If any of validations is broken, then return errorMessages. Otherwise returns null (valid)
+    return ((errorMessages.required === true) || (errorMessages.minlength === true)) ? errorMessages : null;
   }
 
   private loadFormData(compradorData: any)
@@ -122,6 +160,59 @@ export class ProveedoresCreateComponent implements OnInit {
     );
   }
 
+  public updateStatusDelivered(): void {
+
+    if(this.proveedorForm.value.delivered === true)
+    {
+      this.proveedorForm.controls.delivery_name.enable();
+      this.proveedorForm.controls.delivery_address.enable();
+      this.proveedorForm.controls.delivery_city.enable();
+      this.proveedorForm.controls.delivery_email.enable();
+      this.proveedorForm.controls.delivery_phone.enable();
+
+      this.proveedorForm.controls.delivery_name.setValidators([this.deliveryFieldValidator, Validators.minLength(4)]);
+      this.proveedorForm.controls.delivery_address.setValidators([this.deliveryFieldValidator, Validators.minLength(4)]);
+      this.proveedorForm.controls.delivery_city.setValidators([this.deliveryFieldValidator, Validators.minLength(4)]);
+      this.proveedorForm.controls.delivery_email.setValidators([this.deliveryFieldValidator, Validators.email]);
+      this.proveedorForm.controls.delivery_phone.setValidators([this.deliveryFieldValidator, Validators.minLength(4)]);
+
+      // Add required field asterisk on labels
+      document.querySelectorAll('.delivery-field label').forEach((el) => {
+        el.className += " required-field";
+      });
+    }
+    else
+    {
+      this.proveedorForm.controls.delivery_name.setValue('');
+      this.proveedorForm.controls.delivery_name.disable();
+      this.proveedorForm.controls.delivery_address.setValue('');
+      this.proveedorForm.controls.delivery_address.disable();
+      this.proveedorForm.controls.delivery_city.setValue('');
+      this.proveedorForm.controls.delivery_city.disable();
+      this.proveedorForm.controls.delivery_email.setValue('');
+      this.proveedorForm.controls.delivery_email.disable();
+      this.proveedorForm.controls.delivery_phone.setValue('');
+      this.proveedorForm.controls.delivery_phone.disable();
+
+      this.proveedorForm.controls.delivery_name.clearValidators();
+      this.proveedorForm.controls.delivery_address.clearValidators();
+      this.proveedorForm.controls.delivery_city.clearValidators();
+      this.proveedorForm.controls.delivery_email.clearValidators();
+      this.proveedorForm.controls.delivery_phone.clearValidators();
+
+      // Remove required field asterisk on lables
+      document.querySelectorAll('.delivery-field label').forEach((el) => {
+        el.className = el.className.replace(' required-field', '');
+      });
+    }
+
+    this.proveedorForm.controls.delivery_name.updateValueAndValidity();
+    this.proveedorForm.controls.delivery_address.updateValueAndValidity();
+    this.proveedorForm.controls.delivery_city.updateValueAndValidity();
+    this.proveedorForm.controls.delivery_email.updateValueAndValidity();
+    this.proveedorForm.controls.delivery_phone.updateValueAndValidity();
+  }
+
   public storeProveedor():void {
     
     this.proveedorForm.disable();
@@ -133,15 +224,23 @@ export class ProveedoresCreateComponent implements OnInit {
       name: this.proveedorForm.value.name,
       address: this.proveedorForm.value.address,
       city: this.proveedorForm.value.city,
-      contact: this.proveedorForm.value.contact,
-      phone: this.proveedorForm.value.phone
+      email: this.proveedorForm.value.email,
+      phone: this.proveedorForm.value.phone,
+      delivered: this.proveedorForm.value.delivered,
+      delivery_name: this.proveedorForm.value.delivery_name,
+      delivery_address: this.proveedorForm.value.delivery_address,
+      delivery_city: this.proveedorForm.value.delivery_city,
+      delivery_email: this.proveedorForm.value.delivery_email,
+      delivery_phone: this.proveedorForm.value.delivery_phone
     } as Proveedor;
+
+    console.log('PROVEEDOR', proveedor);
 
     this._proveedoresService.storeProveedor(this.comprador.id, proveedor)
     .subscribe(
       //Success request
       (response: any) => {
-
+  
         NotificationsService.showToast(
           response.message,
           NotificationsService.messageType.success
@@ -151,6 +250,7 @@ export class ProveedoresCreateComponent implements OnInit {
       },
       //Error request
       (errorResponse: any) => {
+        console.log(errorResponse);
         switch(errorResponse.status)
         {
           case 400: //Invalid request parameters
