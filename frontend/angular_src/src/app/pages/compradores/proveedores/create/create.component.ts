@@ -61,34 +61,6 @@ export class ProveedoresCreateComponent implements OnInit {
     this.sub.unsubscribe();
   }
 
-  public deliveryFieldValidator(control: AbstractControl):{[key: string]: boolean} | null 
-  {
-    let errorMessages = {
-      required: false,
-      minlength: false
-    };
-
-    if(control.value === null)
-    {
-      errorMessages.required = true;
-    }
-    else
-    {
-      if(control.value.length === 0)
-      {
-        errorMessages.required = true;
-      }
-      
-      if(control.value.length < 4)
-      {
-        errorMessages.minlength = true;
-      }
-    }
-    
-    // If any of validations is broken, then return errorMessages. Otherwise returns null (valid)
-    return ((errorMessages.required === true) || (errorMessages.minlength === true)) ? errorMessages : null;
-  }
-
   private loadFormData(compradorData: any)
   {
     this.comprador.name = compradorData.name;
@@ -170,11 +142,11 @@ export class ProveedoresCreateComponent implements OnInit {
       this.proveedorForm.controls.delivery_email.enable();
       this.proveedorForm.controls.delivery_phone.enable();
 
-      this.proveedorForm.controls.delivery_name.setValidators([this.deliveryFieldValidator, Validators.minLength(4)]);
-      this.proveedorForm.controls.delivery_address.setValidators([this.deliveryFieldValidator, Validators.minLength(4)]);
-      this.proveedorForm.controls.delivery_city.setValidators([this.deliveryFieldValidator, Validators.minLength(4)]);
-      this.proveedorForm.controls.delivery_email.setValidators([this.deliveryFieldValidator, Validators.email]);
-      this.proveedorForm.controls.delivery_phone.setValidators([this.deliveryFieldValidator, Validators.minLength(4)]);
+      this.proveedorForm.controls.delivery_name.setValidators([Validators.required, Validators.minLength(4)]);
+      this.proveedorForm.controls.delivery_address.setValidators([Validators.required, Validators.minLength(4)]);
+      this.proveedorForm.controls.delivery_city.setValidators([Validators.required, Validators.minLength(4)]);
+      this.proveedorForm.controls.delivery_email.setValidators([Validators.required, Validators.email]);
+      this.proveedorForm.controls.delivery_phone.setValidators([Validators.required, Validators.minLength(4)]);
 
       // Add required field asterisk on labels
       document.querySelectorAll('.delivery-field label').forEach((el) => {

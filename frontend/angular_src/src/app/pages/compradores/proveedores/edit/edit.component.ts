@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators, AbstractControl } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Proveedor } from 'src/app/interfaces/proveedor';
@@ -58,34 +58,6 @@ export class ProveedoresEditComponent implements OnInit {
     this.sub.unsubscribe();
   }
 
-  public deliveryFieldValidator(control: AbstractControl):{[key: string]: boolean} | null 
-  {
-    let errorMessages = {
-      required: false,
-      minlength: false
-    };
-
-    if(control.value === null)
-    {
-      errorMessages.required = true;
-    }
-    else
-    {
-      if(control.value.length === 0)
-      {
-        errorMessages.required = true;
-      }
-      
-      if(control.value.length < 4)
-      {
-        errorMessages.minlength = true;
-      }
-    }
-    
-    // If any of validations is broken, then return errorMessages. Otherwise returns null (valid)
-    return ((errorMessages.required === true) || (errorMessages.minlength === true)) ? errorMessages : null;
-  }
-
   private loadFormData(proveedorData: any)
   {
     this.comprador = proveedorData.comprador;
@@ -96,11 +68,11 @@ export class ProveedoresEditComponent implements OnInit {
     this.proveedorForm.controls.email.setValue(proveedorData.email);
     this.proveedorForm.controls.phone.setValue(proveedorData.phone);
     this.proveedorForm.controls.delivered.setValue(proveedorData.delivered == 0 ? false : true);
-    this.proveedorForm.controls.delivery_name.setValue(proveedorData.delivery_name);
-    this.proveedorForm.controls.delivery_address.setValue(proveedorData.delivery_address);
-    this.proveedorForm.controls.delivery_city.setValue(proveedorData.delivery_city);
-    this.proveedorForm.controls.delivery_email.setValue(proveedorData.delivery_email);
-    this.proveedorForm.controls.delivery_phone.setValue(proveedorData.delivery_phone);
+    this.proveedorForm.controls.delivery_name.setValue(proveedorData.delivery_name !== null ? proveedorData.delivery_name : '');
+    this.proveedorForm.controls.delivery_address.setValue(proveedorData.delivery_address !== null ? proveedorData.delivery_address : '');
+    this.proveedorForm.controls.delivery_city.setValue(proveedorData.delivery_city !== null ? proveedorData.delivery_city : '');
+    this.proveedorForm.controls.delivery_email.setValue(proveedorData.delivery_email !== null ? proveedorData.delivery_email : '');
+    this.proveedorForm.controls.delivery_phone.setValue(proveedorData.delivery_phone !== null ? proveedorData.delivery_phone : '');
 
     this.updateStatusDelivered();
   }
@@ -274,11 +246,11 @@ export class ProveedoresEditComponent implements OnInit {
       this.proveedorForm.controls.delivery_email.enable();
       this.proveedorForm.controls.delivery_phone.enable();
 
-      this.proveedorForm.controls.delivery_name.setValidators([this.deliveryFieldValidator, Validators.minLength(4)]);
-      this.proveedorForm.controls.delivery_address.setValidators([this.deliveryFieldValidator, Validators.minLength(4)]);
-      this.proveedorForm.controls.delivery_city.setValidators([this.deliveryFieldValidator, Validators.minLength(4)]);
-      this.proveedorForm.controls.delivery_email.setValidators([this.deliveryFieldValidator, Validators.email]);
-      this.proveedorForm.controls.delivery_phone.setValidators([this.deliveryFieldValidator, Validators.minLength(4)]);
+      this.proveedorForm.controls.delivery_name.setValidators([Validators.required, Validators.minLength(4)]);
+      this.proveedorForm.controls.delivery_address.setValidators([Validators.required, Validators.minLength(4)]);
+      this.proveedorForm.controls.delivery_city.setValidators([Validators.required, Validators.minLength(4)]);
+      this.proveedorForm.controls.delivery_email.setValidators([Validators.required, Validators.email]);
+      this.proveedorForm.controls.delivery_phone.setValidators([Validators.required, Validators.minLength(4)]);
 
       // Add required field asterisk on labels
       document.querySelectorAll('.delivery-field label').forEach((el) => {
@@ -287,15 +259,10 @@ export class ProveedoresEditComponent implements OnInit {
     }
     else
     {
-      this.proveedorForm.controls.delivery_name.setValue('');
       this.proveedorForm.controls.delivery_name.disable();
-      this.proveedorForm.controls.delivery_address.setValue('');
       this.proveedorForm.controls.delivery_address.disable();
-      this.proveedorForm.controls.delivery_city.setValue('');
       this.proveedorForm.controls.delivery_city.disable();
-      this.proveedorForm.controls.delivery_email.setValue('');
       this.proveedorForm.controls.delivery_email.disable();
-      this.proveedorForm.controls.delivery_phone.setValue('');
       this.proveedorForm.controls.delivery_phone.disable();
 
       this.proveedorForm.controls.delivery_name.clearValidators();

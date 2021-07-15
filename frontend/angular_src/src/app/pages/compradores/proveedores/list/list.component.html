@@ -40,12 +40,13 @@
                             <th>Ciudad</th>
                             <th>Contacto</th>
                             <th>Telefono</th>
+                            <th>Punto entrega</th>
                             <th>Opciones</th>
                         </tr>
                     </thead>
                     <tbody *ngIf="(loading === true)">
                         <tr>
-                            <td colspan="8" style="text-align: center;"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</td>
+                            <td colspan="9" style="text-align: center;"><i class="bx bx-loader bx-spin font-size-16 align-middle mr-2"></i>Cargando..</td>
                         </tr>
                     </tbody>
                     <tbody *ngIf="(loading === false)">
@@ -57,6 +58,7 @@
                             <td align="center">{{ proveedor.city }}</td>
                             <td align="center">{{ proveedor.contact }}</td>
                             <td align="center">{{ proveedor.phone }}</td>
+                            <td align="center">{{ proveedor.delivered === 1 ? proveedor.delivery_name : 'Retiro en tienda' }}</td>
                             <td align="center">
                                 <a [routerLink]="['edit', proveedor.id]" class="btn-table btn btn-secondary" title="Editar"><i class="bx bx-edit-alt"></i></a>
                                 <a [routerLink]="" (click)="removeProveedor(proveedor)" class="btn-table btn btn-secondary" title="Eliminar"><i class="bx bx-trash-alt"></i></a>
@@ -65,10 +67,10 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="8" align="left">
+                            <td colspan="9" align="left">
                                 <button type="button" class="btn btn-outline-primary" (click)="goTo_newProveedor()" [disabled]="(loading === true)">
-                          <i class="bx bx-pen font-size-16 align-middle"></i> Nuevo proveedor
-                        </button>
+                                    <i class="bx bx-pen font-size-16 align-middle"></i> Nuevo proveedor
+                                </button>
                             </td>
                         </tr>
                     </tfoot>
