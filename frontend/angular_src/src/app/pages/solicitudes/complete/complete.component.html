@@ -183,7 +183,7 @@
                             </div>
                         </div>
 
-                        <div class="col-8">
+                        <div class="col-4">
                             <div class="form-group">
                                 <label for="peso">Descripcion</label>
                                 <input type="text" class="form-control" name="descripcion" id="descripcion" formControlName="descripcion">
@@ -230,17 +230,6 @@
                                 <!-- Frontend errors -->
                                 <div *ngIf="(parteForm.controls.peso.errors) && (parteForm.controls.peso.touched) && (parteForm.controls.peso.dirty)">
                                     <div class="error-response" *ngIf="parteForm.controls.peso.errors.min !== null">El peso debe ser mayor a 0</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-4">
-                            <div class="form-group">
-                                <label for="flete">Valor flete (en USD)</label>
-                                <input type="number" class="form-control valid-control" name="flete" id="flete" formControlName="flete">
-                                <!-- Frontend errors -->
-                                <div *ngIf="(parteForm.controls.flete.errors) && (parteForm.controls.flete.touched) && (parteForm.controls.flete.dirty)">
-                                    <div class="error-response" *ngIf="parteForm.controls.flete.errors.min !== null">EL valor de flete debe ser igual o mayor a 0</div>
                                 </div>
                             </div>
                         </div>

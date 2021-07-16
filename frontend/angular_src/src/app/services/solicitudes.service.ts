@@ -61,6 +61,13 @@ export class SolicitudesService {
     return this.httpClient.post(endpoint, solicitud, httpOptions);
   }
 
+  public prepareCompleteSolicitud(solicitud_id: number): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/solicitudes/prepare/${solicitud_id}}`;
+    
+    return this.httpClient.get(endpoint);
+  }
+
   public updateSolicitud(solicitud_id: number, solicitud: Solicitud): Observable<any>
   {
     let endpoint: string = `${environment.ENDPOINT_BASE}/solicitudes/${solicitud_id}`;
@@ -95,7 +102,7 @@ export class SolicitudesService {
     return this.httpClient.post(endpoint, solicitud, httpOptions);
   }
 
-  public prepareSolicitud(): Observable<any>
+  public prepareStoreSolicitud(): Observable<any>
   {
     let endpoint: string = `${environment.ENDPOINT_BASE}/solicitudes/sucursales/prepare`;
     

@@ -50,6 +50,7 @@ export class SolicitudesCompleteComponent implements OnInit {
     estadosolicitud_name: null,
     comentario: null
   };
+  lbInUsd: number = -1;
 
   partes: any[] = [];
   loading: boolean = false;
@@ -130,22 +131,25 @@ export class SolicitudesCompleteComponent implements OnInit {
 
   private loadFormData(solicitudData: any)
   {
-    if(solicitudData['partes'].length > 0)
+    if(solicitudData.solicitud['partes'].length > 0)
     {
-      if((solicitudData.estadosolicitud.id === 1) || (solicitudData.estadosolicitud.id === 2)) // If is 'Pendiente' or 'Completa'
+      // Update LB in USD value
+      this.lbInUsd = solicitudData.lb_in_usd;
+
+      if((solicitudData.solicitud.estadosolicitud.id === 1) || (solicitudData.solicitud.estadosolicitud.id === 2)) // If is 'Pendiente' or 'Completa'
       {
-        this.solicitud.id = solicitudData.id;
-        this.solicitud.sucursal_name = solicitudData.sucursal.name;
-        this.solicitud.faena_name = solicitudData.faena.name;
-        this.solicitud.cliente_name = solicitudData.faena.cliente.name;
-        this.solicitud.marca_name = solicitudData.marca.name;
-        this.solicitud.user_name = solicitudData.user.name;
-        this.solicitud.estadosolicitud_id = solicitudData.estadosolicitud.id,
-        this.solicitud.estadosolicitud_name = solicitudData.estadosolicitud.name;
-        this.solicitud.comentario = solicitudData.comentario;
+        this.solicitud.id = solicitudData.solicitud.id;
+        this.solicitud.sucursal_name = solicitudData.solicitud.sucursal.name;
+        this.solicitud.faena_name = solicitudData.solicitud.faena.name;
+        this.solicitud.cliente_name = solicitudData.solicitud.faena.cliente.name;
+        this.solicitud.marca_name = solicitudData.solicitud.marca.name;
+        this.solicitud.user_name = solicitudData.solicitud.user.name;
+        this.solicitud.estadosolicitud_id = solicitudData.solicitud.estadosolicitud.id,
+        this.solicitud.estadosolicitud_name = solicitudData.solicitud.estadosolicitud.name;
+        this.solicitud.comentario = solicitudData.solicitud.comentario;
 
         this.partes = [];
-        solicitudData.partes.forEach((p: any) => {
+        solicitudData.solicitud.partes.forEach((p: any) => {
           this.partes.push(
             {
               'nparte': p.nparte,
@@ -170,7 +174,7 @@ export class SolicitudesCompleteComponent implements OnInit {
       else
       {
         NotificationsService.showToast(
-          `No puedes completar una solicitud con estado ${ solicitudData.estadosolicitud.name }`,
+          `No puedes completar una solicitud con estado ${ solicitudData.solicitud.estadosolicitud.name }`,
           NotificationsService.messageType.error
         );
   
@@ -325,7 +329,7 @@ export class SolicitudesCompleteComponent implements OnInit {
      */
     this.loading = true;
 
-    this._solicitudesService.getSolicitud(this.solicitud.id)
+    this._solicitudesService.prepareCompleteSolicitud(this.solicitud.id)
     .subscribe(
       //Success request
       (response: any) => {
@@ -334,7 +338,7 @@ export class SolicitudesCompleteComponent implements OnInit {
           
           case 0: { // Nothing
 
-            if(response.data.estadosolicitud.id === 3) // Cerrada
+            if(response.data.solicitud.estadosolicitud.id === 3) // Cerrada
             {
               NotificationsService.showToast(
                 'No se puede completar una solicitud cerrada',
@@ -357,7 +361,7 @@ export class SolicitudesCompleteComponent implements OnInit {
 
           case 1: { // Export partes list to Excel
 
-            if(response.data.estadosolicitud.id === 2) // Completa on saving before Export to Excel
+            if(response.data.solicitud.estadosolicitud.id === 2) // Completa on saving before Export to Excel
             {
               this.loading = false;
               this.loadFormData(response.data);
@@ -479,7 +483,7 @@ export class SolicitudesCompleteComponent implements OnInit {
               if(response.data.solicitud.estadosolicitud.id === 2) // Estadosolicitud = 'Completa'
               {
                 // Load solicitud data and stay in page for closing
-                this.loadFormData(response.data.solicitud);
+                this.loadFormData(response.data);
                 // Ask for closing solicitud right away
                 let question = 'Se ha completado la solicitud. ¿La desea cerrar inmediatamente?';
                 this.closeSolicitud(question);
@@ -828,7 +832,7 @@ export class SolicitudesCompleteComponent implements OnInit {
     this.partes[this.parte_index].margen = this.parteForm.value.margen;
     this.partes[this.parte_index].tiempoentrega = this.parteForm.value.tiempoentrega;
     this.partes[this.parte_index].peso = this.parteForm.value.peso;
-    this.partes[this.parte_index].flete = this.parteForm.value.flete;
+    this.partes[this.parte_index].flete = this.calculateParteFlete(this.partes[this.parte_index]);
     this.partes[this.parte_index].monto = this.calculateParteMonto(this.partes[this.parte_index]);
     this.partes[this.parte_index].backorder = this.parteForm.value.backorder;
     this.partes[this.parte_index].descripcion = this.parteForm.value.descripcion;
@@ -922,16 +926,29 @@ export class SolicitudesCompleteComponent implements OnInit {
     }
   }
 
-  public calculateParteMonto(parte: any): number | null {
+  public calculateParteFlete(parte: any): number | null {
     if(
-      (parte.cantidad !== null) &&
-      (parte.costo !== null) &&
-      (parte.margen !== null) &&
-      (parte.peso !== null) &&
-      (parte.flete !== null)
+        (this.lbInUsd >= 0) &&
+        (parte.peso !== null)
     )
     {
-      return parte.costo + ((parte.costo / 100) * parte.margen) + parte.flete;
+      return this.lbInUsd * parte.peso;
+    }
+    else
+    {
+      return null;
+    }
+  }
+
+  public calculateParteMonto(parte: any): number | null {
+    if(
+        (parte.cantidad !== null) &&
+        (parte.costo !== null) &&
+        (parte.margen !== null) &&
+        (parte.flete !== null)
+    )
+    {
+      return parte.costo + ((parte.costo / 100) * parte.margen) + (parte.flete);
     }
     else
     {

@@ -200,7 +200,7 @@ export class SolicitudesEditComponent implements OnInit {
 
   private prepareSolicitud() {
     this.loading = true;
-    this._solicitudesService.prepareSolicitud()
+    this._solicitudesService.prepareStoreSolicitud()
       .subscribe(
         //Success request
         (response: any) => {
