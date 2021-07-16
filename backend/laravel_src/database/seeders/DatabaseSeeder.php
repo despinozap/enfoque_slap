@@ -80,6 +80,7 @@ class DatabaseSeeder extends Seeder
             'solicitudes store',
             'solicitudes show',
             'solicitudes update',
+            'solicitudes complete_prepare',
             'solicitudes complete',
             'solicitudes close',
             'solicitudes destroy',
@@ -221,6 +222,7 @@ class DatabaseSeeder extends Seeder
                 'solicitudes store',
                 'solicitudes show',
                 'solicitudes update',
+                'solicitudes complete_prepare',
                 'solicitudes complete',
                 'solicitudes close',
                 'solicitudes destroy',
@@ -361,6 +363,7 @@ class DatabaseSeeder extends Seeder
                 //Solicitudes
                 'solicitudes index',
                 'solicitudes show',
+                'solicitudes complete_prepare',
                 'solicitudes complete',
                 'solicitudes close',
                 //Ocs
@@ -573,10 +576,17 @@ class DatabaseSeeder extends Seeder
         /*
         *   Parameters
         */
+        // Value USD to CLP
         $parameter = new Parameter();
         $parameter->name = 'usd_to_clp';
         $parameter->description = 'Valor del Dolar (USD) para transformar a peso chileno (CLP)';
         $parameter->value = 740;
+        $parameter->save();
+        // Value LB in USD
+        $parameter = new Parameter();
+        $parameter->name = 'lb_in_usd';
+        $parameter->description = 'Valor de flete en Dolar (USD) para cada libra';
+        $parameter->value = 2.5;
         $parameter->save();
 
 

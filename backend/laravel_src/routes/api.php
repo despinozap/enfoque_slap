@@ -103,6 +103,7 @@ Route::middleware(['auth:api', 'cors'])->group(function()
     Route::post('/solicitudes', [SolicitudesController::class, 'store']);
     Route::get('/solicitudes/{id}', [SolicitudesController::class, 'show']);
     Route::put('/solicitudes/{id}', [SolicitudesController::class, 'update']);
+    Route::get('/solicitudes/prepare/{id}', [SolicitudesController::class, 'complete_prepare']);
     Route::post('/solicitudes/complete/{id}', [SolicitudesController::class, 'complete']);
     Route::post('/solicitudes/close/{id}', [SolicitudesController::class, 'close']);
     Route::delete('/solicitudes/{id}', [SolicitudesController::class, 'destroy']);

@@ -796,7 +796,7 @@ class SolicitudesController extends Controller
                     }
                     else
                     {
-                        if($usdToClp = Parameter::all()->where('name', 'usd_to_clp')->first())
+                        if($usdToClp = Parameter::where('name', 'usd_to_clp')->first())
                         {
                             $solicitud->makeHidden([
                                 'sucursal_id',
@@ -1212,6 +1212,183 @@ class SolicitudesController extends Controller
         return $response;
     }
 
+    /**
+     * It retrieves all the required info for
+     * selecting data and updating a Recepcion for Comprador
+     * 
+     */
+    public function complete_prepare(Request $request, $id)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('solicitudes complete'))
+            {
+                if($solicitud = Solicitud::find($id))
+                {
+                    // Administrador
+                    if(
+                        ($user->role->name === 'admin') && 
+                        ($solicitud->sucursal->country->id !== $user->stationable->country->id)
+                    )
+                    {
+                        //If Administrator and solicitud doesn't belong to its country
+                        $response = HelpController::buildResponse(
+                            405,
+                            'No tienes acceso a actualizar esta solicitud',
+                            null
+                        );
+                    }
+                    // Agente de compra
+                    else if(
+                        ($user->role->name === 'agtcom') &&
+                        ($solicitud->comprador->id !== $user->stationable->id)
+                    )
+                    {
+                        //If Agente de compra and solicitud isn't to its Comprador
+                        $response = HelpController::buildResponse(
+                            405,
+                            'No tienes acceso a actualizar esta solicitud',
+                            null
+                        );
+                    }
+                    else
+                    {
+                        if($lbInUsd = Parameter::where('name', 'lb_in_usd')->first())
+                        {
+                            $solicitud->makeHidden([
+                                'sucursal_id',
+                                'comprador_id',
+                                'user_id',
+                                'faena_id',
+                                'marca_id',
+                                'estadosolicitud_id',
+                                'created_at', 
+                                'updated_at'
+                            ]);
+        
+                            $solicitud->partes_total;
+                                    
+                            $solicitud->sucursal;
+                            $solicitud->sucursal->makeHidden([
+                                'type',
+                                'rut',
+                                'address',
+                                'city',
+                                'country_id',
+                                'created_at', 
+                                'updated_at'
+                            ]);
+                            
+                            $solicitud->faena;
+                            $solicitud->faena->makeHidden([
+                                'sucursal_id',
+                                'rut',
+                                'address',
+                                'city',
+                                'contact',
+                                'phone',
+                                'cliente_id', 
+                                'created_at', 
+                                'updated_at'
+                            ]);
+                            
+                            $solicitud->faena->cliente;
+                            $solicitud->faena->cliente->makeHidden(['country_id', 'created_at', 'updated_at']);
+                            
+                            $solicitud->marca;
+                            $solicitud->marca->makeHidden(['created_at', 'updated_at']);
+                            
+                            $solicitud->comprador;
+                            $solicitud->comprador->makeHidden([
+                                'rut',
+                                'address',
+                                'city',
+                                'contact',
+                                'phone',
+                                'country_id', 
+                                'created_at', 
+                                'updated_at'
+                            ]);
+                            
+                            $solicitud->user;
+                            $solicitud->user->makeHidden(['email', 'phone', 'country_id', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
+                            
+                            $solicitud->estadosolicitud;
+                            $solicitud->estadosolicitud->makeHidden(['created_at', 'updated_at']);
+        
+                            $solicitud->partes;
+                            foreach($solicitud->partes as $parte)
+                            {
+                                $parte->makeHidden([
+                                    'marca_id', 
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+        
+                                $parte->marca;
+                                $parte->marca->makeHidden(['created_at', 'updated_at']);
+        
+                                $parte->pivot->makeHidden([
+                                    'solicitud_id',
+                                    'parte_id',
+                                    'marca_id', 
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
+                            }
+
+                            $data = [
+                                'solicitud' => $solicitud,
+                                'lb_in_usd' => $lbInUsd->value
+                            ];
+                            
+                            $response = HelpController::buildResponse(
+                                200,
+                                null,
+                                $data
+                            );
+                        }
+                        else
+                        {
+                            $response = HelpController::buildResponse(
+                                500,
+                                'Error al obtener el valor LB en USD',
+                                null
+                            );
+                        }
+                    }
+                }   
+                else     
+                {
+                    $response = HelpController::buildResponse(
+                        412,
+                        'La solicitud no existe',
+                        null
+                    );
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a actualizar solicitudes',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al completar la solicitud [!]',
+                null
+            );
+        }
+        
+        return $response;
+    }
+
     public function complete(Request $request, $id)
     {
         try
@@ -1489,8 +1666,6 @@ class SolicitudesController extends Controller
         }
         catch(\Exception $e)
         {
-            DB::rollback();
-
             $response = HelpController::buildResponse(
                 500,
                 'Error al completar la solicitud [!]',
