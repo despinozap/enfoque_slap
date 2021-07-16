@@ -13,7 +13,7 @@ class Cotizacion extends Model
 
     protected $table = 'cotizaciones';
     protected $fillable = [
-        'solicitud_id', 'estadocotizacion_id', 'motivorechazo_id', 'usdvalue',
+        'solicitud_id', 'estadocotizacion_id', 'motivorechazo_id', 'usdvalue', 'lastupdate'
     ];
     protected $appends = ['partes_total', 'dias', 'monto'];
 

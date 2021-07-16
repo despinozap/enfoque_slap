@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Auth;
 use Illuminate\Support\Facades\DB;
+use DateTime;
 
 use App\Models\Parameter;
 use App\Models\Sucursal;
@@ -1198,16 +1199,13 @@ class SolicitudesController extends Controller
             }
         }
         catch(\Exception $e)
-        {
-            DB::rollback();
-        
+        {        
             $response = HelpController::buildResponse(
                 500,
                 'Error al editar la solicitud [!]',
                 null
             );
         }
-        
         
         return $response;
     }
@@ -1275,6 +1273,7 @@ class SolicitudesController extends Controller
                                 'rut',
                                 'address',
                                 'city',
+                                'country',
                                 'country_id',
                                 'created_at', 
                                 'updated_at'
@@ -1312,7 +1311,17 @@ class SolicitudesController extends Controller
                             ]);
                             
                             $solicitud->user;
-                            $solicitud->user->makeHidden(['email', 'phone', 'country_id', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
+                            $solicitud->user->makeHidden([
+                                'stationable_type',
+                                'stationable_id',
+                                'email', 
+                                'phone', 
+                                'country_id', 
+                                'role_id', 
+                                'email_verified_at', 
+                                'created_at', 
+                                'updated_at'
+                            ]);
                             
                             $solicitud->estadosolicitud;
                             $solicitud->estadosolicitud->makeHidden(['created_at', 'updated_at']);
@@ -1491,6 +1500,14 @@ class SolicitudesController extends Controller
                                 null
                             );
                         }
+                        else if(!($lbInUsd = Parameter::where('name', 'lb_in_usd')->first()))
+                        {
+                            $response = HelpController::buildResponse(
+                                500,
+                                'Error al obtener el valor LB en USD',
+                                null
+                            );
+                        }
                         else
                         {
                             $success = true;
@@ -1562,15 +1579,18 @@ class SolicitudesController extends Controller
                             if($success === true)
                             {
                                 DB::commit();
-                                $solicitud = Solicitud::find($id);
-    
+                                
                                 $solicitud->makeHidden([
+                                    'sucursal_id',
+                                    'comprador_id',
+                                    'user_id',
                                     'faena_id',
+                                    'marca_id',
                                     'estadosolicitud_id',
                                     'created_at', 
                                     'updated_at'
                                 ]);
-                
+            
                                 $solicitud->partes_total;
                                         
                                 $solicitud->sucursal;
@@ -1579,6 +1599,7 @@ class SolicitudesController extends Controller
                                     'rut',
                                     'address',
                                     'city',
+                                    'country',
                                     'country_id',
                                     'created_at', 
                                     'updated_at'
@@ -1586,6 +1607,7 @@ class SolicitudesController extends Controller
                                 
                                 $solicitud->faena;
                                 $solicitud->faena->makeHidden([
+                                    'sucursal_id',
                                     'rut',
                                     'address',
                                     'city',
@@ -1615,24 +1637,47 @@ class SolicitudesController extends Controller
                                 ]);
                                 
                                 $solicitud->user;
-                                $solicitud->user->makeHidden(['email', 'phone', 'country_id', 'role_id', 'email_verified_at', 'created_at', 'updated_at']);
+                                $solicitud->user->makeHidden([
+                                    'stationable_type',
+                                    'stationable_id',
+                                    'email', 
+                                    'phone', 
+                                    'country_id', 
+                                    'role_id', 
+                                    'email_verified_at', 
+                                    'created_at', 
+                                    'updated_at'
+                                ]);
                                 
                                 $solicitud->estadosolicitud;
                                 $solicitud->estadosolicitud->makeHidden(['created_at', 'updated_at']);
-                
+            
                                 $solicitud->partes;
                                 foreach($solicitud->partes as $parte)
                                 {
-                                    $parte->makeHidden(['marca_id', 'created_at', 'updated_at']);
-                                    
+                                    $parte->makeHidden([
+                                        'marca_id', 
+                                        'created_at', 
+                                        'updated_at'
+                                    ]);
+            
                                     $parte->marca;
                                     $parte->marca->makeHidden(['created_at', 'updated_at']);
+            
+                                    $parte->pivot->makeHidden([
+                                        'solicitud_id',
+                                        'parte_id',
+                                        'marca_id', 
+                                        'created_at', 
+                                        'updated_at'
+                                    ]);
                                 }
     
                                 $data = [
-                                    "solicitud" => $solicitud
+                                    'solicitud' => $solicitud,
+                                    'lb_in_usd' => $lbInUsd->value
                                 ];
-
+    
                                 $response = HelpController::buildResponse(
                                     200,
                                     'Solicitud actualizada',
@@ -1738,6 +1783,7 @@ class SolicitudesController extends Controller
                                     $cotizacion->solicitud_id = $solicitud->id;
                                     $cotizacion->estadocotizacion_id = 1; //Initial Estadocotizacion
                                     $cotizacion->usdvalue = $usdToClpParam->value;
+                                    $cotizacion->lastupdate = new DateTime();
 
                                     if($cotizacion->save())
                                     {

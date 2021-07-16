@@ -7,7 +7,9 @@ use Illuminate\Support\Facades\Validator;
 use Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use DateTime;
 
+use App\Models\Parameter;
 use App\Models\Sucursal;
 use App\Models\Solicitud;
 use App\Models\Parte;
@@ -494,7 +496,287 @@ class CotizacionesController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('cotizaciones update'))
+            {
+                $validatorInput = $request->only(
+                    'partes'
+                );
+                
+                $validatorRules = [
+                    'partes' => 'required|array|min:1',
+                    'partes.*.nparte'  => 'required',
+                    'partes.*.cantidad'  => 'required|numeric|min:1',
+                ];
+        
+                $validatorMessages = [
+                    'partes.required' => 'Debes seleccionar las partes',
+                    'partes.array' => 'Lista de partes invalida',
+                    'partes.min' => 'La solicitud debe contener al menos 1 parte',
+                    'partes.*.nparte.required' => 'La lista de partes es invalida',
+                    'partes.*.cantidad.required' => 'Debes ingresar la cantidad para la parte',
+                    'partes.*.cantidad.numeric' => 'La cantidad para la parte debe ser numerica',
+                    'partes.*.cantidad.min' => 'La cantidad para la parte debe ser mayor a 0',
+                ];
+        
+                $validator = Validator::make(
+                    $validatorInput,
+                    $validatorRules,
+                    $validatorMessages
+                );
+        
+                if ($validator->fails()) 
+                {
+                    $response = HelpController::buildResponse(
+                        400,
+                        $validator->errors(),
+                        null
+                    );
+                }
+                else        
+                {
+                    if($cotizacion = Cotizacion::find($id))
+                    {
+                        // Administrador
+                        if(
+                            ($user->role->name === 'admin') && 
+                            ($cotizacion->solicitud->sucursal->country->id !== $user->stationable->country->id)
+                        )
+                        {
+                            //If Administrator and solicitud doesn't belong to its country
+                            $response = HelpController::buildResponse(
+                                405,
+                                'No tienes acceso a actualizar esta cotizacion',
+                                null
+                            );
+                        }
+                        // Vendedor
+                        else if(
+                            ($user->role->name === 'seller') &&
+                            (
+                                ($cotizacion->solicitud->sucursal->id !== $user->stationable->id) ||
+                                ($cotizacion->solicitud->user->id !== $user->id)
+                            ) 
+                        )
+                        {
+                            //If Vendedor and solicitud doesn't belong or not in its Sucursal
+                            $response = HelpController::buildResponse(
+                                405,
+                                'No tienes acceso a actualizar esta cotizacion',
+                                null
+                            );
+                        }
+                        else if(in_array($cotizacion->estadocotizacion_id, [3, 4])) // Estadocotizacion = 'Aprobada' or 'Rechazada'
+                        {
+                            // If cotizacion's estado comercial already defined
+                            $response = HelpController::buildResponse(
+                                409,
+                                'No puedes editar una cotizacion con estado comercial ya definido',
+                                null
+                            );
+                        }
+                        else if(!($paramUsdToClp = Parameter::where('name', 'usd_to_clp')->first()))
+                        {
+                            $response = HelpController::buildResponse(
+                                500,
+                                'Error al obtener el valor USD para conversion',
+                                null
+                            );
+                        }
+                        else if(!($paramLbInUsd = Parameter::where('name', 'lb_in_usd')->first()))
+                        {
+                            $response = HelpController::buildResponse(
+                                500,
+                                'Error al obtener el valor LB en USD para calculo de flete',
+                                null
+                            );
+                        }
+                        else
+                        {
+                            // Clean partes list in request and store on parteList for sync
+                            $parteList = array();
+
+                            foreach($request->partes as $parte)
+                            {
+                                if(in_array($parte['nparte'], array_keys($parteList)))
+                                {
+                                    $parteList[$parte['nparte']] += $parte['cantidad'];
+                                }
+                                else
+                                {
+                                    $parteList[$parte['nparte']] = $parte['cantidad'];
+                                }
+                            }
+                            
+                            $success = true;
+                            DB::beginTransaction();
+
+                            $updateFlete = false;
+
+                            // If Cotizacion was updated last time before than 15 days ago
+                            if(new DateTime($cotizacion->lastupdate) < new DateTime('-15 days'))
+                            {
+                                // Update USD value in Cotizacion
+                                $cotizacion->usdvalue = $paramUsdToClp->value;
+                                // Update lastupdate field to now
+                                $cotizacion->lastupdate = new DateTime();
+
+                                // Set flag for updating flete value on each Parte
+                                $updateFLete = true;
+                            }
+
+                            if($cotizacion->save())
+                            {
+                                foreach($cotizacion->partes as $parte)
+                                {
+                                    // If parte is still in the requested list
+                                    if(in_array($parte->nparte, array_keys($parteList)))
+                                    {
+                                        $cantidad = $parteList[$parte->nparte];
+                                        if($cantidad > 0)
+                                        {
+                                            // Update cantidad
+                                            $parte->pivot->cantidad = $cantidad;
+                                            
+                                            // If Cotizacion was updated last time before than 15 days ago 
+                                            if($updateFlete === true)
+                                            {
+                                                // Update flete with current LB in USD value
+                                                $parte->pivot->flete = $parte->pivot->peso * $paramLbInUsd->value;
+                                            }
+
+                                            // If parte is updated
+                                            if($parte->pivot->save())
+                                            {
+                                                // Removes parte from parteList
+                                                unset($parteList[$parte->nparte]);
+                                            }
+                                            else
+                                            {
+                                                $response = HelpController::buildResponse(
+                                                    409,
+                                                    'Error al actualizar la parte "' . $parte->nparte . '"',
+                                                    null
+                                                );
+            
+                                                $success = false;
+            
+                                                break;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            $response = HelpController::buildResponse(
+                                                409,
+                                                'La cantidad ingresada para la parte "' . $parte->nparte . '" debe ser mayor a 0',
+                                                null
+                                            );
+        
+                                            $success = false;
+        
+                                            break;
+                                        }
+                                    }
+                                    // Not in Cotizacion anymore, so detach
+                                    else
+                                    {
+                                        // If detach parte
+                                        if($cotizacion->partes()->detach($parte->id))
+                                        {
+                                            // Removes parte from parteList
+                                            unset($parteList[$parte->nparte]);
+                                        }
+                                        else
+                                        {
+                                            $response = HelpController::buildResponse(
+                                                409,
+                                                'Error al eliminar la parte "' . $parte->nparte . '"',
+                                                null
+                                            );
+        
+                                            $success = false;
+        
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                $response = HelpController::buildResponse(
+                                    500,
+                                    'Error al eliminar actualizar la cotizacion',
+                                    null
+                                );
+
+                                $success = false;
+                            }
+                            
+                            if($success === true)
+                            {
+                                // If all parte in request matched partes in Cotizacion
+                                if(count($parteList) === 0)
+                                {
+                                    DB::commit();
+                            
+                                    $response = HelpController::buildResponse(
+                                        200,
+                                        'Cotizacion actualizada',
+                                        null
+                                    );    
+                                }
+                                else
+                                {
+                                    DB::rollback();
+
+                                    $response = HelpController::buildResponse(
+                                        409,
+                                        'La lista de partes contiene partes que no exiten en la cotizacion',
+                                        null
+                                    );
+                                }
+                                
+                            }
+                            else
+                            {
+                                DB::rollback();
+
+                                // Error message was already given
+                            }
+                        }
+                    }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            412,
+                            'La cotizacion no existe',
+                            null
+                        );
+                    }
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a actualizar cotizaciones',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+        
+            $response = HelpController::buildResponse(
+                500,
+                'Error al editar la cotizacion [!]' .$e,
+                null
+            );
+        }
+           
+        return $response;
     }
 
     public function approve(Request $request, $id)

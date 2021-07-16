@@ -19,6 +19,7 @@ class CreateCotizacionesTable extends Migration
             $table->bigInteger('estadocotizacion_id')->unsigned();
             $table->bigInteger('motivorechazo_id')->unsigned()->nullable()->default(null);
             $table->float('usdvalue');
+            $table->dateTime('lastupdate'); // Stores last date when USD and flete (partes) values were updated
 
             $table->timestamps();
 
