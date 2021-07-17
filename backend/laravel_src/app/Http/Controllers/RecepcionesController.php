@@ -2914,10 +2914,13 @@ class RecepcionesController extends Controller
                                         ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
                                         ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                         ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                        ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                        ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                        ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                        ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                         ->where('recepciones.recepcionable_type', '=', get_class($centrodistribucion))
                                         ->where('recepciones.recepcionable_id', '=', $centrodistribucion->id) // Received at Sucursal (centro)
-                                        ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                         ->groupBy('recepciones.id')
                                         ->get();
 
@@ -2934,10 +2937,14 @@ class RecepcionesController extends Controller
                                         ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
                                         ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                         ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                        ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                        ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                        ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                         ->where('recepciones.recepcionable_type', '=', get_class($centrodistribucion))
                                         ->where('recepciones.recepcionable_id', '=', $centrodistribucion->id) // Received at Sucursal (centro)
-                                        ->where('solicitudes.sucursal_id', '=', $user->stationable->id) // Same Sucursal as user station
-                                        ->where('solicitudes.user_id', '=', $user->id) // Belonging to user
+                                        ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
+										->where('solicitudes.user_id', '=', $user->id) // Belonging to user
                                         ->groupBy('recepciones.id')
                                         ->get();
 
@@ -2958,10 +2965,13 @@ class RecepcionesController extends Controller
                                             ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
                                             ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                             ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                            ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                            ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                             ->where('recepciones.recepcionable_type', '=', get_class($centrodistribucion))
                                             ->where('recepciones.recepcionable_id', '=', $centrodistribucion->id) // Received at Sucursal (centro)
-                                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                             ->groupBy('recepciones.id')
                                             ->get();
                             }
@@ -2975,9 +2985,13 @@ class RecepcionesController extends Controller
                                             ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
                                             ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                             ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                            ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                            ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                             ->where('recepciones.recepcionable_type', '=', get_class($centrodistribucion))
                                             ->where('recepciones.recepcionable_id', '=', $centrodistribucion->id) // Received at Sucursal (centro)
-                                            ->where('solicitudes.sucursal_id', '=', $user->stationable->id) // Same Sucursal as user station
+                                            ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalfaena.id', '=', $user->stationable->id) // Same Sucursal as user station
                                             ->groupBy('recepciones.id')
                                             ->get();
                             }
@@ -3096,24 +3110,35 @@ class RecepcionesController extends Controller
                         // Administrador
                         case 'admin': {
 
-                            // Get only assigned Compradores with OcPartes dispatched to Sucursal (centro) on Ocs generated from its country
-                            $compradores = Comprador::select('compradores.*')
-                                        ->join('despachos', 'despachos.despachable_id', '=', 'compradores.id')
-                                        ->join('despacho_ocparte', 'despacho_ocparte.despacho_id', '=', 'despachos.id')
-                                        ->join('oc_parte', 'oc_parte.id', '=', 'despacho_ocparte.ocparte_id')
-                                        ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
-                                        ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
-                                        ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                        ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
-                                        ->where('despachos.despachable_type', '=', get_class(new Comprador())) // Dispatched by Comprador
-                                        ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
-                                        ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
-                                        ->where('despachos.destinable_type', '=', get_class($centrodistribucion))
-                                        ->where('despachos.destinable_id', '=', $centrodistribucion->id) // Despachos dispatched to Sucursal (centro)
-                                        ->where('sucursales.country_id', '=', $user->stationable->country->id) // Solicitud from same Country as user station
-                                        ->groupBy('compradores.id')
-                                        ->get();
-                            
+                            // If user belongs to this Sucursal's (centro) country
+                            if($user->stationable->country->id === $centrodistribucion->country->id)
+                            {
+                                // Get only assigned Compradores with OcPartes dispatched to Sucursal (centro) on Ocs generated from its country
+                                $compradores = Comprador::select('compradores.*')
+                                            ->join('despachos', 'despachos.despachable_id', '=', 'compradores.id')
+                                            ->join('despacho_ocparte', 'despacho_ocparte.despacho_id', '=', 'despachos.id')
+                                            ->join('oc_parte', 'oc_parte.id', '=', 'despacho_ocparte.ocparte_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                            ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                            ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
+                                            ->where('despachos.despachable_type', '=', get_class(new Comprador())) // Dispatched by Comprador
+                                            ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
+                                            ->where('despachos.destinable_type', '=', get_class($centrodistribucion))
+                                            ->where('despachos.destinable_id', '=', $centrodistribucion->id) // Despachos dispatched to Sucursal (centro)
+                                            ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->groupBy('compradores.id')
+                                            ->get();
+                            }
+                            else
+                            {
+                                // Set as forbidden
+                                $forbidden = true;
+                            }
 
                             break;
                         }
@@ -3135,13 +3160,16 @@ class RecepcionesController extends Controller
                                             ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
                                             ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                             ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                            ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                            ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                             ->where('despachos.despachable_type', '=', get_class(new Comprador())) // Dispatched by Comprador
                                             ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
                                             ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                             ->where('despachos.destinable_type', '=', get_class($centrodistribucion))
                                             ->where('despachos.destinable_id', '=', $centrodistribucion->id) // Despachos dispatched to Sucursal (centro)
-                                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // Solicitud from same Country as user station
+                                            ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                             ->groupBy('compradores.id')
                                             ->get();
                             }
@@ -3259,24 +3287,35 @@ class RecepcionesController extends Controller
                             // Administrador
                             case 'admin': {
     
-                                // Get only OcPartes on OCs generated from its country and dispatched from Comprador to Sucursal (centro)
-                                $ocParteList = OcParte::select('oc_parte.*')
-                                            ->join('despacho_ocparte', 'despacho_ocparte.ocparte_id', '=', 'oc_parte.id')
-                                            ->join('despachos', 'despachos.id', '=', 'despacho_ocparte.despacho_id')
-                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
-                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
-                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
-                                            ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
-                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
-                                            ->where('despachos.destinable_type', '=', get_class($centrodistribucion))
-                                            ->where('despachos.destinable_id', '=', $centrodistribucion->id) // Dispatched to Sucursal (centro)
-                                            ->where('despachos.despachable_type', '=', get_class($comprador))
-                                            ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
-                                            ->where('sucursales.country_id', '=', $centrodistribucion->country->id) // Same Country as Sucursal (centro)
-                                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
-                                            ->groupBy('oc_parte.id')
-                                            ->get();
+                                // If user belongs to this Sucursal's (centro) country
+                                if($user->stationable->country->id === $centrodistribucion->country->id)
+                                {
+                                    // Get only OcPartes on OCs generated from its country and dispatched from Comprador to Sucursal (centro)
+                                    $ocParteList = OcParte::select('oc_parte.*')
+                                                ->join('despacho_ocparte', 'despacho_ocparte.ocparte_id', '=', 'oc_parte.id')
+                                                ->join('despachos', 'despachos.id', '=', 'despacho_ocparte.despacho_id')
+                                                ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                                ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                                ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
+                                                ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
+                                                ->where('despachos.destinable_type', '=', get_class($centrodistribucion))
+                                                ->where('despachos.destinable_id', '=', $centrodistribucion->id) // Dispatched to Sucursal (centro)
+                                                ->where('despachos.despachable_type', '=', get_class($comprador))
+                                                ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
+                                                ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                                ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                                ->groupBy('oc_parte.id')
+                                                ->get();
+                                }
+                                else
+                                {
+                                    // Set as forbidden
+                                    $forbidden = true;
+                                }
     
                                 break;
                             }
@@ -3297,14 +3336,17 @@ class RecepcionesController extends Controller
                                                 ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
                                                 ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                                 ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                                ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                                ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                                ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                                ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                                 ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
                                                 ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                                 ->where('despachos.destinable_type', '=', get_class($centrodistribucion))
                                                 ->where('despachos.destinable_id', '=', $centrodistribucion->id) // Dispatched to Sucursal (centro)
                                                 ->where('despachos.despachable_type', '=', get_class($comprador))
                                                 ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
-                                                ->where('sucursales.country_id', '=', $centrodistribucion->country->id) // Same Country as Sucursal (centro)
+                                                ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                                ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                                 ->groupBy('oc_parte.id')
                                                 ->get();
                                 }
@@ -3639,23 +3681,29 @@ class RecepcionesController extends Controller
                                     // Administrador
                                     case 'admin': {
 
-                                        $oc = Oc::select('ocs.*')
-                                            ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
-                                            ->join('despacho_ocparte', 'despacho_ocparte.ocparte_id', '=', 'oc_parte.id')
-                                            ->join('despachos', 'despachos.id', '=', 'despacho_ocparte.despacho_id')
-                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
-                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
-                                            ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
-                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
-                                            ->where('despachos.destinable_type', '=', get_class($centrodistribucion))
-                                            ->where('despachos.destinable_id', '=', $centrodistribucion->id) // Dispatched to Sucursal (centro)
-                                            ->where('despachos.despachable_type', '=', get_class($comprador))
-                                            ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
-                                            ->where('solicitudes.comprador_id', '=', $comprador->id) // Solicitudes for this Comprador
-                                            ->where('sucursales.country_id', '=', $centrodistribucion->country->id) // Same Country as Sucursal (centro)
-                                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
-                                            ->first();
+                                        // If user belongs to this Sucursal's (centro) country
+                                        if($user->stationable->country->id === $centrodistribucion->country->id)
+                                        {
+                                            $oc = Oc::select('ocs.*')
+                                                ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
+                                                ->join('despacho_ocparte', 'despacho_ocparte.ocparte_id', '=', 'oc_parte.id')
+                                                ->join('despachos', 'despachos.id', '=', 'despacho_ocparte.despacho_id')
+                                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                                ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                                ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
+                                                ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
+                                                ->where('despachos.destinable_type', '=', get_class($centrodistribucion))
+                                                ->where('despachos.destinable_id', '=', $centrodistribucion->id) // Dispatched to Sucursal (centro)
+                                                ->where('despachos.despachable_type', '=', get_class($comprador))
+                                                ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
+                                                ->where('solicitudes.comprador_id', '=', $comprador->id) // Solicitudes for this Comprador
+                                                ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                                ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                                ->first();
+                                        }
         
                                         break;
                                     }
@@ -3675,7 +3723,9 @@ class RecepcionesController extends Controller
                                                 ->join('despachos', 'despachos.id', '=', 'despacho_ocparte.despacho_id')
                                                 ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                                 ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                                ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                                ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                                ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                                ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                                 ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
                                                 ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                                 ->where('despachos.destinable_type', '=', get_class($centrodistribucion))
@@ -3683,7 +3733,8 @@ class RecepcionesController extends Controller
                                                 ->where('despachos.despachable_type', '=', get_class($comprador))
                                                 ->where('despachos.despachable_id', '=', $comprador->id) // Dispatched by Comprador
                                                 ->where('solicitudes.comprador_id', '=', $comprador->id) // Solicitudes for this Comprador
-                                                ->where('sucursales.country_id', '=', $centrodistribucion->country->id) // Same Country as Sucursal (centro)
+                                                ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                                ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                                 ->first();
                                         }
             
@@ -3889,11 +3940,14 @@ class RecepcionesController extends Controller
                                             ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
                                             ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                             ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                            ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                            ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                             ->where('recepciones.id', '=', $id) // For this Recepcion
                                             ->where('recepciones.recepcionable_type', '=', get_class($centrodistribucion))
                                             ->where('recepciones.recepcionable_id', '=', $centrodistribucion->id) // Received at Sucursal (centro)
-                                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                             ->first();
 
                                 break;
@@ -3909,11 +3963,15 @@ class RecepcionesController extends Controller
                                             ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
                                             ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                             ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                            ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                            ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                             ->where('recepciones.id', '=', $id) // For this Recepcion
                                             ->where('recepciones.recepcionable_type', '=', get_class($centrodistribucion))
                                             ->where('recepciones.recepcionable_id', '=', $centrodistribucion->id) // Received at Sucursal (centro)
-                                            ->where('solicitudes.sucursal_id', '=', $user->stationable->id) // Same Sucursal as user station
-                                            ->where('solicitudes.user_id', '=', $user->id) // Belonging to user
+                                            ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
+										    ->where('solicitudes.user_id', '=', $user->id) // Belonging to user
                                             ->first();
 
                                 break;
@@ -3932,11 +3990,14 @@ class RecepcionesController extends Controller
                                                 ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
                                                 ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                                 ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                                ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                                ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                                ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                                ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                                 ->where('recepciones.id', '=', $id) // For this Recepcion
                                                 ->where('recepciones.recepcionable_type', '=', get_class($centrodistribucion))
                                                 ->where('recepciones.recepcionable_id', '=', $centrodistribucion->id) // Received at Sucursal (centro)
-                                                ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                                ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                                ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                                 ->first();
                                 }
                                 // If user belongs to Sucursal
@@ -3949,10 +4010,14 @@ class RecepcionesController extends Controller
                                                 ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
                                                 ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                                 ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                                ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                                ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                                 ->where('recepciones.id', '=', $id) // For this Recepcion
                                                 ->where('recepciones.recepcionable_type', '=', get_class($centrodistribucion))
                                                 ->where('recepciones.recepcionable_id', '=', $centrodistribucion->id) // Received at Sucursal (centro)
-                                                ->where('solicitudes.sucursal_id', '=', $user->stationable->id) // Same Sucursal as user station
+                                                ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                                ->where('sucursalfaena.id', '=', $user->stationable->id) // Same Sucursal as user station
                                                 ->first();
                                 }
                                 
@@ -4223,62 +4288,71 @@ class RecepcionesController extends Controller
                             // Administrador
                             case 'admin': {
 
-                                // Only if Recepcion contains OcPartes from OCs generated from its same country
-                                $recepcion = Recepcion::select('recepciones.*')
-                                            ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
-                                            ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
-                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
-                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
-                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
-                                            ->where('recepciones.id', '=', $id) // For this Recepcion
-                                            ->where('recepciones.recepcionable_type', '=', get_class($centrodistribucion))
-                                            ->where('recepciones.recepcionable_id', '=', $centrodistribucion->id) // Received at Sucursal (centro)
-                                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
-                                            ->first();
-
-                                if($recepcion !== null)
+                                // If user belongs to this Sucursal's (centro) country
+                                if($user->stationable->country->id === $centrodistribucion->country->id)
                                 {
-                                     // Get only OcPartes on OCs generated from its country and dispatched from Comprador to Sucursal (centro)
-                                    $ocParteList = OcParte::select('oc_parte.*')
-                                                ->join('despacho_ocparte', 'despacho_ocparte.ocparte_id', '=', 'oc_parte.id')
-                                                ->join('despachos', 'despachos.id', '=', 'despacho_ocparte.despacho_id')
+                                    // Only if Recepcion contains OcPartes from OCs generated from its same country
+                                    $recepcion = Recepcion::select('recepciones.*')
+                                                ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                                ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
                                                 ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
                                                 ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                                 ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                                ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
-                                                ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
-                                                ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
-                                                ->where('despachos.destinable_type', '=', get_class($centrodistribucion))
-                                                ->where('despachos.destinable_id', '=', $centrodistribucion->id) // Dispatched to Sucursal (centro)
-                                                ->where('despachos.despachable_type', '=', get_class($recepcion->sourceable)) // Recepcion's source is Comprador
-                                                ->where('despachos.despachable_id', '=', $recepcion->sourceable->id) // Dispatched by Comprador
-                                                ->where('sucursales.country_id', '=', $centrodistribucion->country->id) // Same Country as Sucursal (centro)
-                                                ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
-                                                ->groupBy('oc_parte.id')
-                                                ->get();
-
-
-                                     // For OcPartes in current Recepcion
-                                     $ocParteList = $recepcion->ocpartes->reduce(function($carry, $ocParte) use ($ocParteList)
-                                        {
-                                            $contains = $carry->contains(function($op) use ($ocParte)
-                                                {
-                                                    return ($ocParte->id === $op->id);
-                                                }
-                                            );
-
-                                            // If OcParte from Recepcion isn't in queue
-                                            if($contains === false)
+                                                ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                                ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                                ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
+                                                ->where('recepciones.id', '=', $id) // For this Recepcion
+                                                ->where('recepciones.recepcionable_type', '=', get_class($centrodistribucion))
+                                                ->where('recepciones.recepcionable_id', '=', $centrodistribucion->id) // Received at Sucursal (centro)
+                                                ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                                ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                                ->first();
+    
+                                    if($recepcion !== null)
+                                    {
+                                         // Get only OcPartes on OCs generated from its country and dispatched from Comprador to Sucursal (centro)
+                                        $ocParteList = OcParte::select('oc_parte.*')
+                                                    ->join('despacho_ocparte', 'despacho_ocparte.ocparte_id', '=', 'oc_parte.id')
+                                                    ->join('despachos', 'despachos.id', '=', 'despacho_ocparte.despacho_id')
+                                                    ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                                    ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                    ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                    ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                                    ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                                    ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
+                                                    ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                    ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
+                                                    ->where('despachos.destinable_type', '=', get_class($centrodistribucion))
+                                                    ->where('despachos.destinable_id', '=', $centrodistribucion->id) // Dispatched to Sucursal (centro)
+                                                    ->where('despachos.despachable_type', '=', get_class($recepcion->sourceable)) // Recepcion's source is Comprador
+                                                    ->where('despachos.despachable_id', '=', $recepcion->sourceable->id) // Dispatched by Comprador
+                                                    ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                                    ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                                    ->groupBy('oc_parte.id')
+                                                    ->get();
+    
+    
+                                         // For OcPartes in current Recepcion
+                                         $ocParteList = $recepcion->ocpartes->reduce(function($carry, $ocParte) use ($ocParteList)
                                             {
-                                                // Add OcParte to list
-                                                array_push($carry, $ocParte);
-                                            }
-
-                                            return $carry;
-                                        },
-                                        $ocParteList // Initialize with previous list as base
-                                    );
+                                                $contains = $carry->contains(function($op) use ($ocParte)
+                                                    {
+                                                        return ($ocParte->id === $op->id);
+                                                    }
+                                                );
+    
+                                                // If OcParte from Recepcion isn't in queue
+                                                if($contains === false)
+                                                {
+                                                    // Add OcParte to list
+                                                    array_push($carry, $ocParte);
+                                                }
+    
+                                                return $carry;
+                                            },
+                                            $ocParteList // Initialize with previous list as base
+                                        );
+                                    }
                                 }
 
                                 break;
@@ -4301,11 +4375,14 @@ class RecepcionesController extends Controller
                                                 ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
                                                 ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                                 ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                                ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                                ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                                ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                                ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                                 ->where('recepciones.id', '=', $id) // For this Recepcion
                                                 ->where('recepciones.recepcionable_type', '=', get_class($centrodistribucion))
                                                 ->where('recepciones.recepcionable_id', '=', $centrodistribucion->id) // Received at Sucursal (centro)
-                                                ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                                ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                                ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                                 ->first();
 
                                     if($recepcion !== null)
@@ -4317,14 +4394,17 @@ class RecepcionesController extends Controller
                                                     ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
                                                     ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                                     ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                                    ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                                    ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                                    ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                                    ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                                     ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
                                                     ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                                     ->where('despachos.destinable_type', '=', get_class($centrodistribucion))
                                                     ->where('despachos.destinable_id', '=', $centrodistribucion->id) // Dispatched to Sucursal (centro)
                                                     ->where('despachos.despachable_type', '=', get_class($recepcion->sourceable)) // Recepcion's source is Comprador
                                                     ->where('despachos.despachable_id', '=', $recepcion->sourceable->id) // Dispatched by Comprador
-                                                    ->where('sucursales.country_id', '=', $centrodistribucion->country->id) // Same Country as Sucursal (centro)
+                                                    ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                                    ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                                     ->groupBy('oc_parte.id')
                                                     ->get();
 
@@ -4792,19 +4872,26 @@ class RecepcionesController extends Controller
                         // Administrador
                         case 'admin': {
                             
-                            // Only if Recepcion contains OcPartes from OCs generated from its same country
-                            $recepcion = Recepcion::select('recepciones.*')
-                                        ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
-                                        ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
-                                        ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
-                                        ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
-                                        ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                        ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
-                                        ->where('recepciones.id', '=', $id) // For this Recepcion
-                                        ->where('recepciones.recepcionable_type', '=', get_class($centrodistribucion))
-                                        ->where('recepciones.recepcionable_id', '=', $centrodistribucion->id) // Received at Sucursal (centro)
-                                        ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
-                                        ->first();
+                            // If user belongs to this Sucursal's (centro) country
+                            if($user->stationable->country->id === $centrodistribucion->country->id)
+                            {
+                                // Only if Recepcion contains OcPartes from OCs generated from its same country
+                                $recepcion = Recepcion::select('recepciones.*')
+                                            ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                            ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                            ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                            ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
+                                            ->where('recepciones.id', '=', $id) // For this Recepcion
+                                            ->where('recepciones.recepcionable_type', '=', get_class($centrodistribucion))
+                                            ->where('recepciones.recepcionable_id', '=', $centrodistribucion->id) // Received at Sucursal (centro)
+                                            ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->first();
+                            }
 
                             break;
                         }
@@ -4825,11 +4912,14 @@ class RecepcionesController extends Controller
                                             ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
                                             ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                             ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                            ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                            ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                             ->where('recepciones.id', '=', $id) // For this Recepcion
                                             ->where('recepciones.recepcionable_type', '=', get_class($centrodistribucion))
                                             ->where('recepciones.recepcionable_id', '=', $centrodistribucion->id) // Received at Sucursal (centro)
-                                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                             ->first();
 
                             }                                
@@ -4931,7 +5021,9 @@ class RecepcionesController extends Controller
                                                 ->join('despachos', 'despachos.id', '=', 'despacho_ocparte.despacho_id')
                                                 ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                                 ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                                ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                                ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                                ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                                ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                                 ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
                                                 ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                                 ->where('ocs.id', '=', $ocId)
@@ -4939,7 +5031,8 @@ class RecepcionesController extends Controller
                                                 ->where('despachos.despachable_id', '=', $recepcion->sourceable->id) // OcParte dispatched from Comprador
                                                 ->where('despachos.destinable_type', '=', get_class($centrodistribucion))
                                                 ->where('despachos.destinable_id', '=', $centrodistribucion->id) // OcParte dispatched to Sucursal (centro)
-                                                ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                                ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                                ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                                 ->first();
             
                                             break;
@@ -4961,7 +5054,9 @@ class RecepcionesController extends Controller
                                                     ->join('despachos', 'despachos.id', '=', 'despacho_ocparte.despacho_id')
                                                     ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                                     ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                                    ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                                    ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                                    ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                                    ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                                     ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
                                                     ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                                     ->where('ocs.id', '=', $ocId)
@@ -4969,7 +5064,8 @@ class RecepcionesController extends Controller
                                                     ->where('despachos.despachable_id', '=', $recepcion->sourceable->id) // OcParte dispatched from Comprador
                                                     ->where('despachos.destinable_type', '=', get_class($centrodistribucion))
                                                     ->where('despachos.destinable_id', '=', $centrodistribucion->id) // OcParte dispatched to Sucursal (centro)
-                                                    ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                                    ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                                    ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                                     ->first();
                                             }                                
 
@@ -5177,19 +5273,26 @@ class RecepcionesController extends Controller
                         // Administrador
                         case 'admin': {
                             
-                            // Only if Recepcion contains OcPartes from OCs generated from its same country
-                            $recepcion = Recepcion::select('recepciones.*')
-                                        ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
-                                        ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
-                                        ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
-                                        ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
-                                        ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                        ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
-                                        ->where('recepciones.id', '=', $id) // For this Recepcion
-                                        ->where('recepciones.recepcionable_type', '=', get_class($centrodistribucion))
-                                        ->where('recepciones.recepcionable_id', '=', $centrodistribucion->id) // Received at Sucursal (centro)
-                                        ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
-                                        ->first();
+                            // If user belongs to this Sucursal's (centro) country
+                            if($user->stationable->country->id === $centrodistribucion->country->id)
+                            {
+                                // Only if Recepcion contains OcPartes from OCs generated from its same country
+                                $recepcion = Recepcion::select('recepciones.*')
+                                            ->join('recepcion_ocparte', 'recepcion_ocparte.recepcion_id', '=', 'recepciones.id')
+                                            ->join('oc_parte', 'oc_parte.id', '=', 'recepcion_ocparte.ocparte_id')
+                                            ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
+                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                            -->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                            ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                            ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
+                                            ->where('recepciones.id', '=', $id) // For this Recepcion
+                                            ->where('recepciones.recepcionable_type', '=', get_class($centrodistribucion))
+                                            ->where('recepciones.recepcionable_id', '=', $centrodistribucion->id) // Received at Sucursal (centro)
+                                            ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->first();
+                            }
 
                             break;
                         }
@@ -5210,11 +5313,14 @@ class RecepcionesController extends Controller
                                             ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
                                             ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                             ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                            ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                            ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                             ->where('recepciones.id', '=', $id) // For this Recepcion
                                             ->where('recepciones.recepcionable_type', '=', get_class($centrodistribucion))
                                             ->where('recepciones.recepcionable_id', '=', $centrodistribucion->id) // Received at Sucursal (centro)
-                                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                             ->first();
 
                             }                                
@@ -5265,24 +5371,31 @@ class RecepcionesController extends Controller
                                     // Administrador
                                     case 'admin': {
 
-                                        // Only if Oc was generated from its same country
-                                        $oc = Oc::select('ocs.*')
-                                            ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
-                                            ->join('despacho_ocparte', 'despacho_ocparte.ocparte_id', '=' , 'oc_parte.id')
-                                            ->join('despachos', 'despachos.id', '=', 'despacho_ocparte.despacho_id')
-                                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
-                                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
-                                            ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
-                                            ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
-                                            ->where('ocs.id', '=', $ocId)
-                                            ->where('despachos.despachable_type', '=', get_class($recepcion->sourceable)) // Recepcion's source is Comprador
-                                            ->where('despachos.despachable_id', '=', $recepcion->sourceable->id) // OcParte dispatched from Comprador
-                                            ->where('despachos.destinable_type', '=', get_class($centrodistribucion))
-                                            ->where('despachos.destinable_id', '=', $centrodistribucion->id) // OcParte dispatched to Sucursal (centro)
-                                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
-                                            ->first();
-        
+                                        // If user belongs to this Sucursal's (centro) country
+                                        if($user->stationable->country->id === $centrodistribucion->country->id)
+                                        {
+                                            // Only if Oc was generated from its same country
+                                            $oc = Oc::select('ocs.*')
+                                                ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
+                                                ->join('despacho_ocparte', 'despacho_ocparte.ocparte_id', '=' , 'oc_parte.id')
+                                                ->join('despachos', 'despachos.id', '=', 'despacho_ocparte.despacho_id')
+                                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                                ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                                ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                                ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
+                                                ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
+                                                ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
+                                                ->where('ocs.id', '=', $ocId)
+                                                ->where('despachos.despachable_type', '=', get_class($recepcion->sourceable)) // Recepcion's source is Comprador
+                                                ->where('despachos.despachable_id', '=', $recepcion->sourceable->id) // OcParte dispatched from Comprador
+                                                ->where('despachos.destinable_type', '=', get_class($centrodistribucion))
+                                                ->where('despachos.destinable_id', '=', $centrodistribucion->id) // OcParte dispatched to Sucursal (centro)
+                                                ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                                ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                                ->first();    
+                                        }
+
                                         break;
                                     }
         
@@ -5302,7 +5415,9 @@ class RecepcionesController extends Controller
                                                 ->join('despachos', 'despachos.id', '=', 'despacho_ocparte.despacho_id')
                                                 ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                                 ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                                ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                                ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                                ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                                ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                                 ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
                                                 ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                                 ->where('ocs.id', '=', $ocId)
@@ -5310,7 +5425,8 @@ class RecepcionesController extends Controller
                                                 ->where('despachos.despachable_id', '=', $recepcion->sourceable->id) // OcParte dispatched from Comprador
                                                 ->where('despachos.destinable_type', '=', get_class($centrodistribucion))
                                                 ->where('despachos.destinable_id', '=', $centrodistribucion->id) // OcParte dispatched to Sucursal (centro)
-                                                ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                                ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                                ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                                 ->first();
                                         }                                
 
