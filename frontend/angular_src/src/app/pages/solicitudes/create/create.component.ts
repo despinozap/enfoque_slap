@@ -105,8 +105,6 @@ export class SolicitudesCreateComponent implements OnInit {
           // Set user's station as Sucursal
           this.sucursal_id = this.loggedUser.stationable.id;
         }
-        
-        console.log(this.loggedUser, this.sucursal_id);
       });
       
       this._authService.notifyLoggedUser(this._authService.NOTIFICATION_RECEIVER_CONTENTPAGE);
