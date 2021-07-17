@@ -6,6 +6,8 @@ import { Subject } from 'rxjs';
 import { Comprador } from 'src/app/interfaces/comprador';
 import { Faena } from 'src/app/interfaces/faena';
 import { Marca } from 'src/app/interfaces/marca';
+import { User } from 'src/app/interfaces/user';
+import { AuthService } from 'src/app/services/auth.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { SolicitudesService } from 'src/app/services/solicitudes.service';
 import { UtilsService } from 'src/app/services/utils.service';
@@ -37,6 +39,9 @@ export class SolicitudesCreateComponent implements OnInit {
   
   dtTrigger: Subject<any> = new Subject<any>();
 
+  loggedUser: User = null as any;
+  private subLoggedUser: any;
+  
   faenas: Array<Faena> = null as any;
   marcas: Array<Marca> = null as any;
   compradores: Array<Comprador> = null as any;
@@ -47,7 +52,7 @@ export class SolicitudesCreateComponent implements OnInit {
   private sub: any;
   id: number = -1;
 
-  private sucursal_id: number = 2; // American Parte Antofagasta as Default
+  sucursal_id: number = -1;
 
   /*
   *   Displayed form:
@@ -83,11 +88,30 @@ export class SolicitudesCreateComponent implements OnInit {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
+    private _authService: AuthService,
     private _solicitudesService: SolicitudesService,
     private _utilsService: UtilsService
   ) { }
 
   ngOnInit(): void {
+    //For loggedUser
+    {
+      this.subLoggedUser = this._authService.loggedUser$.subscribe((data) => {
+        this.loggedUser = data.user as User;
+
+        // Only if user is Admin or Vendedor. If it doens't, it couldn't store a new Solicitud
+        if(['admin', 'seller'].includes(this.loggedUser.role.name))
+        {
+          // Set user's station as Sucursal
+          this.sucursal_id = this.loggedUser.stationable.id;
+        }
+        
+        console.log(this.loggedUser, this.sucursal_id);
+      });
+      
+      this._authService.notifyLoggedUser(this._authService.NOTIFICATION_RECEIVER_CONTENTPAGE);
+    }
+
     this.sub = this.route.params.subscribe(params => {
       if(params['id'] !== undefined)
       {
@@ -119,6 +143,7 @@ export class SolicitudesCreateComponent implements OnInit {
   }
 
   ngOnDestroy(): void {
+    this.subLoggedUser.unsubscribe();
     this.sub.unsubscribe();
     this.dtTrigger.unsubscribe();
   }
