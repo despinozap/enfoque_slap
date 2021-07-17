@@ -25,3 +25,17 @@ Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protrac
 ## Further help
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+---
+
+# Notes
+
+## Frontend
+
+  - Solicitudes
+    - Created under the current user's stationable as Sucursal.
+
+
+## Backend
+
+  - Recepciones, Despachos and Entregas
+    - Fitered by **Sucursal** (final destination) where the **Faena** owning the **Solicitud** is delivering (**Faena**'s sucursal_id)
