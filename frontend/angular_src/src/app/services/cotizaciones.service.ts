@@ -52,6 +52,24 @@ export class CotizacionesService {
     return this.httpClient.get(endpoint);
   }
 
+  public updateCotizacion(cotizacion_id: number, cotizacion: any): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/cotizaciones/${cotizacion_id}`;
+
+    let httpOptions = { 
+      method: 'PUT',
+      headers:
+      {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET,POST,OPTIONS,DELETE,PUT'
+      }
+    };
+    
+    return this.httpClient.put(endpoint, cotizacion, httpOptions);
+  }
+
   public getReportCotizacion(data: any): Observable<any>
   {
     let endpoint: string = `${environment.ENDPOINT_BASE}/cotizaciones/report`;

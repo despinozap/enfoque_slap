@@ -82,6 +82,8 @@
                                 <a [routerLink]="['details', cotizacion.id]" class="btn-table btn btn-secondary" title="Detalle">
                                     <i class="bx bx-zoom-in"></i>
                                 </a>
+                                <a [routerLink]="['edit', cotizacion.id]" class="btn-table btn btn-secondary" title="Editar" *ngIf="(loggedUser !== null) && (['admin', 'seller'].includes(this.loggedUser.role.name)) && ([1, 2].includes(cotizacion.estadocotizacion.id))"><i
+                                    class="bx bx-edit-alt"></i></a>
                                 <a (click)="loadReportsCotizacion([cotizacion.id])" class="btn-table btn btn-secondary" title="Generar PDF">
                                     <i class="bx bxs-file-pdf"></i>
                                 </a>

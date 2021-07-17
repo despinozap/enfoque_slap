@@ -44,6 +44,7 @@ import { PartesListComponent } from './pages/partes/list/list.component';
 import { PartesEditComponent } from './pages/partes/edit/edit.component';
 import { CotizacionesListComponent } from './pages/cotizaciones/list/list.component';
 import { CotizacionesDetailsComponent } from './pages/cotizaciones/details/details.component';
+import { CotizacionesEditComponent } from './pages/cotizaciones/edit/edit.component';
 import { PDFCotizacionComponent } from './pages/pdfs/cotizacion/cotizacion.component';
 import { CompradoresListComponent } from './pages/compradores/list/list.component';
 import { CompradoresEditComponent } from './pages/compradores/edit/edit.component';
@@ -116,6 +117,7 @@ const routes: Routes = [
       { path: 'partes/edit/:id', component: PartesEditComponent },
       { path: 'cotizaciones', component: CotizacionesListComponent },
       { path: 'cotizaciones/details/:id', component: CotizacionesDetailsComponent },
+      { path: 'cotizaciones/edit/:id', component: CotizacionesEditComponent },
       { path: 'compradores', component: CompradoresListComponent },
       { path: 'compradores/edit/:id', component: CompradoresEditComponent },
       { path: 'compradores/:comprador_id/proveedores/create', component: ProveedoresCreateComponent },
@@ -189,8 +191,10 @@ const routes: Routes = [
     PartesEditComponent,
     CotizacionesListComponent,
     CotizacionesDetailsComponent,
+    CotizacionesEditComponent,
     PDFCotizacionComponent,
     CompradoresListComponent,
+    CompradoresEditComponent,
     ProveedoresListComponent,
     ProveedoresCreateComponent,
     ProveedoresEditComponent,
@@ -223,8 +227,7 @@ const routes: Routes = [
     EntregasCentrodistribucionListComponent,
     EntregasCentrodistribucionCreateComponent,
     EntregasCentrodistribucionEditComponent,
-    EntregasCentrodistribucionDetailsComponent,
-    CompradoresEditComponent,
+    EntregasCentrodistribucionDetailsComponent,    
   ],
   imports: [
     BrowserModule,

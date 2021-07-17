@@ -33,7 +33,6 @@ export class SolicitudesCompleteComponent implements OnInit {
     order: [[0, 'desc']]
   };
 
-  
   dtTrigger: Subject<any> = new Subject<any>();
   
   loggedUser: User = null as any;
