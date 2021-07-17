@@ -645,6 +645,9 @@ class CotizacionesController extends Controller
                                             {
                                                 // Update flete with current LB in USD value
                                                 $parte->pivot->flete = $parte->pivot->peso * $paramLbInUsd->value;
+
+                                                // Update monto with (costo + ((costo/100) * margen) + flete)
+                                                $parte->pivot->monto = $parte->pivot->costo + (($parte->pivot->costo / 100) * $parte->pivot->margen) + ($parte->pivot->flete);
                                             }
 
                                             // If parte is updated
