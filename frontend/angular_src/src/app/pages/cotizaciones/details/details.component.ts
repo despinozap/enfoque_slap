@@ -732,6 +732,8 @@ export class CotizacionesDetailsComponent implements OnInit, AfterViewInit {
 
   public checkParteItem(parte: any, evt: any): void {
     parte.checked = evt.target.checked;
+
+    this.sortPartesByChecked();
   }
 
   public isCheckedItem(dataSource: any[]): boolean
@@ -766,6 +768,14 @@ export class CotizacionesDetailsComponent implements OnInit, AfterViewInit {
     return index >= 0 ? true : false;
   }
 
+  // Modified for sorting partesAprobadas
+  private sortPartesByChecked(): void {
+    // Sort partes pushing checked ones to the top
+    this.partesAprobadas = this.partesAprobadas.sort((p1, p2) => {
+      return ((p2.checked === true) ? 1 : 0) - ((p1.checked === true) ? 1 : 0);
+    });
+  }
+
   public updateParteAprobada_cantidad(parteAprobada: any, evt: any): void {
     if((isNaN(evt.target.value) === false) && (parseInt(evt.target.value) > 0))
     {
@@ -780,10 +790,11 @@ export class CotizacionesDetailsComponent implements OnInit, AfterViewInit {
   public goTo_estadoComercial_aprobar(): void {
     
     // Copy partesAprobadas from partes list
-    this.partesAprobadas = [];
-    this.partes.forEach((parte) => {  
-      this.partesAprobadas.push(parte);
-    });
+    this.partesAprobadas = this.partes.map((parte) => {
+        // Returns cloned parte, different object
+        return {...parte};
+      }
+    );
 
     // Uses the second (and last) datatables instance
     this.renderDataTable(this.datatableELements.last, this.dtTriggerAprobar);
