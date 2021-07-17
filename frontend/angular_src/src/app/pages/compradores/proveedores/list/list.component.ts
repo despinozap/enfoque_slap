@@ -21,7 +21,7 @@ export class ProveedoresListComponent implements OnInit {
   datatableElement_proveedores: DataTableDirective = null as any;
   dtOptions: any = {
     pagingType: 'full_numbers',
-    pageLength: 10,
+    pageLength: 25,
     language: {
       url: '//cdn.datatables.net/plug-ins/1.10.22/i18n/Spanish.json'
     },

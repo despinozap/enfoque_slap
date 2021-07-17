@@ -18,7 +18,7 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
   datatableELements: QueryList<DataTableDirective> = null as any;
   dtOptionsOcs: any = {
     pagingType: 'full_numbers',
-    pageLength: 10,
+    pageLength: 25,
     language: {
       url: '//cdn.datatables.net/plug-ins/1.10.22/i18n/Spanish.json'
     },
@@ -26,7 +26,7 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
   };
   dtOptionsPartes: any = {
     pagingType: 'full_numbers',
-    pageLength: 10,
+    pageLength: 25,
     language: {
       url: '//cdn.datatables.net/plug-ins/1.10.22/i18n/Spanish.json'
     },
