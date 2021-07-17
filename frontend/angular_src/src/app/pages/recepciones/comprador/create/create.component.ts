@@ -450,6 +450,8 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
 
   public checkParteItem(parte: any, evt: any): void {
     parte.checked = evt.target.checked;
+
+    this.sortPartesByChecked();
   }
 
   public isCheckedItem(dataSource: any[]): boolean
@@ -482,6 +484,13 @@ export class RecepcionesCompradorCreateComponent implements OnInit {
     });
 
     return index >= 0 ? true : false;
+  }
+
+  private sortPartesByChecked(): void {
+    // Sort partes pushing checked ones to the top
+    this.partes = this.partes.sort((p1, p2) => {
+      return ((p2.checked === true) ? 1 : 0) - ((p1.checked === true) ? 1 : 0);
+    });
   }
   
   public getDateToday(): string {
