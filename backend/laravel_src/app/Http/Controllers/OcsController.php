@@ -523,6 +523,16 @@ class OcsController extends Controller
                                     'updated_at'
                                 ]);
 
+                                $parte->pivot->cantidad_recepcionado = 0;
+                                $parte->pivot->cantidad_entregado = 0;
+                                if($oc->estadooc_id === 2) // Estadooc = 'En proceso'
+                                {
+                                    // Set cantidad in Recepciones at OC's Comprador
+                                    $parte->pivot->cantidad_recepcionado = $parte->pivot->getCantidadRecepcionado($oc->cotizacion->solicitud->comprador);
+                                    // Set cantidad total in Entregas
+                                    $parte->pivot->cantidad_entregado = $parte->pivot->getCantidadTotalEntregado();
+                                }
+
                                 $parte->pivot->makeHidden([
                                     'oc',
                                     'oc_id',
