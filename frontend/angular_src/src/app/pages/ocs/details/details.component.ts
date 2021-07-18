@@ -57,7 +57,6 @@ export class OcsDetailsComponent implements OnInit {
   };
 
   public parte_index: number = -1;
-  public parte_min: number = -1;
   parteTrack: any = null;
 
   motivosBaja: Array<any> = null as any;
@@ -184,8 +183,10 @@ export class OcsDetailsComponent implements OnInit {
             'nparte': p.nparte,
             'descripcion': p.pivot.descripcion,
             'cantidad': p.pivot.cantidad,
+            'cantidad_recepcionado': p.pivot.cantidad_recepcionado,
             'cantidad_entregado': p.pivot.cantidad_entregado,
-            'cantidad_stock': p.pivot.cantidad_stock,
+            // Compares cantidad in Recepciones at Comprador and cantidad total in Entregas
+            'cantidad_min': (p.pivot.cantidad_recepcionado > p.pivot.cantidad_entregado) ? p.pivot.cantidad_recepcionado : p.pivot.cantidad_entregado,
             'tiempoentrega': p.pivot.tiempoentrega,
             'backorder': p.pivot.backorder === 1 ? true : false,
             'updated_at': p.pivot.updated_at,
@@ -866,6 +867,8 @@ export class OcsDetailsComponent implements OnInit {
   }
 
   public goTo_partesList(): void {
+    this.parte_index = -1;
+    
     this.DISPLAYING_FORM = 0;
   }
 

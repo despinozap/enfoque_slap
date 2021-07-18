@@ -146,6 +146,10 @@
 
                 <!-- Parte edit -->
                 <div [hidden]="(DISPLAYING_FORM !== 1)">
+                    <div class="alert alert-info alert-dismissible fade show" role="alert" *ngIf="((parte_index >= 0) && (partes[parte_index].cantidad_min > 0))">
+                        <label *ngIf="(partes[parte_index].cantidad_recepcionado > 0)"> El Comprador ya ha recepcionado <strong>{{ partes[parte_index].cantidad_recepcionado }} {{ (partes[parte_index].cantidad_recepcionado > 1) ? 'unidades' : 'unidad' }}</strong> de esta parte </label>
+                        <label *ngIf="(partes[parte_index].cantidad_entregado > 0)"> Ya se ha entregado <strong>{{ partes[parte_index].cantidad_entregado }} {{ (partes[parte_index].cantidad_entregado > 1) ? 'unidades' : 'unidad' }}</strong> de esta parte al Clabelente</label>
+                    </div>
                     <h4 class="card-title">Editar parte</h4>
                     <p class="card-title-desc">Modifica los siguientes campos para editar la parte en la OC</p>
 
@@ -159,11 +163,10 @@
                                     <div class="alert alert-danger" *ngIf="(responseErrors.cantidad)">
                                         <div *ngFor="let errorMessage of responseErrors.cantidad">{{ errorMessage }}</div>
                                     </div>
-                                    <input type="number" class="form-control valid-control" name="cantidad" id="cantidad" formControlName="cantidad">
+                                    <input type="number" class="form-control valid-control" name="cantidad" id="cantidad" min="{{ (parte_index >= 0) ? partes[parte_index].cantidad_min : 1 }}" formControlName="cantidad">
                                     <!-- Frontend errors -->
                                     <div *ngIf="(parteForm.controls.cantidad.errors) && (parteForm.controls.cantidad.touched) && (parteForm.controls.cantidad.dirty)">
                                         <div class="error-response" *ngIf="parteForm.controls.cantidad.errors.required === true">Debes ingresar la cantidad</div>
-                                        <div class="error-response" *ngIf="parteForm.controls.cantidad.errors.mincantidadasignado !== null">La cantidad debe ser mayor a igual a la cantidad de partes ya asignadas {{ parte_min > 0 ? '(' + parte_min + ')' : '' }}</div>
                                     </div>
                                 </div>
                             </div>
@@ -175,7 +178,7 @@
                                     <div class="alert alert-danger" *ngIf="(responseErrors.tiempoentrega)">
                                         <div *ngFor="let errorMessage of responseErrors.tiempoentrega">{{ errorMessage }}</div>
                                     </div>
-                                    <input type="number" class="form-control valid-control" name="tiempoentrega" id="tiempoentrega" formControlName="tiempoentrega">
+                                    <input type="number" class="form-control valid-control" name="tiempoentrega" id="tiempoentrega" min="1" formControlName="tiempoentrega">
                                     <!-- Frontend errors -->
                                     <div *ngIf="(parteForm.controls.tiempoentrega.errors) && (parteForm.controls.tiempoentrega.touched) && (parteForm.controls.tiempoentrega.dirty)">
                                         <div class="error-response" *ngIf="parteForm.controls.tiempoentrega.errors.min !== null">El tiempo de entrega debe ser igual o mayor a 0</div>
