@@ -45,9 +45,12 @@ class EntregasController extends Controller
                                             ->join('ocs', 'ocs.id', '=', 'entregas.oc_id')
                                             ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                             ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                            ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                            ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                             ->where('entregas.sucursal_id', '=', $centrodistribucion->id) // Delivered by Sucursal (centro)
-                                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                             ->get();
                                           
                             }
@@ -74,9 +77,12 @@ class EntregasController extends Controller
                                             ->join('ocs', 'ocs.id', '=', 'entregas.oc_id')
                                             ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                             ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                            ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                            ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                             ->where('entregas.sucursal_id', '=', $centrodistribucion->id) // Delivered by Sucursal (centro)
-                                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                             ->where('solicitudes.user_id', '=', $user->id) // Belonging to user
                                             ->get();
                             }
@@ -283,14 +289,18 @@ class EntregasController extends Controller
                                             ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
                                             ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                             ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                            ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id')
+                                            ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                            ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                            ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                             ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=', 'oc_parte.id')
                                             ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
                                             ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
                                             ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                             ->where('recepciones.recepcionable_type', '=', get_class($centrodistribucion))
                                             ->where('recepciones.recepcionable_id', '=', $centrodistribucion->id) // Recepciones received at Sucursal (centro)
-                                            ->where('faenas.sucursal_id', '=', $centrodistribucion->id) // Faena with delivery at Sucursal (centro)
+                                            ->where('sucursalfaena.id', '=', $centrodistribucion->id) // Faena with delivery at Sucursal (centro)
+                                            ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                             ->get();
                                             
                             }
@@ -317,14 +327,18 @@ class EntregasController extends Controller
                                             ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
                                             ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                             ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                            ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id')
+                                            ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                            ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                            ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                             ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=', 'oc_parte.id')
                                             ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
                                             ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
                                             ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                             ->where('recepciones.recepcionable_type', '=', get_class($centrodistribucion))
                                             ->where('recepciones.recepcionable_id', '=', $centrodistribucion->id) // Recepciones received at Sucursal (centro)
-                                            ->where('faenas.sucursal_id', '=', $centrodistribucion->id) // Faena with delivery at Sucursal (centro)
+                                            ->where('sucursalfaena.id', '=', $centrodistribucion->id) // Faena with delivery at Sucursal (centro)
+                                            ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                             ->where('solicitudes.user_id', '=', $user->id) // Belonging to user
                                             ->get();
                             }
@@ -541,7 +555,9 @@ class EntregasController extends Controller
                                     ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                     ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                     ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                    ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id')
+                                    ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                    ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                    ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                     ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=', 'oc_parte.id')
                                     ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
                                     ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
@@ -549,7 +565,9 @@ class EntregasController extends Controller
                                     ->where('ocs.id', '=', $oc_id)
                                     ->where('recepciones.recepcionable_type', '=', get_class($centrodistribucion))
                                     ->where('recepciones.recepcionable_id', '=', $centrodistribucion->id) // Recepciones received at Sucursal (centro)
-                                    ->where('faenas.sucursal_id', '=', $centrodistribucion->id) // Faena with delivery at Sucursal (centro)
+                                    ->where('sucursalfaena.id', '=', $centrodistribucion->id) // Faena with delivery at Sucursal (centro)
+                                    ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                    ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                     ->first();
                                             
                             }
@@ -576,7 +594,9 @@ class EntregasController extends Controller
                                     ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                     ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                     ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                    ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id')
+                                    ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                    ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                    ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                     ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=', 'oc_parte.id')
                                     ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
                                     ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
@@ -584,7 +604,9 @@ class EntregasController extends Controller
                                     ->where('ocs.id', '=', $oc_id)
                                     ->where('recepciones.recepcionable_type', '=', get_class($centrodistribucion))
                                     ->where('recepciones.recepcionable_id', '=', $centrodistribucion->id) // Recepciones received at Sucursal (centro)
-                                    ->where('faenas.sucursal_id', '=', $centrodistribucion->id) // Faena with delivery at Sucursal (centro)
+                                    ->where('sucursalfaena.id', '=', $centrodistribucion->id) // Faena with delivery at Sucursal (centro)
+                                    ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                    ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                     ->where('solicitudes.user_id', '=', $user->id) // Belonging to user
                                     ->first();
                             }
@@ -885,7 +907,9 @@ class EntregasController extends Controller
                                         ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                         ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                         ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                        ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id')
+                                        ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                        ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                        ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                         ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=', 'oc_parte.id')
                                         ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
                                         ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
@@ -893,7 +917,9 @@ class EntregasController extends Controller
                                         ->where('ocs.id', '=', $oc_id)
                                         ->where('recepciones.recepcionable_type', '=', get_class($centrodistribucion))
                                         ->where('recepciones.recepcionable_id', '=', $centrodistribucion->id) // Recepciones received at Sucursal (centro)
-                                        ->where('faenas.sucursal_id', '=', $centrodistribucion->id) // Faena with delivery at Sucursal (centro)
+                                        ->where('sucursalfaena.id', '=', $centrodistribucion->id) // Faena with delivery at Sucursal (centro)
+                                        ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                         ->first();
                                                 
                                 }
@@ -920,7 +946,9 @@ class EntregasController extends Controller
                                         ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                         ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                         ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                        ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id')
+                                        ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                        ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                        ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                         ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=', 'oc_parte.id')
                                         ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
                                         ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
@@ -928,7 +956,9 @@ class EntregasController extends Controller
                                         ->where('ocs.id', '=', $oc_id)
                                         ->where('recepciones.recepcionable_type', '=', get_class($centrodistribucion))
                                         ->where('recepciones.recepcionable_id', '=', $centrodistribucion->id) // Recepciones received at Sucursal (centro)
-                                        ->where('faenas.sucursal_id', '=', $centrodistribucion->id) // Faena with delivery at Sucursal (centro)
+                                        ->where('sucursalfaena.id', '=', $centrodistribucion->id) // Faena with delivery at Sucursal (centro)
+                                        ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                         ->where('solicitudes.user_id', '=', $user->id) // Belonging to user
                                         ->first();
                                 }
@@ -1231,10 +1261,13 @@ class EntregasController extends Controller
                                         ->join('ocs', 'ocs.id', '=', 'entregas.oc_id')
                                         ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                         ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                        ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                        ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                        ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                        ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                         ->where('entregas.id', '=', $id) // For this Entrega
                                         ->where('entregas.sucursal_id', '=', $centrodistribucion->id) // Delivered by Sucursal (centro)
-                                        ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                         ->first();
                                             
                             }
@@ -1261,10 +1294,13 @@ class EntregasController extends Controller
                                         ->join('ocs', 'ocs.id', '=', 'entregas.oc_id')
                                         ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                         ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                        ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                        ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                        ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                        ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                         ->where('entregas.id', '=', $id) // For this Entrega
                                         ->where('entregas.sucursal_id', '=', $centrodistribucion->id) // Delivered by Sucursal (centro)
-                                        ->where('sucursales.id', '=', $user->stationable->id) // Same Sucursal as user station
+                                        ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                         ->where('solicitudes.user_id', '=', $user->id) // Belonging to user
                                         ->first();
                             }
@@ -1519,10 +1555,13 @@ class EntregasController extends Controller
                                         ->join('ocs', 'ocs.id', '=', 'entregas.oc_id')
                                         ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                         ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                        ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                        ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                        ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                        ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                         ->where('entregas.id', '=', $id) // For this Entrega
                                         ->where('entregas.sucursal_id', '=', $centrodistribucion->id) // Delivered by Sucursal (centro)
-                                        ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                         ->first();
                                             
                             }
@@ -1549,10 +1588,13 @@ class EntregasController extends Controller
                                         ->join('ocs', 'ocs.id', '=', 'entregas.oc_id')
                                         ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                         ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                        ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                        ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                        ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                        ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                         ->where('entregas.id', '=', $id) // For this Entrega
                                         ->where('entregas.sucursal_id', '=', $centrodistribucion->id) // Delivered by Sucursal (centro)
-                                        ->where('sucursales.id', '=', $user->stationable->id) // Same Sucursal as user station
+                                        ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                         ->where('solicitudes.user_id', '=', $user->id) // Belonging to user
                                         ->first();
                             }
@@ -1900,10 +1942,13 @@ class EntregasController extends Controller
                                             ->join('ocs', 'ocs.id', '=', 'entregas.oc_id')
                                             ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                             ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                            ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                            ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                             ->where('entregas.id', '=', $id) // For this Entrega
                                             ->where('entregas.sucursal_id', '=', $centrodistribucion->id) // Delivered by Sucursal (centro)
-                                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                             ->first();
                                                 
                                 }
@@ -1930,10 +1975,13 @@ class EntregasController extends Controller
                                             ->join('ocs', 'ocs.id', '=', 'entregas.oc_id')
                                             ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                             ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                            ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                            ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                             ->where('entregas.id', '=', $id) // For this Entrega
                                             ->where('entregas.sucursal_id', '=', $centrodistribucion->id) // Delivered by Sucursal (centro)
-                                            ->where('sucursales.id', '=', $user->stationable->id) // Same Sucursal as user station
+                                            ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                             ->where('solicitudes.user_id', '=', $user->id) // Belonging to user
                                             ->first();
                                 }
@@ -2258,10 +2306,13 @@ class EntregasController extends Controller
                                         ->join('ocs', 'ocs.id', '=', 'entregas.oc_id')
                                         ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                         ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                        ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                        ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                        ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                        ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                         ->where('entregas.id', '=', $id) // For this Entrega
                                         ->where('entregas.sucursal_id', '=', $centrodistribucion->id) // Delivered by Sucursal (centro)
-                                        ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                         ->first();
                                             
                             }
@@ -2288,10 +2339,13 @@ class EntregasController extends Controller
                                         ->join('ocs', 'ocs.id', '=', 'entregas.oc_id')
                                         ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                         ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                        ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                        ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                        ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                        ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                         ->where('entregas.id', '=', $id) // For this Entrega
                                         ->where('entregas.sucursal_id', '=', $centrodistribucion->id) // Delivered by Sucursal (centro)
-                                        ->where('sucursales.id', '=', $user->stationable->id) // Same Sucursal as user station
+                                        ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                         ->where('solicitudes.user_id', '=', $user->id) // Belonging to user
                                         ->first();
                             }
@@ -2462,9 +2516,12 @@ class EntregasController extends Controller
                                             ->join('ocs', 'ocs.id', '=', 'entregas.oc_id')
                                             ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                             ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                            ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                            ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                             ->where('entregas.sucursal_id', '=', $sucursal->id) // Delivered by Sucursal
-                                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                             ->get();
                                           
                             }
@@ -2491,9 +2548,12 @@ class EntregasController extends Controller
                                             ->join('ocs', 'ocs.id', '=', 'entregas.oc_id')
                                             ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                             ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                            ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                            ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                             ->where('entregas.sucursal_id', '=', $sucursal->id) // Delivered by Sucursal
-                                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                             ->where('solicitudes.user_id', '=', $user->id) // Belonging to user
                                             ->get();
                             }
@@ -2700,14 +2760,18 @@ class EntregasController extends Controller
                                             ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
                                             ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                             ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                            ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id')
+                                            ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                            ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                            ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                             ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=', 'oc_parte.id')
                                             ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
                                             ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
                                             ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                             ->where('recepciones.recepcionable_type', '=', get_class($sucursal))
                                             ->where('recepciones.recepcionable_id', '=', $sucursal->id) // Recepciones received at Sucursal
-                                            ->where('faenas.sucursal_id', '=', $sucursal->id) // Faena with delivery at Sucursal
+                                            ->where('sucursalfaena.id', '=', $sucursal->id) // Faena with delivery at Sucursal
+                                            ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                             ->get();
                                             
                             }
@@ -2734,14 +2798,18 @@ class EntregasController extends Controller
                                             ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
                                             ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                             ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                            ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id')
+                                            ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                            ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                            ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                             ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=', 'oc_parte.id')
                                             ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
                                             ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
                                             ->whereIn('oc_parte.estadoocparte_id', [1, 2])  // OcParte with estadoocparte = 'Pendiente' or 'En transito'
                                             ->where('recepciones.recepcionable_type', '=', get_class($sucursal))
                                             ->where('recepciones.recepcionable_id', '=', $sucursal->id) // Recepciones received at Sucursal
-                                            ->where('faenas.sucursal_id', '=', $sucursal->id) // Faena with delivery at Sucursal
+                                            ->where('sucursalfaena.id', '=', $sucursal->id) // Faena with delivery at Sucursal
+                                            ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                             ->where('solicitudes.user_id', '=', $user->id) // Belonging to user
                                             ->get();
                             }
@@ -2958,7 +3026,9 @@ class EntregasController extends Controller
                                     ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                     ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                     ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                    ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id')
+                                    ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                    ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                    ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                     ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=', 'oc_parte.id')
                                     ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
                                     ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
@@ -2966,7 +3036,9 @@ class EntregasController extends Controller
                                     ->where('ocs.id', '=', $oc_id)
                                     ->where('recepciones.recepcionable_type', '=', get_class($sucursal))
                                     ->where('recepciones.recepcionable_id', '=', $sucursal->id) // Recepciones received at Sucursal
-                                    ->where('faenas.sucursal_id', '=', $sucursal->id) // Faena with delivery at Sucursal
+                                    ->where('sucursalfaena.id', '=', $sucursal->id) // Faena with delivery at Sucursal
+                                    ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                    ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                     ->first();
                                             
                             }
@@ -2993,7 +3065,9 @@ class EntregasController extends Controller
                                     ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                     ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                     ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                    ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id')
+                                    ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                    ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                    ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                     ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=', 'oc_parte.id')
                                     ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
                                     ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
@@ -3001,7 +3075,9 @@ class EntregasController extends Controller
                                     ->where('ocs.id', '=', $oc_id)
                                     ->where('recepciones.recepcionable_type', '=', get_class($sucursal))
                                     ->where('recepciones.recepcionable_id', '=', $sucursal->id) // Recepciones received at Sucursal
-                                    ->where('faenas.sucursal_id', '=', $sucursal->id) // Faena with delivery at Sucursal
+                                    ->where('sucursalfaena.id', '=', $sucursal->id) // Faena with delivery at Sucursal
+                                    ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                    ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                     ->where('solicitudes.user_id', '=', $user->id) // Belonging to user
                                     ->first();
                             }
@@ -3302,7 +3378,9 @@ class EntregasController extends Controller
                                         ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                         ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                         ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                        ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id')
+                                        ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                        ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                        ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                         ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=', 'oc_parte.id')
                                         ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
                                         ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
@@ -3310,7 +3388,9 @@ class EntregasController extends Controller
                                         ->where('ocs.id', '=', $oc_id)
                                         ->where('recepciones.recepcionable_type', '=', get_class($sucursal))
                                         ->where('recepciones.recepcionable_id', '=', $sucursal->id) // Recepciones received at Sucursal
-                                        ->where('faenas.sucursal_id', '=', $sucursal->id) // Faena with delivery at Sucursal
+                                        ->where('sucursalfaena.id', '=', $sucursal->id) // Faena with delivery at Sucursal
+                                        ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                         ->first();
                                                 
                                 }
@@ -3337,7 +3417,9 @@ class EntregasController extends Controller
                                         ->join('oc_parte', 'oc_parte.oc_id', '=', 'ocs.id')
                                         ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                         ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                        ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id')
+                                        ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                        ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                        ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                         ->join('recepcion_ocparte', 'recepcion_ocparte.ocparte_id', '=', 'oc_parte.id')
                                         ->join('recepciones', 'recepciones.id', '=', 'recepcion_ocparte.recepcion_id')
                                         ->where('ocs.estadooc_id', '=', 2) // Oc with estadooc = 'En proceso'
@@ -3345,7 +3427,9 @@ class EntregasController extends Controller
                                         ->where('ocs.id', '=', $oc_id)
                                         ->where('recepciones.recepcionable_type', '=', get_class($sucursal))
                                         ->where('recepciones.recepcionable_id', '=', $sucursal->id) // Recepciones received at Sucursal
-                                        ->where('faenas.sucursal_id', '=', $sucursal->id) // Faena with delivery at Sucursal
+                                        ->where('sucursalfaena.id', '=', $sucursal->id) // Faena with delivery at Sucursal
+                                        ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                         ->where('solicitudes.user_id', '=', $user->id) // Belonging to user
                                         ->first();
                                 }
@@ -3648,10 +3732,13 @@ class EntregasController extends Controller
                                         ->join('ocs', 'ocs.id', '=', 'entregas.oc_id')
                                         ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                         ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                        ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                        ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                        ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                        ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                         ->where('entregas.id', '=', $id) // For this Entrega
                                         ->where('entregas.sucursal_id', '=', $sucursal->id) // Delivered by Sucursal
-                                        ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                         ->first();
                                             
                             }
@@ -3678,10 +3765,13 @@ class EntregasController extends Controller
                                         ->join('ocs', 'ocs.id', '=', 'entregas.oc_id')
                                         ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                         ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                        ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                        ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                        ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                        ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                         ->where('entregas.id', '=', $id) // For this Entrega
                                         ->where('entregas.sucursal_id', '=', $sucursal->id) // Delivered by Sucursal
-                                        ->where('sucursales.id', '=', $user->stationable->id) // Same Sucursal as user station
+                                        ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                         ->where('solicitudes.user_id', '=', $user->id) // Belonging to user
                                         ->first();
                             }
@@ -3936,10 +4026,13 @@ class EntregasController extends Controller
                                         ->join('ocs', 'ocs.id', '=', 'entregas.oc_id')
                                         ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                         ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                        ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                        ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                        ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                        ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                         ->where('entregas.id', '=', $id) // For this Entrega
                                         ->where('entregas.sucursal_id', '=', $sucursal->id) // Delivered by Sucursal
-                                        ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                         ->first();
                                             
                             }
@@ -3966,10 +4059,13 @@ class EntregasController extends Controller
                                         ->join('ocs', 'ocs.id', '=', 'entregas.oc_id')
                                         ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                         ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                        ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                        ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                        ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                        ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                         ->where('entregas.id', '=', $id) // For this Entrega
                                         ->where('entregas.sucursal_id', '=', $sucursal->id) // Delivered by Sucursal
-                                        ->where('sucursales.id', '=', $user->stationable->id) // Same Sucursal as user station
+                                        ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                         ->where('solicitudes.user_id', '=', $user->id) // Belonging to user
                                         ->first();
                             }
@@ -4317,10 +4413,13 @@ class EntregasController extends Controller
                                             ->join('ocs', 'ocs.id', '=', 'entregas.oc_id')
                                             ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                             ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                            ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                            ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                             ->where('entregas.id', '=', $id) // For this Entrega
                                             ->where('entregas.sucursal_id', '=', $sucursal->id) // Delivered by Sucursal
-                                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                             ->first();
                                                 
                                 }
@@ -4347,10 +4446,13 @@ class EntregasController extends Controller
                                             ->join('ocs', 'ocs.id', '=', 'entregas.oc_id')
                                             ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                             ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                            ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                            ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                            ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                             ->where('entregas.id', '=', $id) // For this Entrega
                                             ->where('entregas.sucursal_id', '=', $sucursal->id) // Delivered by Sucursal
-                                            ->where('sucursales.id', '=', $user->stationable->id) // Same Sucursal as user station
+                                            ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                            ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                             ->where('solicitudes.user_id', '=', $user->id) // Belonging to user
                                             ->first();
                                 }
@@ -4675,10 +4777,13 @@ class EntregasController extends Controller
                                         ->join('ocs', 'ocs.id', '=', 'entregas.oc_id')
                                         ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                         ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                        ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                        ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                        ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                        ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                         ->where('entregas.id', '=', $id) // For this Entrega
                                         ->where('entregas.sucursal_id', '=', $sucursal->id) // Delivered by Sucursal
-                                        ->where('sucursales.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                         ->first();
                                             
                             }
@@ -4705,10 +4810,13 @@ class EntregasController extends Controller
                                         ->join('ocs', 'ocs.id', '=', 'entregas.oc_id')
                                         ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                         ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                        ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                        ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                        ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
+                                        ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                         ->where('entregas.id', '=', $id) // For this Entrega
                                         ->where('entregas.sucursal_id', '=', $sucursal->id) // Delivered by Sucursal
-                                        ->where('sucursales.id', '=', $user->stationable->id) // Same Sucursal as user station
+                                        ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                         ->where('solicitudes.user_id', '=', $user->id) // Belonging to user
                                         ->first();
                             }
