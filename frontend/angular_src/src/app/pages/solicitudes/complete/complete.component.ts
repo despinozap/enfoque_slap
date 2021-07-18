@@ -281,9 +281,9 @@ export class SolicitudesCompleteComponent implements OnInit {
                 parte.margen = sheet[i][4] !== undefined ? sheet[i][4] : null;
                 parte.tiempoentrega = sheet[i][5] !== undefined ? sheet[i][5] : null;
                 parte.peso = sheet[i][6] !== undefined ? sheet[i][6] : null;
-                parte.flete = sheet[i][7] !== undefined ? sheet[i][7] : null;
+                parte.flete = this.calculateParteFlete(parte);
                 parte.monto = this.calculateParteMonto(parte);
-                parte.backorder = (sheet[i][8] !== undefined) && (sheet[i][8] === 1) ? true : false;
+                parte.backorder = (sheet[i][7] !== undefined) && (sheet[i][7] === 1) ? true : false;
                 parte.complete = this.isParteCompleted(index);
                 this.dataUpdated= true;
 
@@ -719,8 +719,7 @@ export class SolicitudesCompleteComponent implements OnInit {
           'margen': row[4] !== undefined ? row[4] : null,
           'tiempoentrega': row[5] !== undefined ? row[5] : null,
           'peso': row[6] !== undefined ? row[6] : null,
-          'flete': row[7] !== undefined ? row[7] : null,
-          'backorder': row[8] !== undefined ? row[8] : null,
+          'backorder': row[7] !== undefined ? row[7] : null,
         };
 
         if(parte.nparte !== null)
@@ -781,15 +780,6 @@ export class SolicitudesCompleteComponent implements OnInit {
             {
               response.code = 0;
               response.message = `La parte N°:${ parte.nparte } tiene peso invalido`;
-            }
-          }
-          
-          if(parte.flete !== null)
-          {
-            if((isNaN(parte.flete)) || (parte.flete < 0))
-            {
-              response.code = 0;
-              response.message = `La parte N°:${ parte.nparte } tiene valor de flete invalido`;
             }
           }
           
@@ -901,7 +891,6 @@ export class SolicitudesCompleteComponent implements OnInit {
           'Margen (%)',
           'Tiempo entrega (dias)',
           'Peso (lb)',
-          'Valor flete (USD)',
           'Backorder (SI = 1, NO = 0)'
         ]
       );
@@ -916,7 +905,6 @@ export class SolicitudesCompleteComponent implements OnInit {
           p.margen,
           p.tiempoentrega,
           p.peso,
-          p.flete,
           (p.backorder === true) ? '1' : '0',
         ]);
       });
