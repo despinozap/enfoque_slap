@@ -732,6 +732,21 @@ class OcsController extends Controller
 
                                 $success = false;
                             }
+                            //If OcParte is less than cantidad already delivered to Faena at Sucursal (or Centro)
+                            else if($request->cantidad < $parte->pivot->getCantidadTotalEntregado())
+                            {
+                                $response = HelpController::buildResponse(
+                                    400,
+                                    [
+                                        "cantidad" => [
+                                            "La cantidad debe ser mayor o igual a la ya entregada a cliente"
+                                        ]
+                                    ],
+                                    null
+                                );
+
+                                $success = false;
+                            }
                             // If OcParte was full delivered to Faena at Sucursal (or Centro)
                             else if($request->cantidad === $parte->pivot->getCantidadTotalEntregado())
                             {
@@ -947,6 +962,8 @@ class OcsController extends Controller
                     {                
                         $success = true;
 
+                        DB::beginTransaction();
+
                         // If Oc is Estadooc = 'En proceso'
                         if($oc->estadooc_id === 2)
                         {
@@ -954,12 +971,19 @@ class OcsController extends Controller
                             if($request->cantidad < $parte->pivot->getCantidadRecepcionado($oc->cotizacion->solicitud->comprador))
                             {
                                 $response = HelpController::buildResponse(
-                                    400,
-                                    [
-                                        "cantidad" => [
-                                            "La parte tiene cantidades ya recepcionadas por el comprador"
-                                        ]
-                                    ],
+                                    409,
+                                    "La parte tiene cantidades ya recepcionadas por el comprador",
+                                    null
+                                );
+
+                                $success = false;
+                            }
+                            //If OcParte has cantidad already delivered to Faena at Sucursal (or Centro)
+                            else if($parte->pivot->getCantidadTotalEntregado() > 0)
+                            {
+                                $response = HelpController::buildResponse(
+                                    409,
+                                    "La parte tiene cantidades ya entregadas a cliente",
                                     null
                                 );
 
@@ -969,27 +993,55 @@ class OcsController extends Controller
                             else if($oc->partes->count() < 2)
                             {
                                 $response = HelpController::buildResponse(
-                                    400,
-                                    [
-                                        "cantidad" => [
-                                            "La OC debe tener al menos 1 parte"
-                                        ]
-                                    ],
+                                    409,
+                                    "La OC debe tener al menos 1 parte",
                                     null
                                 );
 
                                 $success = false;
                             }
+
+                            // Eval if all the OcPartes in Oc were fully delivered in Entregas
+                            $ocFullDelivered = $oc->partes->reduce(function($carry, $parte)
+                                {
+                                    // Eval condition only if carry is still true
+                                    if($carry === true)
+                                    {
+                                        // It will break whenever the condition (cantidad total in Entregas === cantidad total in Oc) is false
+                                        if($parte->pivot->getCantidadTotalEntregado() < $parte->pivot->cantidad)
+                                        {
+                                            $carry = false;
+                                        }
+                                    }
+
+                                    return $carry;       
+                                },
+                                true // Initialize in true
+                            );
+
+                            // If Oc is full delivered
+                            if($ocFullDelivered === true)
+                            {
+                                $oc->estadooc_id = 3; // Estadooc = 'Cerrada'
+                                if(!$oc->save())
+                                {
+                                    $response = HelpController::buildResponse(
+                                        500,
+                                        'Error al actualizar el estado de la OC',
+                                        null
+                                    );
+
+                                    $success = false;
+                                }
+                            }
                         }
 
                         if($success === true)
                         {
-                            $parte->pivot->cantidad = $request->cantidad;
-                            $parte->pivot->tiempoentrega = $request->tiempoentrega;
-                            $parte->pivot->backorder = $request->backorder;
-
                             if($oc->partes()->detach($parte->id))
                             {
+                                DB::commit();
+
                                 $response = HelpController::buildResponse(
                                     200,
                                     'Parte eliminada',
@@ -998,6 +1050,8 @@ class OcsController extends Controller
                             }
                             else
                             {
+                                DB::rollback();
+
                                 $response = HelpController::buildResponse(
                                     500,
                                     'Error al eliminar la parte en la OC',
@@ -1007,6 +1061,8 @@ class OcsController extends Controller
                         }
                         else
                         {
+                            DB::rollback();
+
                             // Error message was already given
                         }
 
