@@ -2899,7 +2899,6 @@ class RecepcionesController extends Controller
                 if($centrodistribucion = Sucursal::where('type', '=', 'centro')->where('id', '=', $id)->first())
                 {
                     $recepciones = null;
-                    $forbidden = false;
 
                     switch($user->role->name)
                     {
@@ -3044,14 +3043,6 @@ class RecepcionesController extends Controller
                             200,
                             null,
                             $recepciones
-                        );
-                    }
-                    else if($forbidden === true)
-                    {
-                        $response = HelpController::buildResponse(
-                            405,
-                            'No tienes acceso a visualizar las recepciones',
-                            null
                         );
                     }
                     else
@@ -5598,7 +5589,6 @@ class RecepcionesController extends Controller
                 if($sucursal = Sucursal::where('type', '=', 'sucursal')->where('id', '=', $id)->first())
                 {
                     $recepciones = null;
-                    $forbidden = false;
 
                     switch($user->role->name)
                     {
@@ -5619,7 +5609,7 @@ class RecepcionesController extends Controller
                                         ->where('recepciones.recepcionable_type', '=', get_class($sucursal))
                                         ->where('recepciones.recepcionable_id', '=', $sucursal->id) // Received at Sucursal
                                         ->where('sucursalsolicitud.country_id', '=', $user->stationable->country->id) // Same Country as user station
-                                        ->where('sucursalfaena.id', '=', $user->stationable->country->id) // Same Country as user station
+                                        ->where('sucursalfaena.country_id', '=', $user->stationable->country->id) // Same Country as user station
                                         ->groupBy('recepciones.id')
                                         ->get();
 
@@ -5721,14 +5711,6 @@ class RecepcionesController extends Controller
                             200,
                             null,
                             $recepciones
-                        );
-                    }
-                    else if($forbidden === true)
-                    {
-                        $response = HelpController::buildResponse(
-                            405,
-                            'No tienes acceso a visualizar las recepciones',
-                            null
                         );
                     }
                     else
