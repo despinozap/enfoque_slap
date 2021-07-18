@@ -706,11 +706,19 @@ class OcsController extends Controller
                     {
                         $success = true;
 
+                        DB::beginTransaction();
+
+                        $parte->pivot->cantidad = $request->cantidad;
+                        $parte->pivot->tiempoentrega = $request->tiempoentrega;
+                        $parte->pivot->backorder = $request->backorder;
+
                         // If Oc is Estadooc = 'En proceso'
                         if($oc->estadooc_id === 2)
                         {
+                            $cantidadRecepcionadoAtComprador = $parte->pivot->getCantidadRecepcionado($oc->cotizacion->solicitud->comprador);
+
                             //If new cantidad is less than cantidad already received at Comprador
-                            if($request->cantidad < $parte->pivot->getCantidadRecepcionado($oc->cotizacion->solicitud->comprador))
+                            if($request->cantidad < $cantidadRecepcionadoAtComprador)
                             {
                                 $response = HelpController::buildResponse(
                                     400,
@@ -724,16 +732,66 @@ class OcsController extends Controller
 
                                 $success = false;
                             }
+                            // If OcParte was full delivered to Faena at Sucursal (or Centro)
+                            else if($request->cantidad === $parte->pivot->getCantidadTotalEntregado())
+                            {
+                                // Update OcParte status
+                                $parte->pivot->estadoocparte_id = 3; // Estadoocparte = 'Entregado'
+                            }
+                            // If OcParte was full received at Comprador
+                            else if($request->cantidad === $cantidadRecepcionadoAtComprador)
+                            {
+                                // Update OcParte status
+                                $parte->pivot->estadoocparte_id = 2; //Estadoocparte = 'En transito'
+                            }
+                            else
+                            {
+                                // Update OcParte status
+                                $parte->pivot->estadoocparte_id = 1; // Estadoocparte = 'Pendiente'
+                            }
+
+                            // Eval if all the OcPartes in Oc were fully delivered in Entregas
+                            $ocFullDelivered = $oc->partes->reduce(function($carry, $parte)
+                                {
+                                    // Eval condition only if carry is still true
+                                    if($carry === true)
+                                    {
+                                        // It will break whenever the condition (cantidad total in Entregas === cantidad total in Oc) is false
+                                        if($parte->pivot->getCantidadTotalEntregado() < $parte->pivot->cantidad)
+                                        {
+                                            $carry = false;
+                                        }
+                                    }
+
+                                    return $carry;       
+                                },
+                                true // Initialize in true
+                            );
+
+                            // If Oc is full delivered
+                            if($ocFullDelivered === true)
+                            {
+                                $oc->estadooc_id = 3; // Estadooc = 'Cerrada'
+                                if(!$oc->save())
+                                {
+                                    $response = HelpController::buildResponse(
+                                        500,
+                                        'Error al actualizar el estado de la OC',
+                                        null
+                                    );
+
+                                    $success = false;
+                                }
+                            }
                         }
 
+                        
                         if($success === true)
                         {
-                            $parte->pivot->cantidad = $request->cantidad;
-                            $parte->pivot->tiempoentrega = $request->tiempoentrega;
-                            $parte->pivot->backorder = $request->backorder;
-
                             if($parte->pivot->save())
                             {
+                                DB::commit();
+
                                 $response = HelpController::buildResponse(
                                     200,
                                     'Parte actualizada',
@@ -742,6 +800,8 @@ class OcsController extends Controller
                             }
                             else
                             {
+                                DB::rollback();
+
                                 $response = HelpController::buildResponse(
                                     500,
                                     'Error al actualizar la parte en la OC',
@@ -751,6 +811,8 @@ class OcsController extends Controller
                         }
                         else
                         {
+                            DB::rollback();
+
                             // Error message was already given
                         }
                         

@@ -1141,7 +1141,7 @@ class EntregasController extends Controller
                                     {
                                         $response = HelpController::buildResponse(
                                             500,
-                                            'Error al actualizar el estado de la Oc',
+                                            'Error al actualizar el estado de la OC',
                                             null
                                         );
     
