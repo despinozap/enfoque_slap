@@ -5283,7 +5283,7 @@ class RecepcionesController extends Controller
                                             ->join('ocs', 'ocs.id', '=', 'oc_parte.oc_id')
                                             ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
                                             ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                            -->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
+                                            ->join('sucursales AS sucursalsolicitud', 'sucursalsolicitud.id', '=', 'solicitudes.sucursal_id') // Sucursal where solicitud was generated at
                                             ->join('faenas', 'faenas.id', '=', 'solicitudes.faena_id') // Faena the Solicitud was generated for
                                             ->join('sucursales AS sucursalfaena', 'sucursalfaena.id', '=', 'faenas.sucursal_id') // Sucursal where faena is delivered
                                             ->where('recepciones.id', '=', $id) // For this Recepcion
