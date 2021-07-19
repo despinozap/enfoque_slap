@@ -213,38 +213,19 @@ export class OcsDetailsComponent implements OnInit {
     
     this.loading = true;
 
-    let data = {
-      ocs: [this.oc.id]
-    };
-
-    this._ocsService.getReportOc(data)
+    this._ocsService.getOc(this.oc.id)
     .subscribe(
       //Success request
       (response: any) => {
 
-        // Loads the first item
-        if(response.data.length > 0)
-        {
-          this.loadFormData(response.data[0]);
-          this.renderDataTable(this.datatableElement_partes);
+        this.loadFormData(response.data);
+        this.renderDataTable(this.datatableElement_partes);
 
-          this.loading = false;
-        }
-        else
-        {
-          NotificationsService.showToast(
-            'Error al cargar los datos de la OC',
-            NotificationsService.messageType.error
-          );
-
-          this.loading = false;
-          this.goTo_back();
-        }
-
+        this.loading = false;
       },
       //Error request
       (errorResponse: any) => {
-        console.log(errorResponse);
+
         switch(errorResponse.status)
         {
         
@@ -868,7 +849,7 @@ export class OcsDetailsComponent implements OnInit {
 
   public goTo_partesList(): void {
     this.parte_index = -1;
-    
+
     this.DISPLAYING_FORM = 0;
   }
 

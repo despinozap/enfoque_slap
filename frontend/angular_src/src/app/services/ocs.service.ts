@@ -106,6 +106,13 @@ export class OcsService {
     return this.httpClient.post(endpoint, data, httpOptions);
   }
 
+  public getOc(oc_id: number): Observable<any>
+  {
+    let endpoint: string = `${environment.ENDPOINT_BASE}/ocs/${oc_id}`;
+    
+    return this.httpClient.get(endpoint);
+  }
+
   public getOCs(): Observable<any>
   {
     let endpoint: string = `${environment.ENDPOINT_BASE}/ocs`;
