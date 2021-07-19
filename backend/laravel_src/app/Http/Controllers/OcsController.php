@@ -650,7 +650,7 @@ class OcsController extends Controller
                                     'noccliente',
                                     'motivobaja_id',
                                     'usdvalue',
-                                    'created_at',
+                                    // 'created_at',
                                     'updated_at',
                                     'partes_total',
                                     'dias',
