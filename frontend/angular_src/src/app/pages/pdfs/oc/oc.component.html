@@ -1,0 +1,127 @@
+<div id="divReport" class="report-container">
+
+    <!-- Header -->
+    <table id="tbHeader">
+        <thead>
+            <tr>
+                <th colspan="2" class="th-left">
+                    <h3>{{ reportData.oc.comprador_name !== null ? reportData.oc.comprador_name : '' }}</h3>
+                </th>
+                <th colspan="1" class="th-left">
+                    <h3>Purchase Order</h3>
+                </th>
+            </tr>
+            <tr>
+                <td colspan="2">{{ reportData.oc.comprador_address !== null ? reportData.oc.comprador_address : '' }}</td>
+                <td style="font-size: 1rem;">
+                    <strong>PO. Number:</strong> {{ reportData.oc.id !== null ? reportData.oc.id : '' }}
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">{{ reportData.oc.comprador_city !== null ? reportData.oc.comprador_city : '' }}</td>
+                <td style="font-size: 1rem;">
+                    <strong>Date:</strong> {{ reportData.oc.currentdate !== null ? reportData.oc.currentdate : '' }}
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3" class="th-left">Phone: {{ reportData.oc.comprador_phone !== null ? reportData.oc.comprador_phone : '' }}</td>
+            </tr>
+            <tr>
+                <td colspan="3" class="th-left">Email: {{ reportData.oc.comprador_email !== null ? reportData.oc.comprador_email : '' }}</td>
+            </tr>
+            <tr>
+                <td colspan="3">&nbsp;</td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="tr-bluebg" style="border-bottom: #000000 1px solid;">
+                <td>SUPPLIER:</td>
+                <td>BILL TO:</td>
+                <td>DELIVERY:</td>
+            </tr>
+            <tr>
+                <td>{{ reportData.oc.supplier_name !== null ? reportData.oc.supplier_name : '' }}</td>
+                <td>{{ reportData.oc.comprador_name !== null ? reportData.oc.comprador_name : '' }}</td>
+                <td>{{ reportData.oc.delivery_name !== null ? reportData.oc.delivery_name : '' }}</td>
+            </tr>
+            <tr>
+                <td>{{ reportData.oc.supplier_address !== null ? reportData.oc.supplier_address : '' }}</td>
+                <td>{{ reportData.oc.comprador_address !== null ? reportData.oc.comprador_address : '' }}</td>
+                <td>{{ reportData.oc.delivery_address !== null ? reportData.oc.delivery_address : '' }}</td>
+            </tr>
+            <tr>
+                <td>{{ reportData.oc.supplier_city !== null ? reportData.oc.supplier_city : '' }}</td>
+                <td>{{ reportData.oc.comprador_city !== null ? reportData.oc.comprador_city : '' }}</td>
+                <td>{{ reportData.oc.delivery_city !== null ? reportData.oc.delivery_city : '' }}</td>
+            </tr>
+            <tr>
+                <td>{{ reportData.oc.supplier_phone !== null ? reportData.oc.supplier_phone : '' }}</td>
+                <td>{{ reportData.oc.comprador_phone !== null ? reportData.oc.comprador_phone : '' }}</td>
+                <td>{{ reportData.oc.delivery_phone !== null ? reportData.oc.delivery_phone : '' }}</td>
+            </tr>
+            <tr>
+                <td>{{ reportData.oc.supplier_email !== null ? reportData.oc.supplier_email : '' }}</td>
+                <td>{{ reportData.oc.comprador_email !== null ? reportData.oc.comprador_email : '' }}</td>
+                <td>{{ reportData.oc.delivery_email !== null ? reportData.oc.delivery_email : '' }}</td>
+            </tr>
+            <tr style="border-bottom: #000000 1px solid;">
+                <td colspan="3">&nbsp;</td>
+            </tr>
+            <tr class="tr-bluebg">
+                <td colspan="3" style="font-weight: bold;">START DATE:</td>
+            </tr>
+            <tr>
+                <td colspan="3">&nbsp;</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Partes -->
+    <table id="tbPartes">
+        <thead>
+            <tr class="tr-bluebg">
+                <th class="th-center">Quantity</th>
+                <th class="th-center">Part Number</th>
+                <th class="th-center">Description</th>
+                <th class="th-center">Unit Price</th>
+                <th class="th-center">Total Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let parte of reportData.partes;index as i">
+                <td align="center">{{ parte.cantidad !== null ? parte.cantidad : "" }}</td>
+                <td align="center">{{ parte.nparte !== null ? parte.nparte : "" }}</td>
+                <td align="center">{{ parte.descripcion !== null ? parte.descripcion : "" }}</td>
+                <td align="right">{{ parte.costo !== null ? "$" + moneyStringFormat(parte.costo) : "" }}</td>
+                <td align="right">{{ parte.costo !== null ? "$" + moneyStringFormat(parte.costo * parte.cantidad) : "" }}</td>
+            </tr>
+            <tr>
+                <td colspan="5">&nbsp;</td>
+            </tr>
+            <tr>
+                <td colspan="5">&nbsp;</td>
+            </tr>
+            <!-- <tr>
+                <td colspan="5" class="td-center">Shipping</td>
+            </tr> -->
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="4" class="td-title">Subtotal</td>
+                <td class="td-content" align="right">{{ "$" + moneyStringFormat(getTotalNetoPartes()) }}</td>
+            </tr>
+            <tr>
+                <td colspan="4" class="td-title">Sales tax %</td>
+                <td class="td-content" align="right"></td>
+            </tr>
+            <tr>
+                <td colspan="4" class="td-title">Total Amount</td>
+                <td class="td-content" align="right">{{ "$" + moneyStringFormat(getTotalNetoPartes()) }}</td>
+            </tr>
+            <tr class="tr-bluebg">
+                <td colspan="5">&nbsp;</td>
+            </tr>
+        </tfoot>
+    </table>
+
+</div>

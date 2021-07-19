@@ -81,6 +81,7 @@ import { EntregasCentrodistribucionListComponent } from './pages/entregas/centro
 import { EntregasCentrodistribucionCreateComponent } from './pages/entregas/centrodistribucion/create/create.component';
 import { EntregasCentrodistribucionEditComponent } from './pages/entregas/centrodistribucion/edit/edit.component';
 import { EntregasCentrodistribucionDetailsComponent } from './pages/entregas/centrodistribucion/details/details.component';
+import { PDFOcComponent } from './pages/pdfs/oc/oc.component';
 
 
 /* Routes */
@@ -200,6 +201,7 @@ const routes: Routes = [
     ProveedoresEditComponent,
     OcsListComponent,
     OcsDetailsComponent,
+    PDFOcComponent,
     RecepcionesCompradorListComponent,
     RecepcionesCompradorCreateComponent,
     RecepcionesCompradorDetailsComponent,

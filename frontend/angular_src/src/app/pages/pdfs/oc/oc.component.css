@@ -1,0 +1,64 @@
+.report-container {
+    background-color: #ffffff;
+    padding: 0px 0px 100px 0px;
+    width: 1200px;
+    border: #000000 1px solid;
+}
+
+table {
+    width: 100%;
+}
+
+table thead {
+    border: #000000 1px 1px 0px 1px solid;
+}
+
+table thead tr th {
+    text-align: center;
+}
+
+table thead tr th,
+table thead tr td,
+table tbody tr td,
+table tfoot tr td {
+    padding: 0.25rem;
+}
+
+table thead tr th.th-left {
+    text-align: left;
+}
+
+table thead tr th.th-center {
+    text-align: center;
+}
+
+table tbody tr td.td-center {
+    text-align: center;
+}
+
+table tbody tr td.td-right {
+    text-align: right;
+}
+
+
+/* Table Head */
+
+table#tbHeader tbody tr.tr-bluebg {
+    background-color: #B4C6E7;
+}
+
+
+/* Table Partes */
+
+table#tbPartes thead tr th {
+    font-weight: normal;
+}
+
+table#tbPartes thead tr.tr-bluebg {
+    background-color: #B4C6E7;
+}
+
+table#tbPartes tfoot tr td.td-title {
+    font-weight: bold;
+    text-align: right;
+}
