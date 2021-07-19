@@ -561,6 +561,214 @@ class OcsController extends Controller
         return $response;
     }
 
+    public function report(Request $request)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('ocs report'))
+            {
+                $validatorInput = $request->only(
+                    'ocs'
+                );
+                
+                $validatorRules = [
+                    'ocs' => 'required|array|min:1',
+                    'ocs.*'  => 'required|exists:ocs,id',
+                ];
+        
+                $validatorMessages = [
+                    'ocs.required' => 'Debes seleccionar las OCs',
+                    'ocs.array' => 'Lista de OCs es invalida',
+                    'ocs.min' => 'El reporte debe contener al menos 1 OC',
+                    'ocs.*.exists' => 'La lista de OCs es invalida',
+                ];
+        
+                $validator = Validator::make(
+                    $validatorInput,
+                    $validatorRules,
+                    $validatorMessages
+                );
+        
+                if ($validator->fails()) 
+                {
+                    $response = HelpController::buildResponse(
+                        400,
+                        $validator->errors(),
+                        null
+                    );
+                }
+                else        
+                {
+                    $ocs = null;
+
+                    switch($user->role->name)
+                    {
+                        // Administrador
+                        case 'admin': {
+
+                            $ocs = Oc::select('ocs.*')
+                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                                ->where('sucursales.country_id', '=', $user->stationable->country->id) // For Solicitudes in the same Country
+                                ->whereIn('ocs.id', $request->ocs) // For the requested OCs
+                                ->get();
+
+                            break;
+                        }
+
+                        // Agente de compra
+                        case 'agtcom': {
+
+                            $ocs = Oc::select('ocs.*')
+                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                                ->where('solicitudes.comprador_id', '=', $user->stationable->id) // For Solicitudes in its Comprador
+                                ->whereIn('ocs.id', $request->ocs) // For the requested OCs
+                                ->get();
+
+                            break;
+                        }
+
+                        default:
+                        {
+                            break;
+                        }
+                    }
+
+                    if($ocs !== null)
+                    {
+                        
+                        $ocs = $ocs->map(function($oc)
+                            {
+                                $oc->makeHidden([
+                                    'cotizacion_id',
+                                    'proveedor_id',
+                                    'filedata_id',
+                                    'estadooc_id',
+                                    'noccliente',
+                                    'motivobaja_id',
+                                    'usdvalue',
+                                    'created_at',
+                                    'updated_at',
+                                    'partes_total',
+                                    'dias',
+                                    'monto'
+                                ]);
+
+                                $oc->proveedor;
+                                $oc->proveedor->makeHidden([
+                                    'comprador_id',
+                                    'rut',
+                                    'created_at',
+                                    'updated_at',
+                                ]);
+
+                                $oc->cotizacion;
+                                $oc->cotizacion->makeHidden([
+                                    'solicitud_id',
+                                    'estadocotizacion_id',
+                                    'motivorechazo_id',
+                                    'usdvalue',
+                                    'lastupdate',
+                                    'created_at',
+                                    'updated_at',
+                                    'partes',
+                                    'partes_total',
+                                    'dias',
+                                    'monto'
+                                ]);
+                                
+                                $oc->cotizacion->solicitud;
+                                $oc->cotizacion->solicitud->makeHidden([
+                                    'sucursal_id',
+                                    'faena_id',
+                                    'marca_id',
+                                    'comprador_id',
+                                    'user_id',
+                                    'estadosolicitud_id',
+                                    'comentario',
+                                    'created_at',
+                                    'updated_at',
+                                    'partes_total',
+                                    'partes'
+                                ]);
+
+                                $oc->cotizacion->solicitud->comprador;
+                                $oc->cotizacion->solicitud->comprador->makeHidden([
+                                    'rut',
+                                    'country_id',
+                                    'created_at',
+                                    'updated_at'
+                                ]);
+
+                                $oc->partes = $oc->partes->map(function($parte) use ($oc)
+                                    {
+                                        $parte->makeHidden([
+                                            'marca_id',
+                                            'created_at',
+                                            'updated_at'
+                                        ]);
+
+                                        $parte->pivot;
+                                        $parte->pivot->makeHidden([
+                                            'oc_id',
+                                            'parte_id',
+                                            'estadoocparte_id',
+                                            'tiempoentrega',
+                                            'backorder',
+                                            'created_at',
+                                            'updated_at'
+                                        ]);
+
+                                        $parte->pivot->costo = $oc->cotizacion->partes->find($parte->id)->pivot->costo;
+
+                                        return $parte;
+                                    }
+                                );
+
+                                return $oc;
+                            }
+                        );
+
+                        $response = HelpController::buildResponse(
+                            200,
+                            null,
+                            $ocs
+                        );
+                    }
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            500,
+                            'Error al obtener el reporte de OC',
+                            null
+                        );
+                    }                     
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a visualizar OCs',
+                    null
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al obtener el reporte de OC [!]',
+                null
+            );
+        }
+        
+        return $response;
+    }
+
     /**
      * Show the form for editing the specified resource.
      *
