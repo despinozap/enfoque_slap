@@ -37,7 +37,7 @@
             <tr class="tr-bluebg" style="border-bottom: #000000 1px solid;">
                 <td>SUPPLIER:</td>
                 <td>BILL TO:</td>
-                <td>DELIVERY:</td>
+                <td>DELIVERY: {{ (reportData.oc.delivered === false) ? 'Not delivered' : '' }}</td>
             </tr>
             <tr>
                 <td>{{ reportData.oc.supplier_name !== null ? reportData.oc.supplier_name : '' }}</td>

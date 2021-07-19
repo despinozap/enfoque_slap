@@ -10,6 +10,7 @@ import { ProveedoresService } from 'src/app/services/proveedores.service';
 import { UtilsService } from 'src/app/services/utils.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/interfaces/user';
+import { PDFOcComponent } from '../../pdfs/oc/oc.component';
 
 /* SweetAlert2 */
 const Swal = require('../../../../assets/vendors/sweetalert2/sweetalert2.all.min.js');
@@ -22,6 +23,7 @@ const Swal = require('../../../../assets/vendors/sweetalert2/sweetalert2.all.min
 })
 export class OcsDetailsComponent implements OnInit {
 
+  @ViewChild('reportOc') reportOc: PDFOcComponent = null as any;
   @ViewChild(DataTableDirective, {static: false})
   datatableElement_partes: DataTableDirective = null as any;
   dtOptions: any = {
@@ -54,6 +56,30 @@ export class OcsDetailsComponent implements OnInit {
     estadooc_name: null,
     solicitud_id: -1,
     cotizacion_id: -1
+  };
+
+  reportDataOc: any = {
+    oc: {
+      id: -1,
+      currentdate: null,
+      created_at: null,
+      comprador_name: null,
+      comprador_address: null,
+      comprador_city: null,
+      comprador_email: null,
+      comprador_phone: null,
+      supplier_name: null,
+      supplier_address: null,
+      supplier_city: null,
+      supplier_email: null,
+      supplier_phone: null,
+      delivery_name: null,
+      delivery_address: null,
+      delivery_city: null,
+      delivery_email: null,
+      delivery_phone: null
+    },
+    partes: []
   };
 
   public parte_index: number = -1;
@@ -275,6 +301,196 @@ export class OcsDetailsComponent implements OnInit {
         this.goTo_back();
       }
     );
+  }
+
+  public loadReportOc(ids: any)
+  {
+    this.loading = true;
+
+    let data = {
+      ocs: ids
+    };
+
+    this._ocsService.getReportOc(data)
+    .subscribe(
+      //Success request
+      (response: any) => {
+
+        if(response.data.length > 0)
+        {
+          // Load reports data
+          this.parseReportDataOc(response.data[0]);
+        }
+        else
+        {
+          NotificationsService.showAlert(
+            'Error al intentar cargar el reporte',
+            NotificationsService.messageType.error
+          )
+        }
+        this.loading = false;
+      },
+      //Error request
+      (errorResponse: any) => {
+
+        switch(errorResponse.status)
+        {     
+          case 405: //Permission denied
+          {
+            NotificationsService.showAlert(
+              errorResponse.error.message,
+              NotificationsService.messageType.error
+            );
+
+            break;
+          }
+
+          case 500: //Internal server
+          {
+            NotificationsService.showAlert(
+              errorResponse.error.message,
+              NotificationsService.messageType.error
+            );
+
+            break;
+          }
+        
+          default: //Unhandled error
+          {
+            NotificationsService.showAlert(
+              'Error al intentar cargar el reporte',
+              NotificationsService.messageType.error
+            )
+        
+            break;
+          }
+        }
+
+        this.loading = false;
+      }
+    );
+  }
+  
+  private parseReportDataOc(ocData: any)
+  { 
+    let oc = {
+      id: -1,
+      currentdate: '',
+      created_at: null,
+      comprador_name: null,
+      comprador_address: null,
+      comprador_city: null,
+      comprador_email: null,
+      comprador_phone: null,
+      supplier_name: null,
+      supplier_address: null,
+      supplier_city: null,
+      supplier_email: null,
+      supplier_phone: null,
+      delivered: false,
+      delivery_name: null,
+      delivery_address: null,
+      delivery_city: null,
+      delivery_email: null,
+      delivery_phone: null,
+      //Partes
+      partes: []
+    };
+
+    if(ocData['partes'].length > 0)
+    {
+      let today = new Date();
+      oc.currentdate = `${today.getFullYear()}-${(today.getMonth() + 1) < 10 ? '0' + (today.getMonth() + 1) : (today.getMonth() + 1)}-${today.getDate() < 10 ? '0' + today.getDate() : today.getDate()}`;
+      oc.id = ocData.id,
+      oc.created_at = ocData.created_at;
+      oc.comprador_name = ocData.cotizacion.solicitud.comprador.name;
+      oc.comprador_address = ocData.cotizacion.solicitud.comprador.address;
+      oc.comprador_city = ocData.cotizacion.solicitud.comprador.city;
+      oc.comprador_email = ocData.cotizacion.solicitud.comprador.email;
+      oc.comprador_phone = ocData.cotizacion.solicitud.comprador.phone;
+      oc.supplier_name = ocData.proveedor.name;
+      oc.supplier_address = ocData.proveedor.address;
+      oc.supplier_city = ocData.proveedor.city;
+      oc.supplier_email = ocData.proveedor.email;
+      oc.supplier_phone = ocData.proveedor.phone;
+      // If OC's proveedor is delivered
+      if(ocData.proveedor.delivered === 1)
+      {
+        oc.delivered = true;
+        oc.delivery_name = ocData.proveedor.delivery_name;
+        oc.delivery_address = ocData.proveedor.delivery_address;
+        oc.delivery_city = ocData.proveedor.delivery_city;
+        oc.delivery_email = ocData.proveedor.delivery_email;
+        oc.delivery_phone = ocData.proveedor.delivery_phone;
+      }
+      else
+      {
+        oc.delivered = false;
+        oc.delivery_name = null;
+        oc.delivery_address = null;
+        oc.delivery_city = null;
+        oc.delivery_email = null;
+        oc.delivery_phone = null;
+      }
+
+      oc.partes = ocData.partes.map((p: any) => 
+        {
+          return {
+            'id': p.id,
+            'nparte': p.nparte,
+            'descripcion': p.pivot.descripcion,
+            'cantidad': p.pivot.cantidad,
+            'costo': p.pivot.costo
+          };
+        }
+      );
+
+      this.generateReportOcPDF(oc);
+    }
+    else
+    {
+      Swal.close();
+
+      NotificationsService.showToast(
+        'Error al intentar cargar la lista de partes de la OC',
+        NotificationsService.messageType.error
+      );
+
+      this.loading = false;
+    }
+  }
+
+  public generateReportOcPDF(oc: any): void {  
+
+    // Go to top of page for report rendering
+    window.scroll(0,0);
+
+    // If report component was found
+    if(this.reportOc !== undefined)
+    {
+      let reportData = {
+        oc: oc,
+        partes: oc.partes
+      };
+
+      // Set report data
+      this.reportOc.reportData = reportData;
+
+      // Export report to PDF after 1 sec
+      setTimeout(() => {
+          this.reportOc.exportOcToPdf();
+        },
+        1000
+      );
+      
+    }
+    else
+    {
+      NotificationsService.showToast(
+        'Error al generar el reporte de OC',
+        NotificationsService.messageType.error
+      );
+    }
   }
 
   private loadMotivosBaja() {

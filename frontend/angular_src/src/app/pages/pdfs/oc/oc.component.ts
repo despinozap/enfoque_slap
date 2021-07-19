@@ -24,6 +24,7 @@ export class PDFOcComponent implements OnInit {
       supplier_city: null,
       supplier_email: null,
       supplier_phone: null,
+      delivered: false,
       delivery_name: null,
       delivery_address: null,
       delivery_city: null,
@@ -60,6 +61,7 @@ export class PDFOcComponent implements OnInit {
       // If OC's proveedor is delivered
       if(ocData.oc.proveedor.delivered === 1)
       {
+        this.reportData.oc.delivered = true;
         this.reportData.oc.delivery_name = ocData.proveedor.delivery_name;
         this.reportData.oc.delivery_address = ocData.proveedor.delivery_address;
         this.reportData.oc.delivery_city = ocData.proveedor.delivery_city;

@@ -27,6 +27,8 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
+                <app-pdf-oc #reportOc></app-pdf-oc>
+
                 <div class="alert alert-success alert-dismissible fade show" role="alert" *ngIf="(DISPLAYING_FORM === 0) && ((loggedUser !== null) && (['admin', 'agtcom'].includes(loggedUser.role.name))) && (oc.estadooc_id === 1)">
                     La OC aun esta <strong>Pendiente</strong>
                     <button type="button" class="ml-2 btn btn-light" aria-label="Activar OC" [disabled]="(loading === true)" (click)="startOC()"><i class="mdi mdi-thumb-up"></i> Activar OC</button>
@@ -140,6 +142,19 @@
                                     </td>
                                 </tr>
                             </tfoot>
+
+                            <tfoot *ngIf="((loggedUser !== null) && (['admin', 'agtcom'].includes(loggedUser.role.name))) && ([2, 3].includes(oc.estadooc_id))">
+                                <!-- It's only shown when Oc is 'En proceso' or 'Cerrada' -->
+                                <tr>
+                                    <td colspan="7" align="right">
+                                        <button type="button" class="btn btn-outline-primary" (click)="loadReportOc([oc.id]);" [disabled]="(loading === true)">
+                                            <i class="bx bxs-file-pdf font-size-16 align-middle"></i> Generar documento
+                                            PDF
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tfoot>
+
                         </table>
                     </div>
                 </div>

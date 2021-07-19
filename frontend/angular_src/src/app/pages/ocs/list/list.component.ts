@@ -277,6 +277,7 @@ export class OcsListComponent implements OnInit, AfterViewInit {
         supplier_city: null,
         supplier_email: null,
         supplier_phone: null,
+        delivered: false,
         delivery_name: null,
         delivery_address: null,
         delivery_city: null,
@@ -305,6 +306,7 @@ export class OcsListComponent implements OnInit, AfterViewInit {
         // If OC's proveedor is delivered
         if(ocData.proveedor.delivered === 1)
         {
+          oc.delivered = true;
           oc.delivery_name = ocData.proveedor.delivery_name;
           oc.delivery_address = ocData.proveedor.delivery_address;
           oc.delivery_city = ocData.proveedor.delivery_city;
@@ -313,6 +315,7 @@ export class OcsListComponent implements OnInit, AfterViewInit {
         }
         else
         {
+          oc.delivered = false;
           oc.delivery_name = null;
           oc.delivery_address = null;
           oc.delivery_city = null;
