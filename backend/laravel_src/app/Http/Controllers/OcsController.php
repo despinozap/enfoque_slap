@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 use App\Models\Cotizacion;
@@ -290,280 +291,253 @@ class OcsController extends Controller
      */
     public function show($id)
     {
-        //
-    }
-
-    public function report(Request $request)
-    {
         try
         {
             $user = Auth::user();
-            if($user->role->hasRoutepermission('ocs report'))
+            if($user->role->hasRoutepermission('ocs show'))
             {
-                $validatorInput = $request->only(
-                    'ocs'
-                );
-                
-                $validatorRules = [
-                    'ocs' => 'required|array|min:1',
-                    'ocs.*'  => 'required|exists:ocs,id',
-                ];
-        
-                $validatorMessages = [
-                    'ocs.required' => 'Debes seleccionar las OCs',
-                    'ocs.array' => 'Lista de OCs es invalida',
-                    'ocs.min' => 'El reporte debe contener al menos 1 OC',
-                    'ocs.*.exists' => 'La lista de OCs es invalida',
-                ];
-        
-                $validator = Validator::make(
-                    $validatorInput,
-                    $validatorRules,
-                    $validatorMessages
-                );
-        
-                if ($validator->fails()) 
+                $oc = null;
+
+                switch($user->role->name)
                 {
+                    // Administrador
+                    case 'admin': {
+
+                        $oc = Oc::select('ocs.*')
+                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // For Solicitudes in the same Country
+                            ->where('ocs.id', $id) // For the requested OC
+                            ->first();
+
+                        break;
+                    }
+
+                    // Vendedor
+                    case 'seller': {
+
+                        $oc = Oc::select('ocs.*')
+                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                            ->where('sucursales.id', '=', $user->stationable->id) // For Solicitudes in its Sucursal
+                            ->where('solicitudes.user_id', '=', $user->id) // Only belonging data
+                            ->where('ocs.id', $id) // For the requested OCs
+                            ->first();
+
+                        break;
+                    }
+
+                    // Agente de compra
+                    case 'agtcom': {
+
+                        $oc = Oc::select('ocs.*')
+                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                            ->where('solicitudes.comprador_id', '=', $user->stationable->id) // For Solicitudes in its Comprador
+                            ->where('ocs.id', $id) // For the requested OCs
+                            ->first();
+
+                        break;
+                    }
+
+                    default:
+                    {
+                        break;
+                    }
+                }
+
+                if($oc !== null)
+                {
+                    $oc->dias;
+                    $oc->makeHidden([
+                        'cotizacion_id',
+                        'filedata_id',
+                        'proveedor_id',
+                        'motivobaja_id',
+                        'estadooc_id',
+                        'partes_total',
+                        'updated_at'
+                    ]);
+
+                    if($oc->proveedor)
+                    {
+                        $oc->proveedor->makeHidden([
+                            'comprador_id',
+                            'rut',
+                            'address',
+                            'city',
+                            'contact',
+                            'phone',
+                            'created_at', 
+                            'updated_at'
+                        ]);
+                    }
+
+                    if($oc->filedata)
+                    {
+                        $oc->filedata->url;
+                        $oc->filedata->name;
+                        $oc->filedata->makeHidden([
+                            'size',
+                            'path',
+                            'created_at', 
+                            'updated_at'
+                        ]);
+                    }
+
+                    $oc->cotizacion;
+                    $oc->cotizacion->makeHidden([
+                        'solicitud_id',
+                        'motivorechazo_id',
+                        'estadocotizacion_id',
+                        'usdvalue',
+                        'partes_total',
+                        'dias',
+                        'created_at', 
+                        'updated_at',
+                        'partes',
+                    ]);
+                    
+                    $oc->cotizacion->solicitud;
+                    $oc->cotizacion->solicitud->makeHidden([
+                        'partes_total',
+                        'comentario',
+                        'sucursal_id',
+                        'comprador_id',
+                        'user_id',
+                        'faena_id',
+                        'marca_id',
+                        'estadosolicitud_id',
+                        'created_at', 
+                        'updated_at'
+                    ]);
+                                
+                    $oc->cotizacion->solicitud->sucursal;
+                    $oc->cotizacion->solicitud->sucursal->makeHidden([
+                        'type',
+                        'rut',
+                        'address',
+                        'city',
+                        'country_id',
+                        'created_at', 
+                        'updated_at'
+                    ]);
+                    
+                    $oc->cotizacion->solicitud->faena;
+                    $oc->cotizacion->solicitud->faena->makeHidden([
+                        'sucursal_id',
+                        'rut',
+                        'address',
+                        'city',
+                        'contact',
+                        'phone',
+                        'cliente_id', 
+                        'created_at', 
+                        'updated_at'
+                    ]);
+
+                    $oc->cotizacion->solicitud->faena->cliente;
+                    $oc->cotizacion->solicitud->faena->cliente->makeHidden([
+                        'country_id',
+                        'created_at', 
+                        'updated_at'
+                    ]);
+
+                    $oc->cotizacion->solicitud->marca;
+                    $oc->cotizacion->solicitud->marca->makeHidden(['created_at', 'updated_at']);
+                    
+                    $oc->cotizacion->solicitud->user;
+                    $oc->cotizacion->solicitud->user->makeHidden([
+                        'stationable_id',
+                        'stationable_type',
+                        'email', 
+                        'phone', 
+                        'country_id', 
+                        'role_id', 
+                        'email_verified_at', 
+                        'created_at', 
+                        'updated_at'
+                    ]);
+                    
+                    $oc->cotizacion->solicitud->comprador;
+                    $oc->cotizacion->solicitud->comprador->makeHidden([
+                        'rut',
+                        'address',
+                        'city',
+                        'contact',
+                        'phone',
+                        'country_id',
+                        'created_at', 
+                        'updated_at'
+                    ]);
+
+                    $oc->estadooc;
+                    $oc->estadooc->makeHidden(['created_at', 'updated_at']);
+
+                    $oc->partes;
+                    foreach($oc->partes as $parte)
+                    {
+                        $parte->makeHidden([
+                            'marca_id', 
+                            'created_at', 
+                            'updated_at'
+                        ]);
+
+                        $parte->pivot->cantidad_recepcionado = 0;
+                        $parte->pivot->cantidad_entregado = 0;
+                        if($oc->estadooc_id === 2) // Estadooc = 'En proceso'
+                        {
+                            // Set cantidad in Recepciones at OC's Comprador
+                            $parte->pivot->cantidad_recepcionado = $parte->pivot->getCantidadRecepcionado($oc->cotizacion->solicitud->comprador);
+                            // Set cantidad total in Entregas
+                            $parte->pivot->cantidad_entregado = $parte->pivot->getCantidadTotalEntregado();
+                        }
+
+                        $parte->pivot->makeHidden([
+                            'oc',
+                            'oc_id',
+                            'parte_id',
+                            'estadoocparte_id', 
+                            'created_at', 
+                            //'updated_at'
+                        ]);                        
+
+                        $parte->pivot->estadoocparte;
+                        $parte->pivot->estadoocparte->makeHidden([
+                            'created_at',
+                            'updated_at'
+                        ]);
+                    }
+
                     $response = HelpController::buildResponse(
-                        400,
-                        $validator->errors(),
-                        null
+                        200,
+                        null,
+                        $oc
                     );
                 }
-                else        
+                else
                 {
-                    $ocs = null;
-
-                    switch($user->role->name)
+                    // If OC exists
+                    if(Oc::find($id))
                     {
-                        // Administrador
-                        case 'admin': {
-
-                            $ocs = Oc::select('ocs.*')
-                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
-                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
-                                ->where('sucursales.country_id', '=', $user->stationable->country->id) // For Solicitudes in the same Country
-                                ->whereIn('ocs.id', $request->ocs) // For the requested OCs
-                                ->get();
-
-                            break;
-                        }
-
-                        // Vendedor
-                        case 'seller': {
-
-                            $ocs = Oc::select('ocs.*')
-                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
-                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
-                                ->where('sucursales.id', '=', $user->stationable->id) // For Solicitudes in its Sucursal
-                                ->where('solicitudes.user_id', '=', $user->id) // Only belonging data
-                                ->whereIn('ocs.id', $request->ocs) // For the requested OCs
-                                ->get();
-
-                            break;
-                        }
-
-                        // Agente de compra
-                        case 'agtcom': {
-
-                            $ocs = Oc::select('ocs.*')
-                                ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
-                                ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
-                                ->where('solicitudes.comprador_id', '=', $user->stationable->id) // For Solicitudes in its Comprador
-                                ->whereIn('ocs.id', $request->ocs) // For the requested OCs
-                                ->get();
-
-                            break;
-                        }
-
-                        default:
-                        {
-                            break;
-                        }
-                    }
-
-                    if($ocs !== null)
-                    {
-                        foreach($ocs as $oc) 
-                        {
-                            $oc->dias;
-                            $oc->makeHidden([
-                                'cotizacion_id',
-                                'filedata_id',
-                                'proveedor_id',
-                                'motivobaja_id',
-                                'estadooc_id',
-                                'partes_total',
-                                'updated_at'
-                            ]);
-
-                            if($oc->proveedor)
-                            {
-                                $oc->proveedor->makeHidden([
-                                    'comprador_id',
-                                    'rut',
-                                    'address',
-                                    'city',
-                                    'contact',
-                                    'phone',
-                                    'created_at', 
-                                    'updated_at'
-                                ]);
-                            }
-
-                            if($oc->filedata)
-                            {
-                                $oc->filedata->url;
-                                $oc->filedata->name;
-                                $oc->filedata->makeHidden([
-                                    'size',
-                                    'path',
-                                    'created_at', 
-                                    'updated_at'
-                                ]);
-                            }
-        
-                            $oc->cotizacion;
-                            $oc->cotizacion->makeHidden([
-                                'solicitud_id',
-                                'motivorechazo_id',
-                                'estadocotizacion_id',
-                                'usdvalue',
-                                'partes_total',
-                                'dias',
-                                'created_at', 
-                                'updated_at',
-                                'partes',
-                            ]);
-                            
-                            $oc->cotizacion->solicitud;
-                            $oc->cotizacion->solicitud->makeHidden([
-                                'partes_total',
-                                'comentario',
-                                'sucursal_id',
-                                'comprador_id',
-                                'user_id',
-                                'faena_id',
-                                'marca_id',
-                                'estadosolicitud_id',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-                                        
-                            $oc->cotizacion->solicitud->sucursal;
-                            $oc->cotizacion->solicitud->sucursal->makeHidden([
-                                'type',
-                                'rut',
-                                'address',
-                                'city',
-                                'country_id',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-                            
-                            $oc->cotizacion->solicitud->faena;
-                            $oc->cotizacion->solicitud->faena->makeHidden([
-                                'sucursal_id',
-                                'rut',
-                                'address',
-                                'city',
-                                'contact',
-                                'phone',
-                                'cliente_id', 
-                                'created_at', 
-                                'updated_at'
-                            ]);
-
-                            $oc->cotizacion->solicitud->faena->cliente;
-                            $oc->cotizacion->solicitud->faena->cliente->makeHidden([
-                                'country_id',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-
-                            $oc->cotizacion->solicitud->marca;
-                            $oc->cotizacion->solicitud->marca->makeHidden(['created_at', 'updated_at']);
-                            
-                            $oc->cotizacion->solicitud->user;
-                            $oc->cotizacion->solicitud->user->makeHidden([
-                                'stationable_id',
-                                'stationable_type',
-                                'email', 
-                                'phone', 
-                                'country_id', 
-                                'role_id', 
-                                'email_verified_at', 
-                                'created_at', 
-                                'updated_at'
-                            ]);
-                            
-                            $oc->cotizacion->solicitud->comprador;
-                            $oc->cotizacion->solicitud->comprador->makeHidden([
-                                'rut',
-                                'address',
-                                'city',
-                                'contact',
-                                'phone',
-                                'country_id',
-                                'created_at', 
-                                'updated_at'
-                            ]);
-
-                            $oc->estadooc;
-                            $oc->estadooc->makeHidden(['created_at', 'updated_at']);
-        
-                            $oc->partes;
-                            foreach($oc->partes as $parte)
-                            {
-                                $parte->makeHidden([
-                                    'marca_id', 
-                                    'created_at', 
-                                    'updated_at'
-                                ]);
-
-                                $parte->pivot->cantidad_recepcionado = 0;
-                                $parte->pivot->cantidad_entregado = 0;
-                                if($oc->estadooc_id === 2) // Estadooc = 'En proceso'
-                                {
-                                    // Set cantidad in Recepciones at OC's Comprador
-                                    $parte->pivot->cantidad_recepcionado = $parte->pivot->getCantidadRecepcionado($oc->cotizacion->solicitud->comprador);
-                                    // Set cantidad total in Entregas
-                                    $parte->pivot->cantidad_entregado = $parte->pivot->getCantidadTotalEntregado();
-                                }
-
-                                $parte->pivot->makeHidden([
-                                    'oc',
-                                    'oc_id',
-                                    'parte_id',
-                                    'estadoocparte_id', 
-                                    'created_at', 
-                                    //'updated_at'
-                                ]);                        
-        
-                                $parte->pivot->estadoocparte;
-                                $parte->pivot->estadoocparte->makeHidden([
-                                    'created_at',
-                                    'updated_at'
-                                ]);
-                            }
-                        }
-
+                        // It was filtered, so it's forbidden
                         $response = HelpController::buildResponse(
-                            200,
-                            null,
-                            $ocs
+                            405,
+                            'No tienes acceso a visualizar la OC',
+                            null
                         );
                     }
+                    // It doesn't exist
                     else
                     {
                         $response = HelpController::buildResponse(
-                            500,
-                            'Error al obtener el reporte de OC',
+                            412,
+                            'La OC no existe',
                             null
                         );
-                    }                     
+                    }
                 }
             }
             else
@@ -573,18 +547,17 @@ class OcsController extends Controller
                     'No tienes acceso a visualizar OCs',
                     null
                 );
-            }
+            }                       
         }
         catch(\Exception $e)
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al obtener el reporte de OC [!]',
+                'Error al obtener la de OC [!]',
                 null
             );
         }
         
-
         return $response;
     }
 

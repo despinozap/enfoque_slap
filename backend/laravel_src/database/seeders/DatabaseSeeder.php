@@ -93,6 +93,7 @@ class DatabaseSeeder extends Seeder
             'cotizaciones destroy',
             //Ocs
             'ocs index',
+            'ocs show',
             'ocs report',
             'ocs start',
             'ocs update',
@@ -236,6 +237,7 @@ class DatabaseSeeder extends Seeder
                 'cotizaciones destroy',
                 //Ocs
                 'ocs index',
+                'ocs show',
                 'ocs report',
                 'ocs start',
                 'ocs update',
@@ -319,7 +321,7 @@ class DatabaseSeeder extends Seeder
                 'cotizaciones reject',
                 //Ocs
                 'ocs index',
-                'ocs report',
+                'ocs show',
                 'ocs update',
                 'ocs close',
                 //Compradores
@@ -371,6 +373,7 @@ class DatabaseSeeder extends Seeder
                 'solicitudes close',
                 //Ocs
                 'ocs index',
+                'ocs show',
                 'ocs report',
                 'ocs start',
                 'ocs update',

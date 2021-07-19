@@ -133,7 +133,8 @@ Route::middleware(['auth:api', 'cors'])->group(function()
     // OCs
     Route::get('/ocs', [OcsController::class, 'index']);
     Route::get('/ocs/motivosbaja/all', [OcsController::class, 'indexMotivosBajaFull']);
-    Route::post('/ocs/report', [OcsController::class, 'report']);
+    Route::get('/ocs/{id}', [OcsController::class, 'show']);
+    // Route::post('/ocs/report', [OcsController::class, 'report']);
     Route::post('/ocs/reject/{id}', [OcsController::class, 'reject']);
     Route::put('/ocs/{id}/partes', [OcsController::class, 'updateParte']);
     Route::delete('/ocs/{id}/partes/{parte_id}', [OcsController::class, 'destroyParte']);
