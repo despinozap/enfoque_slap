@@ -1580,6 +1580,9 @@ class SolicitudesController extends Controller
                             {
                                 DB::commit();
                                 
+                                // Reload Solicitud
+                                $solicitud = Solicitud::find($solicitud->id);
+                                
                                 $solicitud->makeHidden([
                                     'sucursal_id',
                                     'comprador_id',
