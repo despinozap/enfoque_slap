@@ -115,13 +115,28 @@ export class EntregasSucursalCreateComponent implements OnInit {
       //Success request
       (response: any) => {
 
-        // Ocs
-        this.ocs = response.data;
-        // Uses the first datatables instance
-        this.renderDataTable(this.datatableELements.first, this.dtTriggerOcs);
+        if(response.data.length > 0) 
+        {
+          // Ocs
+          this.ocs = response.data;
 
-        this.loading = false;
-        this.entregaForm.enable();
+          // Uses the first datatables instance
+          this.renderDataTable(this.datatableELements.first, this.dtTriggerOcs);
+
+          this.loading = false;
+          this.entregaForm.enable();
+        }
+        else
+        {
+          NotificationsService.showToast(
+            'No se encontraron OCs con partes pendiente de entrega',
+            NotificationsService.messageType.info
+          );
+
+          this.loading = false;
+          this.goTo_back();
+        }
+        
       },
       //Error request
       (errorResponse: any) => {
