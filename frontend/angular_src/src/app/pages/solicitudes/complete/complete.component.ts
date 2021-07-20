@@ -483,6 +483,8 @@ export class SolicitudesCompleteComponent implements OnInit {
               {
                 // Load solicitud data and stay in page for closing
                 this.loadFormData(response.data);
+                this.renderDataTable(this.datatableElement_partes);
+                
                 // Ask for closing solicitud right away
                 let question = 'Se ha completado la solicitud. ¿La desea cerrar inmediatamente?';
                 this.closeSolicitud(question);
