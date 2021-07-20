@@ -531,11 +531,11 @@ class DatabaseSeeder extends Seeder
         $comprador = new Comprador();
         $comprador->rut = '5.917.158-5';
         $comprador->name = 'American Parts Miami';
-        $comprador->address = 'CompradorDireccionTest01';
-        $comprador->city = 'Miami';
+        $comprador->address = '1085 SW 37th Ave apt 18';
+        $comprador->city = 'Miami, Florida 33135';
         $comprador->country_id = 2; // USA
-        $comprador->email = 'americanpartsmiami@mail.com';
-        $comprador->phone = '+12345678901';
+        $comprador->email = 'cvivanco@ilmolles.com';
+        $comprador->phone = '305 905 8000';
         $comprador->save();
 
     

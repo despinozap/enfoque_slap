@@ -553,7 +553,171 @@ class OcsController extends Controller
         {
             $response = HelpController::buildResponse(
                 500,
-                'Error al obtener la de OC [!]',
+                'Error al obtener la OC [!]',
+                null
+            );
+        }
+        
+        return $response;
+    }
+
+    public function timelineParte($id, $parte_id)
+    {
+        try
+        {
+            $user = Auth::user();
+            if($user->role->hasRoutepermission('ocs show'))
+            {
+                $oc = null;
+
+                switch($user->role->name)
+                {
+                    // Administrador
+                    case 'admin': {
+
+                        $oc = Oc::select('ocs.*')
+                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                            ->where('sucursales.country_id', '=', $user->stationable->country->id) // For Solicitudes in the same Country
+                            ->where('ocs.id', $id) // For the requested OC
+                            ->first();
+
+                        break;
+                    }
+
+                    // Vendedor
+                    case 'seller': {
+
+                        $oc = Oc::select('ocs.*')
+                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                            ->join('sucursales', 'sucursales.id', '=', 'solicitudes.sucursal_id')
+                            ->where('sucursales.id', '=', $user->stationable->id) // For Solicitudes in its Sucursal
+                            ->where('solicitudes.user_id', '=', $user->id) // Only belonging data
+                            ->where('ocs.id', $id) // For the requested OCs
+                            ->first();
+
+                        break;
+                    }
+
+                    // Agente de compra
+                    case 'agtcom': {
+
+                        $oc = Oc::select('ocs.*')
+                            ->join('cotizaciones', 'cotizaciones.id', '=', 'ocs.cotizacion_id')
+                            ->join('solicitudes', 'solicitudes.id', '=', 'cotizaciones.solicitud_id')
+                            ->where('solicitudes.comprador_id', '=', $user->stationable->id) // For Solicitudes in its Comprador
+                            ->where('ocs.id', $id) // For the requested OCs
+                            ->first();
+
+                        break;
+                    }
+
+                    default:
+                    {
+                        break;
+                    }
+                }
+
+                if($oc !== null)
+                {
+                    if($ocParte = $oc->partes->find($parte_id))
+                    {
+                        $data = [];
+
+                        array_push(
+                            $data,
+                            array(
+                                array(
+                                    'type' => 'oc',
+                                    'date' => $oc->created_at,
+                                    'title' => 'Creacion OC',
+                                    'description' => 'Se ha creado la OC',
+                                )
+                            )
+                        );
+
+                        array_push(
+                            $data,
+                            array(
+                                array(
+                                    'type' => 'oc',
+                                    'date' => $ocParte->created_at,
+                                    'title' => 'Asignacion en OC',
+                                    'description' => 'La parte ha sido adjudicada en la cotizacion y agregada a la OC',
+                                )
+                            )
+                        );
+
+                        if($ocParte->created_at != $ocParte->updated_at)
+                        {
+                            array_push(
+                                $data,
+                                array(
+                                    array(
+                                        'type' => 'oc',
+                                        'date' => $ocParte->updated_at,
+                                        'title' => 'Actualizacion en OC',
+                                        'description' => 'La parte ha sido modificada en la OC',
+                                    )
+                                )
+                            );
+                        }
+
+                        $response = HelpController::buildResponse(
+                            200,
+                            null,
+                            $data
+                        );
+                    }
+                    else
+                    {
+                        //If the entered parte isn't in the OC
+                        $response = HelpController::buildResponse(
+                            409,
+                            'La parte ingresada no existe en la OC',
+                            null
+                        );
+                    }
+                }
+                else
+                {
+                    // If OC exists
+                    if(Oc::find($id))
+                    {
+                        // It was filtered, so it's forbidden
+                        $response = HelpController::buildResponse(
+                            405,
+                            'No tienes acceso a visualizar la OC',
+                            null
+                        );
+                    }
+                    // It doesn't exist
+                    else
+                    {
+                        $response = HelpController::buildResponse(
+                            412,
+                            'La OC no existe',
+                            null
+                        );
+                    }
+                }
+            }
+            else
+            {
+                $response = HelpController::buildResponse(
+                    405,
+                    'No tienes acceso a visualizar OCs',
+                    null
+                );
+            }                       
+        }
+        catch(\Exception $e)
+        {
+            $response = HelpController::buildResponse(
+                500,
+                'Error al obtener la OC [!]',
                 null
             );
         }
@@ -899,6 +1063,20 @@ class OcsController extends Controller
 
                         DB::beginTransaction();
 
+                        // Log this action
+                        LoggedactionsController::log(
+                            $parte->pivot,
+                            'values_updated',
+                            array(
+                                'cantidad_previous' => $parte->pivot->cantidad,
+                                'cantidad' =>  $request->cantidad,
+                                'tiempoentrega_previous' => $parte->pivot->tiempoentrega,
+                                'tiempoentrega' =>  $request->tiempoentrega,
+                                'backorder_previous' => $parte->pivot->backorder,
+                                'backorder' =>  ($request->backorder === true) ? 1 : 0,
+                            )
+                        );
+
                         $parte->pivot->cantidad = $request->cantidad;
                         $parte->pivot->tiempoentrega = $request->tiempoentrega;
                         $parte->pivot->backorder = $request->backorder;
@@ -978,6 +1156,16 @@ class OcsController extends Controller
                             if($ocFullDelivered === true)
                             {
                                 $oc->estadooc_id = 3; // Estadooc = 'Cerrada'
+
+                                // Log this action
+                                LoggedactionsController::log(
+                                    $oc,
+                                    'updated',
+                                    array(
+                                        'status_name' => $oc->estadooc->name
+                                    )
+                                );
+
                                 if(!$oc->save())
                                 {
                                     $response = HelpController::buildResponse(
@@ -1155,6 +1343,16 @@ class OcsController extends Controller
 
                         DB::beginTransaction();
 
+                        // Log this action
+                        LoggedactionsController::log(
+                            $oc,
+                            'parte_removed',
+                            array(
+                                'nparte' => $parte->nparte,
+                                'cantidad' =>  $parte->pivot->cantidad
+                            )
+                        );
+                        
                         // If Oc is Estadooc = 'En proceso'
                         if($oc->estadooc_id === 2)
                         {
@@ -1214,6 +1412,16 @@ class OcsController extends Controller
                             if($ocFullDelivered === true)
                             {
                                 $oc->estadooc_id = 3; // Estadooc = 'Cerrada'
+                                
+                                // Log this action
+                                LoggedactionsController::log(
+                                    $oc,
+                                    'updated',
+                                    array(
+                                        'status_name' => $oc->estadooc->name
+                                    )
+                                );
+
                                 if(!$oc->save())
                                 {
                                     $response = HelpController::buildResponse(
@@ -1380,11 +1588,25 @@ class OcsController extends Controller
                         }
                         else
                         {
+                            DB::beginTransaction();
+
                             $oc->estadooc_id = 4; // Baja
                             $oc->motivobaja_id = $request->motivobaja_id;
+
+                            // Log this action
+                            LoggedactionsController::log(
+                                $oc,
+                                'updated',
+                                array(
+                                    'status_name' => $oc->estadooc->name,
+                                    'motivobaja_name' => $oc->motivobaja->name
+                                )
+                            );
                             
                             if($oc->save())
                             {
+                                DB::commit();
+
                                 $response = HelpController::buildResponse(
                                     200,
                                     'OC dada de baja',
@@ -1393,6 +1615,8 @@ class OcsController extends Controller
                             }
                             else
                             {
+                                DB::rollback();
+
                                 $response = HelpController::buildResponse(
                                     500,
                                     'Error al dar de baja la OC',
@@ -1514,11 +1738,24 @@ class OcsController extends Controller
                                             ->first()
                             )
                             {
+                                DB::beginTransaction();
+
                                 $oc->estadooc_id = 2; // En proceso
                                 $oc->proveedor_id = $request->proveedor_id;
                                 
+                                // Log this action
+                                LoggedactionsController::log(
+                                    $oc,
+                                    'updated',
+                                    array(
+                                        'status_name' => $oc->estadooc->name
+                                    )
+                                );
+
                                 if($oc->save())
                                 {
+                                    DB::commit();
+
                                     $response = HelpController::buildResponse(
                                         200,
                                         'Proceso de compra activado',
@@ -1527,6 +1764,8 @@ class OcsController extends Controller
                                 }
                                 else
                                 {
+                                    DB::rollback();
+                                    
                                     $response = HelpController::buildResponse(
                                         500,
                                         'Error al activar el proceso de compra de la OC',
@@ -1591,4 +1830,5 @@ class OcsController extends Controller
     {
         //
     }
+    
 }

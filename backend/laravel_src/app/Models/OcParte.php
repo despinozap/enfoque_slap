@@ -102,4 +102,9 @@ class OcParte extends Pivot
         return $quantity;
     }
 
+    public function loggedactions()
+    {
+        return $this->morphMany(Loggedaction::class, 'loggeable');
+    }
+
 }

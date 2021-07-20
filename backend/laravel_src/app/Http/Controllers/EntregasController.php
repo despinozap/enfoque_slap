@@ -1014,11 +1014,30 @@ class EntregasController extends Controller
                                                 {
                                                     if($p['cantidad'] <= $cantidadStock)
                                                     {
+                                                        // Log this action
+                                                        LoggedactionsController::log(
+                                                            $parte->pivot,
+                                                            'delivered',
+                                                            array(
+                                                                'cantidad' => $p['cantidad'],
+                                                                'entrega_id' => $entrega->id
+                                                            )
+                                                        );
+
                                                         // If cantidad its equal to pending for fully deliver OcParte in Oc
                                                         if($p['cantidad'] === $parte->pivot->cantidad - $cantidadEntregado)
                                                         {
                                                             // All partes were delivered at Sucursal (centro)
                                                             $parte->pivot->estadoocparte_id = 3; // Estadoocparte = 'Entregado'
+
+                                                            // Log this action
+                                                            LoggedactionsController::log(
+                                                                $parte->pivot,
+                                                                'updated',
+                                                                array(
+                                                                    'status_name' => $parte->pivot->estadoocparte->name
+                                                                )
+                                                            );
 
                                                             // If fail on saving the new status for OcParte
                                                             if(!($parte->pivot->save()))
@@ -1137,6 +1156,16 @@ class EntregasController extends Controller
                                 if($ocFullDelivered === true)
                                 {
                                     $oc->estadooc_id = 3; // Estadooc = 'Cerrada'
+
+                                    // Log this action
+                                    LoggedactionsController::log(
+                                        $oc,
+                                        'updated',
+                                        array(
+                                            'status_name' => $oc->estadooc->name
+                                        )
+                                    );
+
                                     if(!$oc->save())
                                     {
                                         $response = HelpController::buildResponse(
@@ -1151,7 +1180,6 @@ class EntregasController extends Controller
 
                                 if($success === true)
                                 {
-
                                     DB::commit();
                                         
                                     $response = HelpController::buildResponse(
@@ -2068,6 +2096,40 @@ class EntregasController extends Controller
                                                 // If Parte is in the request
                                                 if(in_array($parteId, array_keys($parteList)) === true)
                                                 {
+                                                    // If OcParte was already in Entrega
+                                                    if(($ocParteEntrega = $entrega->ocpartes->find($p->pivot->id)) !== null)
+                                                    {
+                                                        // If previous cantidad and new cantidad are different
+                                                        if($ocParteEntrega->pivot->cantidad !== $parteList[$parteId])
+                                                        {
+                                                            // Log this action
+                                                            LoggedactionsController::log(
+                                                                $p->pivot,
+                                                                'entrega_updated',
+                                                                array(
+                                                                    'previous_cantidad' => $ocParteEntrega->pivot->cantidad,
+                                                                    'cantidad' => $parteList[$parteId],
+                                                                    'entrega_id' => $entrega->id
+                                                                )
+                                                            );
+                                                        }
+                                                    }
+                                                    // It's being just added on the update
+                                                    else
+                                                    {
+                                                        // Log this action
+                                                        LoggedactionsController::log(
+                                                            $p->pivot,
+                                                            'added_to_entrega',
+                                                            array(
+                                                                'cantidad' => $parteList[$parteId],
+                                                                'entrega_id' => $entrega->id
+                                                            )
+                                                        );
+                                                    }
+
+                                                    $previousEstadoocparteId = $p->pivot->estadoocparte_id;
+
                                                     // All partes were delivered at Sucursal (centro)
                                                     if($newCantidadEntregas === $p->pivot->cantidad)
                                                     {
@@ -2083,10 +2145,40 @@ class EntregasController extends Controller
                                                         $p->pivot->estadoocparte_id = 1; // Estadoocparte = 'Pendiente'
                                                     }
 
+                                                    // If OcParte estadoocparte_id changed
+                                                    if($previousEstadoocparteId !== $p->pivot->estadoocparte_id)
+                                                    {
+                                                        // Log this action
+                                                        LoggedactionsController::log(
+                                                            $p->pivot,
+                                                            'updated',
+                                                            array(
+                                                                'status_name' => $p->pivot->estadoocparte->name
+                                                            )
+                                                        );
+                                                    }
+
                                                     // Add the OcParte to sync using the ID which is unique
                                                     $syncData[$p->pivot->id] = array(
                                                         'cantidad' => $parteList[$parteId]
                                                     );
+                                                }
+                                                // If the Parte isn't in the list, so it's gonna be removed from Entrega
+                                                else
+                                                {
+                                                    // If OcParte was found in Entrega
+                                                    if(($ocParteEntrega = $entrega->ocpartes->find($p->pivot->id)) !== null)
+                                                    {
+                                                        // Log this action
+                                                        LoggedactionsController::log(
+                                                            $p->pivot,
+                                                            'removed_from_entrega',
+                                                            array(
+                                                                'cantidad' => $ocParteEntrega->pivot->cantidad,
+                                                                'entrega_id' => $entrega->id
+                                                            )
+                                                        );
+                                                    }
                                                 }
                                             }
                                             else
@@ -2164,24 +2256,45 @@ class EntregasController extends Controller
                                     true // Initialize in true
                                 );
 
+                                $previousEstadoocId = $entrega->oc->estadooc_id;
+
                                 // If Oc is full delivered
                                 if($ocFullDelivered === true)
                                 {
                                     $entrega->oc->estadooc_id = 3; // Estadooc = 'Cerrada'
-                                    if(!$entrega->oc->save())
-                                    {
-                                        $response = HelpController::buildResponse(
-                                            500,
-                                            'Error al actualizar el estado de la OC',
-                                            null
-                                        );
-    
-                                        $success = false;
-                                    }
                                 }
+                                else
+                                {
+                                    $entrega->oc->estadooc_id = 2; // Estadooc = 'En proceso'
+                                }
+
+                                if(!$entrega->oc->save())
+                                {
+                                    $response = HelpController::buildResponse(
+                                        500,
+                                        'Error al actualizar el estado de la OC',
+                                        null
+                                    );
+
+                                    $success = false;
+                                }
+
 
                                 if($success === true)
                                 {
+                                    // If Oc estadooc_id changed
+                                    if($previousEstadoocId !== $entrega->oc->estadooc_id)
+                                    {
+                                        // Log this action
+                                        LoggedactionsController::log(
+                                            $entrega->oc,
+                                            'updated',
+                                            array(
+                                                'status_name' => $entrega->oc->estadooc->name
+                                            )
+                                        );
+                                    }
+
                                     if($entrega->ocpartes()->sync($syncData))
                                     {
                                         DB::commit();
@@ -2373,6 +2486,18 @@ class EntregasController extends Controller
 
                         foreach($entrega->ocpartes as $ocParte)
                         {
+                            // If the loop wasn't broken, log this action
+                            LoggedactionsController::log(
+                                $ocParte,
+                                'entrega_removed',
+                                array(
+                                    'cantidad' => $ocParte->pivot->cantidad,
+                                    'entrega_id' => $entrega->id
+                                )
+                            );
+
+                            $previousEstadoocparteId = $ocParte->estadoocparte_id;
+
                             // If all partes were at least received at Solicitud's Comprador
                             if($ocParte->getCantidadRecepcionado($ocParte->oc->cotizacion->solicitud->comprador) === $ocParte->cantidad)
                             {
@@ -2381,6 +2506,19 @@ class EntregasController extends Controller
                             else
                             {
                                 $ocParte->estadoocparte_id = 1; // Estadoocparte = 'Pendiente'
+                            }
+
+                            // If OcParte estadoocparte_id changed
+                            if($previousEstadoocparteId !== $ocParte->estadoocparte_id)
+                            {
+                                // Log this action
+                                LoggedactionsController::log(
+                                    $ocParte,
+                                    'updated',
+                                    array(
+                                        'status_name' => $ocParte->estadoocparte->name
+                                    )
+                                );
                             }
 
                             // If fails on saving the new status for OcParte
@@ -2400,6 +2538,16 @@ class EntregasController extends Controller
             
                         // Oc goes back to estadooc = 'En proceso'
                         $entrega->oc->estadooc_id = 2; // Estadooc = 'En proceso'
+
+                        // Log this action
+                        LoggedactionsController::log(
+                            $entrega->oc,
+                            'updated',
+                            array(
+                                'status_name' => $entrega->oc->estadooc->name
+                            )
+                        );
+
                         if(!$entrega->oc->save())
                         {
                             $response = HelpController::buildResponse(
@@ -3485,11 +3633,30 @@ class EntregasController extends Controller
                                                 {
                                                     if($p['cantidad'] <= $cantidadStock)
                                                     {
+                                                        // Log this action
+                                                        LoggedactionsController::log(
+                                                            $parte->pivot,
+                                                            'delivered',
+                                                            array(
+                                                                'cantidad' => $p['cantidad'],
+                                                                'entrega_id' => $entrega->id
+                                                            )
+                                                        );
+
                                                         // If cantidad its equal to pending for fully deliver OcParte in Oc
                                                         if($p['cantidad'] === $parte->pivot->cantidad - $cantidadEntregado)
                                                         {
                                                             // All partes were delivered at Sucursal (centro)
                                                             $parte->pivot->estadoocparte_id = 3; // Estadoocparte = 'Entregado'
+
+                                                            // Log this action
+                                                            LoggedactionsController::log(
+                                                                $parte->pivot,
+                                                                'updated',
+                                                                array(
+                                                                    'status_name' => $parte->pivot->estadoocparte->name
+                                                                )
+                                                            );
 
                                                             // If fail on saving the new status for OcParte
                                                             if(!($parte->pivot->save()))
@@ -3608,6 +3775,16 @@ class EntregasController extends Controller
                                 if($ocFullDelivered === true)
                                 {
                                     $oc->estadooc_id = 3; // Estadooc = 'Cerrada'
+
+                                    // Log this action
+                                    LoggedactionsController::log(
+                                        $oc,
+                                        'updated',
+                                        array(
+                                            'status_name' => $oc->estadooc->name
+                                        )
+                                    );
+
                                     if(!$oc->save())
                                     {
                                         $response = HelpController::buildResponse(
@@ -3622,7 +3799,6 @@ class EntregasController extends Controller
 
                                 if($success === true)
                                 {
-
                                     DB::commit();
                                         
                                     $response = HelpController::buildResponse(
@@ -4539,6 +4715,40 @@ class EntregasController extends Controller
                                                 // If Parte is in the request
                                                 if(in_array($parteId, array_keys($parteList)) === true)
                                                 {
+                                                    // If OcParte was already in Entrega
+                                                    if(($ocParteEntrega = $entrega->ocpartes->find($p->pivot->id)) !== null)
+                                                    {
+                                                        // If previous cantidad and new cantidad are different
+                                                        if($ocParteEntrega->pivot->cantidad !== $parteList[$parteId])
+                                                        {
+                                                            // Log this action
+                                                            LoggedactionsController::log(
+                                                                $p->pivot,
+                                                                'entrega_updated',
+                                                                array(
+                                                                    'previous_cantidad' => $ocParteEntrega->pivot->cantidad,
+                                                                    'cantidad' => $parteList[$parteId],
+                                                                    'entrega_id' => $entrega->id
+                                                                )
+                                                            );
+                                                        }
+                                                    }
+                                                    // It's being just added on the update
+                                                    else
+                                                    {
+                                                        // Log this action
+                                                        LoggedactionsController::log(
+                                                            $p->pivot,
+                                                            'added_to_entrega',
+                                                            array(
+                                                                'cantidad' => $parteList[$parteId],
+                                                                'entrega_id' => $entrega->id
+                                                            )
+                                                        );
+                                                    }
+
+                                                    $previousEstadoocparteId = $p->pivot->estadoocparte_id;
+
                                                     // All partes were delivered at Sucursal
                                                     if($newCantidadEntregas === $p->pivot->cantidad)
                                                     {
@@ -4554,10 +4764,40 @@ class EntregasController extends Controller
                                                         $p->pivot->estadoocparte_id = 1; // Estadoocparte = 'Pendiente'
                                                     }
 
+                                                    // If OcParte estadoocparte_id changed
+                                                    if($previousEstadoocparteId !== $p->pivot->estadoocparte_id)
+                                                    {
+                                                        // Log this action
+                                                        LoggedactionsController::log(
+                                                            $p->pivot,
+                                                            'updated',
+                                                            array(
+                                                                'status_name' => $p->pivot->estadoocparte->name
+                                                            )
+                                                        );
+                                                    }
+
                                                     // Add the OcParte to sync using the ID which is unique
                                                     $syncData[$p->pivot->id] = array(
                                                         'cantidad' => $parteList[$parteId]
                                                     );
+                                                }
+                                                // If the Parte isn't in the list, so it's gonna be removed from Entrega
+                                                else
+                                                {
+                                                    // If OcParte was found in Entrega
+                                                    if(($ocParteEntrega = $entrega->ocpartes->find($p->pivot->id)) !== null)
+                                                    {
+                                                        // Log this action
+                                                        LoggedactionsController::log(
+                                                            $p->pivot,
+                                                            'removed_from_entrega',
+                                                            array(
+                                                                'cantidad' => $ocParteEntrega->pivot->cantidad,
+                                                                'entrega_id' => $entrega->id
+                                                            )
+                                                        );
+                                                    }
                                                 }
                                             }
                                             else
@@ -4635,6 +4875,8 @@ class EntregasController extends Controller
                                     true // Initialize in true
                                 );
 
+                                $previousEstadoocId = $entrega->oc->estadooc_id;
+
                                 // If Oc is full delivered
                                 if($ocFullDelivered === true)
                                 {
@@ -4653,6 +4895,19 @@ class EntregasController extends Controller
 
                                 if($success === true)
                                 {
+                                    // If Oc estadooc_id changed
+                                    if($previousEstadoocId !== $entrega->oc->estadooc_id)
+                                    {
+                                        // Log this action
+                                        LoggedactionsController::log(
+                                            $entrega->oc,
+                                            'updated',
+                                            array(
+                                                'status_name' => $entrega->oc->estadooc->name
+                                            )
+                                        );
+                                    }
+
                                     if($entrega->ocpartes()->sync($syncData))
                                     {
                                         DB::commit();
@@ -4844,6 +5099,18 @@ class EntregasController extends Controller
 
                         foreach($entrega->ocpartes as $ocParte)
                         {
+                            // If the loop wasn't broken, log this action
+                            LoggedactionsController::log(
+                                $ocParte,
+                                'entrega_removed',
+                                array(
+                                    'cantidad' => $ocParte->pivot->cantidad,
+                                    'entrega_id' => $entrega->id
+                                )
+                            );
+
+                            $previousEstadoocparteId = $ocParte->estadoocparte_id;
+
                             // If all partes were at least received at Solicitud's Comprador
                             if($ocParte->getCantidadRecepcionado($ocParte->oc->cotizacion->solicitud->comprador) === $ocParte->cantidad)
                             {
@@ -4852,6 +5119,19 @@ class EntregasController extends Controller
                             else
                             {
                                 $ocParte->estadoocparte_id = 1; // Estadoocparte = 'Pendiente'
+                            }
+
+                            // If OcParte estadoocparte_id changed
+                            if($previousEstadoocparteId !== $ocParte->estadoocparte_id)
+                            {
+                                // Log this action
+                                LoggedactionsController::log(
+                                    $ocParte,
+                                    'updated',
+                                    array(
+                                        'status_name' => $ocParte->estadoocparte->name
+                                    )
+                                );
                             }
 
                             // If fails on saving the new status for OcParte
@@ -4871,6 +5151,16 @@ class EntregasController extends Controller
             
                         // Oc goes back to estadooc = 'En proceso'
                         $entrega->oc->estadooc_id = 2; // Estadooc = 'En proceso'
+
+                        // Log this action
+                        LoggedactionsController::log(
+                            $entrega->oc,
+                            'updated',
+                            array(
+                                'status_name' => $entrega->oc->estadooc->name
+                            )
+                        );
+                        
                         if(!$entrega->oc->save())
                         {
                             $response = HelpController::buildResponse(

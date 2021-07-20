@@ -235,7 +235,10 @@ class AuthController extends Controller
 				// Log this action
         LoggedactionsController::log(
             Auth::user(),
-            'User logged in from IP:' . $request->ip()
+            'login',
+						array(
+							'ip_address' => $request->ip()
+						)
         );
 
 				$response = HelpController::buildResponse(
@@ -243,6 +246,7 @@ class AuthController extends Controller
 					null,
 					$data
 				);
+				
 			}
 			else
 			{

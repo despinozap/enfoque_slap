@@ -134,6 +134,7 @@ Route::middleware(['auth:api', 'cors'])->group(function()
     Route::get('/ocs', [OcsController::class, 'index']);
     Route::get('/ocs/motivosbaja/all', [OcsController::class, 'indexMotivosBajaFull']);
     Route::get('/ocs/{id}', [OcsController::class, 'show']);
+    Route::get('/ocs/{id}/partes/{parte_id}/timeline', [OcsController::class, 'timelineParte']);
     Route::post('/ocs/report', [OcsController::class, 'report']);
     Route::post('/ocs/reject/{id}', [OcsController::class, 'reject']);
     Route::put('/ocs/{id}/partes', [OcsController::class, 'updateParte']);

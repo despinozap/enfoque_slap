@@ -11,58 +11,13 @@ use App\Models\Loggedaction;
 
 class LoggedactionsController extends Controller
 {
-    public function index()
-    {
-        try
-        {
-            $user = Auth::user();
-            if($user->role->hasRoutepermission('loggedactions index'))
-            {
-                if($loggedactions = Loggedaction::all())
-                {                    
-                    $response = HelpController::buildResponse(
-                        200,
-                        null,
-                        $loggedactions
-                    );
-                }
-                else
-                {
-                    $response = HelpController::buildResponse(
-                        500,
-                        'Error al obtener la lista de acciones',
-                        null
-                    );
-                }
-            }
-            else
-            {
-                $response = HelpController::buildResponse(
-                    405,
-                    'No tienes acceso a listar acciones',
-                    null
-                );
-            }
-        }
-        catch(\Exception $e)
-        {
-            $response = HelpController::buildResponse(
-                500,
-                'Error al obtener la lista de acciones [!]',
-                null
-            );
-        }
-        
-        return $response;
-    }
-
     /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public static function log($loggeable, $description)
+    public static function log($loggeable, $action, $arrData)
     {
         try
         {
@@ -73,41 +28,19 @@ class LoggedactionsController extends Controller
                 $loggedaction->user_id = $user->id;
                 $loggedaction->loggeable_type = get_class($loggeable);
                 $loggedaction->loggeable_id = $loggeable->id;
-                $loggedaction->description = $description;
-                
-                if($loggedaction->save())
-                {
-                    $response = HelpController::buildResponse(
-                        201,
-                        'Accion registrada',
-                        null
-                    );
-                }
-                else
-                {
-                    $response = HelpController::buildResponse(
-                        500,
-                        'Error al crear el cliente',
-                        null
-                    );
-                }
+                $loggedaction->action = $action;
+                $loggedaction->data = ($arrData !== null) ? json_encode($arrData) : null;
+
+                $response = ($loggedaction->save()) ? true : false;
             }
             else
             {
-                $response = HelpController::buildResponse(
-                    405,
-                    'No tienes acceso a registrar acciones',
-                    null
-                );
+                $response = false;
             }
         }
         catch(\Exception $e)
         {
-            $response = HelpController::buildResponse(
-                500,
-                'Error al registrar la accion [!]',
-                null
-            );
+            $response = false;
         }
 
         return $response;

@@ -1048,6 +1048,16 @@ class DespachosController extends Controller
                                             {
                                                 if(($cantidadDespachado + $ocList[$oc->id][$parteId]) <= $cantidadRecepcionado)
                                                 {
+                                                    // Log this action
+                                                    LoggedactionsController::log(
+                                                        $p->pivot,
+                                                        'dispatched',
+                                                        array(
+                                                            'cantidad' => $ocList[$oc->id][$parteId],
+                                                            'despacho_id' => $despacho->id
+                                                        )
+                                                    );
+
                                                     $despacho->ocpartes()->attach(
                                                         array(
                                                             $p->pivot->id => array(
@@ -2546,9 +2556,75 @@ class DespachosController extends Controller
                                                             // If Parte is in the request for the OC
                                                             if(in_array($parteId, array_keys($ocList[$oc->id])) === true)
                                                             {
+                                                                // If OcParte was already in Despacho
+                                                                if(($ocParteDespacho = $despacho->ocpartes->find($p->pivot->id)) !== null)
+                                                                {
+                                                                    // If previous cantidad and new cantidad are different
+                                                                    if($ocParteDespacho->pivot->cantidad !== $ocList[$oc->id][$parteId])
+                                                                    {
+                                                                        // Log this action
+                                                                        LoggedactionsController::log(
+                                                                            $p->pivot,
+                                                                            'despacho_updated',
+                                                                            array(
+                                                                                'previous_cantidad' => $ocParteDespacho->pivot->cantidad,
+                                                                                'cantidad' => $ocList[$oc->id][$parteId],
+                                                                                'despacho_id' => $despacho->id
+                                                                            )
+                                                                        );
+                                                                    }
+                                                                }
+                                                                // It's being just added on the update
+                                                                else
+                                                                {
+                                                                    // Log this action
+                                                                    LoggedactionsController::log(
+                                                                        $p->pivot,
+                                                                        'added_to_despacho',
+                                                                        array(
+                                                                            'cantidad' => $ocList[$oc->id][$parteId],
+                                                                            'despacho_id' => $despacho->id
+                                                                        )
+                                                                    );
+                                                                }
+
                                                                 // Add the OcParte to sync using the ID which is unique
                                                                 $syncData[$p->pivot->id] = array(
                                                                     'cantidad' => $ocList[$oc->id][$parteId]
+                                                                );
+                                                            }
+                                                            // If Oc is in the list but not the Parte, so it's gonna be removed from Despacho
+                                                            else
+                                                            {
+                                                                // If OcParte was found in Despacho
+                                                                if(($ocParteDespacho = $despacho->ocpartes->find($p->pivot->id)) !== null)
+                                                                {
+                                                                    // Log this action
+                                                                    LoggedactionsController::log(
+                                                                        $p->pivot,
+                                                                        'removed_from_despacho',
+                                                                        array(
+                                                                            'cantidad' => $ocParteDespacho->pivot->cantidad,
+                                                                            'despacho_id' => $despacho->id
+                                                                        )
+                                                                    );
+                                                                }
+                                                            }
+                                                        }
+                                                        // If the Oc isn't in the list, so the Parte it's gonna be removed from Despacho
+                                                        else
+                                                        {
+                                                            // If OcParte was found in Despacho
+                                                            if(($ocParteDespacho = $despacho->ocpartes->find($p->pivot->id)) !== null)
+                                                            {
+                                                                // Log this action
+                                                                LoggedactionsController::log(
+                                                                    $p->pivot,
+                                                                    'removed_from_despacho',
+                                                                    array(
+                                                                        'cantidad' => $ocParteDespacho->pivot->cantidad,
+                                                                        'despacho_id' => $despacho->id
+                                                                    )
                                                                 );
                                                             }
                                                         }
@@ -2934,6 +3010,23 @@ class DespachosController extends Controller
                                                 $success = false;
             
                                                 break;
+                                            }
+                                            // If OcParte is available for removing
+                                            else
+                                            {
+                                                // Log this action
+                                                LoggedactionsController::log(
+                                                    $p->pivot,
+                                                    'despacho_removed',
+                                                    array(
+                                                        'cantidad' => $ocList[$oc->id][$parteId] * -1, // Negative value on removing
+                                                        'despacho_id' => $despacho->id,
+                                                        'despachable_type' => $despacho->despachable_type,
+                                                        'despachable_id' => $despacho->despachable_id,
+                                                        'destinable_type' => $despacho->destinable_type,
+                                                        'destinable_id' => $despacho->destinable_id
+                                                    )
+                                                );
                                             }
                                         }
                                         else
@@ -3903,6 +3996,16 @@ class DespachosController extends Controller
                                             {
                                                 if(($cantidadDespachado + $cantidadEntregado + $ocList[$oc->id][$parteId]) <= $cantidadRecepcionado)
                                                 {
+                                                    // Log this action
+                                                    LoggedactionsController::log(
+                                                        $p->pivot,
+                                                        'dispatched',
+                                                        array(
+                                                            'cantidad' => $ocList[$oc->id][$parteId],
+                                                            'despacho_id' => $despacho->id
+                                                        )
+                                                    );
+
                                                     $despacho->ocpartes()->attach(
                                                         array(
                                                             $p->pivot->id => array(
@@ -5256,9 +5359,75 @@ class DespachosController extends Controller
                                                             // If Parte is in the request for the OC
                                                             if(in_array($parteId, array_keys($ocList[$oc->id])) === true)
                                                             {
+                                                                // If OcParte was already in Despacho
+                                                                if(($ocParteDespacho = $despacho->ocpartes->find($p->pivot->id)) !== null)
+                                                                {
+                                                                    // If previous cantidad and new cantidad are different
+                                                                    if($ocParteDespacho->pivot->cantidad !== $ocList[$oc->id][$parteId])
+                                                                    {
+                                                                        // Log this action
+                                                                        LoggedactionsController::log(
+                                                                            $p->pivot,
+                                                                            'despacho_updated',
+                                                                            array(
+                                                                                'previous_cantidad' => $ocParteDespacho->pivot->cantidad,
+                                                                                'cantidad' => $ocList[$oc->id][$parteId],
+                                                                                'despacho_id' => $despacho->id
+                                                                            )
+                                                                        );
+                                                                    }
+                                                                }
+                                                                // It's being just added on the update
+                                                                else
+                                                                {
+                                                                    // Log this action
+                                                                    LoggedactionsController::log(
+                                                                        $p->pivot,
+                                                                        'added_to_despacho',
+                                                                        array(
+                                                                            'cantidad' => $ocList[$oc->id][$parteId],
+                                                                            'despacho_id' => $despacho->id
+                                                                        )
+                                                                    );
+                                                                }
+
                                                                 // Add the OcParte to sync using the ID which is unique
                                                                 $syncData[$p->pivot->id] = array(
                                                                     'cantidad' => $ocList[$oc->id][$parteId]
+                                                                );
+                                                            }
+                                                            // If Oc is in the list but not the Parte, so it's gonna be removed from Despacho
+                                                            else
+                                                            {
+                                                                // If OcParte was found in Despacho
+                                                                if(($ocParteDespacho = $despacho->ocpartes->find($p->pivot->id)) !== null)
+                                                                {
+                                                                    // Log this action
+                                                                    LoggedactionsController::log(
+                                                                        $p->pivot,
+                                                                        'removed_from_despacho',
+                                                                        array(
+                                                                            'cantidad' => $ocParteDespacho->pivot->cantidad,
+                                                                            'despacho_id' => $despacho->id
+                                                                        )
+                                                                    );
+                                                                }
+                                                            }
+                                                        }
+                                                        // If the Oc isn't in the list, so the Parte it's gonna be removed from Despacho
+                                                        else
+                                                        {
+                                                            // If OcParte was found in Despacho
+                                                            if(($ocParteDespacho = $despacho->ocpartes->find($p->pivot->id)) !== null)
+                                                            {
+                                                                // Log this action
+                                                                LoggedactionsController::log(
+                                                                    $p->pivot,
+                                                                    'removed_from_despacho',
+                                                                    array(
+                                                                        'cantidad' => $ocParteDespacho->pivot->cantidad,
+                                                                        'despacho_id' => $despacho->id
+                                                                    )
                                                                 );
                                                             }
                                                         }
@@ -5610,6 +5779,23 @@ class DespachosController extends Controller
                                                 $success = false;
             
                                                 break;
+                                            }
+                                            // If OcParte is available for removing
+                                            else
+                                            {
+                                                // Log this action
+                                                LoggedactionsController::log(
+                                                    $p->pivot,
+                                                    'despacho_removed',
+                                                    array(
+                                                        'cantidad' => $ocList[$oc->id][$parteId] * -1, // Negative value on removing
+                                                        'despacho_id' => $despacho->id,
+                                                        'despachable_type' => $despacho->despachable_type,
+                                                        'despachable_id' => $despacho->despachable_id,
+                                                        'destinable_type' => $despacho->destinable_type,
+                                                        'destinable_id' => $despacho->destinable_id
+                                                    )
+                                                );
                                             }
                                         }
                                         else

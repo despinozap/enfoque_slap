@@ -18,7 +18,8 @@ class CreateLoggedactionsTable extends Migration
             $table->bigInteger('user_id')->unsigned();
             $table->integer('loggeable_id');
             $table->string('loggeable_type');
-            $table->string('description')->nullable();
+            $table->string('action');
+            $table->text('data')->nullable();
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

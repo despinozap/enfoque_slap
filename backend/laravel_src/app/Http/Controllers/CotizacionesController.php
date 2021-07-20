@@ -972,6 +972,18 @@ class CotizacionesController extends Controller
                                         {
                                             if($oc->partes()->sync($syncData))
                                             {
+                                                foreach($oc->partes as $parte)
+                                                {
+                                                    // Log this action
+                                                    LoggedactionsController::log(
+                                                        $parte->pivot,
+                                                        'created',
+                                                        array(
+                                                            'cantidad' => $parte->pivot->cantidad
+                                                        )
+                                                    );
+                                                }
+
                                                 DB::commit();
 
                                                 $response = HelpController::buildResponse(

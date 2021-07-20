@@ -1072,11 +1072,30 @@ class RecepcionesController extends Controller
                                                         $newCantidad = $cantidadRecepcionado + $ocList[$oc->id][$parteId];
                                                         if($newCantidad <= $p->pivot->cantidad)
                                                         {
+                                                            // Log this action
+                                                            LoggedactionsController::log(
+                                                                $p->pivot,
+                                                                'received',
+                                                                array(
+                                                                    'cantidad' => $ocList[$oc->id][$parteId],
+                                                                    'recepcion_id' => $recepcion->id
+                                                                )
+                                                            );
+
                                                             // If new cantidad in Recepciones is equal to cantidad in Oc
                                                             if($newCantidad === $p->pivot->cantidad)
                                                             {
                                                                 // All partes were received at Comprador
                                                                 $p->pivot->estadoocparte_id = 2; // Estadoocparte = 'En transito'
+
+                                                                // Log this action
+                                                                LoggedactionsController::log(
+                                                                    $p->pivot,
+                                                                    'updated',
+                                                                    array(
+                                                                        'status_name' => $p->pivot->estadoocparte->name
+                                                                    )
+                                                                );
 
                                                                 // If fail on saving the new status for OcParte
                                                                 if(!($p->pivot->save()))
@@ -2332,15 +2351,71 @@ class RecepcionesController extends Controller
                                                                 // If Parte is in the request for the OC
                                                                 if(in_array($parteId, array_keys($ocList[$oc->id])) === true)
                                                                 {
+                                                                    // If OcParte was already in Recepcion
+                                                                    if(($ocParteRecepcion = $recepcion->ocpartes->find($p->pivot->id)) !== null)
+                                                                    {
+                                                                        // If previous cantidad and new cantidad are different
+                                                                        if($ocParteRecepcion->pivot->cantidad !== $ocList[$oc->id][$parteId])
+                                                                        {
+                                                                            // Log this action
+                                                                            LoggedactionsController::log(
+                                                                                $p->pivot,
+                                                                                'recepcion_updated',
+                                                                                array(
+                                                                                    'previous_cantidad' => $ocParteRecepcion->pivot->cantidad,
+                                                                                    'cantidad' => $ocList[$oc->id][$parteId],
+                                                                                    'recepcion_id' => $recepcion->id
+                                                                                )
+                                                                            );
+                                                                        }
+                                                                    }
+                                                                    // It's being just added on the update
+                                                                    else
+                                                                    {
+                                                                        // Log this action
+                                                                        LoggedactionsController::log(
+                                                                            $p->pivot,
+                                                                            'added_to_recepcion',
+                                                                            array(
+                                                                                'cantidad' => $ocList[$oc->id][$parteId],
+                                                                                'recepcion_id' => $recepcion->id
+                                                                            )
+                                                                        );
+                                                                    }
+
                                                                     // If new cantidad in Recepciones is equal to cantidad in Oc
                                                                     if($newCantidad === $p->pivot->cantidad)
                                                                     {
                                                                         // All partes were received at Comprador
                                                                         $p->pivot->estadoocparte_id = 2; // Estadoocparte = 'En transito'
+
+                                                                        // Log this action
+                                                                        LoggedactionsController::log(
+                                                                            $p->pivot,
+                                                                            'updated',
+                                                                            array(
+                                                                                'status_name' => $p->pivot->estadoocparte->name
+                                                                            )
+                                                                        );
+
                                                                     }
                                                                     else
                                                                     {
-                                                                        $p->pivot->estadoocparte_id = 1; // Estadoocparte = 'Pendiente'
+                                                                        // If OcParte wasn't 'Pendiente' and is going back
+                                                                        if($p->pivot->estadoocparte_id !== 1)
+                                                                        {
+                                                                            $p->pivot->estadoocparte_id = 1; // Estadoocparte = 'Pendiente'
+
+                                                                            // Log this action
+                                                                            LoggedactionsController::log(
+                                                                                $p->pivot,
+                                                                                'updated',
+                                                                                array(
+                                                                                    'status_name' => $p->pivot->estadoocparte->name
+                                                                                )
+                                                                            );
+                                                                        }
+
                                                                     }
 
                                                                     // Add the OcParte to sync using the ID which is unique
@@ -2351,13 +2426,65 @@ class RecepcionesController extends Controller
                                                                 // If Oc is in the list but not the Parte, so it's gonna be removed from Recepcion
                                                                 else
                                                                 {
-                                                                    $p->pivot->estadoocparte_id = 1; // Estadoocparte = 'Pendiente'
+                                                                    // If OcParte was found in Recepcion
+                                                                    if(($ocParteRecepcion = $recepcion->ocpartes->find($p->pivot->id)) !== null)
+                                                                    {
+                                                                        // Log this action
+                                                                        LoggedactionsController::log(
+                                                                            $p->pivot,
+                                                                            'removed_from_recepcion',
+                                                                            array(
+                                                                                'cantidad' => $ocParteRecepcion->pivot->cantidad,
+                                                                                'recepcion_id' => $recepcion->id
+                                                                            )
+                                                                        );
+                                                                    }
+
+                                                                    if($p->pivot->estadoocparte_id !== 1)
+                                                                    {
+                                                                        $p->pivot->estadoocparte_id = 1; // Estadoocparte = 'Pendiente'
+
+                                                                        // Log this action
+                                                                        LoggedactionsController::log(
+                                                                            $p->pivot,
+                                                                            'updated',
+                                                                            array(
+                                                                                'status_name' => $p->pivot->estadoocparte->name
+                                                                            )
+                                                                        );
+                                                                    }
                                                                 }
                                                             }
                                                             // If the Oc isn't in the list, so the Parte it's gonna be removed from Recepcion
                                                             else
                                                             {
-                                                                $p->pivot->estadoocparte_id = 1; // Estadoocparte = 'Pendiente'
+                                                                // If OcParte was found in Recepcion
+                                                                if(($ocParteRecepcion = $recepcion->ocpartes->find($p->pivot->id)) !== null)
+                                                                {
+                                                                    // Log this action
+                                                                    LoggedactionsController::log(
+                                                                        $p->pivot,
+                                                                        'removed_from_recepcion',
+                                                                        array(
+                                                                            'cantidad' => $ocParteRecepcion->pivot->cantidad,
+                                                                            'recepcion_id' => $recepcion->id
+                                                                        )
+                                                                    );
+                                                                }
+
+                                                                if($p->pivot->estadoocparte_id !== 1)
+                                                                {
+                                                                    $p->pivot->estadoocparte_id = 1; // Estadoocparte = 'Pendiente'
+
+                                                                    // Log this action
+                                                                    LoggedactionsController::log(
+                                                                        $p->pivot,
+                                                                        'updated',
+                                                                        array(
+                                                                            'status_name' => $p->pivot->estadoocparte->name
+                                                                        )
+                                                                    );
+                                                                }
                                                             }
 
                                                             // If fails on saving the new status for OcParte
@@ -2736,8 +2863,37 @@ class RecepcionesController extends Controller
                                             // If new cantidad in Recepciones is more or equal than total in Despachos
                                             if($newCantidad >= $p->pivot->getCantidadDespachado($comprador))
                                             {
+                                                // Log this action
+                                                LoggedactionsController::log(
+                                                    $p->pivot,
+                                                    'recepcion_removed',
+                                                    array(
+                                                        'cantidad' => $ocList[$oc->id][$parteId] * -1, // Negative value on removing
+                                                        'recepcion_id' => $recepcion->id,
+                                                        'sourceable_type' => $recepcion->sourceable_type,
+                                                        'sourceable_id' => $recepcion->sourceable_id,
+                                                        'recepcionable_type' => $recepcion->recepcionable_type,
+                                                        'recepcionable_id' => $recepcion->recepcionable_id
+                                                    )
+                                                );
+
+                                                $previousEstadoocparteId = $p->pivot->estadoocparte_id;
+
                                                 // OcParte estadoocparte goes back to 'Pendiente'
                                                 $p->pivot->estadoocparte_id = 1; // Estadoocparte = 'Pendiente'
+
+                                                // If OcParte estadoocparte_id changed
+                                                if($previousEstadoocparteId !== $p->pivot->estadoocparte_id)
+                                                {
+                                                    // Log this action
+                                                    LoggedactionsController::log(
+                                                        $p->pivot,
+                                                        'updated',
+                                                        array(
+                                                            'status_name' => $p->pivot->estadoocparte->name
+                                                        )
+                                                    );
+                                                }
 
                                                 // If fail on saving the new status for OcParte
                                                 if(!($p->pivot->save()))
@@ -3750,6 +3906,16 @@ class RecepcionesController extends Controller
                                             {
                                                 if(($cantidadRecepcionado + $ocList[$oc->id][$parteId]) <= $cantidadDespachado)
                                                 {
+                                                    // Log this action
+                                                    LoggedactionsController::log(
+                                                        $p->pivot,
+                                                        'received',
+                                                        array(
+                                                            'cantidad' => $ocList[$oc->id][$parteId],
+                                                            'recepcion_id' => $recepcion->id
+                                                        )
+                                                    );
+
                                                     $recepcion->ocpartes()->attach(
                                                         array(
                                                             $p->pivot->id => array(
@@ -5094,9 +5260,75 @@ class RecepcionesController extends Controller
                                                             // If Parte is in the request for the OC
                                                             if(in_array($parteId, array_keys($ocList[$oc->id])) === true)
                                                             {
+                                                                // If OcParte was already in Recepcion
+                                                                if(($ocParteRecepcion = $recepcion->ocpartes->find($p->pivot->id)) !== null)
+                                                                {
+                                                                    // If previous cantidad and new cantidad are different
+                                                                    if($ocParteRecepcion->pivot->cantidad !== $ocList[$oc->id][$parteId])
+                                                                    {
+                                                                        // Log this action
+                                                                        LoggedactionsController::log(
+                                                                            $p->pivot,
+                                                                            'recepcion_updated',
+                                                                            array(
+                                                                                'previous_cantidad' => $ocParteRecepcion->pivot->cantidad,
+                                                                                'cantidad' => $ocList[$oc->id][$parteId],
+                                                                                'recepcion_id' => $recepcion->id
+                                                                            )
+                                                                        );
+                                                                    }
+                                                                }
+                                                                // It's being just added on the update
+                                                                else
+                                                                {
+                                                                    // Log this action
+                                                                    LoggedactionsController::log(
+                                                                        $p->pivot,
+                                                                        'added_to_recepcion',
+                                                                        array(
+                                                                            'cantidad' => $ocList[$oc->id][$parteId],
+                                                                            'recepcion_id' => $recepcion->id
+                                                                        )
+                                                                    );
+                                                                }
+
                                                                 // Add the OcParte to sync using the ID which is unique
                                                                 $syncData[$p->pivot->id] = array(
                                                                     'cantidad' => $ocList[$oc->id][$parteId]
+                                                                );
+                                                            }
+                                                            // If Oc is in the list but not the Parte, so it's gonna be removed from Recepcion
+                                                            else
+                                                            {
+                                                                // If Parte was found in Recepcion
+                                                                if(($ocParteRecepcion = $recepcion->ocpartes->find($p->pivot->id)) !== null)
+                                                                {
+                                                                    // Log this action
+                                                                    LoggedactionsController::log(
+                                                                        $p->pivot,
+                                                                        'removed_from_recepcion',
+                                                                        array(
+                                                                            'cantidad' => $ocParteRecepcion->pivot->cantidad,
+                                                                            'recepcion_id' => $recepcion->id
+                                                                        )
+                                                                    );
+                                                                }
+                                                            }
+                                                        }
+                                                        // If the Oc isn't in the list, so the Parte it's gonna be removed from Recepcion
+                                                        else
+                                                        {
+                                                            // If OcParte was found in Recepcion
+                                                            if(($ocParteRecepcion = $recepcion->ocpartes->find($p->pivot->id)) !== null)
+                                                            {
+                                                                // Log this action
+                                                                LoggedactionsController::log(
+                                                                    $p->pivot,
+                                                                    'removed_from_recepcion',
+                                                                    array(
+                                                                        'cantidad' => $ocParteRecepcion->pivot->cantidad,
+                                                                        'recepcion_id' => $recepcion->id
+                                                                    )
                                                                 );
                                                             }
                                                         }
@@ -5456,6 +5688,24 @@ class RecepcionesController extends Controller
             
                                                 break;
                                             }
+                                            // If OcParte is available for removing
+                                            else
+                                            {
+                                                // Log this action
+                                                LoggedactionsController::log(
+                                                    $p->pivot,
+                                                    'recepcion_removed',
+                                                    array(
+                                                        'cantidad' => $ocList[$oc->id][$parteId] * -1, // Negative value on removing
+                                                        'recepcion_id' => $recepcion->id,
+                                                        'sourceable_type' => $recepcion->sourceable_type,
+                                                        'sourceable_id' => $recepcion->sourceable_id,
+                                                        'recepcionable_type' => $recepcion->recepcionable_type,
+                                                        'recepcionable_id' => $recepcion->recepcionable_id
+                                                    )
+                                                );
+                                            }
+
                                         }
                                         else
                                         {
@@ -6418,6 +6668,16 @@ class RecepcionesController extends Controller
                                             {
                                                 if(($cantidadRecepcionado + $ocList[$oc->id][$parteId]) <= $cantidadDespachado)
                                                 {
+                                                    // Log this action
+                                                    LoggedactionsController::log(
+                                                        $p->pivot,
+                                                        'received',
+                                                        array(
+                                                            'cantidad' => $ocList[$oc->id][$parteId],
+                                                            'recepcion_id' => $recepcion->id
+                                                        )
+                                                    );
+
                                                     $recepcion->ocpartes()->attach(
                                                         array(
                                                             $p->pivot->id => array(
@@ -7737,9 +7997,75 @@ class RecepcionesController extends Controller
                                                             // If Parte is in the request for the OC
                                                             if(in_array($parteId, array_keys($ocList[$oc->id])) === true)
                                                             {
+                                                                // If OcParte was already in Recepcion
+                                                                if(($ocParteRecepcion = $recepcion->ocpartes->find($p->pivot->id)) !== null)
+                                                                {
+                                                                    // If previous cantidad and new cantidad are different
+                                                                    if($ocParteRecepcion->pivot->cantidad !== $ocList[$oc->id][$parteId])
+                                                                    {
+                                                                        // Log this action
+                                                                        LoggedactionsController::log(
+                                                                            $p->pivot,
+                                                                            'recepcion_updated',
+                                                                            array(
+                                                                                'previous_cantidad' => $ocParteRecepcion->pivot->cantidad,
+                                                                                'cantidad' => $ocList[$oc->id][$parteId],
+                                                                                'recepcion_id' => $recepcion->id
+                                                                            )
+                                                                        );
+                                                                    }
+                                                                }
+                                                                // It's being just added on the update
+                                                                else
+                                                                {
+                                                                    // Log this action
+                                                                    LoggedactionsController::log(
+                                                                        $p->pivot,
+                                                                        'added_to_recepcion',
+                                                                        array(
+                                                                            'cantidad' => $ocList[$oc->id][$parteId],
+                                                                            'recepcion_id' => $recepcion->id
+                                                                        )
+                                                                    );
+                                                                }
+
                                                                 // Add the OcParte to sync using the ID which is unique
                                                                 $syncData[$p->pivot->id] = array(
                                                                     'cantidad' => $ocList[$oc->id][$parteId]
+                                                                );
+                                                            }
+                                                            // If Oc is in the list but not the Parte, so it's gonna be removed from Recepcion
+                                                            else
+                                                            {
+                                                                // If OcParte was found in Recepcion
+                                                                if(($ocParteRecepcion = $recepcion->ocpartes->find($p->pivot->id)) !== null)
+                                                                {
+                                                                    // Log this action
+                                                                    LoggedactionsController::log(
+                                                                        $p->pivot,
+                                                                        'removed_from_recepcion',
+                                                                        array(
+                                                                            'cantidad' => $ocParteRecepcion->pivot->cantidad,
+                                                                            'recepcion_id' => $recepcion->id
+                                                                        )
+                                                                    );
+                                                                }
+                                                            }
+                                                        }
+                                                        // If the Oc isn't in the list, so the Parte it's gonna be removed from Recepcion
+                                                        else
+                                                        {
+                                                            // If OcParte was found in Recepcion
+                                                            if(($ocParteRecepcion = $recepcion->ocpartes->find($p->pivot->id)) !== null)
+                                                            {
+                                                                // Log this action
+                                                                LoggedactionsController::log(
+                                                                    $p->pivot,
+                                                                    'removed_from_recepcion',
+                                                                    array(
+                                                                        'cantidad' => $ocParteRecepcion->pivot->cantidad,
+                                                                        'recepcion_id' => $recepcion->id
+                                                                    )
                                                                 );
                                                             }
                                                         }
@@ -8005,8 +8331,8 @@ class RecepcionesController extends Controller
                                     // Administrador
                                     case 'admin': {
 
-                                        // If user belongs to this Sucursal's (centro) country
-                                        if($user->stationable->country->id === $centrodistribucion->country->id)
+                                        // If user belongs to this Sucursal's country
+                                        if($user->stationable->country->id === $sucursal->country->id)
                                         {
                                             // Only if Oc was generated from its same country
                                             $oc = Oc::select('ocs.*')
@@ -8098,6 +8424,23 @@ class RecepcionesController extends Controller
                                                 $success = false;
             
                                                 break;
+                                            }
+                                            // If OcParte is available for removing
+                                            else
+                                            {
+                                                // Log this action
+                                                LoggedactionsController::log(
+                                                    $p->pivot,
+                                                    'recepcion_removed',
+                                                    array(
+                                                        'cantidad' => $ocList[$oc->id][$parteId] * -1, // Negative value on removing
+                                                        'recepcion_id' => $recepcion->id,
+                                                        'sourceable_type' => $recepcion->sourceable_type,
+                                                        'sourceable_id' => $recepcion->sourceable_id,
+                                                        'recepcionable_type' => $recepcion->recepcionable_type,
+                                                        'recepcionable_id' => $recepcion->recepcionable_id
+                                                    )
+                                                );
                                             }
                                         }
                                         else
