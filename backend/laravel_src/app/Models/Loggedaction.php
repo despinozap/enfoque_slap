@@ -35,5 +35,9 @@ class Loggedaction extends Model
      *          despacho_updated: OcParte's cantidad had changed in Despacho -> previous_cantidad, cantidad, despacho_id
      *          removed_from_despacho: OcParte was removed from Despacho -> cantidad, despacho_id
      *          added_to_despacho: OcParte was added to an existing Despacho -> cantidad, despacho_id
+     *          delivered: OcParted added to Entrega -> cantidad, entrega_id
+     *          entrega_updated: OcParte's cantidad had changed in Entrega -> previous_cantidad, cantidad, entrega_id
+     *          removed_from_entrega: OcParte was removed from Entrega -> cantidad, entrega_id
+     *          added_to_entrega: OcParte was added to an existing Entrega -> cantidad, entrega_id
      */
 }
